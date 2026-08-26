@@ -97,4 +97,10 @@ class FixtureResult(BaseModel):
 class BenchmarkReport(BaseModel):
     provider: str
     model: str
+    # Default "native" preserves the field's meaning for every report saved
+    # before this field existed (run.py originally always used the native
+    # pipeline for Condition A) — those older out/*.json files remain
+    # correctly labeled if ever re-loaded via this model rather than read
+    # as raw JSON (as damage_error_metrics.py already does).
+    orchestrator: str = "native"
     fixtures: list[FixtureResult] = Field(default_factory=list)

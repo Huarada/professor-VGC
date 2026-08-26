@@ -5,8 +5,9 @@
 A **Clean-Architecture** engine that analyzes Pokemon VGC battles by combining a
 **deterministic** damage-calc layer (`@smogon/calc` via Node IPC) with a
 **probabilistic** metagame feed (Smogon *Chaos* usage stats) and two LLM stages,
-orchestrated with **LangChain**, for selection and natural-language explainability
-(bring your own key).
+orchestrated with **Google ADK** (Agent Development Kit) by default — **LangChain**
+and a hand-rolled **native** pipeline remain available as interchangeable
+backends — for selection and natural-language explainability (bring your own key).
 
 ## Pipeline (maps 1:1 to the flow diagram)
 
@@ -40,21 +41,38 @@ Dependency Inversion is enforced everywhere: services import from
 `src.domain.interfaces` only. Concrete adapters are wired in
 `src/services/container.py` and nowhere else.
 
-## Orchestration (LangChain)
+## Orchestration (Google ADK / LangChain / native)
 
 The orchestration technology is a **pluggable infrastructure choice** behind the
-`AnalysisPipeline` port. Two interchangeable backends implement it identically:
+`AnalysisPipeline` port. Three interchangeable backends implement it identically:
 
 | Backend | Class | How the LLM stages run |
 |---------|-------|------------------------|
-| `langchain` (default) | `LangChainAnalysisOrchestrator` | **LCEL** chains: `RunnableLambda(build_messages) \| chat_model \| JsonOutputParser` for selection, `… \| StrOutputParser` for explanation. |
+| `adk` (default) | `AdkAnalysisOrchestrator` | Google **ADK** `LlmAgent`s: a schema-constrained (`output_schema`), tool-less agent for selection; a bounded tool-calling agent for explanation. |
+| `langchain` | `LangChainAnalysisOrchestrator` | **LCEL** chains: `RunnableLambda(build_messages) \| chat_model \| JsonOutputParser` for selection, a `langchain.agents.create_agent` tool-calling agent for explanation. |
 | `native` | `AnalysisService` | Direct provider SDK calls through the `LLMProvider` port. |
 
-Select at runtime via `PROFESSORVGC_ORCHESTRATOR=langchain|native` or the UI dropdown.
+Select at runtime via `PROFESSORVGC_ORCHESTRATOR=adk|langchain|native` or the UI
+dropdown. The LLM *vendor* (`PROFESSORVGC_DEFAULT_PROVIDER=openai|gemini`) is a
+fully independent choice from the orchestrator — any backend works with either key.
 
-LangChain is confined to the adapters/services layers and never appears in a
-domain signature:
+Every orchestration framework is confined to the adapters/services layers and
+never appears in a domain signature:
 
+- `src/adapters/llm/adk_provider.py` — `build_adk_model`, a BYOK factory
+  returning the `model=` argument for an ADK `Agent`: a plain Gemini model-id
+  string (ADK's native path, no extra dependency) for `gemini`, or ADK's own
+  documented `LiteLlm` wrapper (needs the separate `litellm` package) for `openai`.
+- `src/adapters/llm/adk_tools.py` — the calc/Chaos/strategy ports exposed as
+  plain, type-hinted functions (ADK auto-wraps a function's signature + Google-
+  style docstring into a tool) for the explanation agent's interactive
+  "what-if" follow-ups. Every parameter is required (no defaults): the Gemini
+  API's function-calling schema rejects a declaration that has one.
+- `src/services/adk_orchestrator.py` — the ADK pipeline. Conversation history
+  is rendered into the prompt text (like the other two backends, via the
+  project's own `ConversationMemory` port) rather than relying on ADK's own
+  session/event replay, so memory behavior stays identical across all three
+  backends; each `analyze()` call runs on a fresh, disposable ADK session.
 - `src/adapters/llm/langchain_provider.py` — `LangChainLLMProvider` (implements
   the domain `LLMProvider` on any `BaseChatModel`) + a BYOK `build_chat_model`
   factory for `ChatOpenAI` / `ChatGoogleGenerativeAI`.
@@ -63,7 +81,7 @@ domain signature:
   agent for interactive "what-if" follow-ups.
 - `src/services/langchain_orchestrator.py` — the LCEL pipeline.
 
-Both backends share the deterministic core (`MatchupEvaluator`,
+All three backends share the deterministic core (`MatchupEvaluator`,
 `selection_logic`), so switching orchestration technology never changes a single
 damage roll — the LLM only ever explains ground-truth numbers, never invents them.
 
@@ -197,4 +215,5 @@ actual `@smogon/calc` subprocess instead of skipping — this is what
 - **New calc backend (Rust/HTTP/...):** implement `CalcEngineAdapter` and swap
   it in the container. Domain and services are untouched.
 - **New orchestration backend:** implement `AnalysisPipeline` (like
-  `LangChainAnalysisOrchestrator`) and register it in `Container.build_pipeline`.
+  `AdkAnalysisOrchestrator`/`LangChainAnalysisOrchestrator`) and register it in
+  `Container.build_pipeline`.
