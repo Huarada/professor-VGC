@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
+from src.adapters.llm.adk_provider import build_adk_model
 from src.adapters.llm.gemini_embedding_provider import GeminiEmbeddingProvider
 from src.adapters.llm.gemini_provider import GeminiProvider
 from src.adapters.llm.langchain_provider import build_chat_model
@@ -26,19 +27,21 @@ from src.domain.interfaces import (
     LLMProvider,
     StrategyKnowledgeProvider,
 )
+from src.services.adk_orchestrator import AdkAnalysisOrchestrator
 from src.services.analysis_service import AnalysisService
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
 from src.services.selection_service import LLMSelectionService
 
 if TYPE_CHECKING:
     # Type-checking only — see langchain_provider.py's own note: every
-    # runtime path to langchain_core stays lazy, so this composition root
-    # remains importable (and the native orchestration path fully usable)
-    # without langchain_core installed.
+    # runtime path to langchain_core/google-adk stays lazy, so this
+    # composition root remains importable (and the native orchestration path
+    # fully usable) without either installed.
+    from google.adk.models import BaseLlm
     from langchain_core.language_models import BaseChatModel
 
 _PROVIDERS = {"openai", "gemini"}
-_ORCHESTRATORS = {"native", "langchain"}
+_ORCHESTRATORS = {"native", "langchain", "adk"}
 
 
 class Container:
@@ -170,6 +173,11 @@ class Container:
         name = (provider or self._settings.default_provider).lower()
         return build_chat_model(name, self._settings)
 
+    def build_adk_model(self, provider: str | None = None) -> "str | BaseLlm":
+        """Instantiate the requested BYOK provider as a Google ADK model."""
+        name = (provider or self._settings.default_provider).lower()
+        return build_adk_model(name, self._settings)
+
     def build_native_pipeline(self, provider: str | None = None) -> AnalysisPipeline:
         """Assemble the hand-rolled :class:`AnalysisService`."""
         llm = self.build_llm(provider)
@@ -201,6 +209,22 @@ class Container:
             suggestion_source=self.smogon_dex(),
         )
 
+    def build_adk_pipeline(self, provider: str | None = None) -> AnalysisPipeline:
+        """Assemble the Google ADK orchestrator (default backend)."""
+        name = (provider or self._settings.default_provider).lower()
+        model = self.build_adk_model(name)
+        return AdkAnalysisOrchestrator(
+            parser=ShowdownReplayParser(),
+            model=model,
+            meta_provider=self.chaos(),
+            calc_engine=self.calc_engine(),
+            strategy_provider=self.strategy(name),
+            memory=self.memory(),
+            default_gen=self._settings.calc_gen,
+            provider_name=f"adk:{name}",
+            suggestion_source=self.smogon_dex(),
+        )
+
     def build_pipeline(
         self, provider: str | None = None, orchestrator: str | None = None
     ) -> AnalysisPipeline:
@@ -210,6 +234,8 @@ class Container:
             raise ConfigurationError(
                 f"Unknown orchestrator '{backend}'. Available: {sorted(_ORCHESTRATORS)}"
             )
+        if backend == "adk":
+            return self.build_adk_pipeline(provider)
         if backend == "langchain":
             return self.build_langchain_pipeline(provider)
         return self.build_native_pipeline(provider)

@@ -53,8 +53,8 @@ class Settings(BaseSettings):
     gemini_embedding_model: str = "models/text-embedding-004"
     semantic_strategy_top_k: int = 3
 
-    # --- Orchestration backend ("langchain" | "native") --------------- #
-    orchestrator: str = "langchain"
+    # --- Orchestration backend ("adk" | "langchain" | "native") ------- #
+    orchestrator: str = "adk"
 
     # --- LLM (bring your own key) -------------------------------------- #
     default_provider: str = "openai"

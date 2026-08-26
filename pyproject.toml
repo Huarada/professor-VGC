@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "professorvgc"
 version = "0.1.0"
-description = "ProfessorVGC — Clean-Architecture VGC analysis engine (deterministic calc + Chaos stats + LangChain LLM orchestration)."
+description = "ProfessorVGC — Clean-Architecture VGC analysis engine (deterministic calc + Chaos stats + Google ADK/LangChain/native LLM orchestration)."
 requires-python = ">=3.10"
 dependencies = [
     "pydantic>=2.6,<3",
@@ -14,10 +14,11 @@ dependencies = [
     "requests>=2.31",
     "langchain>=1.0",
     "langchain-core>=1.0",
+    "google-adk>=2.0,<3",
 ]
 
 [project.optional-dependencies]
-openai = ["openai>=1.30", "langchain-openai>=0.2"]
+openai = ["openai>=1.30", "langchain-openai>=0.2", "litellm>=1.84"]
 gemini = ["google-generativeai>=0.7", "langchain-google-genai>=2.0"]
 # Self-sufficient test environment: `pip install -e ".[dev]"` alone must be
 # enough to get a 100%-green `pytest` + `mypy` run, matching what

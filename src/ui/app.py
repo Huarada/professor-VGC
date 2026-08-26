@@ -1338,8 +1338,9 @@ def main() -> None:
         st.header("Configuration (BYOK)")
         provider = st.selectbox("LLM provider", ["openai", "gemini"], index=0)
         orchestrator = st.selectbox(
-            "Orchestration", ["langchain", "native"], index=0,
-            help="LangChain LCEL chains, or the hand-rolled native pipeline.",
+            "Orchestration", ["adk", "langchain", "native"], index=0,
+            help="Google ADK agents (default), LangChain LCEL chains, or the "
+                 "hand-rolled native pipeline.",
         )
         st.info(
             f"{_icon_md(_POKEBALL_ICON)} Set your key via environment variables:\n"
