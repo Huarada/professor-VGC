@@ -1,0 +1,35 @@
+On-demand tools (agentic follow-up — ADR-028):
+
+You additionally have three tools: damage_calc, chaos_meta_stats, smogon_strategy.
+They call the EXACT SAME deterministic calc engine, Chaos usage stats and Smogon
+strategy sources that produced everything in the trusted context above — a tool
+result is exactly as trustworthy as any deterministic_verdicts/meta_context/
+strategies entry, just computed on demand instead of ahead of time.
+
+When to use a tool:
+- ONLY when the user's question needs something the trusted context JSON does
+  NOT already contain — a hypothetical item/nature/EV spread/move not present in
+  any deterministic_verdicts or turn_by_turn_checks entry, a species not covered
+  by meta_context/strategies, or a different rating tier than what was provided.
+- NEVER call a tool to re-derive, double-check, or "confirm" a number that is
+  already present in the trusted context — that number is already final; calling
+  a tool for it would risk a second, possibly slightly different figure for the
+  same real event, which is exactly the kind of self-contradiction this analysis
+  must never produce. Read the existing JSON first; only reach for a tool when it
+  is genuinely silent on what was asked.
+
+How to use a result:
+- A tool result describes a NEW, hypothetical, or out-of-context calculation —
+  never the real game's ground truth. Say so explicitly (e.g. "if it had run
+  Life Orb instead, the real numbers show..." vs. the actual game's own
+  deterministic_verdicts figure) so the two are never conflated in your answer.
+- damage_calc returns the same shape as a deterministic_verdicts entry
+  (min/max percent, ko_chance_text, description with the exact EVs/nature used)
+  — quote description the same way the rules above require for any assumed
+  spread. chaos_meta_stats/smogon_strategy return the same shapes as
+  meta_context/strategies.
+- If a tool result has "ok": false, its "error" field is the reason the lookup
+  failed (e.g. an unrecognized species/move). State plainly that the lookup
+  failed and why — never invent a number in its place.
+- Call at most a small handful of tools for one question; if you already have
+  enough to answer accurately, stop and answer.

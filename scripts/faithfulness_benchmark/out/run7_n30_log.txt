@@ -1,0 +1,111 @@
+=== bench_only (bench_only) ===
+  [filter] dropped 2 non-damage-dealt percent claim(s) (A)
+  A (grounded):  5 claims, strict=0.8, lenient=0.8
+  B (naive):     7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+=== mega_evolution (mega_evolution) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (A)
+  A (grounded):  8 claims, strict=0.625, lenient=0.625
+  [filter] dropped 1 trainer-named claim(s) (B)
+  B (naive):     7 claims, strict=0.5714285714285714, lenient=0.5714285714285714
+=== stat_stage_intimidate (stat_stage) ===
+  A (grounded):  8 claims, strict=0.875, lenient=0.875
+  B (naive):     8 claims, strict=0.875, lenient=0.875
+=== protect_spread (protect_read) ===
+  A (grounded):  4 claims, strict=0.75, lenient=0.75
+  B (naive):     5 claims, strict=0.8, lenient=0.8
+=== forfeit (forfeit) ===
+  [filter] dropped 2 non-damage-dealt percent claim(s) (A)
+  A (grounded):  5 claims, strict=1.0, lenient=1.0
+  B (naive):     5 claims, strict=0.8, lenient=0.8
+=== protect_genuine_read (protect_read) ===
+  A (grounded):  3 claims, strict=1.0, lenient=1.0
+  B (naive):     10 claims, strict=0.8, lenient=0.8
+=== protect_misallocated (protect_read) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (A)
+  A (grounded):  5 claims, strict=0.8, lenient=0.8
+  [judge] dropped 1 forfeit claim(s) with no actual forfeit wording (prompt-compliance guard)
+  B (naive):     8 claims, strict=0.75, lenient=0.75
+=== mirror_match_protect (protect_read, mirror_match) ===
+  A (grounded):  9 claims, strict=0.7777777777777778, lenient=0.7777777777777778
+  B (naive):     8 claims, strict=0.625, lenient=0.625
+=== normal_clean (control) ===
+  [filter] dropped 2 non-damage-dealt percent claim(s) (A)
+  A (grounded):  14 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  B (naive):     17 claims, strict=0.7647058823529411, lenient=0.7647058823529411
+=== bench_plus_mega (bench_only, mega_evolution) ===
+  [filter] dropped 2 non-damage-dealt percent claim(s) (A)
+  A (grounded):  10 claims, strict=1.0, lenient=1.0
+  B (naive):     10 claims, strict=0.8, lenient=0.8
+=== dmg01_dragapult_volcarona (damage_dense) ===
+  A (grounded):  8 claims, strict=0.875, lenient=1.0
+  B (naive):     13 claims, strict=0.7692307692307693, lenient=0.8333333333333334
+=== dmg02_skeledirge_bellibolt (damage_dense) ===
+  A (grounded):  12 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg03_rotomwash_grimmsnarl (damage_dense) ===
+  A (grounded):  13 claims, strict=0.9230769230769231, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.75
+=== dmg04_malamar_chandelure (damage_dense) ===
+  A (grounded):  17 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.8461538461538461, lenient=0.8461538461538461
+=== dmg05_farigiraf_armarouge (damage_dense) ===
+  A (grounded):  9 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.8461538461538461, lenient=0.8461538461538461
+=== dmg06_maushold_azumarill (damage_dense) ===
+  A (grounded):  9 claims, strict=0.8888888888888888, lenient=0.8888888888888888
+  B (naive):     9 claims, strict=0.5555555555555556, lenient=0.5555555555555556
+=== dmg07_gallade_vaporeon (damage_dense) ===
+  A (grounded):  9 claims, strict=1.0, lenient=1.0
+  B (naive):     9 claims, strict=0.6666666666666666, lenient=0.6666666666666666
+=== dmg08_vileplume_tyranitar (damage_dense) ===
+  A (grounded):  13 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg09_corviknight_hippowdon (damage_dense) ===
+  [filter] dropped 1 trainer-named claim(s) (A)
+  A (grounded):  9 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.8461538461538461, lenient=0.8461538461538461
+=== dmg10_whimsicott_glimmora (damage_dense) ===
+  A (grounded):  13 claims, strict=0.9230769230769231, lenient=0.9230769230769231
+  B (naive):     9 claims, strict=0.5555555555555556, lenient=0.5555555555555556
+=== dmg11_mamoswine_dragonite (damage_dense) ===
+  [filter] dropped 1 trainer-named claim(s) (A)
+  A (grounded):  9 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg12_palafin_swampert (damage_dense) ===
+  A (grounded):  12 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.7692307692307693, lenient=0.7692307692307693
+=== dmg13_ceruledge_kingambit (damage_dense) ===
+  [filter] dropped 4 non-damage-dealt percent claim(s) (A)
+  A (grounded):  9 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg14_raichu_incineroar (damage_dense) ===
+  A (grounded):  9 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.7692307692307693, lenient=0.7692307692307693
+=== dmg15_volcarona_toxapex (damage_dense) ===
+  A (grounded):  9 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg16_annihilape_gholdengo (damage_dense) ===
+  A (grounded):  13 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg17_sinistcha_hatterene (damage_dense) ===
+  A (grounded):  10 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg18_krookodile_klefki (damage_dense) ===
+  A (grounded):  17 claims, strict=1.0, lenient=1.0
+  B (naive):     8 claims, strict=0.625, lenient=0.625
+=== dmg19_arcanine_gliscor (damage_dense) ===
+  [filter] dropped 2 trainer-named claim(s) (A)
+  A (grounded):  13 claims, strict=0.9230769230769231, lenient=0.9230769230769231
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg20_milotic_sceptile (damage_dense) ===
+  A (grounded):  8 claims, strict=1.0, lenient=1.0
+  B (naive):     9 claims, strict=0.5555555555555556, lenient=0.5555555555555556
+
+=== PRIMARY RESULT: damage_range (n=30 fixtures) ===
+A: 81/88 (92.0%)  vs  B: 12/95 (12.6%)
+Fisher's exact test — odds ratio: 80.04, two-sided p=0.0000, one-sided (A>B) p=0.0000 -> significant at alpha=0.05
+
+=== secondary context: all claim types combined ===
+A: 276/292 (94.5%)  vs  B: 235/324 (72.5%)  -- mixes categories with and without an effect; not the headline, see README
+
+Full report written to scripts\faithfulness_benchmark\out\run7_n30.json

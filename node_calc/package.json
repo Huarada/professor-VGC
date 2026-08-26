@@ -1,0 +1,22 @@
+{
+  "name": "professorvgc-calc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Node IPC worker exposing @smogon/calc to the Python core over stdin/stdout.",
+  "type": "commonjs",
+  "main": "calc_server.js",
+  "scripts": {
+    "start": "node calc_server.js",
+    "smoke": "node calc_server.js --smoke",
+    "dex": "node smogon_dex_server.js"
+  },
+  "dependencies": {
+    "@pkmn/data": "^0.10.11",
+    "@pkmn/dex": "^0.10.11",
+    "@pkmn/smogon": "^0.5.31",
+    "@smogon/calc": "^0.11.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

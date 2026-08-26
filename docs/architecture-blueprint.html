@@ -1,0 +1,754 @@
+<title>ProfessorVGC Blueprint</title>
+<style>
+  :root{
+    --bg:#EDEEE7;
+    --surface:#FFFFFF;
+    --surface-2:#F5F5EF;
+    --ink:#1B2229;
+    --muted:#56606A;
+    --line:#D3D7CB;
+    --mono:ui-monospace,"Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",monospace;
+    --sans:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;
+    --lane-det:#0F7A72;
+    --lane-det-soft:#E4F1EE;
+    --lane-prob:#A8660A;
+    --lane-prob-soft:#F5EBDA;
+    --lane-orch:#6E4FA3;
+    --lane-orch-soft:#EDE7F5;
+    --shadow: 0 1px 2px rgba(27,34,41,.06), 0 8px 24px rgba(27,34,41,.05);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12181C;
+      --surface:#1A2126;
+      --surface-2:#20282D;
+      --ink:#E8ECE7;
+      --muted:#9BA6A2;
+      --line:#2B343A;
+      --lane-det:#39BBAD;
+      --lane-det-soft:#173330;
+      --lane-prob:#E0A340;
+      --lane-prob-soft:#332711;
+      --lane-orch:#B096E6;
+      --lane-orch-soft:#251E38;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12181C;
+    --surface:#1A2126;
+    --surface-2:#20282D;
+    --ink:#E8ECE7;
+    --muted:#9BA6A2;
+    --line:#2B343A;
+    --lane-det:#39BBAD;
+    --lane-det-soft:#173330;
+    --lane-prob:#E0A340;
+    --lane-prob-soft:#332711;
+    --lane-orch:#B096E6;
+    --lane-orch-soft:#251E38;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.6;
+    margin:0;
+    padding:0 20px 100px;
+  }
+  .page{max-width:880px;margin:0 auto;}
+  .wide{max-width:1040px;margin:0 auto;}
+
+  header.hero{
+    max-width:880px;margin:0 auto;
+    padding:64px 0 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+    display:flex;gap:10px;align-items:center;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--lane-det);}
+  h1{
+    font-size:clamp(2rem,4vw,2.6rem);
+    line-height:1.12;
+    margin:14px 0 10px;
+    text-wrap:balance;
+    letter-spacing:-0.01em;
+  }
+  .sub{
+    font-size:1.05rem;
+    color:var(--muted);
+    max-width:62ch;
+    margin:0;
+  }
+
+  .callout{
+    max-width:880px;margin:32px auto 0;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:3px solid var(--lane-det);
+    border-radius:6px;
+    padding:22px 26px;
+    box-shadow:var(--shadow);
+  }
+  .callout h2{margin:0 0 8px;font-size:1.02rem;}
+  .callout p{margin:0 0 10px;color:var(--ink);}
+  .callout p:last-child{margin-bottom:0;}
+  .callout code, p code, li code, td code{
+    font-family:var(--mono);
+    font-size:.88em;
+    background:var(--surface-2);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:.1em .35em;
+  }
+
+  section{max-width:880px;margin:56px auto 0;}
+  section.full{max-width:1040px;}
+  h2.sec{
+    font-size:1.5rem;
+    margin:0 0 6px;
+    display:flex;align-items:baseline;gap:12px;
+  }
+  h2.sec .no{
+    font-family:var(--mono);
+    font-size:.85rem;
+    color:var(--muted);
+    font-weight:400;
+  }
+  .sec-desc{color:var(--muted);margin:0 0 26px;max-width:68ch;}
+  p{max-width:68ch;}
+  ul.notes{padding-left:1.1em;max-width:68ch;}
+  ul.notes li{margin-bottom:8px;}
+
+  /* legend chips */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:10px;
+    margin:20px auto 0;max-width:880px;
+  }
+  .chip{
+    display:flex;align-items:center;gap:8px;
+    font-family:var(--mono);font-size:12px;
+    border:1px solid var(--line);border-radius:999px;
+    padding:6px 12px 6px 8px;background:var(--surface);
+  }
+  .chip .sw{width:10px;height:10px;border-radius:3px;}
+  .sw.det{background:var(--lane-det);}
+  .sw.prob{background:var(--lane-prob);}
+  .sw.orch{background:var(--lane-orch);}
+
+  figure.diagram{
+    margin:26px 0 0;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px 18px 14px;
+    box-shadow:var(--shadow);
+    overflow-x:auto;
+  }
+  figure.diagram svg{width:100%;height:auto;display:block;min-width:640px;}
+  figcaption{
+    font-size:.86rem;color:var(--muted);
+    margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);
+  }
+
+  /* svg text/shape helpers via CSS (embedded SVG inherits page stylesheet) */
+  .box{fill:var(--surface);stroke:var(--ink);stroke-width:1.4;}
+  .box.det{stroke:var(--lane-det);}
+  .box.prob{stroke:var(--lane-prob);}
+  .box.orch{stroke:var(--lane-orch);}
+  .box.neutral{stroke:var(--muted);}
+  .box.ext{stroke-dasharray:5 3;}
+  .box.emph{stroke-width:2.4;}
+  .fill-det{fill:var(--lane-det-soft);}
+  .fill-prob{fill:var(--lane-prob-soft);}
+  .fill-orch{fill:var(--lane-orch-soft);}
+  .t-tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;fill:var(--muted);}
+  .t-title{font-family:var(--sans);font-size:14px;font-weight:700;fill:var(--ink);}
+  .t-desc{font-family:var(--sans);font-size:10.6px;fill:var(--muted);}
+  .t-label{font-family:var(--sans);font-size:10.6px;fill:var(--ink);}
+  .t-type{font-family:var(--mono);font-size:12px;font-weight:700;}
+  .type-det{fill:var(--lane-det);}
+  .type-prob{fill:var(--lane-prob);}
+  .type-orch{fill:var(--lane-orch);}
+  .rail{stroke:var(--line);stroke-width:2;}
+  .arrow{fill:none;stroke:var(--muted);stroke-width:1.3;}
+  .boundary{fill:none;stroke:var(--muted);stroke-width:1.2;stroke-dasharray:6 4;}
+  .boundary-label{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;fill:var(--muted);}
+  .divider{stroke:var(--line);stroke-width:1.2;stroke-dasharray:3 3;}
+  .node{stroke-width:2;}
+  .node.det{fill:var(--lane-det);stroke:var(--lane-det);}
+  .node.prob{fill:var(--lane-prob);stroke:var(--lane-prob);}
+  .node.orch{fill:var(--lane-orch);stroke:var(--lane-orch);}
+  .node.neutral{fill:var(--ink);stroke:var(--ink);}
+
+  table.datatab{
+    width:100%;border-collapse:collapse;
+    font-size:.86rem;margin-top:22px;
+    background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden;
+  }
+  table.datatab th, table.datatab td{
+    text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;
+  }
+  table.datatab th{
+    font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;
+    color:var(--muted);background:var(--surface-2);
+  }
+  table.datatab tr:last-child td{border-bottom:none;}
+  .lane-tag{
+    display:inline-block;font-family:var(--mono);font-size:.68rem;text-transform:uppercase;
+    padding:2px 7px;border-radius:4px;letter-spacing:.04em;
+  }
+  .lane-tag.det{background:var(--lane-det-soft);color:var(--lane-det);}
+  .lane-tag.prob{background:var(--lane-prob-soft);color:var(--lane-prob);}
+  .lane-tag.orch{background:var(--lane-orch-soft);color:var(--lane-orch);}
+
+  .filewrap{overflow-x:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin-top:16px;}
+  .filewrap ul{margin:0;padding-left:1.1em;font-family:var(--mono);font-size:.8rem;color:var(--muted);}
+  .filewrap li{margin-bottom:4px;}
+
+  footer{
+    max-width:880px;margin:64px auto 0;padding-top:20px;border-top:1px solid var(--line);
+    color:var(--muted);font-size:.82rem;
+  }
+</style>
+
+<header class="hero">
+  <div class="eyebrow"><span class="dot"></span> architecture map · c4 model <span style="opacity:.6">· revised for ADR-028</span></div>
+  <h1>ProfessorVGC Blueprint</h1>
+  <p class="sub">How the VGC-battle-analysis orchestration is actually wired, at four C4 views (Context, Container, Component, Dynamic), and what shape the data takes at every stage between a pasted replay and the final explanation.</p>
+</header>
+
+<div class="callout">
+  <h2>Is there a tool that does this automatically?</h2>
+  <p>No — not one that is both automatic <em>and</em> precise. Nothing in this environment reverse-engineers a codebase into a trustworthy C4 model, and that isn't a gap specific to this toolchain: C4's whole premise is a <em>chosen</em> abstraction boundary — deciding which box counts as a "Container" versus a "Component" — and static analysis can enumerate imports and classes, but it can't make that editorial call. Diagram generators (Structurizr, C4-PlantUML, arch-as-code, IDE dependency graphs) all still require a human to draw the boxes; at best they render a hand-written model.</p>
+  <p>So this was built the only reliable way: reading <code>src/domain/interfaces.py</code> (the ports), <code>src/services/container.py</code> (the composition root), both <code>AnalysisPipeline</code> implementations, the Node IPC boundary, and every adapter's own docstring — then cross-checked against <code>CLAUDE.md</code> and the ADRs, not copied from either. Written in English per this repo's own language policy (<code>CLAUDE.md</code> §0).</p>
+  <p><strong>This revision adds Fig. 4</strong>, a C4 <em>Dynamic</em> view (the fourth, less-common C4 diagram type — a specific runtime scenario rather than a static structure) for the one thing that changed since the first pass: <code>ADR-028</code> gave the LangChain explanation stage a bounded loop back into the deterministic/probabilistic ports, where before there was none.</p>
+</div>
+
+<div class="legend">
+  <span class="chip"><span class="sw det"></span>deterministic — log &amp; calc, exact</span>
+  <span class="chip"><span class="sw prob"></span>probabilistic — Chaos &amp; Smogon stats</span>
+  <span class="chip"><span class="sw orch"></span>orchestration — the two LLM calls</span>
+</div>
+
+<section id="context">
+  <h2 class="sec"><span class="no">01</span> System context</h2>
+  <p class="sec-desc">Who uses ProfessorVGC, and which outside systems it talks to. Both external data sources are optional-degrading: the app never crashes because one is unreachable.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 900 460" role="img" aria-label="System context diagram: a VGC player sends a replay and question to ProfessorVGC, which in turn calls a BYOK LLM provider, reads local Smogon Chaos files, and optionally fetches official Smogon data.">
+      <defs>
+        <marker id="a-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+
+      <!-- Person -->
+      <rect class="box neutral" x="30" y="190" width="190" height="90" rx="8"/>
+      <text class="t-tag" x="45" y="212">[Person]</text>
+      <text class="t-title" x="45" y="234">VGC Player / Coach</text>
+      <text class="t-desc" x="45" y="254">Pastes a replay,</text>
+      <text class="t-desc" x="45" y="267">asks a question</text>
+
+      <!-- ProfessorVGC -->
+      <rect class="box det emph fill-det" x="330" y="160" width="230" height="140" rx="10"/>
+      <text class="t-tag" x="348" y="188">[Software System — this repo]</text>
+      <text class="t-title" x="348" y="212" style="font-size:17px">ProfessorVGC</text>
+      <text class="t-desc" x="348" y="234">Deterministic calc + Chaos</text>
+      <text class="t-desc" x="348" y="247">stats, explained in natural</text>
+      <text class="t-desc" x="348" y="260">language. Never invents</text>
+      <text class="t-desc" x="348" y="273">what the log didn't say.</text>
+
+      <!-- LLM Provider -->
+      <rect class="box orch fill-orch" x="650" y="30" width="220" height="90" rx="8"/>
+      <text class="t-tag" x="666" y="52">[External · BYOK]</text>
+      <text class="t-title" x="666" y="74">LLM Provider</text>
+      <text class="t-desc" x="666" y="94">OpenAI or Gemini</text>
+
+      <!-- Chaos files -->
+      <rect class="box prob fill-prob" x="650" y="185" width="220" height="90" rx="8"/>
+      <text class="t-tag" x="666" y="207">[External · local files]</text>
+      <text class="t-title" x="666" y="229">Smogon Chaos stats</text>
+      <text class="t-desc" x="666" y="249">data/chaos/*.json</text>
+      <text class="t-desc" x="666" y="262">read-only, tiered by rating</text>
+
+      <!-- Smogon official host -->
+      <rect class="box prob ext fill-prob" x="650" y="340" width="220" height="90" rx="8"/>
+      <text class="t-tag" x="666" y="362">[External · optional]</text>
+      <text class="t-title" x="666" y="384">Smogon official host</text>
+      <text class="t-desc" x="666" y="404">data.pkmn.cc via @pkmn/smogon</text>
+
+      <!-- arrows -->
+      <path class="arrow" d="M220,232 L328,220" marker-end="url(#a-arrow)"/>
+      <text class="t-label" x="222" y="215">pastes replay + asks question</text>
+
+      <path class="arrow" d="M560,205 C600,160 610,110 648,80" marker-end="url(#a-arrow)"/>
+      <text class="t-label" x="562" y="150">sends trusted JSON context,</text>
+      <text class="t-label" x="562" y="163">gets NL explanation</text>
+
+      <path class="arrow" d="M560,230 L648,230" marker-end="url(#a-arrow)"/>
+      <text class="t-label" x="565" y="222">reads tiered usage dumps</text>
+
+      <path class="arrow" d="M560,255 C600,290 610,340 648,375" marker-end="url(#a-arrow)"/>
+      <text class="t-label" x="562" y="320">fetches analyses / sets / stats</text>
+      <text class="t-label" x="562" y="333">(degrades to Chaos if unreachable)</text>
+    </svg>
+    <figcaption>Fig. 1 — System context. ProfessorVGC is the only box the player interacts with directly; both data sources on the right are read-only from the app's point of view, and only the Smogon host requires network at runtime.</figcaption>
+  </figure>
+</section>
+
+<section id="containers" class="full">
+  <h2 class="sec"><span class="no">02</span> Containers</h2>
+  <p class="sec-desc">Inside the ProfessorVGC boundary: one Python process hosting the UI and the application core, plus two long-lived Node.js subprocesses reached over a private stdio JSON protocol (<code>src/adapters/node_ipc.py</code>) — never a network call, never a shared database.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 1000 660" role="img" aria-label="Container diagram: Streamlit UI calls the Python application core, which talks to a Node calc-engine subprocess, an optional Node Smogon-dex subprocess, local Chaos JSON files, an in-process conversation memory, and BYOK LLM provider APIs; the dex subprocess in turn reaches the optional Smogon official host.">
+      <defs>
+        <marker id="b-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+
+      <rect class="boundary" x="20" y="20" width="700" height="580" rx="12"/>
+      <text class="boundary-label" x="36" y="44">ProfessorVGC — this repo</text>
+
+      <!-- UI -->
+      <rect class="box neutral" x="50" y="66" width="270" height="86" rx="8"/>
+      <text class="t-tag" x="66" y="88">[Container · Python / Streamlit]</text>
+      <text class="t-title" x="66" y="110">Streamlit UI</text>
+      <text class="t-desc" x="66" y="130">src/ui/app.py — pure view,</text>
+      <text class="t-desc" x="66" y="143">renders the AnalysisResult DTO</text>
+
+      <!-- Application core -->
+      <rect class="box det emph fill-det" x="50" y="190" width="620" height="106" rx="8"/>
+      <text class="t-tag" x="66" y="212">[Container · Python]</text>
+      <text class="t-title" x="66" y="234">Application Core</text>
+      <text class="t-desc" x="66" y="254">src/domain + src/services + src/adapters</text>
+      <text class="t-desc" x="66" y="267">two interchangeable AnalysisPipeline backends, one DI root</text>
+
+      <!-- Calc engine subprocess -->
+      <rect class="box det fill-det" x="50" y="336" width="290" height="90" rx="8"/>
+      <text class="t-tag" x="66" y="358">[Container · Node.js subprocess]</text>
+      <text class="t-title" x="66" y="380">Calc Engine</text>
+      <text class="t-desc" x="66" y="400">node_calc/calc_server.js</text>
+      <text class="t-desc" x="66" y="413">wraps @smogon/calc</text>
+
+      <!-- Smogon dex subprocess -->
+      <rect class="box prob fill-prob" x="380" y="336" width="290" height="90" rx="8"/>
+      <text class="t-tag" x="396" y="358">[Container · Node.js subprocess, optional]</text>
+      <text class="t-title" x="396" y="380">Smogon Dex Worker</text>
+      <text class="t-desc" x="396" y="400">node_calc/smogon_dex_server.js</text>
+      <text class="t-desc" x="396" y="413">wraps @pkmn/smogon</text>
+
+      <!-- conversation memory -->
+      <rect class="box neutral" x="50" y="456" width="290" height="80" rx="8"/>
+      <text class="t-tag" x="66" y="478">[Container · in-process store]</text>
+      <text class="t-title" x="66" y="500">Conversation Memory</text>
+      <text class="t-desc" x="66" y="520">per-session ChatMessage history</text>
+
+      <!-- External: Chaos files -->
+      <rect class="box prob fill-prob" x="770" y="66" width="210" height="86" rx="8"/>
+      <text class="t-tag" x="786" y="88">[External · filesystem]</text>
+      <text class="t-title" x="786" y="110">Chaos usage files</text>
+      <text class="t-desc" x="786" y="130">data/chaos/*.json</text>
+
+      <!-- External: LLM provider -->
+      <rect class="box orch fill-orch" x="770" y="190" width="210" height="86" rx="8"/>
+      <text class="t-tag" x="786" y="212">[External · BYOK]</text>
+      <text class="t-title" x="786" y="234">LLM Provider APIs</text>
+      <text class="t-desc" x="786" y="254">OpenAI / Gemini</text>
+
+      <!-- External: Smogon host -->
+      <rect class="box prob ext fill-prob" x="770" y="336" width="210" height="90" rx="8"/>
+      <text class="t-tag" x="786" y="358">[External, optional]</text>
+      <text class="t-title" x="786" y="380">Smogon official host</text>
+      <text class="t-desc" x="786" y="400">data.pkmn.cc</text>
+
+      <!-- arrows -->
+      <path class="arrow" d="M185,152 L185,188" marker-end="url(#b-arrow)"/>
+      <text class="t-label" x="192" y="175">analyze(request) → AnalysisResult</text>
+
+      <path class="arrow" d="M220,296 L220,334" marker-end="url(#b-arrow)"/>
+      <text class="t-label" x="228" y="320">stdio JSON: calculate,</text>
+      <text class="t-label" x="228" y="333">compareSpeed, formeResolves</text>
+
+      <path class="arrow" d="M500,296 L500,334" marker-end="url(#b-arrow)"/>
+      <text class="t-label" x="507" y="320">stdio JSON: analyses,</text>
+      <text class="t-label" x="507" y="333">sets, stats</text>
+
+      <path class="arrow" d="M195,296 L195,454" marker-end="url(#b-arrow)"/>
+      <text class="t-label" x="345" y="450">load / append(session_id)</text>
+
+      <path class="arrow" d="M670,220 L768,110" marker-end="url(#b-arrow)"/>
+      <text class="t-label" x="672" y="170">read + parse tiered JSON</text>
+
+      <path class="arrow" d="M670,240 L768,233" marker-end="url(#b-arrow)"/>
+      <text class="t-label" x="672" y="255">BYOK HTTPS: completion + embeddings</text>
+
+      <path class="arrow" d="M670,395 C710,395 730,395 768,390" marker-end="url(#b-arrow)"/>
+      <text class="t-label" x="672" y="440">HTTPS fetch → {ok:false,error}</text>
+      <text class="t-label" x="672" y="453">on failure — never crashes the pipeline</text>
+    </svg>
+    <figcaption>Fig. 2 — Containers. The two Node subprocesses are stateless request/response workers over stdin/stdout (<code>NodeIpcClient</code>, one JSON line in, one JSON line out) — replacing <code>@smogon/calc</code> or adding a Rust backend only touches <code>calcEngine.js</code> and the Python <code>CalcEngineAdapter</code>.</figcaption>
+  </figure>
+</section>
+
+<section id="components" class="full">
+  <h2 class="sec"><span class="no">03</span> Components — inside the Application Core</h2>
+  <p class="sec-desc">The Dependency Inversion in practice: two orchestrators sit behind one <code>AnalysisPipeline</code> port and share the same deterministic middle, while every side effect (parsing, calc, Chaos, Smogon, memory, the LLM itself) is a Protocol in <code>src/domain/interfaces.py</code> — the services never import a concrete adapter. One edge breaks the otherwise strictly one-directional flow: since <code>ADR-028</code>, the LangChain explanation agent can call back into three of these same ports on demand (dashed violet arrows below) — see Fig. 4 for how that loop actually runs.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 1000 660" role="img" aria-label="Component diagram: the composition root wires both AnalysisService and LangChainAnalysisOrchestrator, which both implement AnalysisPipeline and both call a shared deterministic core; below a dependency-inversion boundary sit eight concrete adapters, each implementing exactly one Protocol port.">
+      <defs>
+        <marker id="c-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+        </marker>
+        <marker id="c-arrow-open" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8" fill="none" stroke="var(--muted)" stroke-width="1.4"/>
+        </marker>
+        <marker id="c-arrow-orch" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--lane-orch)"/>
+        </marker>
+      </defs>
+
+      <!-- composition root -->
+      <rect class="box neutral" x="300" y="16" width="400" height="58" rx="8"/>
+      <text class="t-tag" x="316" y="36">[Composition root]</text>
+      <text class="t-title" x="316" y="56">Container — src/services/container.py</text>
+
+      <!-- two orchestrators -->
+      <rect class="box orch fill-orch" x="90" y="112" width="330" height="82" rx="8"/>
+      <text class="t-tag" x="106" y="132">«implements» AnalysisPipeline</text>
+      <text class="t-title" x="106" y="154">AnalysisService</text>
+      <text class="t-desc" x="106" y="174">native, hand-rolled orchestration</text>
+
+      <rect class="box orch fill-orch" x="560" y="112" width="350" height="82" rx="8"/>
+      <text class="t-tag" x="576" y="132">«implements» AnalysisPipeline</text>
+      <text class="t-title" x="576" y="154">LangChainAnalysisOrchestrator</text>
+      <text class="t-desc" x="576" y="174">LCEL: selection_chain / explanation_chain</text>
+
+      <!-- shared deterministic core -->
+      <rect class="box det fill-det emph" x="260" y="228" width="480" height="70" rx="8"/>
+      <text class="t-tag" x="276" y="250">[shared, reused verbatim by both backends]</text>
+      <text class="t-title" x="276" y="272">MatchupEvaluator + TurnReplaySimulator</text>
+
+      <!-- dependency inversion divider -->
+      <line class="divider" x1="30" y1="336" x2="970" y2="336"/>
+      <text class="boundary-label" x="330" y="330">depends only on Protocols below — Dependency Inversion</text>
+
+      <!-- adapter grid row 1 -->
+      <g>
+        <rect class="box neutral" x="30" y="360" width="220" height="76" rx="7"/>
+        <text class="t-tag" x="42" y="380">«port» LogParser</text>
+        <text class="t-title" x="42" y="400" style="font-size:12.5px">ShowdownReplayParser</text>
+        <text class="t-desc" x="42" y="418">log → GameState, single linear pass</text>
+      </g>
+      <g>
+        <rect class="box prob fill-prob" x="270" y="360" width="220" height="76" rx="7"/>
+        <text class="t-tag" x="282" y="380">«port» MetaStatsProvider</text>
+        <text class="t-title" x="282" y="400" style="font-size:12.5px">ChaosAdapter</text>
+        <text class="t-desc" x="282" y="418">rating tiers + reg. fallback</text>
+      </g>
+      <g>
+        <rect class="box det fill-det" x="510" y="360" width="220" height="76" rx="7"/>
+        <text class="t-tag" x="522" y="380">«port» CalcEngineAdapter</text>
+        <text class="t-title" x="522" y="400" style="font-size:12.5px">SmogonCalcAdapter</text>
+        <text class="t-desc" x="522" y="418">→ Node IPC (calc_server.js)</text>
+      </g>
+      <g>
+        <rect class="box neutral" x="750" y="360" width="220" height="76" rx="7"/>
+        <text class="t-tag" x="762" y="380">«port» ConversationMemory</text>
+        <text class="t-title" x="762" y="400" style="font-size:12.5px">InMemoryConversationMemory</text>
+        <text class="t-desc" x="762" y="418">per session_id, process lifetime</text>
+      </g>
+
+      <!-- adapter grid row 2 -->
+      <g>
+        <rect class="box orch fill-orch" x="30" y="452" width="220" height="82" rx="7"/>
+        <text class="t-tag" x="42" y="472">«port» SelectionStrategy — 1st AI</text>
+        <text class="t-title" x="42" y="492" style="font-size:12.5px">LLMSelectionService / LCEL chain</text>
+        <text class="t-desc" x="42" y="510">JSON-mode plan; cross-side guardrail</text>
+      </g>
+      <g>
+        <rect class="box prob fill-prob" x="270" y="452" width="220" height="82" rx="7"/>
+        <text class="t-tag" x="282" y="472">«port» StrategyKnowledgeProvider</text>
+        <text class="t-title" x="282" y="492" style="font-size:12.5px">CompositeStrategyProvider</text>
+        <text class="t-desc" x="282" y="510">official Smogon → Chaos fallback</text>
+      </g>
+      <g>
+        <rect class="box orch fill-orch" x="510" y="452" width="220" height="82" rx="7"/>
+        <text class="t-tag" x="522" y="472">«port» LLMProvider — 2nd AI</text>
+        <text class="t-title" x="522" y="492" style="font-size:12.5px">OpenAIProvider / GeminiProvider</text>
+        <text class="t-desc" x="522" y="510">native 1-shot · LangChain agent loop</text>
+      </g>
+      <g>
+        <rect class="box orch ext fill-orch" x="750" y="452" width="220" height="82" rx="7"/>
+        <text class="t-tag" x="762" y="472">«port» EmbeddingProvider — optional</text>
+        <text class="t-title" x="762" y="492" style="font-size:12.5px">SemanticStrategyRetriever</text>
+        <text class="t-desc" x="762" y="510">ranks analysis passages by question</text>
+      </g>
+
+      <!-- ticks from adapters to divider -->
+      <path class="arrow" d="M140,358 L140,338" marker-end="url(#c-arrow-open)"/>
+      <path class="arrow" d="M380,358 L380,338" marker-end="url(#c-arrow-open)"/>
+      <path class="arrow" d="M620,358 L620,338" marker-end="url(#c-arrow-open)"/>
+      <path class="arrow" d="M860,358 L860,338" marker-end="url(#c-arrow-open)"/>
+      <path class="arrow" d="M140,450 L140,338" marker-end="url(#c-arrow-open)"/>
+      <path class="arrow" d="M380,450 L380,338" marker-end="url(#c-arrow-open)"/>
+      <path class="arrow" d="M620,450 L620,338" marker-end="url(#c-arrow-open)"/>
+      <path class="arrow" d="M860,450 L860,338" marker-end="url(#c-arrow-open)"/>
+
+      <!-- root wires orchestrators -->
+      <path class="arrow" d="M400,74 L280,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+      <path class="arrow" d="M600,74 L720,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+      <text class="t-label" x="410" y="98">wires</text>
+
+      <!-- orchestrators call shared core -->
+      <path class="arrow" d="M280,196 L400,226" marker-end="url(#c-arrow)"/>
+      <path class="arrow" d="M720,196 L610,226" marker-end="url(#c-arrow)"/>
+
+      <!-- ADR-028: LangChain explanation agent may call back into three ports
+           on demand — the one edge that is NOT dependency inversion, drawn
+           dashed + violet + arrowed both ways to read as "new, conditional,
+           bounded" rather than "always happens" like the solid arrows above. -->
+      <path class="arrow" style="stroke:var(--lane-orch);stroke-dasharray:5 3" d="M615,452 L615,438" marker-end="url(#c-arrow-orch)"/>
+      <path class="arrow" style="stroke:var(--lane-orch);stroke-dasharray:5 3" d="M508,480 L492,480" marker-end="url(#c-arrow-orch)"/>
+      <path class="arrow" style="stroke:var(--lane-orch);stroke-dasharray:5 3" d="M510,464 C460,440 420,410 400,438" marker-end="url(#c-arrow-orch)"/>
+    </svg>
+    <figcaption>Fig. 3 — Components. Both orchestrators reuse the same <code>MatchupEvaluator</code>/<code>TurnReplaySimulator</code> instances, so "switching orchestration never changes a damage roll" (<code>CLAUDE.md</code> §3) is structural, not a promise. Ticks below the dashed line mark "implements this port" — no adapter is ever imported by a service directly. The three short dashed violet arrows are the one exception (ADR-028): the LangChain explanation agent, and only it, may call back into <code>CalcEngineAdapter</code>/<code>MetaStatsProvider</code>/<code>StrategyKnowledgeProvider</code> mid-answer — see Fig. 4.</figcaption>
+  </figure>
+</section>
+
+<section id="dynamic" class="full">
+  <h2 class="sec"><span class="no">04</span> Dynamic view — the one loop (ADR-028)</h2>
+  <p class="sec-desc">A C4 <em>Dynamic</em> diagram: not a structure, a specific runtime scenario. Every other diagram on this page is a DAG — data flows one way, ending at the explanation. This is the one place a response loops back into its own inputs, so it earns its own picture rather than a note on Fig. 3. LangChain backend only; the native <code>AnalysisService</code> has no equivalent.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 900 660" role="img" aria-label="Dynamic diagram: the LangChain explanation agent may call a tool, which calls the same CalcEngineAdapter, MetaStatsProvider or StrategyKnowledgeProvider ports as the rest of the pipeline, gets back an ok-or-error result, and loops — bounded to 10 steps — before emitting a final answer and a list of AgentToolInvocation records that reach AnalysisResult and a UI alert.">
+      <defs>
+        <marker id="e-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+        </marker>
+        <marker id="e-arrow-orch" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--lane-orch)"/>
+        </marker>
+      </defs>
+
+      <!-- 1. Explanation Agent -->
+      <rect class="box orch emph fill-orch" x="200" y="20" width="440" height="64" rx="8"/>
+      <text class="t-tag" x="216" y="42">[LangChain only]</text>
+      <text class="t-title" x="216" y="62">Explanation Agent (create_agent)</text>
+      <text class="t-desc" x="216" y="78">bounded to 10 LangGraph steps (~a few tool round-trips)</text>
+
+      <!-- loop pair 1: agent <-> tool layer -->
+      <path class="arrow" style="stroke:var(--lane-orch)" d="M400,88 L400,146" marker-end="url(#e-arrow-orch)"/>
+      <path class="arrow" style="stroke:var(--lane-orch)" d="M460,146 L460,88" marker-end="url(#e-arrow-orch)"/>
+      <text class="t-label" x="480" y="112">may call a tool — only for what the</text>
+      <text class="t-label" x="480" y="125">precomputed context doesn't cover</text>
+      <text class="t-label" x="480" y="140">(never to re-check a number already given)</text>
+
+      <!-- 2. Tool layer -->
+      <rect class="box orch fill-orch" x="220" y="150" width="400" height="60" rx="8"/>
+      <text class="t-tag" x="236" y="170">[langchain_tools.py]</text>
+      <text class="t-title" x="236" y="190" style="font-size:12.5px">damage_calc · chaos_meta_stats · smogon_strategy</text>
+
+      <!-- loop pair 2: tool layer <-> ports -->
+      <path class="arrow" style="stroke:var(--lane-orch)" d="M400,218 L400,266" marker-end="url(#e-arrow-orch)"/>
+      <path class="arrow" style="stroke:var(--lane-orch)" d="M460,266 L460,218" marker-end="url(#e-arrow-orch)"/>
+      <text class="t-label" x="480" y="234">calls</text>
+      <text class="t-label" x="480" y="248">returns {"ok":true,...} or</text>
+      <text class="t-label" x="480" y="261">{"ok":false,"error":...} — never raises</text>
+
+      <!-- 3. Same ports as Fig. 3 -->
+      <rect class="box neutral" x="140" y="270" width="620" height="64" rx="8"/>
+      <text class="t-tag" x="156" y="292">[same instances as Fig. 3]</text>
+      <text class="t-title" x="156" y="312" style="font-size:12.5px">CalcEngineAdapter · MetaStatsProvider · StrategyKnowledgeProvider</text>
+      <text class="t-desc" x="620" y="292" style="font-size:9.5px">det + prob</text>
+
+      <text class="t-desc" x="450" y="356" style="text-anchor:middle">→ the SAME Calc Engine subprocess / Chaos files / Smogon Dex Worker as Fig. 2 — no second source of truth</text>
+
+      <!-- exit path: once satisfied, final answer -->
+      <path class="arrow" d="M640,52 L850,52 L850,405" marker-end="url(#e-arrow)"/>
+      <text class="t-label" x="655" y="98">once satisfied —</text>
+      <text class="t-label" x="655" y="111">stop looping,</text>
+      <text class="t-label" x="655" y="124">emit final answer</text>
+
+      <!-- 4. results -->
+      <rect class="box orch fill-orch" x="120" y="410" width="260" height="60" rx="8"/>
+      <text class="t-tag" x="136" y="432">stage 9 output</text>
+      <text class="t-title" x="136" y="452" style="font-size:12.5px">answer: str</text>
+
+      <rect class="box neutral" x="410" y="410" width="380" height="60" rx="8"/>
+      <text class="t-tag" x="426" y="432">_extract_tool_invocations(messages)</text>
+      <text class="t-title" x="426" y="452" style="font-size:12.5px">list[AgentToolInvocation]</text>
+
+      <path class="arrow" d="M250,470 L280,506" marker-end="url(#e-arrow)"/>
+      <path class="arrow" d="M600,470 L520,506" marker-end="url(#e-arrow)"/>
+
+      <!-- 5. AnalysisResult -->
+      <rect class="box neutral emph" x="220" y="510" width="460" height="50" rx="8"/>
+      <text class="t-title" x="236" y="540" style="font-size:13px">AnalysisResult.agent_tool_calls</text>
+
+      <path class="arrow" d="M450,560 L450,596" marker-end="url(#e-arrow)"/>
+
+      <!-- 6. UI alert -->
+      <rect class="box det fill-det" x="180" y="600" width="540" height="50" rx="8"/>
+      <text class="t-title" x="196" y="630" style="font-size:13px">UI: st.info / st.warning + expander (app.py)</text>
+    </svg>
+    <figcaption>Fig. 4 — Dynamic: the ADR-028 loop, scoped to one explanation turn on the LangChain backend. The tool layer never becomes a second source of truth — every result traces back to the exact same ports Fig. 3 already shows, just called on demand instead of ahead of time. If <code>agent_tool_calls</code> is empty (the overwhelmingly common case), stages 2–3 never fire and the turn looks exactly like it did before ADR-028.</figcaption>
+  </figure>
+</section>
+
+<section id="dataflow" class="full">
+  <h2 class="sec"><span class="no">05</span> Data flow — what each stage produces</h2>
+  <p class="sec-desc">One <code>AnalysisPipeline.analyze()</code> call, traced through both backends (<code>src/services/analysis_service.py</code>, <code>langchain_orchestrator.py</code>). Every arrow is a concrete Pydantic type, not a hand-wave — this is the literal sequence CLAUDE.md §7 describes, annotated with what actually flows.</p>
+
+  <figure class="diagram">
+    <svg viewBox="0 0 940 1090" role="img" aria-label="Vertical pipeline diagram: an AnalysisRequest is parsed into a GameState, then a SelectionPlan, MetaContext, MatchupVerdict list, TurnCheck and ProtectRead lists, SmogonStrategy list, and an optional improvement dict are produced in sequence and assembled into one JSON context handed to the explanation agent, which may loop per Fig. 4 before its answer plus everything else is returned as an AnalysisResult.">
+      <defs>
+        <marker id="d-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
+        </marker>
+      </defs>
+
+      <line class="rail" x1="40" y1="40" x2="40" y2="960"/>
+
+      <!-- stage 0: input -->
+      <circle class="node neutral" cx="40" cy="50" r="7"/>
+      <text class="t-tag" x="64" y="40">input</text>
+      <text class="t-title" x="64" y="60" style="font-size:13px">AnalysisRequest + memory.load(session_id)</text>
+      <text class="t-desc" x="64" y="78">replay_json | replay_raw_text, question, provider, prior ChatMessage history</text>
+
+      <!-- stage 1 -->
+      <circle class="node det" cx="40" cy="150" r="7"/>
+      <path class="arrow" d="M40,58 L40,143" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="140">ShowdownReplayParser.parse() — one linear pass over the log</text>
+      <text class="t-type type-det" x="64" y="160">GameState</text>
+      <text class="t-desc" x="220" y="160">rosters via side.brought(), ordered BattleEvent timeline, FieldConditions, BattleOutcome, rating</text>
+
+      <!-- stage 2 -->
+      <circle class="node orch" cx="40" cy="250" r="7"/>
+      <path class="arrow" d="M40,158 L40,243" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="240">SelectionStrategy.select() — 1st AI, memory-aware</text>
+      <text class="t-type type-orch" x="64" y="260">SelectionPlan</text>
+      <text class="t-desc" x="220" y="260">focus_species + matchups; sanitize_plan() enforces the cross-side-only guardrail</text>
+
+      <!-- stage 3 -->
+      <circle class="node prob" cx="40" cy="350" r="7"/>
+      <path class="arrow" d="M40,258 L40,343" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="330">context_species() (both sides, all in-play) → MetaStatsProvider.build_match_context()</text>
+      <text class="t-type type-prob" x="64" y="360">MetaContext</text>
+      <text class="t-desc" x="220" y="360">ideal tier + current-elo bracket per species, regulation-fallback tagged in source</text>
+
+      <!-- stage 4 -->
+      <circle class="node det" cx="40" cy="450" r="7"/>
+      <path class="arrow" d="M40,358 L40,443" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="440">MatchupEvaluator.evaluate(game_state, selection, meta_context)</text>
+      <text class="t-type type-det" x="64" y="460">list[MatchupVerdict]</text>
+      <text class="t-desc" x="220" y="460">field-aware damage + speed ("moves first"), stat_caveat when a forme is unresolved</text>
+
+      <!-- stage 5 -->
+      <circle class="node det" cx="40" cy="550" r="7"/>
+      <path class="arrow" d="M40,458 L40,543" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="532">TurnReplaySimulator.simulate() then build_protect_reads(turn_checks, game_state)</text>
+      <text class="t-type type-det" x="64" y="552">list[TurnCheck], list[ProtectRead]</text>
+      <text class="t-desc" x="220" y="552">per-turn projected-vs-actual, best_alternatives (top 4, KO-ranked), Protect read/misallocated flags</text>
+
+      <!-- stage 6 -->
+      <circle class="node prob" cx="40" cy="650" r="7"/>
+      <path class="arrow" d="M40,558 L40,643" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="640">collect_strategies() → StrategyKnowledgeProvider.get_strategy() per species</text>
+      <text class="t-type type-prob" x="64" y="660">list[SmogonStrategy]</text>
+      <text class="t-desc" x="220" y="660">official Smogon analyses → Chaos fallback; optionally semantic-ranked against the question</text>
+
+      <!-- stage 7 -->
+      <circle class="node prob" cx="40" cy="750" r="7"/>
+      <path class="arrow" d="M40,658 L40,743" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="740">wants_suggestions(question) ? build_improvement_context(...) : None — optional branch</text>
+      <text class="t-type type-prob" x="64" y="760">dict | None</text>
+      <text class="t-desc" x="220" y="760">official sets + usage stats, synergy against the current team</text>
+
+      <!-- stage 8: assembly -->
+      <rect class="box neutral fill-det" x="64" y="800" width="820" height="76" rx="8" style="fill:var(--surface-2)"/>
+      <text class="t-tag" x="80" y="822">build_explanation_context() — one trusted JSON payload</text>
+      <text class="t-desc" x="80" y="842">battle_result, turn_by_turn_checks, protect_reads, meta_context, deterministic_verdicts, strategies (no retrieval_note), improvement_suggestions, selection_rationale</text>
+      <text class="t-desc" x="80" y="862">— nothing else reaches the model; retrieval_note is excluded so the LLM never narrates its own plumbing</text>
+      <path class="arrow" d="M40,758 L40,800" marker-end="url(#d-arrow)"/>
+      <path class="arrow" d="M40,800 L64,800" marker-end="url(#d-arrow)"/>
+
+      <!-- stage 9 -->
+      <circle class="node orch" cx="40" cy="920" r="7"/>
+      <path class="arrow" d="M40,876 L40,913" marker-end="url(#d-arrow)"/>
+      <text class="t-desc" x="64" y="910">LLMProvider.complete() / explanation_agent.invoke() — 2nd AI, ground-truth-locked prompt</text>
+      <text class="t-type type-orch" x="64" y="930">answer: str</text>
+      <text class="t-desc" x="220" y="930">forbidden from recomputing or contradicting any number in the JSON above</text>
+      <text class="t-desc" x="64" y="948" style="fill:var(--lane-orch)">LangChain only: may loop back into damage_calc/chaos_meta_stats/smogon_strategy first — see Fig. 4</text>
+
+      <!-- final output -->
+      <rect class="box det emph fill-det" x="64" y="970" width="820" height="80" rx="8"/>
+      <text class="t-tag" x="80" y="992">output → Streamlit UI</text>
+      <text class="t-title" x="80" y="1012" style="font-size:13px">AnalysisResult</text>
+      <text class="t-desc" x="80" y="1030">answer + selection + meta_context + verdicts + strategies + turn_checks + protect_reads + battle_result + provider</text>
+      <text class="t-desc" x="80" y="1043" style="fill:var(--lane-orch)">+ agent_tool_calls: list[AgentToolInvocation] — empty except on the LangChain path (Fig. 4)</text>
+      <path class="arrow" d="M40,927 L40,970" marker-end="url(#d-arrow)"/>
+      <path class="arrow" d="M40,970 L64,970" marker-end="url(#d-arrow)"/>
+    </svg>
+    <figcaption>Fig. 5 — Data flow. Colour marks who is authoritative at that stage: teal steps never touch an LLM; amber steps are usage-frequency evidence, not certainty; violet steps are the only points a model generates text or acts — and stage 9 is fenced to only ever narrate (or, on the LangChain path, additionally fetch per Fig. 4) stages 1–8, never invent past them.</figcaption>
+  </figure>
+
+  <table class="datatab">
+    <thead>
+      <tr><th>Stage</th><th>Component</th><th>Produces</th><th>Lane</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1 · Parse</td><td><code>ShowdownReplayParser</code></td><td><code>GameState</code></td><td><span class="lane-tag det">deterministic</span></td></tr>
+      <tr><td>2 · Select (1st AI)</td><td><code>SelectionStrategy</code></td><td><code>SelectionPlan</code></td><td><span class="lane-tag orch">orchestration</span></td></tr>
+      <tr><td>3 · Meta context</td><td><code>MetaStatsProvider</code></td><td><code>MetaContext</code></td><td><span class="lane-tag prob">probabilistic</span></td></tr>
+      <tr><td>4 · Matchups</td><td><code>MatchupEvaluator</code></td><td><code>list[MatchupVerdict]</code></td><td><span class="lane-tag det">deterministic</span></td></tr>
+      <tr><td>5 · Per-turn replay</td><td><code>TurnReplaySimulator</code></td><td><code>list[TurnCheck]</code>, <code>list[ProtectRead]</code></td><td><span class="lane-tag det">deterministic</span></td></tr>
+      <tr><td>6 · Strategy prose</td><td><code>StrategyKnowledgeProvider</code></td><td><code>list[SmogonStrategy]</code></td><td><span class="lane-tag prob">probabilistic</span></td></tr>
+      <tr><td>7 · Suggestions (optional)</td><td><code>SuggestionService</code></td><td><code>dict | None</code></td><td><span class="lane-tag prob">probabilistic</span></td></tr>
+      <tr><td>8 · Assemble context</td><td><code>build_explanation_context</code></td><td>one JSON <code>dict</code></td><td>—</td></tr>
+      <tr><td>9 · Explain (2nd AI)</td><td><code>LLMProvider</code></td><td><code>answer: str</code></td><td><span class="lane-tag orch">orchestration</span></td></tr>
+      <tr><td>9b · On-demand follow-up (optional, LangChain only)</td><td><code>build_langchain_tools</code> → same 3 ports</td><td><code>list[AgentToolInvocation]</code></td><td><span class="lane-tag orch">orchestration</span></td></tr>
+      <tr><td>10 · Return + persist</td><td><code>AnalysisService</code> / orchestrator</td><td><code>AnalysisResult</code> (+ <code>agent_tool_calls</code>) + 2 <code>ChatMessage</code>s appended to memory</td><td>—</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="invariants">
+  <h2 class="sec"><span class="no">06</span> What keeps the model honest</h2>
+  <p class="sec-desc">Structural guardrails found in the code, not just stated in prose — the ones that make this architecture, specifically, hard to make hallucinate.</p>
+  <ul class="notes">
+    <li><strong>Every Node call degrades, never crashes.</strong> <code>NodeIpcClient</code> and both <code>*_server.js</code> scripts speak one JSON line in, one JSON line out; a failed lookup returns <code>{ok:false,error}</code> and the Python side falls back (official Smogon → Chaos), rather than raising past the boundary.</li>
+    <li><strong>The cross-side guardrail lives in code, not the prompt.</strong> <code>selection_logic.sanitize_plan()</code> physically cannot pair two Pokémon from the same roster — it isn't a rule the 1st AI is asked to follow.</li>
+    <li><strong>The LLM receives one JSON object first, always.</strong> <code>build_explanation_context()</code> is still the entire precomputed ground truth handed to stage 9 before anything else — tool access (Fig. 4) only reaches for what that object doesn't contain, and is forbidden by its own prompt addendum from re-deriving a number already in it.</li>
+    <li><strong>The one loop degrades exactly like the IPC boundary does.</strong> <code>langchain_tools.py</code> wraps every on-demand call in the same <code>{"ok": false, "error": ...}</code> shape as <code>NodeIpcClient</code> — a bad follow-up lookup ends that tool call, never the whole turn — and it is explicitly bounded (<code>recursion_limit</code>), not open-ended.</li>
+    <li><strong>Two orchestrators, one ground truth — one documented asymmetry.</strong> <code>AnalysisService</code> and <code>LangChainAnalysisOrchestrator</code> both import the same <code>MatchupEvaluator</code>/<code>TurnReplaySimulator</code> instances, so every number either backend reports is identical. Only the LangChain backend can also fetch a NEW number on demand (ADR-028) — same shape of accepted asymmetry as ADR-011's unused <code>LangChainLLMProvider</code>.</li>
+    <li><strong>A stale "this is approximate" caveat is treated as a bug.</strong> <code>forme_caveat()</code> live-checks <code>forme_resolves()</code> against the real calc engine on each run instead of hardcoding a permanent disclaimer — see ADR-009/ADR-010.</li>
+  </ul>
+</section>
+
+<footer>
+  <p>Built directly from source, not from CLAUDE.md/ADR prose alone.</p>
+  <div class="filewrap">
+    <ul>
+      <li>src/domain/interfaces.py — the eight Protocol ports</li>
+      <li>src/domain/models.py — GameState, SelectionPlan, MetaContext, MatchupVerdict, TurnCheck, ProtectRead, SmogonStrategy, AgentToolInvocation, AnalysisResult</li>
+      <li>src/services/container.py — composition root / DI wiring</li>
+      <li>src/services/analysis_service.py, langchain_orchestrator.py — the two AnalysisPipeline backends</li>
+      <li>src/adapters/llm/langchain_tools.py, prompts/explanation_agent_addendum.txt — the ADR-028 tool layer (Fig. 4)</li>
+      <li>src/adapters/node_ipc.py, node_calc/src/calcEngine.js — the stdio IPC boundary</li>
+      <li>CLAUDE.md §3, §7 · ADR.md (ADR-001 … ADR-028) — architectural rationale, cross-checked against the above</li>
+    </ul>
+  </div>
+</footer>

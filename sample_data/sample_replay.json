@@ -1,0 +1,40 @@
+{
+  "format": "gen9championsvgc2026regmb",
+  "turn": 3,
+  "sides": [
+    {
+      "player": "p1",
+      "active": ["Garchomp"],
+      "team": [
+        {
+          "species": "Garchomp", "level": 50, "ability": "Rough Skin", "item": "Life Orb",
+          "nature": "Jolly", "tera_type": "Steel",
+          "moves": ["Earthquake", "Dragon Claw", "Rock Slide", "Protect"],
+          "evs": { "hp": 4, "atk": 252, "spe": 252 }
+        },
+        {
+          "species": "Incineroar", "level": 50, "ability": "Intimidate", "item": "Sitrus Berry",
+          "nature": "Careful",
+          "moves": ["Fake Out", "Knock Off", "Parting Shot", "Flare Blitz"]
+        }
+      ]
+    },
+    {
+      "player": "p2",
+      "active": ["Sinistcha"],
+      "team": [
+        {
+          "species": "Sinistcha", "level": 50, "ability": "Hospitality", "item": "Sitrus Berry",
+          "nature": "Bold",
+          "moves": ["Matcha Gotcha", "Rage Powder", "Trick Room", "Life Dew"],
+          "evs": { "hp": 252, "def": 252, "spa": 4 }
+        },
+        {
+          "species": "Flutter Mane", "level": 50, "ability": "Protosynthesis",
+          "item": "Booster Energy", "nature": "Timid",
+          "moves": ["Moonblast", "Shadow Ball", "Icy Wind", "Protect"]
+        }
+      ]
+    }
+  ]
+}

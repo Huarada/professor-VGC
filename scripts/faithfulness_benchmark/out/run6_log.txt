@@ -1,0 +1,58 @@
+=== bench_only (bench_only) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (A)
+  A (grounded):  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  [judge] dropped 1 forfeit claim(s) with no actual forfeit wording (prompt-compliance guard)
+  B (naive):     8 claims, strict=0.625, lenient=0.625
+=== mega_evolution (mega_evolution) ===
+  A (grounded):  8 claims, strict=0.75, lenient=0.75
+  B (naive):     6 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+=== stat_stage_intimidate (stat_stage) ===
+  A (grounded):  10 claims, strict=0.8, lenient=0.8888888888888888
+  B (naive):     7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+=== protect_spread (protect_read) ===
+  A (grounded):  5 claims, strict=0.8, lenient=0.8
+  B (naive):     7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+=== forfeit (forfeit) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (A)
+  A (grounded):  6 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+  B (naive):     5 claims, strict=0.8, lenient=0.8
+=== protect_genuine_read (protect_read) ===
+  A (grounded):  3 claims, strict=1.0, lenient=1.0
+  B (naive):     10 claims, strict=0.8, lenient=0.8
+=== protect_misallocated (protect_read) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (A)
+  A (grounded):  6 claims, strict=1.0, lenient=1.0
+  B (naive):     9 claims, strict=0.7777777777777778, lenient=0.7777777777777778
+=== mirror_match_protect (protect_read, mirror_match) ===
+  A (grounded):  7 claims, strict=1.0, lenient=1.0
+  B (naive):     7 claims, strict=0.7142857142857143, lenient=0.7142857142857143
+=== normal_clean (control) ===
+  [filter] dropped 3 non-damage-dealt percent claim(s) (A)
+  A (grounded):  13 claims, strict=0.8461538461538461, lenient=0.8461538461538461
+  B (naive):     16 claims, strict=0.75, lenient=0.75
+=== bench_plus_mega (bench_only, mega_evolution) ===
+  [filter] dropped 2 non-damage-dealt percent claim(s) (A)
+  A (grounded):  10 claims, strict=1.0, lenient=1.0
+  B (naive):     13 claims, strict=0.7692307692307693, lenient=0.7692307692307693
+
+=== SUMMARY ===
+{
+  "condition_a_grounded": {
+    "total_claims": 75,
+    "correct": 66,
+    "incorrect": 8,
+    "unverifiable": 1,
+    "strict_faithfulness_rate": 0.88,
+    "lenient_faithfulness_rate": 0.8918918918918919
+  },
+  "condition_b_naive": {
+    "total_claims": 88,
+    "correct": 68,
+    "incorrect": 20,
+    "unverifiable": 0,
+    "strict_faithfulness_rate": 0.7727272727272727,
+    "lenient_faithfulness_rate": 0.7727272727272727
+  }
+}
+
+Full report written to scripts\faithfulness_benchmark\out\run6.json

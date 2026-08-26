@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+node_calc/node_modules/
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+*.bundle
+CLAUDE.md

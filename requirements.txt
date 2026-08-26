@@ -1,0 +1,24 @@
+# Core contracts / validation
+pydantic>=2.6,<3
+pydantic-settings>=2.2,<3
+
+# Presentation
+streamlit>=1.33
+requests>=2.31
+
+# Orchestration
+langchain>=1.0
+langchain-core>=1.0
+
+# LLM providers (bring-your-own-key; optional at runtime)
+langchain-openai>=0.2
+langchain-google-genai>=2.0
+openai>=1.30
+google-generativeai>=0.7
+
+# Dev / test
+pytest>=8.0
+mypy>=1.9
+
+# Benchmark tooling (scripts/faithfulness_benchmark — not shipped in src/)
+scipy>=1.11

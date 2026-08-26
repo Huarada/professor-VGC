@@ -1,0 +1,107 @@
+{
+  "info": {
+    "metagame": "gen9championsvgc2026regmb",
+    "cutoff": 0.0,
+    "number of battles": 12000
+  },
+  "data": {
+    "Torkoal": {
+      "Raw count": 800,
+      "Abilities": { "Drought": 792, "White Smoke": 8 },
+      "Items": { "Charcoal": 300, "Sitrus Berry": 210, "Heat Rock": 180 },
+      "Moves": { "Eruption": 780, "Heat Wave": 620, "Protect": 540, "Weather Ball": 310, "Body Press": 120 },
+      "Spreads": { "Quiet:32/0/8/32/0/0": 240, "Bold:32/0/32/2/0/0": 150 },
+      "Teammates": { "Venusaur": 260, "Lilligant-Hisui": 190, "Flutter Mane": 120, "Farigiraf": 90 },
+      "Checks and Counters": {
+        "Aerodactyl": { "p": 0.71, "koed": 0.44, "switched": 0.20 },
+        "Rotom-Wash": { "p": 0.60, "koed": 0.30, "switched": 0.28 },
+        "Gastrodon": { "p": 0.55, "koed": 0.22, "switched": 0.30 }
+      }
+    },
+    "Venusaur": {
+      "Raw count": 700,
+      "Abilities": { "Chlorophyll": 660, "Overgrow": 40 },
+      "Items": { "Life Orb": 300, "Focus Sash": 210, "Sitrus Berry": 120 },
+      "Moves": { "Earth Power": 610, "Sludge Bomb": 560, "Protect": 520, "Sleep Powder": 480, "Leaf Storm": 300 },
+      "Spreads": { "Modest:4/0/0/32/0/28": 220, "Timid:0/0/4/32/4/28": 160 },
+      "Teammates": { "Torkoal": 260, "Flutter Mane": 140, "Incineroar": 110 },
+      "Checks and Counters": {
+        "Aerodactyl": { "p": 0.66, "koed": 0.33, "switched": 0.26 },
+        "Metagross-Mega": { "p": 0.58, "koed": 0.29, "switched": 0.24 },
+        "Gholdengo": { "p": 0.57, "koed": 0.27, "switched": 0.25 }
+      }
+    },
+    "Aerodactyl": {
+      "Raw count": 640,
+      "Abilities": { "Rock Head": 360, "Unnerve": 180, "Pressure": 100 },
+      "Items": { "Focus Sash": 320, "Life Orb": 150, "Choice Band": 90 },
+      "Moves": { "Rock Slide": 620, "Dual Wingbeat": 470, "Tailwind": 430, "Protect": 300, "Wide Guard": 150 },
+      "Spreads": { "Jolly:0/32/0/0/0/32": 300, "Adamant:0/32/0/0/0/32": 140 },
+      "Teammates": { "Metagross": 150, "Typhlosion-Hisui": 120, "Grimmsnarl": 90 },
+      "Checks and Counters": {
+        "Iron Hands": { "p": 0.62, "koed": 0.31, "switched": 0.24 },
+        "Rotom-Wash": { "p": 0.55, "koed": 0.20, "switched": 0.30 }
+      }
+    },
+    "Metagross": {
+      "Raw count": 500,
+      "Abilities": { "Clear Body": 490, "Light Metal": 10 },
+      "Items": { "Metagrossite": 470, "Assault Vest": 20 },
+      "Moves": { "Psychic Fangs": 470, "Bullet Punch": 430, "Iron Head": 300, "Protect": 260, "Ice Punch": 150 },
+      "Spreads": { "Adamant:12/32/0/0/0/28": 200, "Jolly:0/32/0/0/4/32": 120 },
+      "Teammates": { "Aerodactyl": 150, "Grimmsnarl": 110 },
+      "Checks and Counters": {
+        "Volcarona": { "p": 0.59, "koed": 0.28, "switched": 0.25 },
+        "Great Tusk": { "p": 0.56, "koed": 0.24, "switched": 0.28 }
+      }
+    },
+    "Farigiraf": {
+      "Raw count": 420,
+      "Abilities": { "Armor Tail": 400, "Cud Chew": 20 },
+      "Items": { "Sitrus Berry": 210, "Electric Seed": 90, "Safety Goggles": 60 },
+      "Moves": { "Psychic": 360, "Trick Room": 300, "Foul Play": 240, "Protect": 220, "Helping Hand": 150 },
+      "Spreads": { "Sassy:252/0/4/0/252/0": 180, "Relaxed:252/0/252/0/4/0": 120 },
+      "Teammates": { "Torkoal": 90, "Ursaluna": 80 },
+      "Checks and Counters": {
+        "Aerodactyl": { "p": 0.58, "koed": 0.26, "switched": 0.27 },
+        "Kingambit": { "p": 0.55, "koed": 0.23, "switched": 0.28 }
+      }
+    },
+    "Typhlosion-Hisui": {
+      "Raw count": 300,
+      "Abilities": { "Frisk": 150, "Flash Fire": 130, "Blaze": 20 },
+      "Items": { "Choice Specs": 140, "Focus Sash": 90, "Life Orb": 50 },
+      "Moves": { "Eruption": 280, "Infernal Parade": 220, "Shadow Ball": 190, "Protect": 120 },
+      "Spreads": { "Timid:4/0/0/252/0/252": 160, "Modest:4/0/0/252/0/252": 100 },
+      "Teammates": { "Aerodactyl": 120, "Grimmsnarl": 70 },
+      "Checks and Counters": {
+        "Aerodactyl": { "p": 0.60, "koed": 0.30, "switched": 0.24 },
+        "Gastrodon": { "p": 0.57, "koed": 0.22, "switched": 0.30 }
+      }
+    },
+    "Sinistcha": {
+      "Raw count": 1000,
+      "Abilities": { "Hospitality": 993, "Heatproof": 6 },
+      "Items": { "Sitrus Berry": 328, "Kasib Berry": 218, "Leftovers": 130 },
+      "Moves": { "Matcha Gotcha": 983, "Rage Powder": 929, "Trick Room": 564, "Life Dew": 521 },
+      "Spreads": { "Bold:32/0/32/2/0/0": 240, "Relaxed:32/0/32/2/0/0": 180 },
+      "Teammates": { "Garchomp": 210, "Incineroar": 180 },
+      "Checks and Counters": {
+        "Torkoal": { "p": 0.64, "koed": 0.30, "switched": 0.34 },
+        "Charizard-Mega-Y": { "p": 0.62, "koed": 0.33, "switched": 0.29 }
+      }
+    },
+    "Garchomp": {
+      "Raw count": 1000,
+      "Abilities": { "Rough Skin": 945, "Sand Veil": 55 },
+      "Items": { "Life Orb": 566, "Choice Scarf": 132, "Sitrus Berry": 84 },
+      "Moves": { "Dragon Claw": 891, "Rock Slide": 800, "Earthquake": 758, "Protect": 751 },
+      "Spreads": { "Jolly:2/32/0/0/0/32": 300, "Adamant:2/32/0/0/0/32": 220 },
+      "Teammates": { "Sinistcha": 210, "Rillaboom": 170 },
+      "Checks and Counters": {
+        "Rotom-Frost": { "p": 0.53, "koed": 0.28, "switched": 0.25 },
+        "Aurorus": { "p": 0.51, "koed": 0.26, "switched": 0.25 }
+      }
+    }
+  }
+}

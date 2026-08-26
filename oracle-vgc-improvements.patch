@@ -1,0 +1,1418 @@
+From 96b5e22d5f140ae4d94e4c0ee71bf438474cf08c Mon Sep 17 00:00:00 2001
+From: Lucas Harada <lucasharada51@gmail.com>
+Date: Fri, 24 Jul 2026 17:06:57 -0300
+Subject: [PATCH 1/2] fix(parser): handle full Showdown replay downloads +
+ descriptive errors
+
+The UI passes the pasted replay as raw text. When a full replay download
+(which carries its battle log under "log") was pasted as JSON, the string
+branch went straight to the structured-JSON handler and raised
+"Replay contains no sides/teams". Now the string branch decodes JSON and
+delegates to the dict path, which detects the "log" field and parses the
+battle log.
+
+Also:
+- Attribute observed moves to the mon named on the |move| line instead of
+  the last active mon (fixes doubles).
+- Make parser errors descriptive and actionable (invalid JSON position,
+  the top-level keys that were present, what shapes are accepted, and a
+  first-line hint for raw logs).
+- Surface the error category + a tip in the Streamlit UI.
+- Add regression tests for full replay downloads and for the descriptive
+  error messages.
+---
+ src/adapters/parsers/showdown_parser.py | 63 ++++++++++++++++++++-----
+ src/ui/app.py                           |  9 +++-
+ tests/test_showdown_parser.py           | 56 ++++++++++++++++++++++
+ 3 files changed, 114 insertions(+), 14 deletions(-)
+
+diff --git a/src/adapters/parsers/showdown_parser.py b/src/adapters/parsers/showdown_parser.py
+index 5bbf67b..97575ec 100755
+--- a/src/adapters/parsers/showdown_parser.py
++++ b/src/adapters/parsers/showdown_parser.py
+@@ -32,19 +32,32 @@ class ShowdownReplayParser:
+             text = replay.strip()
+             if text.startswith("{"):
+                 try:
+-                    return self._parse_json(json.loads(text))
++                    decoded = json.loads(text)
+                 except json.JSONDecodeError as exc:
+-                    raise LogParsingError(f"Invalid replay JSON: {exc}") from exc
++                    raise LogParsingError(
++                        "Could not decode the pasted replay as JSON "
++                        f"(error at line {exc.lineno}, column {exc.colno}: {exc.msg}). "
++                        "Paste either the full replay JSON downloaded from Showdown "
++                        "(the object containing a \"log\" field), the raw battle log "
++                        "text (the lines starting with '|'), or a structured team "
++                        "JSON with a \"sides\" array."
++                    ) from exc
++                # Delegate to the dict path so a full replay download (which
++                # carries its battle log under "log") is handled uniformly.
++                return self.parse(decoded)
+             return self._parse_log_text(text)
+         if isinstance(replay, dict):
+-            if "log" in replay and isinstance(replay["log"], str):
++            if isinstance(replay.get("log"), str) and replay["log"].strip():
+                 state = self._parse_log_text(replay["log"])
+                 state.format_id = (
+-                    replay.get("format") or replay.get("formatid") or state.format_id
++                    replay.get("formatid") or replay.get("format") or state.format_id
+                 )
+                 return state
+             return self._parse_json(replay)
+-        raise LogParsingError(f"Unsupported replay type: {type(replay)!r}")
++        raise LogParsingError(
++            f"Unsupported replay input of type {type(replay).__name__!r}. "
++            "Expected a JSON string, raw battle-log text, or a decoded dict."
++        )
+ 
+     def _parse_json(self, payload: dict[str, Any]) -> GameState:
+         try:
+@@ -56,9 +69,22 @@ class ShowdownReplayParser:
+             sides = [self._parse_side(side) for side in sides_payload]
+             state = GameState(format_id=format_id, turn=turn, sides=sides)
+         except (TypeError, ValueError, KeyError) as exc:
+-            raise LogParsingError(f"Malformed replay payload: {exc}") from exc
++            raise LogParsingError(
++                "Malformed replay payload: the JSON was read but its structure is "
++                f"not what the parser expects ({type(exc).__name__}: {exc}). Each "
++                "side needs a 'player' and a 'team' list of Pokemon objects with at "
++                "least a 'species'."
++            ) from exc
+         if not state.sides:
+-            raise LogParsingError("Replay contains no sides/teams")
++            available = ", ".join(sorted(payload.keys())) or "(empty object)"
++            raise LogParsingError(
++                "The replay was valid JSON but contained no battle data to analyze: "
++                "no 'log' field, no 'sides' array and no 'teams' object were found. "
++                f"Top-level keys present: {available}. "
++                "If this is a Showdown replay download, make sure you pasted the whole "
++                "object including its \"log\" field; if it is a team export, wrap it as "
++                '{"sides": [{"player": "p1", "team": [...]}]}.'
++            )
+         return state
+ 
+     @staticmethod
+@@ -114,15 +140,26 @@ class ShowdownReplayParser:
+             m = _MOVE_LINE.match(line)
+             if m:
+                 player = m.group("player")
+-                if active.get(player):
++                move = m.group("move").strip()
++                bucket = players.get(player, {})
++                # Attribute the move to the mon named in the line (nick usually
++                # equals the species); fall back to the last active mon.
++                nick = m.group("nick").strip()
++                species = nick if nick in bucket else None
++                if species is None and active.get(player):
+                     species = active[player][-1]
+-                    mon = players.get(player, {}).get(species)
+-                    move = m.group("move").strip()
+-                    if mon and move and move not in mon.moves:
+-                        mon.moves.append(move)
++                mon = bucket.get(species) if species else None
++                if mon and move and move not in mon.moves:
++                    mon.moves.append(move)
+ 
+         if not players:
+-            raise LogParsingError("No player/Pokemon lines found in replay log")
++            preview = text.strip().splitlines()[:1]
++            hint = f" First line seen: {preview[0]!r}." if preview else ""
++            raise LogParsingError(
++                "No player or Pokemon lines were found in the battle log. A Showdown "
++                "log is expected to contain '|player|p1|...', '|poke|p1|Species, L50|' "
++                f"and/or '|switch|p1a: Nick|Species, L50|...' lines.{hint}"
++            )
+ 
+         sides = [
+             SideState(player=player, team=list(mons.values()), active=active.get(player, []))
+diff --git a/src/ui/app.py b/src/ui/app.py
+index 646bb78..b1b9d70 100755
+--- a/src/ui/app.py
++++ b/src/ui/app.py
+@@ -82,7 +82,14 @@ def main() -> None:
+                 pipeline = container.build_pipeline(provider, orchestrator)
+                 result = pipeline.analyze(request)
+         except OracleVGCError as exc:
+-            st.error(f"Analysis failed: {exc}")
++            # Show the specific failure category plus the detailed message so the
++            # user can tell a bad replay from a missing key or a calc-engine issue.
++            st.error(f"Analysis failed — {type(exc).__name__}: {exc}")
++            st.caption(
++                "Tip: paste the full Showdown replay JSON (including its \"log\" "
++                "field) or the raw battle log. For provider errors, check your "
++                "`ORACLE_OPENAI_API_KEY` / `ORACLE_GEMINI_API_KEY`."
++            )
+             return
+ 
+         st.subheader("Answer")
+diff --git a/tests/test_showdown_parser.py b/tests/test_showdown_parser.py
+index d7fc47a..7531228 100755
+--- a/tests/test_showdown_parser.py
++++ b/tests/test_showdown_parser.py
+@@ -45,3 +45,59 @@ def test_empty_payload_raises():
+ def test_unsupported_type_raises():
+     with pytest.raises(LogParsingError):
+         ShowdownReplayParser().parse(12345)  # type: ignore[arg-type]
++
++
++def _real_replay_download() -> str:
++    """A trimmed real Showdown replay *download* (carries battle log under 'log')."""
++    return (
++        '{"id":"gen9championsvgc2026regmb-1","format":"[Gen 9 Champions] VGC 2026 Reg M-B",'
++        '"players":["a","b"],"formatid":"gen9championsvgc2026regmb","log":"'
++        "|player|p1|a|1|1058\\n|player|p2|b|2|1065\\n|clearpoke\\n"
++        "|poke|p1|Torkoal, L50, M|\\n|poke|p2|Aerodactyl, L50, M|\\n|teampreview|4\\n|start\\n"
++        "|switch|p1a: Torkoal|Torkoal, L50, M|100/100\\n"
++        "|switch|p2a: Aerodactyl|Aerodactyl, L50, M|100/100\\n|turn|1\\n"
++        "|move|p1a: Torkoal|Eruption|p2a: Aerodactyl\\n"
++        "|move|p2a: Aerodactyl|Rock Slide|p1a: Torkoal\\n|win|b\\n"
++        '"}'
++    )
++
++
++def test_parse_full_replay_download_as_string():
++    """Regression: pasting the whole replay JSON (with a 'log' field) as text."""
++    state = ShowdownReplayParser().parse(_real_replay_download())
++    assert state.format_id == "gen9championsvgc2026regmb"
++    species = state.involved_species()
++    assert "Torkoal" in species and "Aerodactyl" in species
++
++
++def test_move_attributed_to_named_mon():
++    state = ShowdownReplayParser().parse(_real_replay_download())
++    p1 = next(s for s in state.sides if s.player == "p1")
++    torkoal = next(m for m in p1.team if m.species == "Torkoal")
++    assert "Eruption" in torkoal.moves
++
++
++def test_parse_full_replay_download_as_dict():
++    import json as _json
++
++    state = ShowdownReplayParser().parse(_json.loads(_real_replay_download()))
++    assert "Torkoal" in state.involved_species()
++
++
++def test_no_battle_data_error_is_descriptive():
++    import pytest as _pytest
++
++    with _pytest.raises(LogParsingError) as excinfo:
++        ShowdownReplayParser().parse('{"id": "x", "rating": 1040}')
++    msg = str(excinfo.value)
++    assert "no battle data" in msg.lower()
++    assert "log" in msg  # names the missing field
++    assert "id" in msg and "rating" in msg  # lists present top-level keys
++
++
++def test_invalid_json_error_is_descriptive():
++    import pytest as _pytest
++
++    with _pytest.raises(LogParsingError) as excinfo:
++        ShowdownReplayParser().parse('{"broken": ')
++    assert "line" in str(excinfo.value).lower()
+-- 
+2.34.1
+
+
+From 0758298b2d1412227f1cfeb936e9b8a7a109d007 Mon Sep 17 00:00:00 2001
+From: Lucas Harada <lucasharada51@gmail.com>
+Date: Fri, 24 Jul 2026 20:37:18 -0300
+Subject: [PATCH 2/2] feat(analysis): battle-result context, cross-side
+ selection, Chaos name resolution, data docs
+
+Improves analysis quality and metagame explainability:
+
+- Parser extracts the battle OUTCOME from the log (winner, per-turn faints,
+  rosters brought). GameState gains outcome/side_of/brought_by_player.
+- The explanation AI now receives battle_result (ground truth) and is told to
+  anchor on what actually happened and critique poor picks/leads instead of
+  advising fainted Pokemon.
+- Selection enforces CROSS-SIDE matchups only (never pairs two Pokemon from the
+  same roster) and is prompted with per-side rosters + the result.
+- Chaos and Smogon adapters resolve species names case/forme-insensitively
+  (Typhlosion-Hisui, Metagross-Mega, ...), so real usage files populate.
+- Expanded the sample Chaos file to cover this game's species; UI shows the
+  battle result and warns when no metagame data is loaded.
+- Adds DATA.md + data/ layout documenting where scraped meta/Chaos JSON goes.
+- New tests for outcome extraction, cross-side guardrail and name resolution.
+---
+ .env.example                                  |   2 +-
+ DATA.md                                       |  92 +++++++++++++++
+ data/chaos/README.md                          |   1 +
+ data/replays/README.md                        |   1 +
+ sample_data/gen9championsvgc2026regmb.json    | 110 +++++++++++++-----
+ src/adapters/chaos/chaos_adapter.py           |  26 ++++-
+ .../llm/prompts/explanation_system.txt        |  19 ++-
+ src/adapters/llm/prompts/selection_system.txt |  15 ++-
+ src/adapters/parsers/showdown_parser.py       |  93 +++++++++++++--
+ .../smogon/smogon_strategy_adapter.py         |  21 +++-
+ src/domain/models.py                          |  46 +++++++-
+ src/services/analysis_service.py              |   9 +-
+ src/services/battle_context.py                |  51 ++++++++
+ src/services/langchain_orchestrator.py        |  17 ++-
+ src/services/selection_logic.py               |  82 ++++++++++---
+ src/services/selection_service.py             |  20 +++-
+ src/ui/app.py                                 |  12 ++
+ tests/test_battle_outcome.py                  |  44 +++++++
+ tests/test_chaos_adapter.py                   |  10 ++
+ tests/test_selection_crossside.py             |  32 +++++
+ 20 files changed, 622 insertions(+), 81 deletions(-)
+ create mode 100755 DATA.md
+ create mode 100755 data/chaos/README.md
+ create mode 100755 data/replays/README.md
+ create mode 100755 src/services/battle_context.py
+ create mode 100755 tests/test_battle_outcome.py
+ create mode 100755 tests/test_selection_crossside.py
+
+diff --git a/.env.example b/.env.example
+index d82ae6b..8e55c15 100755
+--- a/.env.example
++++ b/.env.example
+@@ -17,6 +17,6 @@ ORACLE_NODE_BINARY=node
+ ORACLE_CALC_GEN=9
+ ORACLE_CALC_TIMEOUT_SECONDS=20
+ 
+-# Data
++# Data — Smogon Chaos usage stats (see DATA.md). Falls back to the bundled sample.
+ ORACLE_CHAOS_DATA_PATH=sample_data/gen9championsvgc2026regmb.json
+ ORACLE_CHAOS_TOP_N=3
+diff --git a/DATA.md b/DATA.md
+new file mode 100755
+index 0000000..25d08f6
+--- /dev/null
++++ b/DATA.md
+@@ -0,0 +1,92 @@
++# Where to put your data (meta / Chaos / replays)
++
++OracleVGC separates **deterministic** facts (damage calc from the battle log)
++from **probabilistic** metagame context (Smogon *Chaos* usage stats). Your
++scraped meta JSON feeds the probabilistic side. Here is exactly where it goes
++and how the code reads it.
++
++## 1. Metagame / Chaos usage stats  → `MetaStatsProvider`
++
++This is the "meta context" the AI uses for likely EVs/items, common teammates
++and checks-and-counters.
++
++- **Format:** Smogon *Chaos* JSON schema, i.e. an object shaped like:
++
++  ```json
++  {
++    "info": { "metagame": "gen9championsvgc2026regmb" },
++    "data": {
++      "Torkoal": {
++        "Raw count": 800,
++        "Abilities": { "Drought": 792 },
++        "Items": { "Charcoal": 300 },
++        "Moves": { "Eruption": 780 },
++        "Spreads": { "Quiet:32/0/8/32/0/0": 240 },
++        "Teammates": { "Venusaur": 260 },
++        "Checks and Counters": { "Aerodactyl": { "p": 0.71 } }
++      }
++    }
++  }
++  ```
++
++- **Where to drop the file:** put it under `data/chaos/` (e.g.
++  `data/chaos/gen9championsvgc2026regmb.json`).
++
++- **How to point the app at it:** set the env var in your `.env`:
++
++  ```env
++  ORACLE_CHAOS_DATA_PATH=data/chaos/gen9championsvgc2026regmb.json
++  ```
++
++  Read by `src/config.py` (`Settings.chaos_data_path`) and consumed by
++  `src/adapters/chaos/chaos_adapter.py` (`ChaosAdapter`) and
++  `src/adapters/smogon/smogon_strategy_adapter.py` (`ChaosStrategyAdapter`).
++
++- **Where to get a real file:** Smogon publishes monthly stats at
++  `https://www.smogon.com/stats/` → open a month → the `chaos/` sub-folder →
++  download the JSON for your format. The EV spreads there are divided by 8;
++  `ChaosAdapter` converts them back to real 0-252 EVs automatically.
++
++> Species names are matched case/forme-insensitively (e.g. `Typhlosion-Hisui`,
++> `Metagross-Mega`), so minor spelling differences between the replay and the
++> Chaos file still resolve.
++
++## 2. Your own scraper output
++
++If you scrape/aggregate your own JSON, produce the **same Chaos schema** above
++and drop it in `data/chaos/`. Nothing else changes — just repoint
++`ORACLE_CHAOS_DATA_PATH`.
++
++If your scraper produces a *different* schema, don't reshape the whole app:
++write one adapter that implements the `MetaStatsProvider` Protocol
++(`src/domain/interfaces.py`) — a single `build_match_context(species)` method
++returning a `MetaContext` — and wire it in `src/services/container.py`
++(`Container.chaos`). The domain, services and UI stay untouched (Dependency
++Inversion).
++
++## 3. Raw Showdown replays (batch dataset)
++
++Single replays are pasted in the UI. If you want to ingest **many** games (a
++folder of Showdown replay JSONs) for offline analysis or to build your own
++usage stats, drop them under `data/replays/` and iterate:
++
++```python
++import json, glob
++from src.adapters.parsers.showdown_parser import ShowdownReplayParser
++
++parser = ShowdownReplayParser()
++for path in glob.glob("data/replays/*.json"):
++    state = parser.parse(json.load(open(path)))
++    print(state.format_id, state.outcome.winner_name, state.brought_by_player())
++```
++
++`GameState.outcome` gives you the winner, per-turn faints and rosters, which is
++the raw material for building your own aggregated Chaos-style stats.
++
++## Summary
++
++| Data | Put it in | Env var / hook |
++|------|-----------|----------------|
++| Meta / Chaos usage stats | `data/chaos/<format>.json` | `ORACLE_CHAOS_DATA_PATH` |
++| Custom-schema meta | anywhere | implement `MetaStatsProvider`, wire in `Container` |
++| Raw replay dataset | `data/replays/*.json` | parse with `ShowdownReplayParser` |
+diff --git a/data/chaos/README.md b/data/chaos/README.md
+new file mode 100755
+index 0000000..8b458c1
+--- /dev/null
++++ b/data/chaos/README.md
+@@ -0,0 +1 @@
++Drop Smogon Chaos usage-stats JSON here. See ../../DATA.md
+diff --git a/data/replays/README.md b/data/replays/README.md
+new file mode 100755
+index 0000000..983fc13
+--- /dev/null
++++ b/data/replays/README.md
+@@ -0,0 +1 @@
++Drop raw Showdown replay JSON files here for batch analysis. See ../../DATA.md
+diff --git a/sample_data/gen9championsvgc2026regmb.json b/sample_data/gen9championsvgc2026regmb.json
+index 316b1da..eef9403 100755
+--- a/sample_data/gen9championsvgc2026regmb.json
++++ b/sample_data/gen9championsvgc2026regmb.json
+@@ -1,49 +1,105 @@
+ {
+   "info": {
+-    "team type": null,
+-    "cutoff": 0.0,
+-    "cutoff deviation": 0,
+     "metagame": "gen9championsvgc2026regmb",
++    "cutoff": 0.0,
+     "number of battles": 12000
+   },
+   "data": {
++    "Torkoal": {
++      "Raw count": 800,
++      "Abilities": { "Drought": 792, "White Smoke": 8 },
++      "Items": { "Charcoal": 300, "Sitrus Berry": 210, "Heat Rock": 180 },
++      "Moves": { "Eruption": 780, "Heat Wave": 620, "Protect": 540, "Weather Ball": 310, "Body Press": 120 },
++      "Spreads": { "Quiet:32/0/8/32/0/0": 240, "Bold:32/0/32/2/0/0": 150 },
++      "Teammates": { "Venusaur": 260, "Lilligant-Hisui": 190, "Flutter Mane": 120, "Farigiraf": 90 },
++      "Checks and Counters": {
++        "Aerodactyl": { "p": 0.71, "koed": 0.44, "switched": 0.20 },
++        "Rotom-Wash": { "p": 0.60, "koed": 0.30, "switched": 0.28 },
++        "Gastrodon": { "p": 0.55, "koed": 0.22, "switched": 0.30 }
++      }
++    },
++    "Venusaur": {
++      "Raw count": 700,
++      "Abilities": { "Chlorophyll": 660, "Overgrow": 40 },
++      "Items": { "Life Orb": 300, "Focus Sash": 210, "Sitrus Berry": 120 },
++      "Moves": { "Earth Power": 610, "Sludge Bomb": 560, "Protect": 520, "Sleep Powder": 480, "Leaf Storm": 300 },
++      "Spreads": { "Modest:4/0/0/32/0/28": 220, "Timid:0/0/4/32/4/28": 160 },
++      "Teammates": { "Torkoal": 260, "Flutter Mane": 140, "Incineroar": 110 },
++      "Checks and Counters": {
++        "Aerodactyl": { "p": 0.66, "koed": 0.33, "switched": 0.26 },
++        "Metagross-Mega": { "p": 0.58, "koed": 0.29, "switched": 0.24 },
++        "Gholdengo": { "p": 0.57, "koed": 0.27, "switched": 0.25 }
++      }
++    },
++    "Aerodactyl": {
++      "Raw count": 640,
++      "Abilities": { "Rock Head": 360, "Unnerve": 180, "Pressure": 100 },
++      "Items": { "Focus Sash": 320, "Life Orb": 150, "Choice Band": 90 },
++      "Moves": { "Rock Slide": 620, "Dual Wingbeat": 470, "Tailwind": 430, "Protect": 300, "Wide Guard": 150 },
++      "Spreads": { "Jolly:0/32/0/0/0/32": 300, "Adamant:0/32/0/0/0/32": 140 },
++      "Teammates": { "Metagross": 150, "Typhlosion-Hisui": 120, "Grimmsnarl": 90 },
++      "Checks and Counters": {
++        "Iron Hands": { "p": 0.62, "koed": 0.31, "switched": 0.24 },
++        "Rotom-Wash": { "p": 0.55, "koed": 0.20, "switched": 0.30 }
++      }
++    },
++    "Metagross": {
++      "Raw count": 500,
++      "Abilities": { "Clear Body": 490, "Light Metal": 10 },
++      "Items": { "Metagrossite": 470, "Assault Vest": 20 },
++      "Moves": { "Psychic Fangs": 470, "Bullet Punch": 430, "Iron Head": 300, "Protect": 260, "Ice Punch": 150 },
++      "Spreads": { "Adamant:12/32/0/0/0/28": 200, "Jolly:0/32/0/0/4/32": 120 },
++      "Teammates": { "Aerodactyl": 150, "Grimmsnarl": 110 },
++      "Checks and Counters": {
++        "Volcarona": { "p": 0.59, "koed": 0.28, "switched": 0.25 },
++        "Great Tusk": { "p": 0.56, "koed": 0.24, "switched": 0.28 }
++      }
++    },
++    "Farigiraf": {
++      "Raw count": 420,
++      "Abilities": { "Armor Tail": 400, "Cud Chew": 20 },
++      "Items": { "Sitrus Berry": 210, "Electric Seed": 90, "Safety Goggles": 60 },
++      "Moves": { "Psychic": 360, "Trick Room": 300, "Foul Play": 240, "Protect": 220, "Helping Hand": 150 },
++      "Spreads": { "Sassy:252/0/4/0/252/0": 180, "Relaxed:252/0/252/0/4/0": 120 },
++      "Teammates": { "Torkoal": 90, "Ursaluna": 80 },
++      "Checks and Counters": {
++        "Aerodactyl": { "p": 0.58, "koed": 0.26, "switched": 0.27 },
++        "Kingambit": { "p": 0.55, "koed": 0.23, "switched": 0.28 }
++      }
++    },
++    "Typhlosion-Hisui": {
++      "Raw count": 300,
++      "Abilities": { "Frisk": 150, "Flash Fire": 130, "Blaze": 20 },
++      "Items": { "Choice Specs": 140, "Focus Sash": 90, "Life Orb": 50 },
++      "Moves": { "Eruption": 280, "Infernal Parade": 220, "Shadow Ball": 190, "Protect": 120 },
++      "Spreads": { "Timid:4/0/0/252/0/252": 160, "Modest:4/0/0/252/0/252": 100 },
++      "Teammates": { "Aerodactyl": 120, "Grimmsnarl": 70 },
++      "Checks and Counters": {
++        "Aerodactyl": { "p": 0.60, "koed": 0.30, "switched": 0.24 },
++        "Gastrodon": { "p": 0.57, "koed": 0.22, "switched": 0.30 }
++      }
++    },
+     "Sinistcha": {
+       "Raw count": 1000,
+       "Abilities": { "Hospitality": 993, "Heatproof": 6 },
+-      "Items": { "Sitrus Berry": 328, "Kasib Berry": 218, "Leftovers": 130, "Rocky Helmet": 90 },
+-      "Moves": {
+-        "Matcha Gotcha": 983, "Rage Powder": 929, "Trick Room": 564,
+-        "Life Dew": 521, "Protect": 480, "": 20
+-      },
+-      "Spreads": {
+-        "Bold:32/0/32/2/0/0": 240,
+-        "Relaxed:32/0/32/2/0/0": 180,
+-        "Bold:32/0/14/0/20/0": 120
+-      },
+-      "Teammates": { "Garchomp": 210, "Incineroar": 180, "Flutter Mane": 150, "Urshifu": 120 },
++      "Items": { "Sitrus Berry": 328, "Kasib Berry": 218, "Leftovers": 130 },
++      "Moves": { "Matcha Gotcha": 983, "Rage Powder": 929, "Trick Room": 564, "Life Dew": 521 },
++      "Spreads": { "Bold:32/0/32/2/0/0": 240, "Relaxed:32/0/32/2/0/0": 180 },
++      "Teammates": { "Garchomp": 210, "Incineroar": 180 },
+       "Checks and Counters": {
+         "Torkoal": { "p": 0.64, "koed": 0.30, "switched": 0.34 },
+-        "Camerupt-Mega": { "p": 0.63, "koed": 0.31, "switched": 0.32 },
+         "Charizard-Mega-Y": { "p": 0.62, "koed": 0.33, "switched": 0.29 }
+       }
+     },
+     "Garchomp": {
+       "Raw count": 1000,
+       "Abilities": { "Rough Skin": 945, "Sand Veil": 55 },
+-      "Items": { "Life Orb": 566, "Choice Scarf": 132, "Sitrus Berry": 84, "Clear Amulet": 60 },
+-      "Moves": {
+-        "Dragon Claw": 891, "Rock Slide": 800, "Earthquake": 758,
+-        "Protect": 751, "Swords Dance": 300, "Stomping Tantrum": 210
+-      },
+-      "Spreads": {
+-        "Jolly:2/32/0/0/0/32": 300,
+-        "Adamant:2/32/0/0/0/32": 220,
+-        "Jolly:0/30/4/0/0/32": 120
+-      },
+-      "Teammates": { "Sinistcha": 210, "Rillaboom": 170, "Gholdengo": 140, "Incineroar": 130 },
++      "Items": { "Life Orb": 566, "Choice Scarf": 132, "Sitrus Berry": 84 },
++      "Moves": { "Dragon Claw": 891, "Rock Slide": 800, "Earthquake": 758, "Protect": 751 },
++      "Spreads": { "Jolly:2/32/0/0/0/32": 300, "Adamant:2/32/0/0/0/32": 220 },
++      "Teammates": { "Sinistcha": 210, "Rillaboom": 170 },
+       "Checks and Counters": {
+         "Rotom-Frost": { "p": 0.53, "koed": 0.28, "switched": 0.25 },
+-        "Froslass-Mega": { "p": 0.52, "koed": 0.27, "switched": 0.25 },
+         "Aurorus": { "p": 0.51, "koed": 0.26, "switched": 0.25 }
+       }
+     }
+diff --git a/src/adapters/chaos/chaos_adapter.py b/src/adapters/chaos/chaos_adapter.py
+index c8ddda5..ad583e4 100755
+--- a/src/adapters/chaos/chaos_adapter.py
++++ b/src/adapters/chaos/chaos_adapter.py
+@@ -25,6 +25,11 @@ _EV_MULTIPLIER = 8
+ _STAT_LABELS = ("HP", "Atk", "Def", "SpA", "SpD", "Spe")
+ 
+ 
++def _normalize_species(name: str) -> str:
++    """Loose key for matching species across forme/spacing/case differences."""
++    return name.lower().replace(" ", "").replace("-", "").replace(".", "").replace("'", "")
++
++
+ class ChaosAdapter:
+     """Load a local Chaos file and expose Top-N metagame summaries."""
+ 
+@@ -49,6 +54,9 @@ class ChaosAdapter:
+         self.data: dict[str, Any] = raw_data.get("data") or {}
+         if not isinstance(self.data, dict):
+             raise ChaosDataError("Chaos 'data' section must be an object")
++        self._norm_index: dict[str, str] = {
++            _normalize_species(key): key for key in self.data
++        }
+ 
+     def _convert_ev_divider(self, spread_str: str) -> str:
+         """Convert a Chaos spread (``Nature:e/e/e/e/e/e`` /8) into real EVs."""
+@@ -67,12 +75,28 @@ class ChaosAdapter:
+         ordered = sorted(mapping.items(), key=lambda kv: kv[1], reverse=True)[:count]
+         return {key: round(float(value) / weight, 3) for key, value in ordered if key}
+ 
++    def _resolve_key(self, pokemon_name: str) -> str | None:
++        """Resolve a battle species name to a Chaos data key.
++
++        Tries an exact match, then a normalized (case/forme/spacing-insensitive)
++        match, then a base-forme fallback (drops a trailing forme like -Mega).
++        """
++        if pokemon_name in self.data:
++            return pokemon_name
++        norm = _normalize_species(pokemon_name)
++        if norm in self._norm_index:
++            return self._norm_index[norm]
++        base = pokemon_name.split("-")[0]
++        base_norm = _normalize_species(base)
++        return self._norm_index.get(base_norm)
++
+     def get_pokemon_summary(
+         self, pokemon_name: str, top_n: int | None = None
+     ) -> PokemonMetaSummary:
+         """Return the Top-N summary for a single species (empty if unknown)."""
+         count = self._top_n if top_n is None else max(1, int(top_n))
+-        mon_data = self.data.get(pokemon_name)
++        key = self._resolve_key(pokemon_name)
++        mon_data = self.data.get(key) if key else None
+         if not mon_data:
+             return PokemonMetaSummary()
+ 
+diff --git a/src/adapters/llm/prompts/explanation_system.txt b/src/adapters/llm/prompts/explanation_system.txt
+index 38b88d6..4894ae8 100755
+--- a/src/adapters/llm/prompts/explanation_system.txt
++++ b/src/adapters/llm/prompts/explanation_system.txt
+@@ -2,16 +2,23 @@ You are ProfessorVGC (2nd AI), an expert Pokemon VGC coach. You produce the FINA
+ natural-language explanation for the user.
+ 
+ You are given, as trusted context:
+-- meta_context: compact Chaos usage stats (abilities/items/moves/spreads/threats).
++- battle_result: who WON, which Pokemon fainted and on which turn (GROUND TRUTH).
+ - deterministic_verdicts: exact damage-calc and speed-tier results (GROUND TRUTH).
++- meta_context: compact Chaos usage stats (abilities/items/moves/spreads/threats).
+ - strategies: Smogon-derived archetypes and common teammates.
+ - the user's question and conversation memory.
+ 
+ Instructions:
+-- Treat deterministic_verdicts as ground truth. NEVER contradict a damage roll or a
+-  speed comparison. If asked "who wins", answer from the calc results.
++- battle_result and deterministic_verdicts are GROUND TRUTH. Never contradict them.
++  Anchor your analysis in what ACTUALLY happened: if a Pokemon fainted early or a
++  side lost, say so and explain WHY (bad lead, speed disadvantage, weak matchup).
++- Do NOT recommend actions for a Pokemon that already fainted; instead critique the
++  decision that led there and propose a better line (different lead, safer pivot).
++- Evaluate whether each of the player's Pokemon was a good pick for this game. If a
++  Pokemon underperformed or enabled the loss, say so directly and constructively.
+ - Use meta_context to reason about likely hidden EVs/items and probable threats, but
+-  do NOT invent statistics that are not in meta_context (no hallucinated numbers).
+-- Explain synergy, archetypes, safe swaps and the reasoning a strong player would use.
+-- Be concise, concrete and actionable. Reference specific numbers from the verdicts.
++  do NOT invent statistics that are not in meta_context.
++- If meta_context and strategies are empty, note that no metagame data was loaded and
++  reason from the deterministic results alone.
++- Be concise, concrete and actionable. Reference specific numbers and turns.
+ - Answer in the same language the user asked in.
+diff --git a/src/adapters/llm/prompts/selection_system.txt b/src/adapters/llm/prompts/selection_system.txt
+index ae18a93..7747ee7 100755
+--- a/src/adapters/llm/prompts/selection_system.txt
++++ b/src/adapters/llm/prompts/selection_system.txt
+@@ -1,10 +1,10 @@
+ You are the SELECTION stage (1st AI) of ProfessorVGC, a Pokemon VGC analysis engine.
+ Your ONLY job is to decide WHICH Pokemon and WHICH ordered matchups are relevant to
+-the user's question, given the battle state and prior conversation memory.
++the user's question, given the rosters, the battle result and prior memory.
+ 
+ You do NOT explain strategy and you do NOT compute damage. Downstream deterministic
+-tools will do that. Keep the focus tight so the expensive calc engine is only run on
+-relevant matchups.
++tools will do that. Keep the focus tight so the calc engine only runs on relevant,
++REAL matchups.
+ 
+ Return a STRICT JSON object with exactly these keys:
+ {
+@@ -13,8 +13,11 @@ Return a STRICT JSON object with exactly these keys:
+   "rationale": "one short sentence"
+ }
+ 
+-Rules:
+-- Use ONLY species that appear in the provided battle state.
++Hard rules:
++- A matchup is ALWAYS between Pokemon on OPPOSITE sides. NEVER pair two Pokemon that
++  belong to the same player's roster.
++- Use ONLY species listed in the provided rosters.
+ - "matchups" are ordered [attacker, defender] pairs worth calculating.
+-- If the question is generic, pick the most impactful offensive matchups.
++- Prefer matchups that explain the battle result (e.g. what threatened the loser's
++  key Pokemon). If the question is generic, pick the most decisive cross-side matchups.
+ - Output JSON only. No markdown, no prose outside the JSON object.
+diff --git a/src/adapters/parsers/showdown_parser.py b/src/adapters/parsers/showdown_parser.py
+index 97575ec..674ccd9 100755
+--- a/src/adapters/parsers/showdown_parser.py
++++ b/src/adapters/parsers/showdown_parser.py
+@@ -13,14 +13,24 @@ import re
+ from typing import Any
+ 
+ from src.domain.exceptions import LogParsingError
+-from src.domain.models import GameState, PokemonSet, SideState
++from src.domain.models import (
++    BattleOutcome,
++    GameState,
++    KOEvent,
++    PokemonSet,
++    SideState,
++)
+ 
+ _POKE_LINE = re.compile(r"^\|poke\|(?P<player>p\d)\|(?P<details>[^|]+)")
+ _SWITCH_LINE = re.compile(
+-    r"^\|(?:switch|drag)\|(?P<player>p\d)[a-z]?: (?P<nick>[^|]+)\|(?P<details>[^|,]+)"
++    r"^\|(?:switch|drag)\|(?P<player>p\d)(?P<slot>[a-z]): (?P<nick>[^|]+)\|(?P<details>[^|,]+)"
++)
++_PLAYER_LINE = re.compile(r"^\|player\|(?P<player>p\d)\|(?P<name>[^|]*)")
++_MOVE_LINE = re.compile(
++    r"^\|move\|(?P<player>p\d)(?P<slot>[a-z]?): (?P<nick>[^|]+)\|(?P<move>[^|]+)"
+ )
+-_PLAYER_LINE = re.compile(r"^\|player\|(?P<player>p\d)\|")
+-_MOVE_LINE = re.compile(r"^\|move\|(?P<player>p\d)[a-z]?: (?P<nick>[^|]+)\|(?P<move>[^|]+)")
++_FAINT_LINE = re.compile(r"^\|faint\|(?P<player>p\d)(?P<slot>[a-z]?): (?P<nick>[^|]+)")
++_WIN_LINE = re.compile(r"^\|win\|(?P<name>.+?)\s*$")
+ 
+ 
+ class ShowdownReplayParser:
+@@ -96,6 +106,7 @@ class ShowdownReplayParser:
+         team = [self._parse_set(mon) for mon in side.get("team", [])]
+         return SideState(
+             player=str(side.get("player", "p?")),
++            player_name=str(side.get("player_name", "")),
+             team=team,
+             active=list(side.get("active", [])),
+         )
+@@ -106,7 +117,12 @@ class ShowdownReplayParser:
+ 
+     def _parse_log_text(self, text: str) -> GameState:
+         players: dict[str, dict[str, PokemonSet]] = {}
++        player_names: dict[str, str] = {}
+         active: dict[str, list[str]] = {}
++        slot_species: dict[str, str] = {}  # "p1a" -> current species on that slot
++        kos: list[KOEvent] = []
++        highlights: list[str] = []
++        winner_name: str | None = None
+         format_id = "gen9vgc2025"
+         turn = 0
+ 
+@@ -119,7 +135,11 @@ class ShowdownReplayParser:
+                 continue
+             m = _PLAYER_LINE.match(line)
+             if m:
+-                players.setdefault(m.group("player"), {})
++                player = m.group("player")
++                players.setdefault(player, {})
++                name = m.group("name").strip()
++                if name:
++                    player_names[player] = name
+                 continue
+             m = _POKE_LINE.match(line)
+             if m:
+@@ -136,6 +156,7 @@ class ShowdownReplayParser:
+                 active.setdefault(player, [])
+                 if species not in active[player]:
+                     active[player].append(species)
++                slot_species[player + m.group("slot")] = species
+                 continue
+             m = _MOVE_LINE.match(line)
+             if m:
+@@ -143,14 +164,29 @@ class ShowdownReplayParser:
+                 move = m.group("move").strip()
+                 bucket = players.get(player, {})
+                 # Attribute the move to the mon named in the line (nick usually
+-                # equals the species); fall back to the last active mon.
++                # equals the species); fall back to the slot's current mon.
+                 nick = m.group("nick").strip()
+-                species = nick if nick in bucket else None
++                species = nick if nick in bucket else slot_species.get(
++                    player + m.group("slot")
++                )
+                 if species is None and active.get(player):
+                     species = active[player][-1]
+                 mon = bucket.get(species) if species else None
+                 if mon and move and move not in mon.moves:
+                     mon.moves.append(move)
++                continue
++            m = _FAINT_LINE.match(line)
++            if m:
++                player = m.group("player")
++                nick = m.group("nick").strip()
++                species = slot_species.get(player + m.group("slot")) or (
++                    nick if nick in players.get(player, {}) else nick
++                )
++                kos.append(KOEvent(turn=turn, fainted=species, player=player))
++                continue
++            m = _WIN_LINE.match(line)
++            if m:
++                winner_name = m.group("name").strip()
+ 
+         if not players:
+             preview = text.strip().splitlines()[:1]
+@@ -162,10 +198,49 @@ class ShowdownReplayParser:
+             )
+ 
+         sides = [
+-            SideState(player=player, team=list(mons.values()), active=active.get(player, []))
++            SideState(
++                player=player,
++                player_name=player_names.get(player, ""),
++                team=list(mons.values()),
++                active=active.get(player, []),
++            )
+             for player, mons in players.items()
+         ]
+-        return GameState(format_id=format_id, turn=turn, sides=sides)
++        outcome = self._build_outcome(
++            turn, kos, winner_name, player_names, highlights
++        )
++        return GameState(
++            format_id=format_id, turn=turn, sides=sides, outcome=outcome
++        )
++
++    @staticmethod
++    def _build_outcome(
++        turn: int,
++        kos: list[KOEvent],
++        winner_name: str | None,
++        player_names: dict[str, str],
++        highlights: list[str],
++    ) -> BattleOutcome:
++        winner_player: str | None = None
++        if winner_name:
++            for player, name in player_names.items():
++                if name == winner_name:
++                    winner_player = player
++                    break
++        for ko in kos:
++            owner = player_names.get(ko.player, ko.player)
++            highlights.append(
++                f"Turn {ko.turn}: {ko.fainted} ({owner}) fainted."
++            )
++        if winner_name:
++            highlights.append(f"Winner: {winner_name} ({winner_player or '?'}).")
++        return BattleOutcome(
++            winner_player=winner_player,
++            winner_name=winner_name,
++            turns=turn,
++            kos=kos,
++            highlights=highlights,
++        )
+ 
+     @staticmethod
+     def _split_details(details: str) -> tuple[str, int]:
+diff --git a/src/adapters/smogon/smogon_strategy_adapter.py b/src/adapters/smogon/smogon_strategy_adapter.py
+index 557f5aa..4e2b16b 100755
+--- a/src/adapters/smogon/smogon_strategy_adapter.py
++++ b/src/adapters/smogon/smogon_strategy_adapter.py
+@@ -48,12 +48,29 @@ class ChaosStrategyAdapter:
+             raise StrategyKnowledgeError(f"Unable to read strategy source: {exc}") from exc
+         self._metagame = (raw.get("info") or {}).get("metagame", "unknown")
+         self._data: dict[str, Any] = raw.get("data") or {}
++        self._norm_index: dict[str, str] = {_norm(key): key for key in self._data}
++
++    def _resolve_key(self, species: str) -> str | None:
++        if species in self._data:
++            return species
++        norm = _norm(species)
++        if norm in self._norm_index:
++            return self._norm_index[norm]
++        return self._norm_index.get(_norm(species.split("-")[0]))
+ 
+     def get_strategy(self, species: str) -> SmogonStrategy:
+         """Return derived strategy knowledge for a species."""
+-        mon = self._data.get(species)
++        key = self._resolve_key(species)
++        mon = self._data.get(key) if key else None
+         if not mon:
+-            return SmogonStrategy(species=species, overview="No usage data available.")
++            return SmogonStrategy(
++                species=species,
++                overview=(
++                    "No usage data available for this species in the loaded Chaos "
++                    "file. Point ORACLE_CHAOS_DATA_PATH at a Chaos dump that covers "
++                    "this format to enable metagame explainability."
++                ),
++            )
+ 
+         raw_count = float(mon.get("Raw count", 1)) or 1.0
+ 
+diff --git a/src/domain/models.py b/src/domain/models.py
+index 86d4a2e..ef8a886 100755
+--- a/src/domain/models.py
++++ b/src/domain/models.py
+@@ -97,21 +97,50 @@ class SideState(BaseModel):
+     """One player's side of the battle."""
+ 
+     player: str
++    player_name: str = ""
+     team: list[PokemonSet] = Field(default_factory=list)
+     active: list[str] = Field(default_factory=list)
+ 
++    def brought(self) -> list[str]:
++        """Species actually brought into the game (seen switching in)."""
++        return list(self.active)
++
++
++class KOEvent(BaseModel):
++    """A single faint recorded from the battle log."""
++
++    turn: int
++    fainted: str  # species that fainted
++    player: str  # side that lost the Pokemon (e.g. "p1")
++
++
++class BattleOutcome(BaseModel):
++    """Deterministic result and timeline extracted from the battle log.
++
++    This is what lets the explanation AI reason about what *actually happened*
++    (who won, which Pokemon fainted and when) instead of only reasoning about
++    isolated damage rolls. Populated only when a battle log is available.
++    """
++
++    winner_player: str | None = None  # "p1" | "p2"
++    winner_name: str | None = None
++    turns: int = 0
++    kos: list[KOEvent] = Field(default_factory=list)
++    highlights: list[str] = Field(default_factory=list)  # human-readable events
++
+ 
+ class GameState(BaseModel):
+     """Structured, deterministic snapshot extracted from a Showdown replay.
+ 
+     This is the output of the *cleaning/filtering (determinism)* stage in the
+     flow diagram: raw unstructured replay JSON becomes a typed object listing
+-    exactly which Pokemon are involved.
++    exactly which Pokemon are involved plus, when a log is present, the result.
+     """
+ 
+     format_id: str = "gen9vgc2025"
+     turn: int = 0
+     sides: list[SideState] = Field(default_factory=list)
++    outcome: BattleOutcome | None = None
+ 
+     def involved_species(self) -> list[str]:
+         """Return the de-duplicated list of every species seen in the battle."""
+@@ -123,6 +152,20 @@ class GameState(BaseModel):
+                 seen.setdefault(name, None)
+         return list(seen.keys())
+ 
++    def side_of(self) -> dict[str, str]:
++        """Map each species to the player id that owns it (first occurrence)."""
++        owner: dict[str, str] = {}
++        for side in self.sides:
++            for mon in side.team:
++                owner.setdefault(mon.species, side.player)
++            for name in side.active:
++                owner.setdefault(name, side.player)
++        return owner
++
++    def brought_by_player(self) -> dict[str, list[str]]:
++        """Map each player id to the species it actually brought into the game."""
++        return {side.player: side.brought() for side in self.sides}
++
+ 
+ class PokemonMetaSummary(BaseModel):
+     """Top-N metagame statistics for a single species (from Chaos data)."""
+@@ -230,6 +273,7 @@ class AnalysisResult(BaseModel):
+     meta_context: MetaContext
+     verdicts: list[MatchupVerdict] = Field(default_factory=list)
+     strategies: list[SmogonStrategy] = Field(default_factory=list)
++    battle_result: str = ""
+     provider: str = "openai"
+ 
+ 
+diff --git a/src/services/analysis_service.py b/src/services/analysis_service.py
+index c5142df..ce454a1 100755
+--- a/src/services/analysis_service.py
++++ b/src/services/analysis_service.py
+@@ -30,6 +30,7 @@ from src.domain.models import (
+     SelectionPlan,
+     SmogonStrategy,
+ )
++from src.services.battle_context import outcome_summary
+ from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
+ 
+ 
+@@ -72,6 +73,7 @@ class AnalysisService:
+         answer = self._explain(
+             request=request,
+             history=history,
++            game_state=game_state,
+             selection=selection,
+             meta_context=meta_context,
+             verdicts=verdicts,
+@@ -93,6 +95,7 @@ class AnalysisService:
+             meta_context=meta_context,
+             verdicts=verdicts,
+             strategies=strategies,
++            battle_result=outcome_summary(game_state),
+             provider=getattr(self._llm, "name", request.provider),
+         )
+ 
+@@ -111,13 +114,15 @@ class AnalysisService:
+         *,
+         request: AnalysisRequest,
+         history: Sequence[ChatMessage],
++        game_state: GameState,
+         selection: SelectionPlan,
+         meta_context: MetaContext,
+         verdicts: Sequence[MatchupVerdict],
+         strategies: Sequence[SmogonStrategy],
+     ) -> str:
+         context = build_explanation_context(
+-            selection, meta_context, verdicts, strategies
++            selection, meta_context, verdicts, strategies,
++            battle_result=outcome_summary(game_state),
+         )
+         user_turn = ChatMessage(
+             role="user",
+@@ -136,9 +141,11 @@ def build_explanation_context(
+     meta_context: MetaContext,
+     verdicts: Sequence[MatchupVerdict],
+     strategies: Sequence[SmogonStrategy],
++    battle_result: str = "",
+ ) -> dict:
+     """Assemble the trusted-context payload for the 2nd AI (shared)."""
+     return {
++        "battle_result": battle_result,
+         "meta_context": meta_context.model_dump(),
+         "deterministic_verdicts": [v.model_dump() for v in verdicts],
+         "strategies": [s.model_dump() for s in strategies],
+diff --git a/src/services/battle_context.py b/src/services/battle_context.py
+new file mode 100755
+index 0000000..084f8a1
+--- /dev/null
++++ b/src/services/battle_context.py
+@@ -0,0 +1,51 @@
++"""Helpers that turn a GameState into prompt-ready battle context.
++
++Shared by both orchestration backends so the selection stage sees the same
++rosters and the explanation stage sees the same ground-truth result.
++"""
++
++from __future__ import annotations
++
++from src.domain.models import GameState
++
++
++def rosters(game_state: GameState) -> dict[str, list[str]]:
++    """Map player id -> species brought (fallback to the full team roster)."""
++    result: dict[str, list[str]] = {}
++    for side in game_state.sides:
++        brought = side.brought()
++        if not brought:
++            brought = [mon.species for mon in side.team]
++        result[side.player] = brought
++    return result
++
++
++def candidate_species(game_state: GameState) -> list[str]:
++    """Flat, de-duplicated list of the species worth analyzing."""
++    seen: dict[str, None] = {}
++    for species in rosters(game_state).values():
++        for name in species:
++            seen.setdefault(name, None)
++    return list(seen.keys()) or game_state.involved_species()
++
++
++def outcome_summary(game_state: GameState) -> str:
++    """Human-readable ground-truth result for injection into prompts."""
++    outcome = game_state.outcome
++    if outcome is None:
++        return ""
++    names = {side.player: (side.player_name or side.player) for side in game_state.sides}
++    losses: dict[str, int] = {}
++    for ko in outcome.kos:
++        losses[ko.player] = losses.get(ko.player, 0) + 1
++    score_bits = [
++        f"{names.get(player, player)} lost {count}" for player, count in sorted(losses.items())
++    ]
++    lines: list[str] = []
++    if outcome.winner_name:
++        lines.append(f"Winner: {outcome.winner_name} ({outcome.winner_player or '?'}).")
++    if score_bits:
++        lines.append("Pokemon lost — " + "; ".join(score_bits) + ".")
++    lines.extend(outcome.highlights)
++    lines.append(f"Total turns: {outcome.turns}.")
++    return "\n".join(lines)
+diff --git a/src/services/langchain_orchestrator.py b/src/services/langchain_orchestrator.py
+index f97d4ec..1f03f0d 100755
+--- a/src/services/langchain_orchestrator.py
++++ b/src/services/langchain_orchestrator.py
+@@ -39,6 +39,7 @@ from src.services.analysis_service import (
+     build_explanation_context,
+     build_explanation_input,
+ )
++from src.services.battle_context import candidate_species, outcome_summary, rosters
+ from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
+ from src.services.selection_logic import (
+     build_selection_input,
+@@ -120,7 +121,8 @@ class LangChainAnalysisOrchestrator:
+         strategies = collect_strategies(self._strategy, selection.focus_species)
+ 
+         context = build_explanation_context(
+-            selection, meta_context, verdicts, strategies
++            selection, meta_context, verdicts, strategies,
++            battle_result=outcome_summary(game_state),
+         )
+         answer = self._explanation_chain.invoke(
+             {
+@@ -144,6 +146,7 @@ class LangChainAnalysisOrchestrator:
+             meta_context=meta_context,
+             verdicts=verdicts,
+             strategies=strategies,
++            battle_result=outcome_summary(game_state),
+             provider=self._provider_name,
+         )
+ 
+@@ -153,20 +156,24 @@ class LangChainAnalysisOrchestrator:
+         game_state: GameState,
+         history: Sequence[ChatMessage],
+     ) -> SelectionPlan:
+-        species = game_state.involved_species()
++        species = candidate_species(game_state)
++        side_of = game_state.side_of()
+         try:
+             raw = self._selection_chain.invoke(
+                 {
+                     "history": history,
+                     "input": build_selection_input(
+-                        game_state.format_id, species, request.question
++                        game_state.format_id,
++                        rosters(game_state),
++                        request.question,
++                        outcome_summary(game_state),
+                     ),
+                 }
+             )
+         except Exception:  # noqa: BLE001 - parser/model failure -> deterministic fallback
+             raw = "{}"
+-        plan = parse_selection(raw, species)
+-        return sanitize_plan(plan, species, self._max_matchups)
++        plan = parse_selection(raw, species, side_of)
++        return sanitize_plan(plan, species, self._max_matchups, side_of)
+ 
+     def _parse(self, request: AnalysisRequest) -> GameState:
+         source = (
+diff --git a/src/services/selection_logic.py b/src/services/selection_logic.py
+index 0fd4d82..d87cc46 100755
+--- a/src/services/selection_logic.py
++++ b/src/services/selection_logic.py
+@@ -1,10 +1,16 @@
+-"""Pure selection-plan logic shared by every orchestration backend."""
++"""Pure selection-plan logic shared by every orchestration backend.
++
++Includes a deterministic guardrail: a "matchup" only makes sense between two
++Pokemon on OPPOSITE sides. When the model returns same-side or unknown pairs,
++they are dropped and replaced by cross-side defaults, so the calc engine is
++never asked to evaluate a Pokemon against its own teammate.
++"""
+ 
+ from __future__ import annotations
+ 
+ import itertools
+ import json
+-from typing import Any, Sequence
++from typing import Any, Mapping, Sequence
+ 
+ from src.domain.models import SelectionPlan
+ 
+@@ -23,41 +29,69 @@ def plan_from_payload(data: dict[str, Any]) -> SelectionPlan:
+     )
+ 
+ 
+-def fallback_plan(species: Sequence[str]) -> SelectionPlan:
++def cross_side_matchups(side_of: Mapping[str, str], limit: int = 6) -> list[tuple[str, str]]:
++    """Enumerate ordered attacker->defender pairs across opposing sides."""
++    pairs: list[tuple[str, str]] = []
++    species = list(side_of.keys())
++    for attacker, defender in itertools.permutations(species, 2):
++        if side_of.get(attacker) != side_of.get(defender):
++            pairs.append((attacker, defender))
++    return pairs[:limit]
++
++
++def fallback_plan(species: Sequence[str], side_of: Mapping[str, str] | None) -> SelectionPlan:
+     """Deterministic degradation when the model output is unusable."""
+-    matchups = list(itertools.permutations(list(species)[:4], 2))
++    if side_of:
++        matchups = cross_side_matchups(side_of)
++    else:
++        matchups = list(itertools.permutations(list(species)[:4], 2))
+     return SelectionPlan(
+         focus_species=list(species),
+         matchups=matchups,
+-        rationale="Fallback: model output unparseable; using battle state.",
++        rationale="Fallback: model output unusable; derived from the battle state.",
+     )
+ 
+ 
+-def parse_selection(raw: str | dict[str, Any], species: Sequence[str]) -> SelectionPlan:
++def parse_selection(
++    raw: str | dict[str, Any],
++    species: Sequence[str],
++    side_of: Mapping[str, str] | None = None,
++) -> SelectionPlan:
+     """Parse a raw model response (JSON string or dict) into a SelectionPlan."""
+     if isinstance(raw, dict):
+         try:
+             return plan_from_payload(raw)
+         except (TypeError, ValueError):
+-            return fallback_plan(species)
++            return fallback_plan(species, side_of)
+     try:
+         data = json.loads(raw)
+         return plan_from_payload(data)
+     except (json.JSONDecodeError, TypeError, ValueError):
+-        return fallback_plan(species)
++        return fallback_plan(species, side_of)
+ 
+ 
+ def sanitize_plan(
+-    plan: SelectionPlan, species: Sequence[str], max_matchups: int
++    plan: SelectionPlan,
++    species: Sequence[str],
++    max_matchups: int,
++    side_of: Mapping[str, str] | None = None,
+ ) -> SelectionPlan:
+-    """Keep only real species, drop self-matchups, and cap the matchup count."""
++    """Keep only real, cross-side matchups and cap the matchup count."""
+     valid = set(species)
+     focus = [s for s in plan.focus_species if s in valid] or list(species)
+-    matchups = [
+-        (a, b) for a, b in plan.matchups if a in valid and b in valid and a != b
+-    ]
++    matchups: list[tuple[str, str]] = []
++    for a, b in plan.matchups:
++        if a not in valid or b not in valid or a == b:
++            continue
++        # Enforce opposite sides when side membership is known.
++        if side_of is not None and side_of.get(a) == side_of.get(b):
++            continue
++        matchups.append((a, b))
+     if not matchups:
+-        matchups = list(itertools.permutations(list(species)[:3], 2))
++        if side_of:
++            matchups = cross_side_matchups(side_of, limit=max_matchups)
++        else:
++            matchups = list(itertools.permutations(list(species)[:3], 2))
+     return SelectionPlan(
+         focus_species=focus,
+         matchups=matchups[:max_matchups],
+@@ -65,11 +99,25 @@ def sanitize_plan(
+     )
+ 
+ 
+-def build_selection_input(format_id: str, species: Sequence[str], question: str) -> str:
+-    """Render the human-turn text for the selection stage (shared wording)."""
++def build_selection_input(
++    format_id: str,
++    rosters: Mapping[str, Sequence[str]],
++    question: str,
++    outcome_summary: str = "",
++) -> str:
++    """Render the human-turn text for the selection stage (shared wording).
++
++    ``rosters`` maps each player id to the species it brought, so the model can
++    only pair Pokemon across opposing sides.
++    """
++    roster_lines = "\n".join(
++        f"  {player}: {list(mons)}" for player, mons in rosters.items()
++    )
++    outcome_block = f"\nBattle result (ground truth):\n{outcome_summary}\n" if outcome_summary else ""
+     return (
+         f"Battle format: {format_id}\n"
+-        f"Species in battle: {list(species)}\n"
++        f"Rosters by side (only pair Pokemon from DIFFERENT sides):\n{roster_lines}\n"
++        f"{outcome_block}"
+         f"User question: {question or '(general analysis)'}\n"
+         "Return the selection JSON."
+     )
+diff --git a/src/services/selection_service.py b/src/services/selection_service.py
+index f411447..87b1c95 100755
+--- a/src/services/selection_service.py
++++ b/src/services/selection_service.py
+@@ -1,4 +1,9 @@
+-"""Selection stage — the 1st AI, native (LLMProvider) implementation."""
++"""Selection stage — the 1st AI, native (LLMProvider) implementation.
++
++Delegates parsing/sanitizing to :mod:`src.services.selection_logic` (which now
++enforces cross-side matchups) so the LangChain orchestrator produces identical
++selection plans.
++"""
+ 
+ from __future__ import annotations
+ 
+@@ -6,6 +11,7 @@ from typing import Sequence
+ 
+ from src.adapters.llm.prompts import load_prompt
+ from src.domain.models import AnalysisRequest, ChatMessage, GameState, SelectionPlan
++from src.services.battle_context import candidate_species, outcome_summary, rosters
+ from src.services.selection_logic import (
+     build_selection_input,
+     parse_selection,
+@@ -29,11 +35,15 @@ class LLMSelectionService:
+         game_state: GameState,
+         history: Sequence[ChatMessage],
+     ) -> SelectionPlan:
+-        species = game_state.involved_species()
++        species = candidate_species(game_state)
++        side_of = game_state.side_of()
+         user_turn = ChatMessage(
+             role="user",
+             content=build_selection_input(
+-                game_state.format_id, species, request.question
++                game_state.format_id,
++                rosters(game_state),
++                request.question,
++                outcome_summary(game_state),
+             ),
+         )
+         raw = self._llm.complete(
+@@ -42,5 +52,5 @@ class LLMSelectionService:
+             temperature=self._temperature,
+             json_mode=True,
+         )
+-        plan = parse_selection(raw, species)
+-        return sanitize_plan(plan, species, self._max_matchups)
++        plan = parse_selection(raw, species, side_of)
++        return sanitize_plan(plan, species, self._max_matchups, side_of)
+diff --git a/src/ui/app.py b/src/ui/app.py
+index b1b9d70..9a91503 100755
+--- a/src/ui/app.py
++++ b/src/ui/app.py
+@@ -95,6 +95,18 @@ def main() -> None:
+         st.subheader("Answer")
+         st.markdown(result.answer)
+ 
++        if result.battle_result:
++            with st.expander("Battle result (from the replay log)", expanded=True):
++                st.text(result.battle_result)
++
++        if not any(s.top_moves for s in result.meta_context.pokemon_stats.values()):
++            st.info(
++                "No metagame (Chaos) data was loaded for these Pokemon, so the "
++                "Smogon strategy section is empty. Point `ORACLE_CHAOS_DATA_PATH` at "
++                "a Chaos dump that covers this format — see DATA.md.",
++                icon="📊",
++            )
++
+         with st.expander("Deterministic verdicts (ground truth)"):
+             for verdict in result.verdicts:
+                 dmg = verdict.best_damage
+diff --git a/tests/test_battle_outcome.py b/tests/test_battle_outcome.py
+new file mode 100755
+index 0000000..dc041bc
+--- /dev/null
++++ b/tests/test_battle_outcome.py
+@@ -0,0 +1,44 @@
++"""Tests for battle-outcome extraction from the Showdown log."""
++
++from __future__ import annotations
++
++from src.adapters.parsers.showdown_parser import ShowdownReplayParser
++
++_LOG = (
++    '{"formatid":"gen9vgc2026","log":"'
++    "|player|p1|Ash|1|1058\\n|player|p2|Gary|2|1065\\n|clearpoke\\n"
++    "|poke|p1|Torkoal, L50|\\n|poke|p2|Aerodactyl, L50|\\n|start\\n"
++    "|switch|p1a: Torkoal|Torkoal, L50|100/100\\n"
++    "|switch|p1b: Pyroar|Pyroar, L50|100/100\\n"
++    "|switch|p2a: Aerodactyl|Aerodactyl, L50|100/100\\n|turn|1\\n"
++    "|move|p2a: Aerodactyl|Rock Slide|p1a: Torkoal\\n"
++    "|faint|p1b: Pyroar\\n|turn|2\\n|faint|p1a: Torkoal\\n|win|Gary\\n"
++    '"}'
++)
++
++
++def test_outcome_extracts_winner_and_faints():
++    state = ShowdownReplayParser().parse(_LOG)
++    assert state.outcome is not None
++    o = state.outcome
++    assert o.winner_name == "Gary" and o.winner_player == "p2"
++    assert o.turns == 2
++    fainted = {(k.turn, k.fainted, k.player) for k in o.kos}
++    assert (1, "Pyroar", "p1") in fainted
++    assert (2, "Torkoal", "p1") in fainted
++
++
++def test_side_of_and_rosters():
++    state = ShowdownReplayParser().parse(_LOG)
++    assert state.side_of()["Torkoal"] == "p1"
++    assert state.side_of()["Aerodactyl"] == "p2"
++    assert state.brought_by_player()["p1"] == ["Torkoal", "Pyroar"]
++
++
++def test_structured_json_has_no_outcome(sample_replay_path):
++    import json
++
++    state = ShowdownReplayParser().parse(
++        json.loads(sample_replay_path.read_text(encoding="utf-8"))
++    )
++    assert state.outcome is None
+diff --git a/tests/test_chaos_adapter.py b/tests/test_chaos_adapter.py
+index 3508124..f138a66 100755
+--- a/tests/test_chaos_adapter.py
++++ b/tests/test_chaos_adapter.py
+@@ -43,3 +43,13 @@ def test_build_match_context(sample_chaos_path):
+ def test_missing_file_raises():
+     with pytest.raises(ChaosDataError):
+         ChaosAdapter("/nonexistent/chaos.json")
++
++
++def test_species_name_normalization(sample_chaos_path):
++    from src.adapters.chaos.chaos_adapter import ChaosAdapter
++
++    adapter = ChaosAdapter(sample_chaos_path)
++    # Exact forme key present in the sample.
++    assert adapter.get_pokemon_summary("Typhlosion-Hisui").top_moves
++    # A mega spelling resolves to the base entry via the fallback.
++    assert adapter.get_pokemon_summary("Metagross-Mega").top_moves
+diff --git a/tests/test_selection_crossside.py b/tests/test_selection_crossside.py
+new file mode 100755
+index 0000000..48f25c1
+--- /dev/null
++++ b/tests/test_selection_crossside.py
+@@ -0,0 +1,32 @@
++"""Tests for the cross-side matchup guardrail in selection logic."""
++
++from __future__ import annotations
++
++from src.domain.models import SelectionPlan
++from src.services.selection_logic import cross_side_matchups, sanitize_plan
++
++_SIDE_OF = {"Torkoal": "p1", "Venusaur": "p1", "Aerodactyl": "p2", "Metagross": "p2"}
++
++
++def test_drops_same_side_matchups():
++    plan = SelectionPlan(
++        focus_species=["Torkoal", "Venusaur"],
++        matchups=[("Torkoal", "Venusaur"), ("Torkoal", "Aerodactyl")],
++        rationale="x",
++    )
++    out = sanitize_plan(plan, list(_SIDE_OF), 6, _SIDE_OF)
++    assert ("Torkoal", "Venusaur") not in out.matchups  # same side dropped
++    assert ("Torkoal", "Aerodactyl") in out.matchups  # cross side kept
++
++
++def test_fills_cross_side_when_empty():
++    plan = SelectionPlan(focus_species=[], matchups=[("Torkoal", "Venusaur")], rationale="")
++    out = sanitize_plan(plan, list(_SIDE_OF), 6, _SIDE_OF)
++    assert out.matchups
++    for a, b in out.matchups:
++        assert _SIDE_OF[a] != _SIDE_OF[b]
++
++
++def test_cross_side_matchups_helper():
++    pairs = cross_side_matchups(_SIDE_OF, limit=10)
++    assert all(_SIDE_OF[a] != _SIDE_OF[b] for a, b in pairs)
+-- 
+2.34.1
+

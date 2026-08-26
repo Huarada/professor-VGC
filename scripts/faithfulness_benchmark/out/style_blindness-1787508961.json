@@ -1,0 +1,363 @@
+{
+  "summary": {
+    "n_pairs": 6,
+    "confident": {
+      "extraction_rate": 1.0,
+      "fidelity_rate": 1.0
+    },
+    "hedgy": {
+      "extraction_rate": 1.0,
+      "fidelity_rate": 1.0
+    }
+  },
+  "rows": [
+    {
+      "base_id": "garchomp_eq_staraptor",
+      "style": "confident",
+      "text": "Garchomp's Earthquake hit Staraptor for 62-74% of its health, putting it in range for a guaranteed 2HKO next turn.",
+      "expected_range": [
+        62.0,
+        74.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Garchomp's Earthquake hit Staraptor for 62-74% of its health",
+          "subject": "",
+          "attacker": "Garchomp",
+          "defender": "Staraptor",
+          "move": "Earthquake",
+          "min_percent": 62.0,
+          "max_percent": 74.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "garchomp_eq_staraptor",
+      "style": "hedgy",
+      "text": "I think Garchomp's Earthquake probably did somewhere around 62-74% or so to Staraptor -- hard to say exactly, but it looked like a solid chunk of its health.",
+      "expected_range": [
+        62.0,
+        74.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Garchomp's Earthquake probably did somewhere around 62-74% or so to Staraptor",
+          "subject": "",
+          "attacker": "Garchomp",
+          "defender": "Staraptor",
+          "move": "Earthquake",
+          "min_percent": 62.0,
+          "max_percent": 74.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "fluttermane_moonblast_torkoal",
+      "style": "confident",
+      "text": "Flutter Mane's Moonblast dealt 88-104% to Torkoal, an outright OHKO.",
+      "expected_range": [
+        88.0,
+        104.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Flutter Mane's Moonblast dealt 88-104% to Torkoal, an outright OHKO.",
+          "subject": "",
+          "attacker": "Flutter Mane",
+          "defender": "Torkoal",
+          "move": "Moonblast",
+          "min_percent": 88.0,
+          "max_percent": 104.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "fluttermane_moonblast_torkoal",
+      "style": "hedgy",
+      "text": "Flutter Mane's Moonblast maybe took off something like 88 to 104 percent from Torkoal? It's rough to tell, but it seemed close to a knockout.",
+      "expected_range": [
+        88.0,
+        104.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Flutter Mane's Moonblast maybe took off something like 88 to 104 percent from Torkoal?",
+          "subject": "",
+          "attacker": "Flutter Mane",
+          "defender": "Torkoal",
+          "move": "Moonblast",
+          "min_percent": 88.0,
+          "max_percent": 104.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "kingambit_suckerpunch_gengar",
+      "style": "confident",
+      "text": "Kingambit's Sucker Punch connected for 35-42% against Gengar.",
+      "expected_range": [
+        35.0,
+        42.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Kingambit's Sucker Punch connected for 35-42% against Gengar.",
+          "subject": "",
+          "attacker": "Kingambit",
+          "defender": "Gengar",
+          "move": "Sucker Punch",
+          "min_percent": 35.0,
+          "max_percent": 42.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "kingambit_suckerpunch_gengar",
+      "style": "hedgy",
+      "text": "Kingambit's Sucker Punch, I'd guess, did somewhere in the 35 to 42 percent range on Gengar -- not totally certain though.",
+      "expected_range": [
+        35.0,
+        42.0
+      ],
+      "n_claims_extracted": 2,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "did somewhere in the 35 to 42 percent range on Gengar",
+          "subject": "",
+          "attacker": "Kingambit",
+          "defender": "Gengar",
+          "move": "Sucker Punch",
+          "min_percent": 35.0,
+          "max_percent": 42.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "basculegion_wavecrash_raichu",
+      "style": "confident",
+      "text": "Basculegion's Wave Crash dealt 50-59% to Raichu, nearly a 2HKO.",
+      "expected_range": [
+        50.0,
+        59.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Basculegion's Wave Crash dealt 50-59% to Raichu, nearly a 2HKO.",
+          "subject": "",
+          "attacker": "Basculegion",
+          "defender": "Raichu",
+          "move": "Wave Crash",
+          "min_percent": 50.0,
+          "max_percent": 59.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "basculegion_wavecrash_raichu",
+      "style": "hedgy",
+      "text": "Not 100% sure, but Basculegion's Wave Crash seemed to do roughly 50-59% or thereabouts to Raichu.",
+      "expected_range": [
+        50.0,
+        59.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Basculegion's Wave Crash seemed to do roughly 50-59% or thereabouts to Raichu.",
+          "subject": "",
+          "attacker": "Basculegion",
+          "defender": "Raichu",
+          "move": "Wave Crash",
+          "min_percent": 50.0,
+          "max_percent": 59.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "amoonguss_sludgebomb_ironhands",
+      "style": "confident",
+      "text": "Amoonguss's Sludge Bomb did 18-22% to Iron Hands.",
+      "expected_range": [
+        18.0,
+        22.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Amoonguss's Sludge Bomb did 18-22% to Iron Hands.",
+          "subject": "",
+          "attacker": "Amoonguss",
+          "defender": "Iron Hands",
+          "move": "Sludge Bomb",
+          "min_percent": 18.0,
+          "max_percent": 22.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "amoonguss_sludgebomb_ironhands",
+      "style": "hedgy",
+      "text": "Amoonguss's Sludge Bomb, best guess, was somewhere around 18 to 22 percent on Iron Hands, though I could be off.",
+      "expected_range": [
+        18.0,
+        22.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Amoonguss's Sludge Bomb, best guess, was somewhere around 18 to 22 percent on Iron Hands",
+          "subject": "",
+          "attacker": "Amoonguss",
+          "defender": "Iron Hands",
+          "move": "Sludge Bomb",
+          "min_percent": 18.0,
+          "max_percent": 22.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "dragapult_shadowball_talonflame",
+      "style": "confident",
+      "text": "Dragapult's Shadow Ball hit Talonflame for 55-65%, a likely 2HKO.",
+      "expected_range": [
+        55.0,
+        65.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "Dragapult's Shadow Ball hit Talonflame for 55-65%, a likely 2HKO.",
+          "subject": "",
+          "attacker": "Dragapult",
+          "defender": "Talonflame",
+          "move": "Shadow Ball",
+          "min_percent": 55.0,
+          "max_percent": 65.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    },
+    {
+      "base_id": "dragapult_shadowball_talonflame",
+      "style": "hedgy",
+      "text": "Dragapult's Shadow Ball -- and again, I'm not fully sure -- probably landed somewhere near 55 to 65 percent on Talonflame.",
+      "expected_range": [
+        55.0,
+        65.0
+      ],
+      "n_claims_extracted": 1,
+      "n_damage_claims_extracted": 1,
+      "extracted_any_damage_claim": true,
+      "extracted_value_matches_text": true,
+      "raw_extracted": [
+        {
+          "claim_type": "damage_range",
+          "raw_text": "probably landed somewhere near 55 to 65 percent on Talonflame.",
+          "subject": "",
+          "attacker": "Dragapult",
+          "defender": "Talonflame",
+          "move": "Shadow Ball",
+          "min_percent": 55.0,
+          "max_percent": 65.0,
+          "forme": "",
+          "stat": "",
+          "stages": null,
+          "blocked_move": ""
+        }
+      ]
+    }
+  ]
+}

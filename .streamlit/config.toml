@@ -1,0 +1,17 @@
+# ProfessorVGC's Streamlit theme — a light "battle notebook" palette (sky-blue
+# chrome, ink-navy text, blue accent) ported from a Figma Make front-end
+# design prototype (see ADR-026). These colors drive Streamlit's OWN native
+# widgets (buttons, sliders, text inputs, expanders, alerts) so they read
+# correctly against the sky-blue page background painted by the CSS in
+# src/ui/app.py's _inject_global_styles() — hand-overriding every internal
+# Streamlit CSS class instead of using this file would be far more fragile
+# across Streamlit versions. The battle-replay panel itself stays on its own
+# deliberately dark "genetics lab" backdrop regardless of this theme (see the
+# _LAB_BACKGROUND_CSS_DEFAULT comment in app.py) — this file only governs the
+# page chrome around it.
+[theme]
+base = "light"
+primaryColor = "#2563a8"
+backgroundColor = "#eaf3fb"
+secondaryBackgroundColor = "#f5f9fd"
+textColor = "#1e2a4a"

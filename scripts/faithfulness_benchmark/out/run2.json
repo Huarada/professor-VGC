@@ -1,0 +1,3340 @@
+{
+  "summary": {
+    "condition_a_grounded": {
+      "total_claims": 86,
+      "correct": 64,
+      "incorrect": 21,
+      "unverifiable": 1,
+      "strict_faithfulness_rate": 0.7441860465116279,
+      "lenient_faithfulness_rate": 0.7529411764705882
+    },
+    "condition_b_naive": {
+      "total_claims": 88,
+      "correct": 67,
+      "incorrect": 20,
+      "unverifiable": 1,
+      "strict_faithfulness_rate": 0.7613636363636364,
+      "lenient_faithfulness_rate": 0.7701149425287356
+    }
+  },
+  "report": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "fixtures": [
+      {
+        "fixture_id": "bench_only",
+        "tags": [
+          "bench_only"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In this battle, Garchomp decisively defeated Raichu in a single turn, leading to a quick victory for player b (p2). \n\n### Turn Breakdown:\n1. **Turn 1**:\n   - **Raichu** (p1) was sent out first, followed by **Garchomp** (p2). \n   - Raichu used **Focus Blast** against Garchomp, dealing 60% damage. The projected damage for this move was between 33.5% and 39.5%, confirming it as a guaranteed 3HKO. However, it did not manage to knock out Garchomp.\n   - Garchomp retaliated with **Earthquake**, which resulted in Raichu fainting. The damage output from Earthquake was guaranteed to be an OHKO, dealing between 170.4% and 201.5% damage to Raichu.\n\n### Key Insights:\n- **Garchomp** was the pivotal Pokémon in this match. Its ability to withstand Raichu's attack and respond with a guaranteed OHKO was crucial. Garchomp's **Earthquake** not only secured the immediate victory but also showcased its role as a strong offensive threat.\n- **Raichu**, while it did manage to land a hit, was unable to survive Garchomp's powerful attack. Its role as a potential damage dealer was cut short, highlighting the importance of having a Pokémon that can withstand hits and retaliate effectively.\n\nIn conclusion, Garchomp's Earthquake was decisive in this battle, leading to Raichu's quick defeat and securing the win for player b. The effectiveness of Garchomp as a glass cannon and its ability to capitalize on Raichu's vulnerability were key factors in this outcome.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Raichu (p1) was sent out first",
+                "subject": "Raichu",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Garchomp (p2)",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Raichu used Focus Blast against Garchomp",
+                "subject": "Raichu",
+                "attacker": "",
+                "defender": "",
+                "move": "Focus Blast",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "the projected damage for this move was between 33.5% and 39.5%",
+                "subject": "",
+                "attacker": "Raichu",
+                "defender": "Garchomp",
+                "move": "Focus Blast",
+                "min_percent": 33.5,
+                "max_percent": 39.5,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "dealing 60% damage",
+                "subject": "",
+                "attacker": "Raichu",
+                "defender": "Garchomp",
+                "move": "Focus Blast",
+                "min_percent": 60.0,
+                "max_percent": 60.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 60.0-60.0% vs real [(33.5, 39.5), (33.5, 39.5), (33.5, 39.5)]"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp retaliated with Earthquake",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Earthquake",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "dealing between 170.4% and 201.5% damage to Raichu",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Raichu",
+                "move": "Earthquake",
+                "min_percent": 170.4,
+                "max_percent": 201.5,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "securing the win for player b",
+                "subject": "player b",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, we have Player 1 (p1) using Raichu and Player 2 (p2) using Garchomp and Whimsicott. The match starts with both Pokémon at full health (100/100 HP). \n\n**Turn 1:**\n- Player 1 leads with Raichu and uses **Focus Blast** against Garchomp, dealing significant damage (60/100 HP remaining for Garchomp). This indicates that Focus Blast is a strong move, likely dealing around 60% of Garchomp's total HP.\n- In response, Garchomp retaliates with **Earthquake**, which is a powerful move that hits all adjacent Pokémon. Raichu, being an Electric-type, is weak to Ground-type moves, resulting in a knockout (0 HP remaining for Raichu).\n\nThe key points from this battle are:\n1. **Raichu's Role**: Raichu was intended to deal damage to Garchomp, but it was unable to survive after its attack. The use of Focus Blast was a good choice against Garchomp, but it ultimately resulted in Raichu's fainting due to Garchomp's Earthquake.\n  \n2. **Garchomp's Impact**: Garchomp was the decisive Pokémon in this match. It not only took a hit but also dealt a critical blow that led to Raichu's fainting. Garchomp's ability to hit hard and fast made it a pivotal player in this battle.\n\n3. **Whimsicott's Absence**: Whimsicott did not participate in this turn, but it could potentially play a role later in the match if it were to come in. However, since the battle ended after this turn with Raichu's fainting, Whimsicott's impact was not realized in this specific game.\n\nIn summary, Garchomp was the Pokémon that mattered most in this battle, as it secured the victory for Player 2 by knocking out Raichu. Raichu's attempt to deal damage was significant, but it ultimately fell short due to Garchomp's powerful response.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Player 1 leads with Raichu and uses **Focus Blast** against Garchomp",
+                "subject": "Raichu",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Player 1 leads with Raichu and uses **Focus Blast** against Garchomp",
+                "subject": "Raichu",
+                "attacker": "",
+                "defender": "",
+                "move": "Focus Blast",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "dealing significant damage (60/100 HP remaining for Garchomp)",
+                "subject": "",
+                "attacker": "Raichu",
+                "defender": "Garchomp",
+                "move": "Focus Blast",
+                "min_percent": 60.0,
+                "max_percent": 60.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 60.0-60.0% vs real [(33.5, 39.5), (33.5, 39.5), (33.5, 39.5)]"
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Garchomp retaliates with **Earthquake**",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp retaliates with **Earthquake**",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Earthquake",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "resulting in a knockout (0 HP remaining for Raichu)",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Raichu",
+                "move": "Earthquake",
+                "min_percent": 100.0,
+                "max_percent": 100.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 100.0-100.0% vs real [(170.4, 201.5), (170.4, 201.5), (170.4, 201.5)]"
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Whimsicott did not participate in this turn",
+                "subject": "Whimsicott",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "Whimsicott was team-previewed but never brought in (benched)"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "Garchomp was the Pokémon that mattered most in this battle, as it secured the victory for Player 2 by knocking out Raichu.",
+                "subject": "Player 2",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "mega_evolution",
+        "tags": [
+          "mega_evolution"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In this battle, Ash faced off against Gary in a single-turn encounter. The match began with Ash sending out Gengar, while Gary sent out Garchomp.\n\n**Turn 1:**\n- Ash's Gengar transformed into Gengar-Mega, gaining enhanced stats and the ability to hit harder.\n- Gengar then used Shadow Ball against Garchomp, dealing significant damage. The move's projected damage was between 51.9% and 61.6%, and it ended up leaving Garchomp at exactly 60% HP. This confirmed that Shadow Ball was a guaranteed 2HKO (two-hit knockout) on Garchomp.\n\nThe speed order for this turn was clear: Gengar moved first with a speed of 200, while Garchomp followed with a speed of 169. This speed advantage allowed Gengar to strike before Garchomp could respond.\n\nOverall, the decisive action was Gengar's use of Shadow Ball, which put Garchomp in a precarious position. Although Garchomp was still standing at 60% HP after the attack, the battle concluded after this single turn, resulting in Ash's victory. The effectiveness of Gengar's attack and its speed were critical factors in securing the win.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "the match began with Ash sending out Gengar",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "while Gary sent out Garchomp",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "forme_change",
+                "raw_text": "Ash's Gengar transformed into Gengar-Mega",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "Gengar-Mega",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Gengar then used Shadow Ball against Garchomp",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "Shadow Ball",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "The move's projected damage was between 51.9% and 61.6%",
+                "subject": "",
+                "attacker": "Gengar",
+                "defender": "Garchomp",
+                "move": "Shadow Ball",
+                "min_percent": 51.9,
+                "max_percent": 61.6,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "it ended up leaving Garchomp at exactly 60% HP",
+                "subject": "",
+                "attacker": "Gengar",
+                "defender": "Garchomp",
+                "move": "Shadow Ball",
+                "min_percent": 60.0,
+                "max_percent": 60.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "Gengar moved first with a speed of 200",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "spe",
+                "stages": 1,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "no recorded spe change for Gengar"
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "while Garchomp followed with a speed of 169",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "spe",
+                "stages": -1,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "no recorded spe change for Garchomp"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "resulting in Ash's victory",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, we have Ash (player 1) facing off against Gary (player 2). The match begins with both players sending out their Pokémon.\n\n**Turn 1:**\n- Ash sends out **Gengar**, which is at full health (100/100 HP).\n- Gary sends out **Garchomp**, also at full health (100/100 HP).\n- Ash mega evolves Gengar into **Mega Gengar** using the Gengarite.\n- Mega Gengar then uses **Shadow Ball** against Garchomp, dealing significant damage. Garchomp goes from 100 HP to 60 HP, indicating that Shadow Ball dealt approximately 40% of Garchomp's total health.\n\nAt this point, Ash has taken the lead with a strong hit on Garchomp, bringing it down to 60 HP. Garchomp is now in a precarious position, as it has lost a substantial amount of health early in the game, and Mega Gengar's Shadow Ball is a powerful special attack that can threaten Garchomp further.\n\nThe battle concludes with Ash winning the match after just one turn, likely due to the overwhelming advantage gained from the initial hit. Garchomp's ability to retaliate is compromised, and Ash's Mega Gengar remains at full health, making it a dominant force in this early stage of the game. \n\nOverall, the match showcased the effectiveness of Mega Gengar's offensive capabilities against Garchomp, leading to a swift victory for Ash.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Ash sends out **Gengar**",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary sends out **Garchomp**",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "forme_change",
+                "raw_text": "Ash mega evolves Gengar into **Mega Gengar**",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "Mega Gengar",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Mega Gengar then uses **Shadow Ball** against Garchomp",
+                "subject": "Mega Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "Shadow Ball",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Shadow Ball dealt approximately 40% of Garchomp's total health",
+                "subject": "",
+                "attacker": "Mega Gengar",
+                "defender": "Garchomp",
+                "move": "Shadow Ball",
+                "min_percent": 40.0,
+                "max_percent": 40.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 40.0-40.0% vs real [(51.9, 61.6), (51.9, 61.6), (51.9, 61.6)]"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "The battle concludes with Ash winning the match",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "stat_stage_intimidate",
+        "tags": [
+          "stat_stage"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In this battle, Ash's Incineroar faced off against Gary's Garchomp. The match was quite brief, lasting only a single turn, but several key actions unfolded that significantly influenced the outcome.\n\nAt the start of the match, Incineroar's ability, Intimidate, activated, lowering Garchomp's Attack by one stage. This was a crucial factor, as it reduced Garchomp's offensive potential right from the beginning. Garchomp then used Swords Dance, which increased its Attack by two stages, effectively negating the Intimidate drop and boosting its offensive capabilities. However, this setup was interrupted by Incineroar's Fake Out, which targeted Garchomp and caused it to flinch, preventing it from executing any further actions that turn.\n\nThe stat changes in this battle were pivotal. Garchomp's Attack was initially reduced by Intimidate, which would have made its Swords Dance less effective if it had not been able to boost its Attack afterward. However, the flinch from Fake Out meant that Garchomp could not capitalize on its increased Attack that turn, leaving it vulnerable to Incineroar's follow-up moves in subsequent turns.\n\nIn summary, the combination of Incineroar's Intimidate and Fake Out effectively stifled Garchomp's ability to attack, allowing Ash to secure the victory. The stat changes mattered significantly, as they directly influenced Garchomp's potential to deal damage and execute its strategy.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "In this battle, Ash's Incineroar faced off against Gary's Garchomp.",
+                "subject": "Incineroar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "In this battle, Ash's Incineroar faced off against Gary's Garchomp.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "Incineroar's ability, Intimidate, activated, lowering Garchomp's Attack by one stage.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "atk",
+                "stages": -1,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "Garchomp then used Swords Dance, which increased its Attack by two stages.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "atk",
+                "stages": 2,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "However, this setup was interrupted by Incineroar's Fake Out, which targeted Garchomp and caused it to flinch.",
+                "subject": "Incineroar",
+                "attacker": "",
+                "defender": "",
+                "move": "Fake Out",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "protect_block",
+                "raw_text": "which targeted Garchomp and caused it to flinch, preventing it from executing any further actions that turn.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": "any further actions"
+              },
+              "verdict": "incorrect",
+              "reason": "Garchomp never blocked any further actions with Protect"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "allowing Ash to secure the victory.",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, Ash (player 1) used an Incineroar, while Gary (player 2) brought a Garchomp. The match started with both Pokémon at full health (100/100 HP).\n\n**Turn 1 Analysis:**\n- **Incineroar** entered the field and activated its Intimidate ability, which lowered Garchomp's Attack stat by one stage. This is significant because Garchomp is a physical attacker, and reducing its Attack can mitigate its damage output.\n- **Garchomp** responded by using Swords Dance, which increased its Attack by two stages, effectively negating the Intimidate drop and boosting its Attack to a total of +1 stage (since it was initially at -1 due to Intimidate).\n- **Incineroar** then used Fake Out on Garchomp, which prevented Garchomp from moving and dealt damage. The log indicates Garchomp was left with 90 HP out of 100, meaning Fake Out dealt roughly 10% of Garchomp's total HP.\n\n**Outcome:**\n- The turn concluded with Garchomp at 90% health and Ash winning the battle. However, the log does not provide further details on subsequent turns or how the battle concluded, which suggests that the battle may have ended prematurely or that Garchomp was unable to recover from the damage dealt by Fake Out.\n\n**Stat Changes Impact:**\nThe stat changes were crucial in this scenario. The Intimidate from Incineroar reduced Garchomp's Attack, which is vital for its damage output. Garchomp's Swords Dance aimed to counteract this by boosting its Attack, but the effectiveness of this strategy was limited by the fact that it was unable to attack due to Fake Out. \n\nIn summary, while Garchomp's Swords Dance was a strong move to increase its offensive capabilities, the combination of Incineroar's Fake Out and the initial Intimidate likely played a significant role in preventing Garchomp from executing its strategy effectively. Thus, the stat changes mattered greatly in determining the flow of the battle, leading to Ash's victory.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Ash (player 1) used an Incineroar",
+                "subject": "Incineroar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary (player 2) brought a Garchomp",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "Incineroar entered the field and activated its Intimidate ability, which lowered Garchomp's Attack stat by one stage.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "atk",
+                "stages": -1,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "Garchomp responded by using Swords Dance, which increased its Attack by two stages",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "atk",
+                "stages": 2,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "boosting its Attack to a total of +1 stage (since it was initially at -1 due to Intimidate)",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "atk",
+                "stages": 1,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Incineroar then used Fake Out on Garchomp",
+                "subject": "Incineroar",
+                "attacker": "",
+                "defender": "",
+                "move": "Fake Out",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "meaning Fake Out dealt roughly 10% of Garchomp's total HP",
+                "subject": "",
+                "attacker": "Incineroar",
+                "defender": "Garchomp",
+                "move": "Fake Out",
+                "min_percent": 10.0,
+                "max_percent": 10.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 10.0-10.0% vs real [(13.5, 16.2)]"
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "The turn concluded with Garchomp at 90% health",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "hp",
+                "stages": 90,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "no recorded hp change for Garchomp"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "Ash winning the battle",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "protect_spread",
+        "tags": [
+          "protect_read"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In the battle, Ceruledge used Protect on Turn 1 while Garchomp executed Earthquake. This move was significant because Garchomp's Earthquake was super effective against Ceruledge, with a guaranteed OHKO (one-hit knockout) projected, dealing between 100.6% and 120.5% damage. The Protect successfully blocked this attack, preventing Ceruledge from being knocked out.\n\nHowever, analyzing the situation further, we see that while the Protect was effective in blocking the immediate threat from Garchomp, it was not a genuine read. The Protect was classified as a \"non-genuine read\" because Garchomp's Earthquake was a spread move that also targeted Kingambit, which ended up at 16% HP after the attack. This means that even if Ceruledge had not used Protect, Garchomp would have still dealt significant damage to Kingambit, guaranteeing a 2HKO (two-hit knockout) on it.\n\nMoreover, the Protect did not deny an immediate KO threat to Ceruledge, as it was indeed under threat from Garchomp's Earthquake. Thus, while the Protect was a defensive maneuver that avoided a guaranteed OHKO, it did not capitalize on a specific read of the opponent's intentions. Instead, it was more of a standard defensive play in response to a clear threat.\n\nIn conclusion, while Ceruledge's Protect was a valid defensive action that prevented a significant amount of damage, it was not a particularly strategic read based on the circumstances of the turn. The decision to use Protect was justified in terms of avoiding immediate danger, but it did not exploit a specific prediction about Garchomp's actions.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "In the battle, Ceruledge used Protect on Turn 1",
+                "subject": "Ceruledge",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "while Garchomp executed Earthquake",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Garchomp's Earthquake was super effective against Ceruledge, with a guaranteed OHKO (one-hit knockout) projected, dealing between 100.6% and 120.5% damage.",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Ceruledge",
+                "move": "Earthquake",
+                "min_percent": 100.6,
+                "max_percent": 120.5,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "protect_block",
+                "raw_text": "The Protect successfully blocked this attack, preventing Ceruledge from being knocked out.",
+                "subject": "Ceruledge",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": "Earthquake"
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "which ended up at 16% HP after the attack.",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Kingambit",
+                "move": "Earthquake",
+                "min_percent": 2.0,
+                "max_percent": 2.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 2.0-2.0% vs real [(53.1, 63.8), (53.1, 63.8)]"
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, we see Ash using Garchomp and Gary using Ceruledge and Kingambit. \n\nAt the start of the match, Ceruledge opted to use Protect on the first turn. This was a strategic decision, likely anticipating a strong attack from Garchomp. However, Garchomp used Earthquake, which is a spread move that hits both opposing Pokémon. Since Ceruledge used Protect, it successfully avoided damage, but Kingambit took the full brunt of the attack.\n\nKingambit, being hit by the Earthquake, suffered a significant amount of damage, going from 100% HP to 16% HP. This indicates that Earthquake dealt roughly 84% of Kingambit's HP in damage, which is a substantial hit. \n\nGiven that Garchomp is a strong physical attacker and Earthquake is a powerful move, Ceruledge's Protect was a reasonable choice to avoid damage. However, it ultimately did not prevent the loss of Kingambit, which was a critical Pokémon for Gary. \n\nIn conclusion, while Ceruledge's Protect was a good read in terms of avoiding damage for itself, it did not prevent the significant damage dealt to Kingambit. Therefore, while the Protect was a sound tactical choice, it did not yield a favorable outcome for Gary in this turn, as he still lost a valuable Pokémon.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "we see Ash using Garchomp",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary using Ceruledge",
+                "subject": "Ceruledge",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary using Ceruledge and Kingambit",
+                "subject": "Kingambit",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Ceruledge opted to use Protect on the first turn",
+                "subject": "Ceruledge",
+                "attacker": "",
+                "defender": "",
+                "move": "Protect",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp used Earthquake",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Earthquake",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "protect_block",
+                "raw_text": "Since Ceruledge used Protect, it successfully avoided damage",
+                "subject": "Ceruledge",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": "Earthquake"
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "going from 100% HP to 16% HP. This indicates that Earthquake dealt roughly 84% of Kingambit's HP in damage",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Kingambit",
+                "move": "Earthquake",
+                "min_percent": 84.0,
+                "max_percent": 84.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 84.0-84.0% vs real [(53.1, 63.8), (53.1, 63.8)]"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "it ultimately did not prevent the loss of Kingambit, which was a critical Pokémon for Gary.",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "forfeit",
+        "tags": [
+          "forfeit"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In this match, Ash (p1) forfeited after the first turn, resulting in Gary (p2) being declared the winner. The game did not conclude with a full team defeat; rather, it ended prematurely with Ash's decision to forfeit.\n\nDuring the single turn that was played, Ash sent out Garchomp, while Gary sent out Ceruledge. Garchomp used Earthquake, which was a strong choice given its high damage potential. The move was calculated to deal between 152 and 182 damage to Ceruledge, and it was guaranteed to score a knockout (OHKO), as it would have left Ceruledge with 40% HP after the attack. This indicates that Garchomp was in a strong position to eliminate Ceruledge on the next turn.\n\nThe decision to forfeit may suggest that Ash felt the situation was unfavorable after the initial damage dealt to Ceruledge, or perhaps he anticipated being unable to recover from the impending loss of his Pokémon. \n\nIn terms of gameplay, Ash's choice of Garchomp was solid, as it is a powerful attacker capable of dealing significant damage, especially with moves like Earthquake. However, the lack of further actions or strategic plays due to the forfeit means we cannot fully assess the effectiveness of his overall strategy or team composition.\n\nGary, on the other hand, had not yet made a move that could be evaluated, but his choice of Ceruledge, a Pokémon that can potentially sweep with moves like Swords Dance and Bitter Blade, indicates a strong offensive strategy. \n\nUltimately, while Ash had the advantage in the first turn, the decision to forfeit means we cannot definitively say who played better overall, as the match did not progress beyond the initial exchange. The game concluded with Ash's forfeit, leaving Gary as the winner without further actions to analyze.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "forfeit",
+                "raw_text": "Ash (p1) forfeited after the first turn",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "resulting in Gary (p2) being declared the winner",
+                "subject": "Gary",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Ash sent out Garchomp",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary sent out Ceruledge",
+                "subject": "Ceruledge",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp used Earthquake",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Earthquake",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "it would have left Ceruledge with 40% HP after the attack",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Ceruledge",
+                "move": "Earthquake",
+                "min_percent": 40.0,
+                "max_percent": 40.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 40.0-40.0% vs real [(100.7, 120.5), (100.7, 120.5), (100.7, 120.5)]"
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, Ash used Garchomp while Gary brought Ceruledge. The game started with both Pokémon at full health (100/100). On turn 1, Ash opted to use Earthquake with Garchomp, which dealt significant damage to Ceruledge, reducing its HP to 40/100. This indicates that Earthquake dealt about 60% of Ceruledge's total HP, which is a substantial hit.\n\nHowever, the game ended abruptly with Ash forfeiting immediately after the first turn. This suggests that Ash may have felt that the situation was unfavorable after seeing the damage output from Garchomp's Earthquake. It's possible that Ash anticipated that Ceruledge could retaliate effectively or that he had a poor matchup against Gary's team overall.\n\nIn terms of gameplay, Gary played better by capitalizing on the initial turn with a strong move that put Ash in a difficult position. Ash's decision to forfeit rather than continue suggests he recognized that the battle was not in his favor, especially considering the damage dealt. Overall, Gary's choice of Pokémon and the immediate impact of the first turn put him in a commanding position, leading to Ash's forfeit.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Ash used Garchomp",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary brought Ceruledge",
+                "subject": "Ceruledge",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Earthquake dealt about 60% of Ceruledge's total HP",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Ceruledge",
+                "move": "Earthquake",
+                "min_percent": 60.0,
+                "max_percent": 60.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 60.0-60.0% vs real [(100.7, 120.5), (100.7, 120.5), (100.7, 120.5)]"
+            },
+            {
+              "claim": {
+                "claim_type": "forfeit",
+                "raw_text": "the game ended abruptly with Ash forfeiting immediately after the first turn",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "protect_genuine_read",
+        "tags": [
+          "protect_read"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "Garchomp's decision to use Protect on turn 2 was indeed a good one. By using Protect, Garchomp successfully blocked Staraptor's Close Combat, which had a projected damage range of 30.3% to 36.2% of Garchomp's HP, with a 47.1% chance to 3HKO Garchomp. This indicates that Staraptor posed a significant threat to Garchomp, and the Protect effectively prevented any damage from this attack.\n\nThe timeline shows that Garchomp had already dealt substantial damage to both opposing Pokémon with its Earthquake on turn 1, leaving Staraptor at 64% and Ceruledge at 58% HP. By using Protect, Garchomp not only avoided potential damage but also preserved its ability to continue applying pressure in the following turns.\n\nMoreover, Garchomp's role as a glass cannon relies on its ability to attack without taking significant damage in return. Protect is a strategic move that allows it to mitigate incoming threats while maintaining its offensive presence. In this scenario, Garchomp's Protect was a well-justified play, as it allowed it to stay in the game and continue to threaten the opposing team without risking a KO from Staraptor.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp's decision to use Protect on turn 2 was indeed a good one.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Protect",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "protect_block",
+                "raw_text": "By using Protect, Garchomp successfully blocked Staraptor's Close Combat.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": "Close Combat"
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "which had a projected damage range of 30.3% to 36.2% of Garchomp's HP",
+                "subject": "",
+                "attacker": "Staraptor",
+                "defender": "Garchomp",
+                "move": "Close Combat",
+                "min_percent": 30.3,
+                "max_percent": 36.2,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Garchomp successfully blocked Staraptor's Close Combat.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Garchomp had already dealt substantial damage to both opposing Pokémon with its Earthquake on turn 1, leaving Staraptor at 64% HP.",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Staraptor",
+                "move": "Earthquake",
+                "min_percent": 64.0,
+                "max_percent": 64.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 64.0-64.0% vs real [(0.0, 0.0), (0.0, 0.0), (0.0, 0.0)]"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "leaving Ceruledge at 58% HP.",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Ceruledge",
+                "move": "Earthquake",
+                "min_percent": 58.0,
+                "max_percent": 58.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 58.0-58.0% vs real [(100.7, 120.5)]"
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In the given battle log, Garchomp's decision to use Protect on turn 2 was indeed a good read. Let's break down the situation:\n\n1. **Turn 1 Analysis**: Garchomp used Earthquake, which dealt significant damage to both opposing Pokémon, Staraptor and Ceruledge. Staraptor was left with 64 HP (64% of its health), and Ceruledge with 58 HP (58% of its health). This indicates that Earthquake hit both Pokémon for roughly 36% of Staraptor's health and 42% of Ceruledge's health, which is a strong hit, especially considering the spread damage.\n\n2. **Turn 2 Analysis**: Garchomp opted to use Protect, anticipating an attack from Staraptor. Staraptor used Close Combat, which is a powerful Fighting-type move. Since Garchomp was protected, it took no damage from this attack. Close Combat would have likely dealt significant damage, potentially knocking out Garchomp if it had not used Protect, given Staraptor's high Attack stat and the effectiveness of the move against Garchomp.\n\n3. **Outcome**: By using Protect, Garchomp not only avoided damage but also allowed Basculegion to potentially retaliate or take advantage of the situation without the threat of Garchomp being knocked out. This strategic play allowed Ash to maintain a strong position in the battle, ultimately leading to his victory.\n\nIn conclusion, Garchomp's use of Protect on turn 2 was a well-timed defensive move that successfully mitigated a significant threat and contributed to Ash's win.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp used Earthquake, which dealt significant damage to both opposing Pokémon, Staraptor and Ceruledge.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Earthquake",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "This indicates that Earthquake hit both Pokémon for roughly 36% of Staraptor's health and 42% of Ceruledge's health.",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Staraptor",
+                "move": "Earthquake",
+                "min_percent": 36.0,
+                "max_percent": 36.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 36.0-36.0% vs real [(0.0, 0.0), (0.0, 0.0), (0.0, 0.0)]"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "This indicates that Earthquake hit both Pokémon for roughly 36% of Staraptor's health and 42% of Ceruledge's health.",
+                "subject": "",
+                "attacker": "Garchomp",
+                "defender": "Ceruledge",
+                "move": "Earthquake",
+                "min_percent": 42.0,
+                "max_percent": 42.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 42.0-42.0% vs real [(100.7, 120.5)]"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp opted to use Protect, anticipating an attack from Staraptor.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Protect",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Staraptor used Close Combat, which is a powerful Fighting-type move.",
+                "subject": "Staraptor",
+                "attacker": "",
+                "defender": "",
+                "move": "Close Combat",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "protect_block",
+                "raw_text": "Since Garchomp was protected, it took no damage from this attack.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": "Close Combat"
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "This strategic play allowed Ash to maintain a strong position in the battle, ultimately leading to his victory.",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "protect_misallocated",
+        "tags": [
+          "protect_read"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In this battle, Garchomp's use of Protect played a significant role in the outcome, but ultimately, it did not help p2 (Gary) win the exchange.\n\nDuring Turn 1, Garchomp used Protect, successfully blocking Charizard's Heat Wave, which was a spread move that would have dealt damage to both Garchomp and Staraptor. The projected damage from Heat Wave against Garchomp was 13.5% to 16.2%, indicating that it could have potentially been a 7HKO. However, the real impact of this Protect was on Staraptor, which ended up taking damage from Heat Wave and was left with only 28% HP. \n\nAfter Garchomp's Protect, Basculegion then used Last Respects, which resulted in Staraptor fainting. This was crucial because Staraptor was a key offensive threat for p2, and losing it significantly diminished p2's chances of winning the battle. The Protect did prevent some damage to Garchomp, but it did not prevent the loss of Staraptor, which was a more critical factor in the overall outcome.\n\nFurthermore, the protect reads entry indicates that Garchomp's Protect was classified as a misallocation since it did not block an immediate KO threat, and Staraptor fainted on the same turn. This means that while Garchomp avoided some damage, the decision to use Protect did not translate into a strategic advantage in this situation.\n\nIn summary, while Garchomp's Protect did block some damage, it ultimately did not contribute positively to p2's chances of winning, as the loss of Staraptor was a decisive moment in the match.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp used Protect",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Protect",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "protect_block",
+                "raw_text": "Garchomp used Protect, successfully blocking Charizard's Heat Wave",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": "Charizard's Heat Wave"
+              },
+              "verdict": "incorrect",
+              "reason": "Garchomp never blocked Charizard's Heat Wave with Protect"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "The projected damage from Heat Wave against Garchomp was 13.5% to 16.2%",
+                "subject": "",
+                "attacker": "Charizard",
+                "defender": "Garchomp",
+                "move": "Heat Wave",
+                "min_percent": 13.5,
+                "max_percent": 16.2,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Staraptor... was left with only 28% HP",
+                "subject": "",
+                "attacker": "Charizard",
+                "defender": "Staraptor",
+                "move": "Heat Wave",
+                "min_percent": 28.0,
+                "max_percent": 28.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 28.0-28.0% vs real [(34.4, 40.6), (34.4, 40.6), (34.4, 40.6)]"
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Staraptor fainting",
+                "subject": "Staraptor",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Basculegion then used Last Respects",
+                "subject": "Basculegion",
+                "attacker": "",
+                "defender": "",
+                "move": "Last Respects",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, we see Ash's team consisting of Charizard and Basculegion facing off against Gary's Garchomp and Staraptor. \n\nDuring turn 1, Garchomp used Protect, which is a defensive move that prevents it from taking damage for that turn. However, this decision did not help Gary win the exchange. Instead, it allowed Ash to capitalize on the situation. Charizard used Heat Wave, which is a spread move that hit both opposing Pokémon. Since Garchomp was protected, it took no damage, but Staraptor, which was not protected, took significant damage (28 HP out of 100, roughly 28% of its total HP). \n\nFollowing that, Basculegion used Last Respects on Staraptor, which knocked it out completely (0 HP). This was a critical moment because Staraptor was eliminated from the field, giving Ash a significant advantage early in the match.\n\nIn summary, Garchomp's use of Protect did not contribute positively to Gary's chances in this exchange. Instead, it allowed Ash to deal damage to Staraptor and ultimately secure a knockout, leading to an immediate advantage in the battle. Thus, Garchomp's Protect was not a beneficial play in this context.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "we see Ash's team consisting of Charizard and Basculegion",
+                "subject": "Charizard",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "we see Ash's team consisting of Charizard and Basculegion",
+                "subject": "Basculegion",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "facing off against Gary's Garchomp and Staraptor",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "facing off against Gary's Garchomp and Staraptor",
+                "subject": "Staraptor",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Garchomp used Protect",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Protect",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Charizard used Heat Wave",
+                "subject": "Charizard",
+                "attacker": "",
+                "defender": "",
+                "move": "Heat Wave",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Staraptor, which was not protected, took significant damage (28 HP out of 100, roughly 28% of its total HP)",
+                "subject": "",
+                "attacker": "Charizard",
+                "defender": "Staraptor",
+                "move": "Heat Wave",
+                "min_percent": 28.0,
+                "max_percent": 28.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 28.0-28.0% vs real [(34.4, 40.6), (34.4, 40.6), (34.4, 40.6)]"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Basculegion used Last Respects on Staraptor",
+                "subject": "Basculegion",
+                "attacker": "",
+                "defender": "",
+                "move": "Last Respects",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "which knocked it out completely (0 HP)",
+                "subject": "",
+                "attacker": "Basculegion",
+                "defender": "Staraptor",
+                "move": "Last Respects",
+                "min_percent": 100.0,
+                "max_percent": 100.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 100.0-100.0% vs real [(0.0, 0.0), (0.0, 0.0)]"
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "giving Ash a significant advantage early in the match",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "advantage",
+                "stages": 1,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "'Ash' is not a real Pokemon in this game"
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "mirror_match_protect",
+        "tags": [
+          "protect_read",
+          "mirror_match"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In the battle between Ash and Gary, the knockout of Staraptor was primarily credited to p1's Garchomp, which used Dragon Claw to faint it. However, the context surrounding this knockout is important for understanding the role of p2's Garchomp's Protect and whether it was a good read.\n\nDuring Turn 1, p2's Garchomp used Protect, successfully blocking Charizard's Heat Wave. This was a spread move that would have dealt significant damage to both opposing Pokémon. The projected damage against Staraptor was between 34.4% and 40.6%, with a guaranteed 3HKO, meaning Staraptor would have been left with low health after the attack. Instead, it ended the turn at 28% HP, indicating that it had taken damage from Charizard's Heat Wave but was still able to survive.\n\nThe Protect was classified as a misallocated read because it did not deny an immediate threat to Garchomp, as Staraptor fainted that turn. The Protect did not prevent a guaranteed knockout on Staraptor, which was ultimately taken out by Garchomp's Dragon Claw. Thus, while the Protect did block some damage, it did not effectively protect Staraptor from being knocked out, and the decision to use it can be viewed as a misplay.\n\nIn summary, the credit for Staraptor's knockout goes to p1's Garchomp, which delivered the final blow with Dragon Claw. p2's Garchomp's Protect was not a good read, as it did not prevent the loss of Staraptor and did not address the immediate threat posed by Charizard's Heat Wave effectively.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "the knockout of Staraptor was primarily credited to p1's Garchomp",
+                "subject": "p1's Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "which used Dragon Claw to faint it",
+                "subject": "p1's Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Dragon Claw",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "p2's Garchomp used Protect",
+                "subject": "p2's Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "protect_block",
+                "raw_text": "successfully blocking Charizard's Heat Wave",
+                "subject": "p2's Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": "Charizard's Heat Wave"
+              },
+              "verdict": "incorrect",
+              "reason": "p2's Garchomp never blocked Charizard's Heat Wave with Protect"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "The projected damage against Staraptor was between 34.4% and 40.6%",
+                "subject": "",
+                "attacker": "Charizard",
+                "defender": "Staraptor",
+                "move": "Heat Wave",
+                "min_percent": 34.4,
+                "max_percent": 40.6,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "it ended the turn at 28% HP",
+                "subject": "",
+                "attacker": "Charizard",
+                "defender": "Staraptor",
+                "move": "Heat Wave",
+                "min_percent": 28.0,
+                "max_percent": 28.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 28.0-28.0% vs real [(34.4, 40.6), (34.4, 40.6), (34.4, 40.6)]"
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "The Protect was classified as a misallocated read",
+                "subject": "p2's Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "def",
+                "stages": -1,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "no recorded def change for p2's Garchomp"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "the credit for Staraptor's knockout goes to p1's Garchomp",
+                "subject": "p1's Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, Ash (p1) and Gary (p2) both brought Garchomp and Charizard, but Gary also brought Staraptor, which ultimately got knocked out. \n\nDuring turn 1, Gary's Garchomp used Protect, which is a common strategy to shield against incoming attacks. However, this move allowed Ash's Charizard to use Heat Wave, which hit both of Gary's Pokémon. The Heat Wave dealt approximately 28 HP of damage to Staraptor, leaving it at 72 HP. Following that, Ash's Garchomp used Dragon Claw on Staraptor, which knocked it out completely, as indicated by the \"0 fnt\" in the log.\n\nGiven that Staraptor was knocked out by Ash's Garchomp after taking damage from Charizard's Heat Wave, the credit for the knockout should go to Ash. Gary's Protect was not a good read in this situation. By using Protect, Gary's Garchomp avoided damage but left Staraptor vulnerable to the combined attacks from Ash's Pokémon. If Gary had instead chosen to attack with Staraptor, he could have potentially dealt damage to one of Ash's Pokémon instead of losing it without inflicting any harm. \n\nIn summary, Ash should receive credit for the Staraptor knockout, and Gary's Protect was not an effective play in this context.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "both brought Garchomp",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "both brought Charizard",
+                "subject": "Charizard",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary also brought Staraptor, which ultimately got knocked out.",
+                "subject": "Staraptor",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Gary's Garchomp used Protect",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Protect",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Ash's Charizard to use Heat Wave",
+                "subject": "Charizard",
+                "attacker": "",
+                "defender": "",
+                "move": "Heat Wave",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "The Heat Wave dealt approximately 28 HP of damage to Staraptor",
+                "subject": "",
+                "attacker": "Charizard",
+                "defender": "Staraptor",
+                "move": "Heat Wave",
+                "min_percent": 28.0,
+                "max_percent": 28.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 28.0-28.0% vs real [(34.4, 40.6), (34.4, 40.6), (34.4, 40.6)]"
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "leaving it at 72 HP.",
+                "subject": "Staraptor",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "hp",
+                "stages": -28,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "no recorded hp change for Staraptor"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Ash's Garchomp used Dragon Claw on Staraptor",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "Dragon Claw",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "the credit for the knockout should go to Ash.",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "normal_clean",
+        "tags": [
+          "control"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In this match, Ash emerged victorious against Gary with a score of 1-0, securing the win in just two turns. The battle featured Ash's Torkoal and Flutter Mane against Gary's Amoonguss and Iron Hands.\n\n**Turn 1 Analysis:**\n- Ash led with Flutter Mane and Torkoal, while Gary sent out Amoonguss and Iron Hands.\n- Flutter Mane used Moonblast on Iron Hands, dealing significant damage and leaving it at 54% HP. This was a solid choice, as the move had a guaranteed 2HKO potential against Iron Hands.\n- Gary's Iron Hands attempted to use Fake Out on Flutter Mane, which was effective in preventing Flutter Mane from acting that turn, reducing its HP to 85%.\n- Torkoal then used Eruption, a spread move, which hit both Amoonguss and Iron Hands, leaving Amoonguss at 20% HP and Iron Hands at 10% HP. This move was optimal as it had a guaranteed OHKO on Amoonguss and a strong chance to 2HKO Iron Hands.\n- Gary's Amoonguss attempted to use Spore but did not affect any Pokémon, as Flutter Mane was already targeted by Fake Out.\n\n**Turn 2 Analysis:**\n- Flutter Mane capitalized on the weakened Iron Hands by using Moonblast again, which resulted in a KO, knocking out Iron Hands completely.\n- Amoonguss retaliated with Sludge Bomb against Flutter Mane, dealing some damage and leaving it at 30% HP.\n\n**Conclusion:**\nAsh played better in this match by effectively utilizing his Pokémon's strengths. Flutter Mane's ability to knock out Iron Hands was crucial for the victory, as it removed a significant threat early in the match. Torkoal's Eruption was also pivotal, dealing substantial damage to both of Gary's Pokémon. Gary's strategy was hindered by the inability of Amoonguss to put Flutter Mane to sleep, and the early damage taken by Iron Hands limited its effectiveness. Overall, Ash's choices and execution led to a decisive win in a short timeframe, demonstrating superior strategic planning and execution.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "Ash emerged victorious against Gary with a score of 1-0",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "The battle featured Ash's Torkoal and Flutter Mane against Gary's Amoonguss and Iron Hands.",
+                "subject": "Torkoal",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "The battle featured Ash's Torkoal and Flutter Mane against Gary's Amoonguss and Iron Hands.",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "The battle featured Ash's Torkoal and Flutter Mane against Gary's Amoonguss and Iron Hands.",
+                "subject": "Amoonguss",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "The battle featured Ash's Torkoal and Flutter Mane against Gary's Amoonguss and Iron Hands.",
+                "subject": "Iron Hands",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "Moonblast",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "",
+                "subject": "",
+                "attacker": "Flutter Mane",
+                "defender": "Iron Hands",
+                "move": "Moonblast",
+                "min_percent": 54.0,
+                "max_percent": 54.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 54.0-54.0% vs real [(82.1, 97.8), (82.1, 97.8), (82.1, 97.8), (82.1, 97.8), (82.1, 97.8)]"
+            },
+            {
+              "claim": {
+                "claim_type": "stat_stage",
+                "raw_text": "",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "hp",
+                "stages": -1,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "no recorded hp change for Flutter Mane"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "",
+                "subject": "Gary's Iron Hands",
+                "attacker": "",
+                "defender": "",
+                "move": "Fake Out",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "",
+                "subject": "",
+                "attacker": "Gary's Iron Hands",
+                "defender": "Flutter Mane",
+                "move": "Fake Out",
+                "min_percent": 15.0,
+                "max_percent": 15.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "unverifiable",
+              "reason": "no ground-truth verdict computed for this exact matchup/move"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "",
+                "subject": "Torkoal",
+                "attacker": "",
+                "defender": "",
+                "move": "Eruption",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "",
+                "subject": "",
+                "attacker": "Torkoal",
+                "defender": "Amoonguss",
+                "move": "Eruption",
+                "min_percent": 20.0,
+                "max_percent": 20.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 20.0-20.0% vs real [(101.6, 120.6), (101.6, 120.6)]"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "",
+                "subject": "",
+                "attacker": "Torkoal",
+                "defender": "Iron Hands",
+                "move": "Eruption",
+                "min_percent": 10.0,
+                "max_percent": 10.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 10.0-10.0% vs real [(47.2, 55.5)]"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "",
+                "subject": "Gary's Amoonguss",
+                "attacker": "",
+                "defender": "",
+                "move": "Spore",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "Moonblast",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "",
+                "subject": "",
+                "attacker": "Flutter Mane",
+                "defender": "Iron Hands",
+                "move": "Moonblast",
+                "min_percent": 100.0,
+                "max_percent": 100.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "",
+                "subject": "Amoonguss",
+                "attacker": "",
+                "defender": "",
+                "move": "Sludge Bomb",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "",
+                "subject": "",
+                "attacker": "Amoonguss",
+                "defender": "Flutter Mane",
+                "move": "Sludge Bomb",
+                "min_percent": 70.0,
+                "max_percent": 70.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 70.0-70.0% vs real [(26.2, 32.3), (26.2, 32.3)]"
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, Ash faced off against Gary, using a team consisting of Torkoal and Flutter Mane against Gary's Amoonguss and Iron Hands. \n\n**Turn Analysis:**\n\n1. **Turn 1:**\n   - Ash led with Flutter Mane, who used Moonblast on Iron Hands, dealing significant damage (about 54% of its HP). \n   - Gary responded with Iron Hands using Fake Out on Flutter Mane, which dealt around 15% damage (leaving it at 85% HP). \n   - Torkoal then used Eruption, which hit both Amoonguss and Iron Hands. It dealt about 20% damage to Amoonguss and 10% to Iron Hands, bringing Iron Hands down to 44% HP. \n   - Amoonguss attempted to use Spore on Torkoal, successfully putting it to sleep.\n\n2. **Turn 2:**\n   - Flutter Mane again targeted Iron Hands with Moonblast, knocking it out completely (0 HP). \n   - In retaliation, Amoonguss used Sludge Bomb on Flutter Mane, dealing around 30% damage, leaving it at 30% HP.\n\n**Outcome:**\n- Ash won the match after knocking out both of Gary's Pokémon, with Flutter Mane remaining on the field. \n\n**Analysis of Plays:**\n- Ash made a strong opening play by targeting Iron Hands with Flutter Mane, which was crucial since Iron Hands is a significant threat with its Fake Out and potential physical damage output.\n- Gary's decision to use Fake Out on Flutter Mane was a good attempt to disrupt Ash's strategy, but it ultimately allowed Ash to capitalize on the opportunity to deal heavy damage with Eruption.\n- The use of Spore on Torkoal was somewhat effective in neutralizing it temporarily, but by that point, Ash had already gained a significant advantage by knocking out Iron Hands.\n\nIn conclusion, Ash played better in this match. He effectively targeted threats and capitalized on the damage output of his Pokémon, while Gary's strategy did not adequately address the immediate danger posed by Flutter Mane and Iron Hands' vulnerability. Ash's aggressive playstyle and effective use of moves led to a decisive victory.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Ash led with Flutter Mane, who used Moonblast on Iron Hands, dealing significant damage (about 54% of its HP).",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Ash led with Flutter Mane, who used Moonblast on Iron Hands, dealing significant damage (about 54% of its HP).",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "Moonblast",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "dealing significant damage (about 54% of its HP).",
+                "subject": "",
+                "attacker": "Flutter Mane",
+                "defender": "Iron Hands",
+                "move": "Moonblast",
+                "min_percent": 54.0,
+                "max_percent": 54.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 54.0-54.0% vs real [(82.1, 97.8), (82.1, 97.8), (82.1, 97.8), (82.1, 97.8), (82.1, 97.8)]"
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary responded with Iron Hands using Fake Out on Flutter Mane, which dealt around 15% damage (leaving it at 85% HP).",
+                "subject": "Iron Hands",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Gary responded with Iron Hands using Fake Out on Flutter Mane, which dealt around 15% damage (leaving it at 85% HP).",
+                "subject": "Iron Hands",
+                "attacker": "",
+                "defender": "",
+                "move": "Fake Out",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "which dealt around 15% damage (leaving it at 85% HP).",
+                "subject": "",
+                "attacker": "Iron Hands",
+                "defender": "Flutter Mane",
+                "move": "Fake Out",
+                "min_percent": 15.0,
+                "max_percent": 15.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "unverifiable",
+              "reason": "no ground-truth verdict computed for this exact matchup/move"
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Torkoal then used Eruption, which hit both Amoonguss and Iron Hands.",
+                "subject": "Torkoal",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Torkoal then used Eruption, which hit both Amoonguss and Iron Hands.",
+                "subject": "Torkoal",
+                "attacker": "",
+                "defender": "",
+                "move": "Eruption",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "It dealt about 20% damage to Amoonguss.",
+                "subject": "",
+                "attacker": "Torkoal",
+                "defender": "Amoonguss",
+                "move": "Eruption",
+                "min_percent": 20.0,
+                "max_percent": 20.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 20.0-20.0% vs real [(101.6, 120.6), (101.6, 120.6)]"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "and 10% to Iron Hands, bringing Iron Hands down to 44% HP.",
+                "subject": "",
+                "attacker": "Torkoal",
+                "defender": "Iron Hands",
+                "move": "Eruption",
+                "min_percent": 10.0,
+                "max_percent": 10.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 10.0-10.0% vs real [(47.2, 55.5)]"
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Amoonguss attempted to use Spore on Torkoal, successfully putting it to sleep.",
+                "subject": "Amoonguss",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Amoonguss attempted to use Spore on Torkoal, successfully putting it to sleep.",
+                "subject": "Amoonguss",
+                "attacker": "",
+                "defender": "",
+                "move": "Spore",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Flutter Mane again targeted Iron Hands with Moonblast, knocking it out completely (0 HP).",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Flutter Mane again targeted Iron Hands with Moonblast, knocking it out completely (0 HP).",
+                "subject": "Flutter Mane",
+                "attacker": "",
+                "defender": "",
+                "move": "Moonblast",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "knocking it out completely (0 HP).",
+                "subject": "",
+                "attacker": "Flutter Mane",
+                "defender": "Iron Hands",
+                "move": "Moonblast",
+                "min_percent": 100.0,
+                "max_percent": 100.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "In retaliation, Amoonguss used Sludge Bomb on Flutter Mane, dealing around 30% damage, leaving it at 30% HP.",
+                "subject": "Amoonguss",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "In retaliation, Amoonguss used Sludge Bomb on Flutter Mane, dealing around 30% damage, leaving it at 30% HP.",
+                "subject": "Amoonguss",
+                "attacker": "",
+                "defender": "",
+                "move": "Sludge Bomb",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "dealing around 30% damage, leaving it at 30% HP.",
+                "subject": "",
+                "attacker": "Amoonguss",
+                "defender": "Flutter Mane",
+                "move": "Sludge Bomb",
+                "min_percent": 30.0,
+                "max_percent": 30.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "Ash won the match after knocking out both of Gary's Pokémon, with Flutter Mane remaining on the field.",
+                "subject": "Ash",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      },
+      {
+        "fixture_id": "bench_plus_mega",
+        "tags": [
+          "bench_only",
+          "mega_evolution"
+        ],
+        "condition_a": {
+          "condition": "A_grounded",
+          "answer": "In this battle, Gary emerged victorious against Ash with a score of 1-0. The match lasted for 2 turns, and the key players were Gengar and Raichu, with Gengar's decisive actions leading to Ash's loss.\n\n**Turn-by-Turn Breakdown:**\n\n1. **Turn 1:**\n   - Gary sent out Gengar, which then transformed into Mega Gengar. This transformation is crucial as Mega Gengar has a higher Special Attack and Speed than its base form, allowing it to hit harder and outspeed most threats.\n   - Gengar used **Shadow Ball** against Ash's Raichu, dealing significant damage and leaving it at 55% HP. The projected damage was 75.5% to 88.8%, confirming that Gengar was capable of a guaranteed 2HKO (two-hit knockout) on Raichu.\n   - In response, Ash's Raichu used **Thunderbolt** against Gengar, which left Gengar at 40% HP. Raichu's damage output was not enough to secure a knockout, as it had only a 55.9% chance to 2HKO Gengar.\n\n2. **Turn 2:**\n   - Gengar again used **Shadow Ball** on Raichu, which resulted in a knockout, as Raichu fainted. The damage was consistent with the earlier calculations, confirming that Gengar's attack was guaranteed to KO Raichu.\n\n**Key Analysis:**\nGengar's performance was pivotal in this match. Its ability to transform into Mega Gengar allowed it to outspeed Raichu and deal substantial damage. The combination of high Special Attack and Speed made Gengar a formidable opponent. Raichu, while capable of dealing damage, was unable to withstand Gengar's onslaught, ultimately leading to its fainting.\n\nIn conclusion, **Mega Gengar was the most critical Pokémon in this battle**. Its ability to knock out Raichu not only eliminated a significant threat but also paved the way for Gary's victory. Ash's strategy was hindered by the loss of Raichu, which limited his options moving forward in the match.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "Gary emerged victorious against Ash with a score of 1-0.",
+                "subject": "Gary",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary sent out Gengar, which then transformed into Mega Gengar.",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "forme_change",
+                "raw_text": "Gengar, which then transformed into Mega Gengar.",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "Mega Gengar",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Gengar used **Shadow Ball** against Ash's Raichu.",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "Shadow Ball",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "The projected damage was 75.5% to 88.8%, confirming that Gengar was capable of a guaranteed 2HKO (two-hit knockout) on Raichu.",
+                "subject": "",
+                "attacker": "Gengar",
+                "defender": "Raichu",
+                "move": "Shadow Ball",
+                "min_percent": 75.5,
+                "max_percent": 88.8,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "which left Raichu at 55% HP.",
+                "subject": "",
+                "attacker": "Gengar",
+                "defender": "Raichu",
+                "move": "Shadow Ball",
+                "min_percent": 55.0,
+                "max_percent": 55.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 55.0-55.0% vs real [(75.6, 88.9), (75.6, 88.9), (75.6, 88.9), (75.6, 88.9), (75.6, 88.9)]"
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Ash's Raichu used **Thunderbolt** against Gengar.",
+                "subject": "Raichu",
+                "attacker": "",
+                "defender": "",
+                "move": "Thunderbolt",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "which left Gengar at 40% HP.",
+                "subject": "",
+                "attacker": "Raichu",
+                "defender": "Gengar",
+                "move": "Thunderbolt",
+                "min_percent": 40.0,
+                "max_percent": 40.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 40.0-40.0% vs real [(46.0, 54.7), (46.0, 54.7)]"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "as it had only a 55.9% chance to 2HKO Gengar.",
+                "subject": "",
+                "attacker": "Raichu",
+                "defender": "Gengar",
+                "move": "Thunderbolt",
+                "min_percent": 55.9,
+                "max_percent": 55.9,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "move_used",
+                "raw_text": "Gengar again used **Shadow Ball** on Raichu.",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "Shadow Ball",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Raichu fainted.",
+                "subject": "Raichu",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "which resulted in a knockout, as Raichu fainted.",
+                "subject": "",
+                "attacker": "Gengar",
+                "defender": "Raichu",
+                "move": "Shadow Ball",
+                "min_percent": 100.0,
+                "max_percent": 100.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 100.0-100.0% vs real [(75.6, 88.9), (75.6, 88.9), (75.6, 88.9), (75.6, 88.9), (75.6, 88.9)]"
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Mega Gengar was the most critical Pokémon in this battle.",
+                "subject": "Mega Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        },
+        "condition_b": {
+          "condition": "B_naive",
+          "answer": "In this battle, we have Ash (Player 1) using Raichu and Torkoal against Gary (Player 2), who brought Gengar and Garchomp. \n\n### Turn-by-Turn Breakdown:\n\n**Turn 1:**\n- Gary leads with Gengar, which Mega Evolves into Mega Gengar. \n- Gengar uses Shadow Ball on Raichu, dealing significant damage (approximately 45% of Raichu's HP, bringing it down from 100 to 55 HP).\n- Raichu retaliates with Thunderbolt, dealing around 40% damage to Mega Gengar (bringing it down from 100 to 60 HP).\n\n**Turn 2:**\n- Gengar uses Shadow Ball again, knocking out Raichu (0 HP).\n- Raichu faints, giving Gary the first knockout of the game.\n\n### Analysis of Key Pokémon:\n\n1. **Mega Gengar (Gary)**: This Pokémon was pivotal in the match. It not only dealt the first blow but also secured the knockout on Raichu. Its ability to outspeed and hit hard with Shadow Ball made it a significant threat, especially since Raichu was unable to withstand its attacks.\n\n2. **Raichu (Ash)**: Raichu's role was primarily to deal damage to Gengar, and while it did manage to inflict some damage, it ultimately fell short. The loss of Raichu early in the game left Ash at a disadvantage, as it was unable to provide support or damage output in the following turns.\n\n3. **Torkoal (Ash)**: While Torkoal was not directly involved in the early exchanges, its presence could have been more impactful if Raichu had survived longer to potentially set up a more favorable position for Torkoal to attack.\n\n4. **Garchomp (Gary)**: Although Garchomp did not participate in the initial exchanges, it remained a looming threat. Depending on its moveset, it could have capitalized on Ash's weakened position after Raichu's fainting.\n\n### Conclusion:\n\nIn this battle, Mega Gengar was the most impactful Pokémon, as it not only secured the first knockout but also dictated the pace of the match. Raichu's early loss significantly hindered Ash's chances of mounting a comeback, making it a critical point in the game. Overall, Gary's strategic use of Mega Gengar led to a swift victory, showcasing its power in this matchup.",
+          "claims": [
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Ash (Player 1) using Raichu and Torkoal against Gary (Player 2), who brought Gengar and Garchomp.",
+                "subject": "Raichu",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Ash (Player 1) using Raichu and Torkoal against Gary (Player 2), who brought Gengar and Garchomp.",
+                "subject": "Torkoal",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary leads with Gengar, which Mega Evolves into Mega Gengar.",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "pokemon_played",
+                "raw_text": "Gary (Player 2), who brought Gengar and Garchomp.",
+                "subject": "Garchomp",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "forme_change",
+                "raw_text": "Gary leads with Gengar, which Mega Evolves into Mega Gengar.",
+                "subject": "Gengar",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "Mega Gengar",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Gengar uses Shadow Ball on Raichu, dealing significant damage (approximately 45% of Raichu's HP, bringing it down from 100 to 55 HP).",
+                "subject": "",
+                "attacker": "Gengar",
+                "defender": "Raichu",
+                "move": "Shadow Ball",
+                "min_percent": 45.0,
+                "max_percent": 45.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 45.0-45.0% vs real [(75.6, 88.9), (75.6, 88.9), (75.6, 88.9), (75.6, 88.9), (75.6, 88.9)]"
+            },
+            {
+              "claim": {
+                "claim_type": "damage_range",
+                "raw_text": "Raichu retaliates with Thunderbolt, dealing around 40% damage to Mega Gengar (bringing it down from 100 to 60 HP).",
+                "subject": "",
+                "attacker": "Raichu",
+                "defender": "Mega Gengar",
+                "move": "Thunderbolt",
+                "min_percent": 40.0,
+                "max_percent": 40.0,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "incorrect",
+              "reason": "claimed 40.0-40.0% vs real [(46.0, 54.7), (46.0, 54.7)]"
+            },
+            {
+              "claim": {
+                "claim_type": "winner",
+                "raw_text": "Overall, Gary's strategic use of Mega Gengar led to a swift victory, showcasing its power in this matchup.",
+                "subject": "Gary",
+                "attacker": "",
+                "defender": "",
+                "move": "",
+                "min_percent": null,
+                "max_percent": null,
+                "forme": "",
+                "stat": "",
+                "stages": null,
+                "blocked_move": ""
+              },
+              "verdict": "correct",
+              "reason": ""
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

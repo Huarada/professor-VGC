@@ -1,0 +1,67 @@
+Exception in thread Thread-103 (_reader):
+Traceback (most recent call last):
+  File "C:\Python312\Lib\threading.py", line 1075, in _bootstrap_inner
+    self.run()
+  File "C:\Python312\Lib\threading.py", line 1012, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\lucas\OneDrive\Documentos\oracle-vgc\src\adapters\node_ipc.py", line 84, in _reader
+    result["line"] = process.stdout.readline()
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Python312\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x9d in position 2642: character maps to <undefined>
+=== bench_only (bench_only) ===
+  A (grounded):  7 claims, strict=1.0, lenient=1.0
+  [judge] dropped 1 forfeit claim(s) with no actual forfeit wording (prompt-compliance guard)
+  B (naive):     8 claims, strict=0.625, lenient=0.625
+=== mega_evolution (mega_evolution) ===
+  A (grounded):  9 claims, strict=0.7777777777777778, lenient=0.7777777777777778
+  B (naive):     6 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+=== stat_stage_intimidate (stat_stage) ===
+  A (grounded):  9 claims, strict=0.8888888888888888, lenient=0.8888888888888888
+  B (naive):     9 claims, strict=0.8888888888888888, lenient=0.8888888888888888
+=== protect_spread (protect_read) ===
+  A (grounded):  5 claims, strict=0.6, lenient=0.6
+  B (naive):     8 claims, strict=0.875, lenient=0.875
+=== forfeit (forfeit) ===
+  A (grounded):  6 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+  B (naive):     5 claims, strict=0.8, lenient=0.8
+=== protect_genuine_read (protect_read) ===
+  A (grounded):  4 claims, strict=0.75, lenient=0.75
+  B (naive):     12 claims, strict=0.75, lenient=0.75
+=== protect_misallocated (protect_read) ===
+  A (grounded):  8 claims, strict=0.75, lenient=0.75
+  B (naive):     10 claims, strict=0.8, lenient=0.8
+=== mirror_match_protect (protect_read, mirror_match) ===
+  A (grounded):  8 claims, strict=1.0, lenient=1.0
+  B (naive):     9 claims, strict=0.8888888888888888, lenient=0.8888888888888888
+=== normal_clean (control) ===
+  A (grounded):  16 claims, strict=0.75, lenient=0.8
+  [filter] dropped 2 trainer-named claim(s) (B)
+  B (naive):     11 claims, strict=0.5454545454545454, lenient=0.6
+=== bench_plus_mega (bench_only, mega_evolution) ===
+  A (grounded):  10 claims, strict=0.7, lenient=0.7
+  B (naive):     8 claims, strict=0.625, lenient=0.625
+
+=== SUMMARY ===
+{
+  "condition_a_grounded": {
+    "total_claims": 82,
+    "correct": 66,
+    "incorrect": 15,
+    "unverifiable": 1,
+    "strict_faithfulness_rate": 0.8048780487804879,
+    "lenient_faithfulness_rate": 0.8148148148148148
+  },
+  "condition_b_naive": {
+    "total_claims": 86,
+    "correct": 65,
+    "incorrect": 20,
+    "unverifiable": 1,
+    "strict_faithfulness_rate": 0.7558139534883721,
+    "lenient_faithfulness_rate": 0.7647058823529411
+  }
+}
+
+Full report written to scripts\faithfulness_benchmark\out\full_report3.json

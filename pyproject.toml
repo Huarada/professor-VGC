@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "professorvgc"
+version = "0.1.0"
+description = "ProfessorVGC — Clean-Architecture VGC analysis engine (deterministic calc + Chaos stats + LangChain LLM orchestration)."
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.6,<3",
+    "pydantic-settings>=2.2,<3",
+    "streamlit>=1.33",
+    "requests>=2.31",
+    "langchain>=1.0",
+    "langchain-core>=1.0",
+]
+
+[project.optional-dependencies]
+openai = ["openai>=1.30", "langchain-openai>=0.2"]
+gemini = ["google-generativeai>=0.7", "langchain-google-genai>=2.0"]
+# Self-sufficient test environment: `pip install -e ".[dev]"` alone must be
+# enough to get a 100%-green `pytest` + `mypy` run, matching what
+# `pip install -r requirements.txt` already provides — no test should ever
+# fail (as opposed to skip) purely because of which of these two documented
+# install paths someone used.
+dev = ["pytest>=8.0", "mypy>=1.9", "professorvgc[openai,gemini]"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.mypy]
+# NOT 3.10 (this package's requires-python floor) on purpose: mypy's
+# python_version also gates which syntax it accepts while PARSING every
+# stub it reads, including third-party ones — a fresh install's numpy
+# stub (a transitive dependency via pandas/streamlit, unpinned) uses
+# PEP 695 `type` statements that need 3.12+ to parse at all, so pinning
+# this to 3.10 makes mypy fail on numpy's own stub before it ever reaches
+# this project's code (reproduced live in CI, not just theorized: a
+# locally-cached older numpy silently avoided it, a fresh `pip install`
+# did not). Matches this project's actual CI/dev Python (3.12); runtime
+# compatibility with the 3.10 floor is still what the `test` job's own
+# Python 3.10 matrix leg verifies, which is the right tool for that job —
+# a type checker's stub-parsing setting isn't it.
+python_version = "3.12"
+strict = true
+ignore_missing_imports = true

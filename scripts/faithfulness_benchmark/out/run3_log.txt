@@ -1,0 +1,58 @@
+=== bench_only (bench_only) ===
+  [judge] dropped 1 forfeit claim(s) with no actual forfeit wording (prompt-compliance guard)
+  A (grounded):  9 claims, strict=0.7777777777777778, lenient=0.7777777777777778
+  [judge] dropped 1 forfeit claim(s) with no actual forfeit wording (prompt-compliance guard)
+  [filter] dropped 1 trainer-named claim(s) (B)
+  B (naive):     6 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+=== mega_evolution (mega_evolution) ===
+  A (grounded):  7 claims, strict=1.0, lenient=1.0
+  B (naive):     7 claims, strict=0.7142857142857143, lenient=0.7142857142857143
+=== stat_stage_intimidate (stat_stage) ===
+  A (grounded):  8 claims, strict=0.875, lenient=0.875
+  B (naive):     8 claims, strict=0.875, lenient=0.875
+=== protect_spread (protect_read) ===
+  A (grounded):  3 claims, strict=0.6666666666666666, lenient=0.6666666666666666
+  B (naive):     8 claims, strict=0.875, lenient=0.875
+=== forfeit (forfeit) ===
+  A (grounded):  9 claims, strict=0.6666666666666666, lenient=0.6666666666666666
+  B (naive):     5 claims, strict=0.8, lenient=0.8
+=== protect_genuine_read (protect_read) ===
+  A (grounded):  6 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+  B (naive):     11 claims, strict=0.7272727272727273, lenient=0.7272727272727273
+=== protect_misallocated (protect_read) ===
+  A (grounded):  4 claims, strict=0.75, lenient=0.75
+  B (naive):     11 claims, strict=0.9090909090909091, lenient=0.9090909090909091
+=== mirror_match_protect (protect_read, mirror_match) ===
+  [filter] dropped 2 trainer-named claim(s) (A)
+  A (grounded):  9 claims, strict=0.8888888888888888, lenient=0.8888888888888888
+  B (naive):     9 claims, strict=0.6666666666666666, lenient=0.6666666666666666
+=== normal_clean (control) ===
+  A (grounded):  22 claims, strict=0.7272727272727273, lenient=0.7272727272727273
+  [filter] dropped 2 trainer-named claim(s) (B)
+  B (naive):     13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== bench_plus_mega (bench_only, mega_evolution) ===
+  [judge] dropped 1 forfeit claim(s) with no actual forfeit wording (prompt-compliance guard)
+  A (grounded):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+  B (naive):     12 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+
+=== SUMMARY ===
+{
+  "condition_a_grounded": {
+    "total_claims": 90,
+    "correct": 70,
+    "incorrect": 20,
+    "unverifiable": 0,
+    "strict_faithfulness_rate": 0.7777777777777778,
+    "lenient_faithfulness_rate": 0.7777777777777778
+  },
+  "condition_b_naive": {
+    "total_claims": 90,
+    "correct": 71,
+    "incorrect": 19,
+    "unverifiable": 0,
+    "strict_faithfulness_rate": 0.7888888888888889,
+    "lenient_faithfulness_rate": 0.7888888888888889
+  }
+}
+
+Full report written to scripts\faithfulness_benchmark\out\run3.json
