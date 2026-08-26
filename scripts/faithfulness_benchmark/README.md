@@ -13,7 +13,11 @@ See "Primary result" below for why `damage_range` — not the aggregate over
 every claim type — is this benchmark's headline number, and why a formal
 significance test rather than a raw percentage comparison is what turns
 "the numbers look different" into "the difference is statistically
-defensible."
+defensible." See "Round 4: orchestrator comparison" below for the same
+question asked across all three `AnalysisPipeline` backends (`adk`
+default, `langchain`, `native`) — no pairwise difference between them is
+statistically significant; the faithfulness advantage over the naive
+baseline holds for all three alike.
 
 ## Running it
 
@@ -33,6 +37,8 @@ few minutes).
 | Want to... | Run this |
 |---|---|
 | **Compare A vs B, all 30 fixtures** (the full thing, incl. the Fisher's exact test on `damage_range`) | `python -m scripts.faithfulness_benchmark.run` |
+| Same, but Condition A uses `adk`/`langchain` instead of the default `native` | `python -m scripts.faithfulness_benchmark.run --orchestrator adk` |
+| **Compare ADK vs LangChain vs native precision directly** (pairwise Fisher's exact tests, shared ground truth/B per fixture — see Round 4 below) | `python -m scripts.faithfulness_benchmark.run_orchestrator_comparison` |
 | Quick smoke test (1–2 fixtures, seconds not minutes) | `python -m scripts.faithfulness_benchmark.run --limit 2` |
 | Only the original 10 trap-category fixtures (skip the 20 damage-dense ones) | `python -m scripts.faithfulness_benchmark.run --trap-fixtures-only` |
 | Save to a specific file / use Gemini instead | `python -m scripts.faithfulness_benchmark.run --provider gemini --out my_run.json` |
@@ -637,6 +643,95 @@ stable, machine-generated vocabulary rather than in ad hoc pattern-matching
 against this benchmark's specific sentences, and the generalization test
 group demonstrates that grounding holds on phrasings never seen while
 building the rules.
+
+## Round 4: orchestrator comparison — ADK vs LangChain vs native
+
+`AdkAnalysisOrchestrator` (Google ADK) shipped as a third `AnalysisPipeline`
+backend and the new default `PROFESSORVGC_ORCHESTRATOR`, alongside the
+existing `langchain` and `native` backends. The architectural claim (stated
+in CLAUDE.md and re-asserted in every orchestrator's own docstring) is that
+switching orchestration technology never changes a single damage roll,
+because all three share the exact same deterministic core
+(`MatchupEvaluator`, `TurnReplaySimulator`, `selection_logic`) and differ
+only in how the two LLM stages are wired. This round tests that claim
+directly, on `damage_range` faithfulness, rather than just asserting it.
+
+**Method — `run_orchestrator_comparison.py`, not three separate `run.py`
+passes.** Condition B (naive baseline) is orchestrator-independent — see
+`naive_baseline.py`, which talks to a bare `LLMProvider`, never an
+`AnalysisPipeline` — so re-running it once per orchestrator would only add
+sampling noise between three separate runs' B, not a fairer comparison.
+Instead, ground truth and Condition B are each computed **once per fixture**
+and reused for every orchestrator's Condition A, so any precision
+difference found is attributable to the orchestrator alone, holding
+everything else fixed.
+
+**Result — n=30 fixtures (same 30 as the Primary Result above), `damage_range`:**
+
+| | adk | langchain | native | B_naive |
+|---|---|---|---|---|
+| Claims | 108 | 107 | 99 | 99 |
+| Correct | 78 | 79 | 74 | 14 |
+| **Rate** | **72.2%** | **73.8%** | **74.7%** | **14.1%** |
+
+**Pairwise Fisher's exact tests (`damage_range` correct/incorrect):**
+
+| Pair | Odds ratio | p (two-sided) | Significant at α=0.05? |
+|---|---|---|---|
+| adk vs langchain | 0.89 | 0.758 | No |
+| adk vs native | 0.84 | 0.636 | No |
+| langchain vs native | 0.95 | 1.000 | No |
+| adk vs B_naive | 15.23 | <0.0001 | **Yes** |
+| langchain vs B_naive | 17.14 | <0.0001 | **Yes** |
+| native vs B_naive | 18.06 | <0.0001 | **Yes** |
+
+**Reading this honestly:** the three orchestrators' rates sit within a
+2.5pp band (72.2–74.7%) and no pairwise difference between them clears
+significance — but per the same caution this README already applies
+elsewhere to a non-significant result (see the n=10 exploratory rounds
+above), **a non-significant Fisher's test is absence of evidence of a
+difference, not evidence of equivalence.** What this round DOES support
+directly: every orchestrator independently reproduces the Primary Result's
+core finding (grounding beats the naive baseline by an enormous, significant
+margin, odds ratios 15–18x here) — i.e., **the choice of orchestration
+framework is not where this pipeline's faithfulness advantage comes from;
+the deterministic core is.** That is exactly the architectural claim this
+project makes about orchestration being a swappable infrastructure choice,
+now backed by a live A/B/C/D measurement rather than only a structural
+argument. The secondary (all-claim-types) rates tell the same story: adk
+88.8%, native 88.7%, langchain 87.6%, all clearly separated from B_naive's
+74.3%, indistinguishable from each other.
+
+**A discrepancy worth stating plainly, not smoothing over:** `native`'s
+`damage_range` rate in THIS round (74/99 = 74.7%) is noticeably lower than
+the Primary Result's headline native-only run (81/88 = 92.0%, `run7_n30.json`),
+even though both are nominally "native, same 30 fixtures." B_naive's rate is
+close between the two (14/99 = 14.1% here vs 12/95 = 12.6% there), so this
+is not a wholesale re-scoring artifact — the gap is concentrated in
+Condition A. Candidate causes, none confirmed here: ordinary run-to-run LLM
+sampling variance at temperature 0.3 (already documented as large enough to
+flip which condition "wins" in the n=10 exploratory rounds above, though
+this magnitude on n=30 would be a larger swing than any single-orchestrator
+round showed); or judge-extraction noise independent of the model's actual
+answer quality (Round 2 above documents the judge's own extraction
+inconsistencies at length). This was NOT chased down further here — doing
+so honestly would need re-running `native` alone again and diffing
+transcripts claim-by-claim against `run7_n30.json`, out of scope for this
+round, whose actual question (do the three orchestrators differ from EACH
+OTHER, measured together in one pass) the discrepancy doesn't change: all
+three read close together in this same run, run7_n30.json's own
+higher absolute number notwithstanding.
+
+**Residual, stated plainly:** this is a single pass (n=30 fixtures, one
+sample per fixture per orchestrator, temperature 0.3 on explanation calls)
+— the same sampling-variance caveat the n=10 exploratory rounds already
+flagged applies here too, and per the discrepancy noted just above, may
+apply at a larger magnitude than previously observed; a tighter confidence
+interval on "how close are these three, really" would need repeated passes
+per orchestrator, not done here. Full transcripts:
+`out/orchestrator_comparison_n30.json` (and console log
+`out/orchestrator_comparison_n30_log.txt`), reproducible via `python -m
+scripts.faithfulness_benchmark.run_orchestrator_comparison`.
 
 ## Extending this
 

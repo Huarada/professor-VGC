@@ -1,0 +1,209 @@
+C:\Users\lucas\AppData\Roaming\Python\Python312\site-packages\google\adk\models\llm_request.py:273: UserWarning: [EXPERIMENTAL] feature FeatureName.JSON_SCHEMA_FOR_FUNC_DECL is enabled.
+  declaration = tool._get_declaration()
+=== bench_only (bench_only) ===
+  [judge] dropped 1 forfeit claim(s) with no actual forfeit wording (prompt-compliance guard)
+  [filter] dropped 1 non-damage-dealt percent claim(s) (adk)
+        adk:  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  langchain:  8 claims, strict=0.875, lenient=0.875
+     native:  11 claims, strict=0.7272727272727273, lenient=0.7272727272727273
+  B (naive):  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+=== mega_evolution (mega_evolution) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (adk)
+        adk:  6 claims, strict=1.0, lenient=1.0
+  [filter] dropped 1 non-damage-dealt percent claim(s) (langchain)
+  langchain:  6 claims, strict=1.0, lenient=1.0
+  [filter] dropped 1 non-damage-dealt percent claim(s) (native)
+     native:  8 claims, strict=0.75, lenient=0.75
+  [filter] dropped 1 trainer-named claim(s) (B)
+  B (naive):  5 claims, strict=0.8, lenient=0.8
+=== stat_stage_intimidate (stat_stage) ===
+        adk:  8 claims, strict=0.875, lenient=0.875
+  langchain:  8 claims, strict=0.75, lenient=0.75
+     native:  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  B (naive):  9 claims, strict=0.8888888888888888, lenient=1.0
+=== protect_spread (protect_read) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (adk)
+        adk:  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  [filter] dropped 1 non-damage-dealt percent claim(s) (langchain)
+  langchain:  3 claims, strict=1.0, lenient=1.0
+  [filter] dropped 3 non-damage-dealt percent claim(s) (native)
+     native:  2 claims, strict=0.5, lenient=0.5
+  B (naive):  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+=== forfeit (forfeit) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (adk)
+        adk:  6 claims, strict=1.0, lenient=1.0
+  [filter] dropped 1 non-damage-dealt percent claim(s) (langchain)
+  langchain:  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  [filter] dropped 2 non-damage-dealt percent claim(s) (native)
+     native:  4 claims, strict=1.0, lenient=1.0
+  B (naive):  5 claims, strict=0.8, lenient=0.8
+=== protect_genuine_read (protect_read) ===
+        adk:  4 claims, strict=0.75, lenient=0.75
+  langchain:  5 claims, strict=0.8, lenient=0.8
+  [filter] dropped 2 non-damage-dealt percent claim(s) (native)
+     native:  2 claims, strict=1.0, lenient=1.0
+  B (naive):  10 claims, strict=0.9, lenient=0.9
+=== protect_misallocated (protect_read) ===
+  [filter] dropped 1 non-damage-dealt percent claim(s) (adk)
+        adk:  7 claims, strict=1.0, lenient=1.0
+  [filter] dropped 1 non-damage-dealt percent claim(s) (langchain)
+  langchain:  6 claims, strict=1.0, lenient=1.0
+  [filter] dropped 2 non-damage-dealt percent claim(s) (native)
+     native:  6 claims, strict=0.8333333333333334, lenient=0.8333333333333334
+  B (naive):  9 claims, strict=0.7777777777777778, lenient=0.7777777777777778
+=== mirror_match_protect (protect_read, mirror_match) ===
+        adk:  7 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  [filter] dropped 2 non-damage-dealt percent claim(s) (langchain)
+  langchain:  6 claims, strict=0.6666666666666666, lenient=0.6666666666666666
+     native:  8 claims, strict=0.625, lenient=0.625
+  B (naive):  8 claims, strict=0.75, lenient=0.75
+=== normal_clean (control) ===
+  [filter] dropped 3 non-damage-dealt percent claim(s) (adk)
+        adk:  14 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  langchain:  17 claims, strict=0.7647058823529411, lenient=0.7647058823529411
+  [filter] dropped 3 non-damage-dealt percent claim(s) (native)
+     native:  14 claims, strict=0.8571428571428571, lenient=0.8571428571428571
+  [filter] dropped 1 trainer-named claim(s) (B)
+  B (naive):  19 claims, strict=0.7894736842105263, lenient=0.7894736842105263
+=== bench_plus_mega (bench_only, mega_evolution) ===
+  [filter] dropped 2 non-damage-dealt percent claim(s) (adk)
+        adk:  9 claims, strict=1.0, lenient=1.0
+  langchain:  13 claims, strict=0.8461538461538461, lenient=0.8461538461538461
+  [filter] dropped 4 non-damage-dealt percent claim(s) (native)
+     native:  10 claims, strict=0.9, lenient=0.9
+  B (naive):  11 claims, strict=0.8181818181818182, lenient=0.8181818181818182
+=== dmg01_dragapult_volcarona (damage_dense) ===
+        adk:  7 claims, strict=1.0, lenient=1.0
+  langchain:  7 claims, strict=1.0, lenient=1.0
+     native:  14 claims, strict=0.7857142857142857, lenient=0.7857142857142857
+  B (naive):  13 claims, strict=0.7692307692307693, lenient=0.8333333333333334
+=== dmg02_skeledirge_bellibolt (damage_dense) ===
+        adk:  17 claims, strict=1.0, lenient=1.0
+  langchain:  17 claims, strict=1.0, lenient=1.0
+  [filter] dropped 2 trainer-named claim(s) (native)
+     native:  9 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg03_rotomwash_grimmsnarl (damage_dense) ===
+  [filter] dropped 2 trainer-named claim(s) (adk)
+        adk:  8 claims, strict=1.0, lenient=1.0
+  langchain:  12 claims, strict=0.6666666666666666, lenient=0.7272727272727273
+     native:  9 claims, strict=0.8888888888888888, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.75
+=== dmg04_malamar_chandelure (damage_dense) ===
+        adk:  12 claims, strict=1.0, lenient=1.0
+  langchain:  17 claims, strict=1.0, lenient=1.0
+  [filter] dropped 4 non-damage-dealt percent claim(s) (native)
+     native:  12 claims, strict=1.0, lenient=1.0
+  B (naive):  9 claims, strict=0.7777777777777778, lenient=0.7777777777777778
+=== dmg05_farigiraf_armarouge (damage_dense) ===
+        adk:  17 claims, strict=0.8823529411764706, lenient=0.8823529411764706
+  [filter] dropped 2 trainer-named claim(s) (langchain)
+  langchain:  15 claims, strict=0.7333333333333333, lenient=0.7333333333333333
+     native:  9 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.8461538461538461, lenient=0.8461538461538461
+=== dmg06_maushold_azumarill (damage_dense) ===
+        adk:  12 claims, strict=0.9166666666666666, lenient=0.9166666666666666
+  [filter] dropped 4 non-damage-dealt percent claim(s) (langchain)
+  langchain:  9 claims, strict=0.8888888888888888, lenient=0.8888888888888888
+  [filter] dropped 4 non-damage-dealt percent claim(s) (native)
+     native:  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg07_gallade_vaporeon (damage_dense) ===
+        adk:  12 claims, strict=1.0, lenient=1.0
+  langchain:  8 claims, strict=1.0, lenient=1.0
+     native:  13 claims, strict=0.7692307692307693, lenient=0.7692307692307693
+  B (naive):  13 claims, strict=0.7692307692307693, lenient=0.7692307692307693
+=== dmg08_vileplume_tyranitar (damage_dense) ===
+        adk:  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+  langchain:  9 claims, strict=1.0, lenient=1.0
+     native:  13 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg09_corviknight_hippowdon (damage_dense) ===
+        adk:  17 claims, strict=0.8235294117647058, lenient=0.8235294117647058
+  [filter] dropped 2 non-damage-dealt percent claim(s) (langchain)
+  langchain:  11 claims, strict=0.8181818181818182, lenient=0.8181818181818182
+  [filter] dropped 2 non-damage-dealt percent claim(s) (native)
+     native:  11 claims, strict=0.8181818181818182, lenient=0.8181818181818182
+  B (naive):  13 claims, strict=0.8461538461538461, lenient=0.8461538461538461
+=== dmg10_whimsicott_glimmora (damage_dense) ===
+        adk:  17 claims, strict=0.7058823529411765, lenient=0.7058823529411765
+  langchain:  12 claims, strict=0.9166666666666666, lenient=0.9166666666666666
+     native:  13 claims, strict=1.0, lenient=1.0
+  B (naive):  9 claims, strict=0.5555555555555556, lenient=0.5555555555555556
+=== dmg11_mamoswine_dragonite (damage_dense) ===
+        adk:  17 claims, strict=0.7647058823529411, lenient=0.7647058823529411
+  langchain:  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+     native:  21 claims, strict=0.8095238095238095, lenient=0.8095238095238095
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg12_palafin_swampert (damage_dense) ===
+  [filter] dropped 4 non-damage-dealt percent claim(s) (adk)
+        adk:  12 claims, strict=1.0, lenient=1.0
+  langchain:  16 claims, strict=0.75, lenient=0.75
+     native:  13 claims, strict=1.0, lenient=1.0
+  B (naive):  9 claims, strict=0.6666666666666666, lenient=0.6666666666666666
+=== dmg13_ceruledge_kingambit (damage_dense) ===
+        adk:  17 claims, strict=0.7647058823529411, lenient=0.7647058823529411
+  langchain:  12 claims, strict=1.0, lenient=1.0
+     native:  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg14_raichu_incineroar (damage_dense) ===
+  [filter] dropped 6 non-damage-dealt percent claim(s) (adk)
+        adk:  11 claims, strict=0.8181818181818182, lenient=0.8181818181818182
+  langchain:  9 claims, strict=0.6666666666666666, lenient=0.6666666666666666
+     native:  13 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.7692307692307693, lenient=0.7692307692307693
+=== dmg15_volcarona_toxapex (damage_dense) ===
+        adk:  13 claims, strict=1.0, lenient=1.0
+  langchain:  17 claims, strict=1.0, lenient=1.0
+  [filter] dropped 1 trainer-named claim(s) (native)
+     native:  13 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg16_annihilape_gholdengo (damage_dense) ===
+  [filter] dropped 2 non-damage-dealt percent claim(s) (adk)
+        adk:  11 claims, strict=0.8181818181818182, lenient=0.8181818181818182
+  langchain:  13 claims, strict=1.0, lenient=1.0
+     native:  13 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg17_sinistcha_hatterene (damage_dense) ===
+        adk:  16 claims, strict=1.0, lenient=1.0
+  langchain:  11 claims, strict=0.7272727272727273, lenient=0.7272727272727273
+     native:  11 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg18_krookodile_klefki (damage_dense) ===
+        adk:  13 claims, strict=1.0, lenient=1.0
+  [filter] dropped 2 trainer-named claim(s) (langchain)
+  langchain:  9 claims, strict=1.0, lenient=1.0
+     native:  13 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+=== dmg19_arcanine_gliscor (damage_dense) ===
+        adk:  16 claims, strict=0.6875, lenient=0.6875
+  langchain:  13 claims, strict=0.9230769230769231, lenient=0.9230769230769231
+     native:  8 claims, strict=0.875, lenient=0.875
+  B (naive):  9 claims, strict=0.5555555555555556, lenient=0.5555555555555556
+=== dmg20_milotic_sceptile (damage_dense) ===
+        adk:  16 claims, strict=1.0, lenient=1.0
+  langchain:  13 claims, strict=1.0, lenient=1.0
+     native:  12 claims, strict=1.0, lenient=1.0
+  B (naive):  13 claims, strict=0.6923076923076923, lenient=0.6923076923076923
+
+=== PRIMARY RESULT: damage_range, per orchestrator (n=30 fixtures) ===
+        adk: 78/108 (72.2%)
+  langchain: 79/107 (73.8%)
+     native: 74/99 (74.7%)
+    B_naive: 14/99 (14.1%)
+
+--- pairwise Fisher's exact tests (damage_range correct/incorrect) ---
+  adk_vs_langchain: odds_ratio=0.89, p=0.7581 -> NOT significant at alpha=0.05
+  adk_vs_native: odds_ratio=0.84, p=0.6362 -> NOT significant at alpha=0.05
+  langchain_vs_native: odds_ratio=0.95, p=1.0000 -> NOT significant at alpha=0.05
+  adk_vs_B_naive: odds_ratio=15.23, p=0.0000 -> significant at alpha=0.05
+  langchain_vs_B_naive: odds_ratio=17.14, p=0.0000 -> significant at alpha=0.05
+  native_vs_B_naive: odds_ratio=18.06, p=0.0000 -> significant at alpha=0.05
+
+=== secondary context: all claim types combined ===
+        adk: 310/349 (88.8%)  -- mixes categories with and without an effect; not the headline
+  langchain: 282/322 (87.6%)  -- mixes categories with and without an effect; not the headline
+     native: 282/318 (88.7%)  -- mixes categories with and without an effect; not the headline
+    B_naive: 248/334 (74.3%)  -- mixes categories with and without an effect; not the headline
+
+Full report written to scripts\faithfulness_benchmark\out\orchestrator_comparison_n30.json
