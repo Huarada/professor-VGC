@@ -33,6 +33,7 @@ string blob needed).
 
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -70,6 +71,7 @@ class FirestoreChaosRepository:
         database_id: str = "(default)",
         collection: str = "chaos_tiers",
         credentials_path: str | None = None,
+        grpc_ca_bundle_path: str | None = None,
         reg_fallback_depth: int = 3,
         client: Any | None = None,
     ) -> None:
@@ -78,7 +80,7 @@ class FirestoreChaosRepository:
         # LangChainAnalysisOrchestrator's `chat_model` param — production
         # code never passes it, always going through `_build_client` below.
         self._client = client if client is not None else _build_client(
-            project_id, database_id, credentials_path
+            project_id, database_id, credentials_path, grpc_ca_bundle_path
         )
         self._collection_name = collection
 
@@ -198,7 +200,10 @@ class FirestoreChaosRepository:
 
 
 def _build_client(
-    project_id: str, database_id: str, credentials_path: str | None
+    project_id: str,
+    database_id: str,
+    credentials_path: str | None,
+    grpc_ca_bundle_path: str | None = None,
 ) -> "Client":
     try:
         from google.cloud import firestore
@@ -207,6 +212,14 @@ def _build_client(
             "The 'google-cloud-firestore' package is not installed. "
             "Run: pip install google-cloud-firestore"
         ) from exc
+    if grpc_ca_bundle_path:
+        # Must be set before the first grpc channel is created in this
+        # process (below) — grpc reads it at channel-creation time, not
+        # per-call. setdefault: never overrides an operator's own explicit
+        # env var if one is already set outside this app. See this
+        # setting's own docstring in config.py for why this exists at all
+        # (grpc has its own TLS stack, independent of pip-system-certs).
+        os.environ.setdefault("GRPC_DEFAULT_SSL_ROOTS_FILE_PATH", grpc_ca_bundle_path)
     if not project_id:
         raise ConfigurationError(
             "A GCP project id is required (PROFESSORVGC_FIRESTORE_PROJECT_ID)"

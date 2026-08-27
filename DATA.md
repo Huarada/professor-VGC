@@ -148,6 +148,68 @@ one-time migration itself is ~1,150 writes, also free-tier. A real GCP
 project with billing enabled is still required to create a Firestore
 database at all, even to stay entirely within the free tier.
 
+**Live-verified** (2026-08-26, against a real GCP project): migrated all 4
+shipped tiers (1,145 species documents), then confirmed
+`ChaosAdapter(repository=FirestoreChaosRepository(...))` returns
+byte-for-byte identical `MetaContext` output to the local-file backend for
+the same species/rating query, including a forme-stripped lookup
+(`Raichu-Mega-Y`). Two real things this surfaced, both already fixed in
+`migrate_chaos_to_firestore.py`, not left as known issues:
+- **Every species' Chaos data has a `"": <weight>` entry under `Moves`**
+  (Smogon's own export convention for "no confirmed extra move slot", not a
+  real move — `ChaosAdapter` already drops it when reading locally). Firestore
+  rejects an empty string as a map key outright, which crashed the very
+  first migration attempt — the script now strips it (and any other
+  empty-keyed entry, at any depth) before writing, preserving every real
+  key/value unchanged. See `migrate_chaos_to_firestore.py`'s own
+  `_strip_empty_keys` docstring.
+- **A fresh (just-created) Firestore collection can reject a burst of rapid
+  writes** with `ABORTED: Too much contention on these documents` — expected
+  behavior while its automatic sharding warms up, not a real error. The
+  script retries a failed batch commit with exponential backoff and uses a
+  smaller batch size (50, not Firestore's 500-write hard limit) to make this
+  a non-issue in practice; only ever hit during the one-time migration,
+  never by the running app (reads only).
+
+**Security rules:** Firestore's "Security Rules" only gate CLIENT-side SDK
+access (a browser/mobile app authenticating end-users via Firebase Auth).
+This project only ever talks to Firestore server-side, via a service
+account's IAM role — that path bypasses Security Rules entirely. Leave the
+database in its default "production mode" (deny-all) rules; there is no
+reason to open them for this project's access pattern.
+
+**Troubleshooting: `SSL_ERROR_SSL ... CERTIFICATE_VERIFY_FAILED` /
+`unable to get local issuer certificate` when connecting.** grpc (what
+`google-cloud-firestore` is built on) uses its own bundled TLS root
+certificates, independent of Python's `ssl` module — so `pip install
+pip-system-certs` (the fix this repo already documents for the same class of
+error from `openai`/`httpx`, see `scripts/faithfulness_benchmark/README.md`)
+does **not** fix this one. The real cause is almost always something on the
+machine TLS-intercepting outbound HTTPS with its own locally-installed root
+certificate — most commonly a security suite's "web/SSL scanning" feature
+(Avast, Kaspersky, ESET, ...) or a corporate proxy. Fix:
+
+1. Find the offending root cert (Windows, PowerShell):
+   ```powershell
+   Get-ChildItem Cert:\CurrentUser\Root | Where-Object { $_.Subject -match "scanning|proxy|<your antivirus name>" }
+   ```
+2. Export it and append it to a copy of `certifi`'s own bundle (never
+   replace — grpc's `GRPC_DEFAULT_SSL_ROOTS_FILE_PATH` REPLACES its default
+   roots entirely, so the file must still contain the normal public CA set):
+   ```powershell
+   $cert = Get-ChildItem Cert:\CurrentUser\Root | Where-Object { $_.Subject -match "..." } | Select-Object -First 1
+   $b64 = [Convert]::ToBase64String($cert.RawData, [System.Base64FormattingOptions]::InsertLineBreaks)
+   "-----BEGIN CERTIFICATE-----`n$b64`n-----END CERTIFICATE-----" | Out-File your-root.pem -Encoding ascii
+   ```
+   ```bash
+   python -c "import certifi; print(certifi.where())"   # find certifi's bundle
+   cat <certifi-bundle> your-root.pem > combined-ca-bundle.pem
+   ```
+3. Point the app at the combined file: `PROFESSORVGC_FIRESTORE_GRPC_CA_BUNDLE_PATH=path/to/combined-ca-bundle.pem`
+   in `.env` (or `--ca-bundle` for `migrate_chaos_to_firestore.py`). Store it
+   next to your service account key, outside the repo — it's machine-specific,
+   not project config, and isn't a secret either way.
+
 ## 2. Your own scraper output
 
 If you scrape/aggregate your own JSON, produce the **same Chaos schema** above

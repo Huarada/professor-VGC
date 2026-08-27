@@ -26,7 +26,11 @@ def _settings(**overrides) -> Settings:
         "gemini_api_key": "test-key",
     }
     base.update(overrides)
-    return Settings(**base)
+    # _env_file=None: keeps this suite hermetic regardless of what a
+    # contributor's own real .env sets (e.g. PROFESSORVGC_CHAOS_BACKEND=
+    # firestore would otherwise make container.strategy() below silently
+    # attempt a real Firestore connection via _chaos_strategy()'s fallback).
+    return Settings(_env_file=None, **base)
 
 
 def test_semantic_strategy_enabled_wraps_dex_with_retriever():

@@ -16,13 +16,22 @@ from src.domain.exceptions import ConfigurationError
 from src.services.container import Container
 
 
+# _env_file=None on every Settings() below is deliberate, not decoration:
+# this suite must stay hermetic (README's own promise — "no Node or API
+# keys REQUIRED to pass") regardless of what a contributor's own real .env
+# happens to set PROFESSORVGC_CHAOS_BACKEND/FIRESTORE_* to. Without it, a
+# real .env with chaos_backend=firestore silently flips these tests onto a
+# real network call to real Firestore — reported: exactly this happened
+# once this project's own local .env was updated for live Firestore use.
+
+
 def test_local_backend_is_the_default(sample_chaos_path):
-    container = Container(Settings(chaos_data_path=sample_chaos_path))
+    container = Container(Settings(_env_file=None, chaos_data_path=sample_chaos_path))
     assert isinstance(container.chaos_repository(), ChaosRepository)
 
 
 def test_chaos_repository_is_cached_and_shared_between_adapters(sample_chaos_path):
-    container = Container(Settings(chaos_data_path=sample_chaos_path))
+    container = Container(Settings(_env_file=None, chaos_data_path=sample_chaos_path))
     repo = container.chaos_repository()
     assert container.chaos_repository() is repo  # cached, not rebuilt
     assert container.chaos()._repo is repo
@@ -31,20 +40,22 @@ def test_chaos_repository_is_cached_and_shared_between_adapters(sample_chaos_pat
 
 def test_unknown_chaos_backend_raises_configuration_error(sample_chaos_path):
     container = Container(
-        Settings(chaos_data_path=sample_chaos_path, chaos_backend="s3")
+        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="s3")
     )
     with pytest.raises(ConfigurationError):
         container.chaos_repository()
 
 
 def test_firestore_backend_without_project_id_raises_configuration_error():
-    container = Container(Settings(chaos_backend="firestore", firestore_project_id=None))
+    container = Container(
+        Settings(_env_file=None, chaos_backend="firestore", firestore_project_id=None)
+    )
     with pytest.raises(ConfigurationError):
         container.chaos_repository()
 
 
 def test_shutdown_clears_the_cached_chaos_repository(sample_chaos_path):
-    container = Container(Settings(chaos_data_path=sample_chaos_path))
+    container = Container(Settings(_env_file=None, chaos_data_path=sample_chaos_path))
     container.chaos_repository()
     container.shutdown()
     assert container._chaos_repo is None
