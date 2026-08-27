@@ -62,7 +62,6 @@ class ChaosStrategyAdapter:
         return self._build(species, mon, source)
 
     def _build(self, species: str, mon: dict[str, Any], source: str) -> SmogonStrategy:
-        raw_count = float(mon.get("Raw count", 1)) or 1.0  # noqa: F841 - kept for parity
         top_moves = sorted(mon.get("Moves", {}).items(), key=lambda kv: kv[1], reverse=True)
         move_names = [name for name, _ in top_moves[: self._top_n + 2] if name]
         items = sorted(mon.get("Items", {}).items(), key=lambda kv: kv[1], reverse=True)

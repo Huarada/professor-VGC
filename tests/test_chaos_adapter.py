@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
@@ -43,6 +45,36 @@ def test_build_match_context(sample_chaos_path):
 def test_missing_file_raises():
     with pytest.raises(ChaosDataError):
         ChaosAdapter("/nonexistent/chaos.json")
+
+
+def test_percentages_use_the_category_own_weight_not_raw_count(tmp_path):
+    """Reported live, against a real Smogon dump: "Raw count" and a
+    category's own weighted total (Abilities/Items/... all summing to the
+    SAME value, confirmed directly against real data) are two DIFFERENT
+    numbers — dividing by "Raw count" gave Incineroar's Intimidate an
+    absurd ~0.3% instead of its real ~99.6%. This project's own bundled
+    sample_data/*.json happens to set Raw count EQUAL to sum(Abilities) (a
+    hand-authored fixture, not a real scrape), which is the one reason the
+    existing test_summary_extracts_top_n above never caught this — this
+    fixture deliberately makes them differ, like real Smogon data does."""
+    payload = {
+        "info": {"metagame": "gen9vgc2025regh"},
+        "data": {
+            "Incineroar": {
+                "Raw count": 1_000_000,  # deliberately unrelated to the sums below
+                "Abilities": {"Intimidate": 996.0, "Blaze": 4.0},  # sums to 1000
+                "Items": {"Sitrus Berry": 600.0, "Safety Goggles": 400.0},  # sums to 1000
+                "Moves": {"Fake Out": 3000.0, "Flare Blitz": 1000.0},  # sums to 4000 (own total)
+            }
+        },
+    }
+    path = tmp_path / "gen9vgc2025regh-0.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+
+    summary = ChaosAdapter(path).get_pokemon_summary("Incineroar")
+    assert summary.top_abilities["Intimidate"] == pytest.approx(0.996)
+    assert summary.top_items["Sitrus Berry"] == pytest.approx(0.6)
+    assert summary.top_moves["Fake Out"] == pytest.approx(0.75)
 
 
 def test_species_name_normalization(sample_chaos_path):

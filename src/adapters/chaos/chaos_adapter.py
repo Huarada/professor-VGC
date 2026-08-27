@@ -91,6 +91,36 @@ class ChaosAdapter:
         return None, None
 
     @staticmethod
+    def _category_weight(mapping: dict[str, Any]) -> float:
+        """The correct percentage denominator for one Chaos category
+        (Abilities/Items/Spreads/Moves/...): the SUM of that category's own
+        values — NOT "Raw count".
+
+        Confirmed directly against a real, live Smogon dump (not assumed):
+        `Abilities`/`Items`/`Spreads`/`Tera Types`/`Happiness` for a given
+        species all sum to the SAME weighted-battle-count value, while `Raw
+        count` is a DIFFERENT, unrelated unweighted figure — e.g. real July
+        2026 Incineroar data: `Raw count=1,064,474` vs.
+        `sum(Abilities)=3,198.8`; dividing Intimidate's own weight (3,186.1,
+        ~99.6% of that sum, matching its real near-universal usage) by "Raw
+        count" instead gives an absurd ~0.3%. `Moves`/`Teammates` each sum
+        to their OWN different total too (more move slots / teammates than
+        1 per battle) — this must be called separately per category, never
+        shared across them, and never assumed equal to "Raw count".
+
+        This project's own bundled `sample_data/*.json` happened to set
+        `Raw count` EQUAL to `sum(Abilities)` (a hand-authored fixture, not
+        a real scrape) — the one reason this was never caught by the
+        existing test suite; see `tests/test_chaos_adapter.py`'s dedicated
+        regression test for a fixture where they genuinely differ, added
+        alongside this fix.
+        """
+        total = sum(
+            float(value) for value in mapping.values() if isinstance(value, (int, float))
+        )
+        return total or 1.0
+
+    @staticmethod
     def _top_items(mapping: dict[str, Any], count: int, weight: float) -> dict[str, float]:
         ordered = sorted(mapping.items(), key=lambda kv: kv[1], reverse=True)[:count]
         return {key: round(float(value) / weight, 3) for key, value in ordered if key}
@@ -98,10 +128,10 @@ class ChaosAdapter:
     def _summarize(
         self, mon_data: dict[str, Any], source: str, count: int
     ) -> PokemonMetaSummary:
-        raw_count = float(mon_data.get("Raw count", 1)) or 1.0
-        moves = sorted(
-            mon_data.get("Moves", {}).items(), key=lambda kv: kv[1], reverse=True
-        )[: count + 2]
+        abilities = mon_data.get("Abilities", {})
+        items = mon_data.get("Items", {})
+        moves_map = mon_data.get("Moves", {})
+        moves = sorted(moves_map.items(), key=lambda kv: kv[1], reverse=True)[: count + 2]
         spreads = sorted(
             mon_data.get("Spreads", {}).items(), key=lambda kv: kv[1], reverse=True
         )[:count]
@@ -111,10 +141,11 @@ class ChaosAdapter:
             reverse=True,
         )[:count]
         top_spread_nature, top_spread_evs = self._structured_top_spread(spreads)
+        move_weight = self._category_weight(moves_map)
         return PokemonMetaSummary(
-            top_abilities=self._top_items(mon_data.get("Abilities", {}), count, raw_count),
-            top_items=self._top_items(mon_data.get("Items", {}), count, raw_count),
-            top_moves={k: round(float(v) / raw_count, 3) for k, v in moves if k},
+            top_abilities=self._top_items(abilities, count, self._category_weight(abilities)),
+            top_items=self._top_items(items, count, self._category_weight(items)),
+            top_moves={k: round(float(v) / move_weight, 3) for k, v in moves if k},
             top_spreads=[self._convert_ev_divider(sp) for sp, _ in spreads],
             top_spread_nature=top_spread_nature,
             top_spread_evs=top_spread_evs,
