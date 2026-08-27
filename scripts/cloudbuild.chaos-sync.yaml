@@ -1,0 +1,22 @@
+# Builds scripts/Dockerfile.chaos-sync and pushes it to Artifact Registry.
+# Run from the REPO ROOT (the Dockerfile's COPY paths assume that context):
+#
+#   gcloud builds submit --config scripts/cloudbuild.chaos-sync.yaml \
+#       --project=YOUR_PROJECT .
+#
+# See DATA.md's "Automated Smogon sync (Cloud Run Job)" section for the
+# full deploy runbook (Artifact Registry repo creation, Cloud Run Job
+# create/update, Cloud Scheduler trigger, IAM) this is one step of.
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - scripts/Dockerfile.chaos-sync
+      - -t
+      - ${_IMAGE}
+      - .
+images:
+  - ${_IMAGE}
+substitutions:
+  _IMAGE: us-central1-docker.pkg.dev/${PROJECT_ID}/professorvgc-images/chaos-sync:latest

@@ -73,18 +73,63 @@ class _FakeCollectionRef:
         ]
 
 
+class _FakeBatch:
+    """In-memory stand-in for a Firestore WriteBatch — enough for
+    chaos_firestore_writer.write_tier's own usage (.set() + .commit()).
+    Imposes no count limit of its own; optionally imposes a BYTE limit (via
+    the owning client's `max_commit_bytes`) that raises the real
+    `InvalidArgument` Firestore itself raises for "Transaction too big", so
+    a test can verify chaos_firestore_writer._commit_pairs' adaptive
+    splitting actually recovers from it — not just that every document
+    eventually lands some other way. A caller that wants to verify
+    write_tier's OWN batching/flush behavior should assert on
+    `client.commit_count`, incremented once per real (non-raising)
+    commit() call."""
+
+    def __init__(self, store: dict[tuple[str, ...], dict[str, Any]], client: "_FakeFirestoreClient") -> None:
+        self._store = store
+        self._client = client
+        self._pending: list[tuple[tuple[str, ...], dict[str, Any]]] = []
+
+    def set(self, ref: _FakeDocRef, data: dict[str, Any]) -> None:
+        self._pending.append((ref._path, data))
+
+    def commit(self) -> None:
+        if self._client.max_commit_bytes is not None:
+            import json
+
+            total = sum(len(json.dumps(data)) for _path, data in self._pending)
+            if total > self._client.max_commit_bytes:
+                from google.api_core.exceptions import InvalidArgument
+
+                raise InvalidArgument("Transaction too big. Decrease transaction size.")
+        for path, data in self._pending:
+            self._store[path] = data
+        self._pending = []
+        self._client.commit_count += 1
+
+
 class _FakeFirestoreClient:
     """In-memory stand-in for google.cloud.firestore.Client — a flat dict
     keyed by full path tuples, e.g. ("chaos_tiers", "<tier-id>") for a tier
     doc, ("chaos_tiers", "<tier-id>", "species", "<normalized-id>") for a
     species doc."""
 
-    def __init__(self, store: dict[tuple[str, ...], dict[str, Any]]) -> None:
+    def __init__(
+        self,
+        store: dict[tuple[str, ...], dict[str, Any]],
+        max_commit_bytes: int | None = None,
+    ) -> None:
         self._store = store
         self.closed = False
+        self.commit_count = 0
+        self.max_commit_bytes = max_commit_bytes
 
     def collection(self, name: str) -> _FakeCollectionRef:
         return _FakeCollectionRef(self._store, (name,))
+
+    def batch(self) -> _FakeBatch:
+        return _FakeBatch(self._store, self)
 
     def close(self) -> None:
         self.closed = True
