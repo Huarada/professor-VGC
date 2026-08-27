@@ -192,6 +192,13 @@ Point `PROFESSORVGC_CHAOS_DATA_PATH` at a real Smogon Chaos dump, e.g.
 The adapter converts Chaos's `Nature:e/e/e/e/e/e` (EVs ÷ 8) encoding back to
 real 0-252 EVs and keeps only the Top-N per category to stay ~1 KB per prompt.
 
+**Optional: host this data in Google Cloud Firestore instead of local files** —
+set `PROFESSORVGC_CHAOS_BACKEND=firestore` and run
+`python -m scripts.migrate_chaos_to_firestore --project-id YOUR_PROJECT` once
+to populate it. Same tier/regulation-fallback logic, same EV/nature back-fill,
+byte-for-byte identical behavior either way — see DATA.md's "Firestore
+backend" section for the full setup and cost/storage-layout rationale.
+
 ## Tests
 
 ```bash
@@ -217,3 +224,8 @@ actual `@smogon/calc` subprocess instead of skipping — this is what
 - **New orchestration backend:** implement `AnalysisPipeline` (like
   `AdkAnalysisOrchestrator`/`LangChainAnalysisOrchestrator`) and register it in
   `Container.build_pipeline`.
+- **New Chaos storage backend:** implement `ChaosRepositoryLike` (like
+  `FirestoreChaosRepository` — reuses the shared `ChaosTierIndex` for tier/
+  regulation-fallback selection, only "where the JSON bytes come from" is
+  backend-specific) and wire it in `Container.chaos_repository`.
+  `ChaosAdapter`/`ChaosStrategyAdapter` never change.

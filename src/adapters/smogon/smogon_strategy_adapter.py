@@ -12,17 +12,32 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from src.adapters.chaos.chaos_repository import ChaosRepository
+from src.adapters.chaos.chaos_repository import ChaosRepository, ChaosRepositoryLike
 from src.adapters.smogon.archetype_signals import infer_archetypes
+from src.domain.exceptions import ConfigurationError
 from src.domain.models import SmogonStrategy
 
 
 class ChaosStrategyAdapter:
-    """Concrete :class:`~src.domain.interfaces.StrategyKnowledgeProvider`."""
+    """Concrete :class:`~src.domain.interfaces.StrategyKnowledgeProvider`,
+    over a directory (or single file) of Chaos data, or over any other
+    ``ChaosRepositoryLike`` source passed in as ``repository``."""
 
-    def __init__(self, path: str | Path, top_n: int = 4, reg_fallback_depth: int = 3) -> None:
+    def __init__(
+        self,
+        path: str | Path | None = None,
+        top_n: int = 4,
+        reg_fallback_depth: int = 3,
+        *,
+        repository: ChaosRepositoryLike | None = None,
+    ) -> None:
         self._top_n = max(1, int(top_n))
-        self._repo = ChaosRepository(path, reg_fallback_depth=reg_fallback_depth)
+        if repository is not None:
+            self._repo: ChaosRepositoryLike = repository
+        elif path is not None:
+            self._repo = ChaosRepository(path, reg_fallback_depth=reg_fallback_depth)
+        else:
+            raise ConfigurationError("ChaosStrategyAdapter requires either `path` or `repository`")
 
     def get_strategy(
         self, species: str, *, metagame: str | None = None, question: str | None = None

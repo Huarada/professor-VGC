@@ -20,6 +20,7 @@ dependencies = [
 [project.optional-dependencies]
 openai = ["openai>=1.30", "langchain-openai>=0.2", "litellm>=1.84"]
 gemini = ["google-generativeai>=0.7", "langchain-google-genai>=2.0"]
+firestore = ["google-cloud-firestore>=2.16,<3"]
 # Self-sufficient test environment: `pip install -e ".[dev]"` alone must be
 # enough to get a 100%-green `pytest` + `mypy` run, matching what
 # `pip install -r requirements.txt` already provides — no test should ever

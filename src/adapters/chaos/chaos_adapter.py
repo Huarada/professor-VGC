@@ -21,7 +21,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Sequence
 
-from src.adapters.chaos.chaos_repository import ChaosFile, ChaosRepository
+from src.adapters.chaos.chaos_repository import ChaosRepository, ChaosRepositoryLike
+from src.domain.exceptions import ConfigurationError
 from src.domain.models import MetaContext, PokemonMetaSummary, StatSpread
 
 _EV_MULTIPLIER = 8
@@ -30,11 +31,26 @@ _STAT_FIELDS = ("hp", "atk", "def", "spa", "spd", "spe")
 
 
 class ChaosAdapter:
-    """MetaStatsProvider over a directory (or single file) of Chaos data."""
+    """MetaStatsProvider over a directory (or single file) of Chaos data, or
+    over any other ``ChaosRepositoryLike`` source (e.g. Firestore — see
+    ``firestore_chaos_repository.py``) passed in as ``repository``.
+    """
 
-    def __init__(self, path: str | Path, top_n: int = 3, reg_fallback_depth: int = 3) -> None:
+    def __init__(
+        self,
+        path: str | Path | None = None,
+        top_n: int = 3,
+        reg_fallback_depth: int = 3,
+        *,
+        repository: ChaosRepositoryLike | None = None,
+    ) -> None:
         self._top_n = max(1, int(top_n))
-        self._repo = ChaosRepository(path, reg_fallback_depth=reg_fallback_depth)
+        if repository is not None:
+            self._repo: ChaosRepositoryLike = repository
+        elif path is not None:
+            self._repo = ChaosRepository(path, reg_fallback_depth=reg_fallback_depth)
+        else:
+            raise ConfigurationError("ChaosAdapter requires either `path` or `repository`")
         # Back-compat attribute used by some callers/tests.
         self.metagame = self._repo.default_metagame()
 
@@ -121,7 +137,7 @@ class ChaosAdapter:
         return self._summarize(mon_data, source, count)
 
     def _summary_from_file(
-        self, file: ChaosFile, species: str, count: int
+        self, file: Any, species: str, count: int
     ) -> PokemonMetaSummary | None:
         mon_data = self._repo.mon_data(file, species)
         if not mon_data:
@@ -144,7 +160,14 @@ class ChaosAdapter:
 
         current_stats: dict[str, PokemonMetaSummary] = {}
         if current_file is not None and (
-            ideal_file is None or current_file.path != ideal_file.path
+            ideal_file is None
+            # Compare logical identity (metagame, cutoff), not a storage
+            # handle like a local Path — the latter doesn't exist at all on
+            # a Firestore-backed tier (FirestoreChaosFile.doc_id instead),
+            # and comparing the tier's own coordinates is what "is this
+            # actually a different tier" means regardless of backend.
+            or (current_file.metagame, current_file.cutoff)
+            != (ideal_file.metagame, ideal_file.cutoff)
         ):
             for name in species:
                 summary = self._summary_from_file(current_file, name, self._top_n)
@@ -161,7 +184,7 @@ class ChaosAdapter:
 
     @staticmethod
     def _rating_note(
-        ideal_file: ChaosFile | None, current_file: ChaosFile | None, rating: int | None
+        ideal_file: Any, current_file: Any, rating: int | None
     ) -> str:
         parts: list[str] = []
         if ideal_file is not None:
