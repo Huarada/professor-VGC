@@ -1,0 +1,11 @@
+# Minimal dependency set for the Chaos-Firestore sync tools' container
+# image (scripts/Dockerfile.chaos-sync) — deliberately NOT the project's
+# full requirements.txt (langchain/ADK/streamlit/... are irrelevant to a
+# job that only fetches Smogon stats and writes Firestore documents, and
+# would bloat both image size and Cloud Run cold-start time for no benefit).
+#
+# sync_smogon_chaos_to_firestore.py and migrate_chaos_to_firestore.py both
+# import only src.adapters.chaos.{chaos_tier_index,species_normalize} (pure
+# stdlib + src.domain.exceptions, itself pure stdlib) beyond this — gzip,
+# json, urllib, re are all standard library, no separate package needed.
+google-cloud-firestore>=2.16,<3

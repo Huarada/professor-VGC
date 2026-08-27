@@ -1,0 +1,29 @@
+# Container image for the Chaos-Firestore sync Cloud Run Job
+# (sync_smogon_chaos_to_firestore.py). Build/deploy from the REPO ROOT:
+#
+#   docker build -f scripts/Dockerfile.chaos-sync -t chaos-sync .
+#
+# See DATA.md's "Automated Smogon sync (Cloud Run Job)" section for the
+# full gcloud deploy runbook (Artifact Registry push, Cloud Run Job create,
+# Cloud Scheduler trigger, IAM).
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY scripts/chaos_sync.requirements.txt .
+RUN pip install --no-cache-dir -r chaos_sync.requirements.txt
+
+# Whole src/ and scripts/ trees, for simplicity — only chaos_tier_index.py,
+# species_normalize.py, chaos_firestore_writer.py, and this entrypoint are
+# ever actually imported at runtime (see chaos_sync.requirements.txt's own
+# comment); copying the rest costs image size, not correctness, since an
+# unimported .py file with an uninstalled dependency (e.g. src/config.py's
+# pydantic-settings) is simply never executed.
+COPY src/ src/
+COPY scripts/ scripts/
+
+# Configuration is entirely env-var driven (PROFESSORVGC_FIRESTORE_* — see
+# sync_smogon_chaos_to_firestore.py's own --help), set at `gcloud run jobs
+# deploy` / `gcloud run jobs update` time via --set-env-vars, not baked into
+# the image — the same image works for any project/collection/schedule.
+ENTRYPOINT ["python", "-m", "scripts.sync_smogon_chaos_to_firestore"]

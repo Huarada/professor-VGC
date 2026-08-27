@@ -1,4 +1,4 @@
-"""One-time migration: upload local Chaos JSON files into Firestore.
+"""One-time/manual migration: upload LOCAL Chaos JSON files into Firestore.
 
     python -m scripts.migrate_chaos_to_firestore --project-id YOUR_PROJECT \
         [--credentials path/to/key.json] [--source data/chaos] \
@@ -21,92 +21,36 @@ so the two directions of this migration can never drift apart on how a tier
 id is interpreted. Species documents are keyed by ``normalize_species()``
 (also shared with the read side), never by the raw display name — a lookup
 at query time is then always a single direct document read, never a
-collection scan.
+collection scan. The actual write path (batching, retry, sanitization) lives
+in ``chaos_firestore_writer.py``, shared with
+``sync_smogon_chaos_to_firestore.py`` (the scheduled, live-from-Smogon
+counterpart to this manual/local tool — see that module's own docstring).
 
-Batched (Firestore's own 500-writes-per-batch limit) so a full 4-tier,
-~1,100-species migration finishes in a handful of batches — comfortably
-inside the free tier's 20k-writes/day quota. This is a ONE-TIME cost; the
-running app only ever reads afterward (one document read per species
-actually needed for an analysis, not per tier).
+This is a ONE-TIME/manual cost for whatever local files you point it at; the
+running app only ever reads afterward. For KEEPING Firestore current
+automatically as Smogon publishes new monthly stats, use
+``sync_smogon_chaos_to_firestore.py`` instead (or in addition, e.g. to
+seed regulation-fallback history this project's own `data/chaos/` sample
+happens to have and Smogon's live site may have pruned).
 """
 
 from __future__ import annotations
 
-import argparse
 import json
-import os
 import sys
 from pathlib import Path
 from typing import Any, Iterator
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for `src` imports
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for `src`/`scripts` imports
 
 from src.adapters.chaos.chaos_tier_index import parse_tier_id
-from src.adapters.chaos.species_normalize import normalize_species
 
-_BATCH_LIMIT = 50
-_COMMIT_MAX_ATTEMPTS = 6
-
-
-def _strip_empty_keys(value: Any) -> Any:
-    """Recursively drop any dict entry keyed by an empty string.
-
-    Smogon's own Chaos export format universally includes a `"": <weight>`
-    entry under every species' "Moves" map (observed in 100% of species
-    checked in this project's real dumps) — Chaos's own convention for "the
-    remaining probability mass with no confirmed 5th/6th move slot", not a
-    real move. This is not a project-invented filter: `ChaosAdapter.
-    _top_items`/`_summarize` already drop exactly this same falsy key when
-    reading a LOCAL file (`if key` guards), so dropping it here too keeps
-    Firestore-backed data consistent with how the local backend already
-    treats it — the difference is that Firestore's field-path validation
-    rejects an empty string as a map key outright (`ValueError: One or more
-    components is not a string or is empty`), so this is not optional the
-    way it was for the local backend, just newly enforced by the storage
-    layer. Every other key, at every depth, is preserved byte-for-byte."""
-    if isinstance(value, dict):
-        return {
-            key: _strip_empty_keys(val) for key, val in value.items() if key
-        }
-    if isinstance(value, list):
-        return [_strip_empty_keys(item) for item in value]
-    return value
+from scripts.chaos_firestore_writer import build_firestore_client, write_tier
 
 
 def _iter_chaos_files(source: Path) -> Iterator[Path]:
     for path in sorted(source.glob("*.json")):
         yield path
-
-
-def _new_batch_with(client: Any, ref: Any, data: dict[str, Any]) -> Any:
-    batch = client.batch()
-    batch.set(ref, data)
-    return batch
-
-
-def _commit_with_retry(batch: Any) -> None:
-    """Commit a batch, retrying with exponential backoff on Firestore's
-    transient ``ABORTED``/``Too much contention on these documents`` error —
-    expected, documented Firestore behavior for a burst of writes into a
-    brand-new collection (its automatic sharding hasn't warmed up yet), not
-    a sign anything is actually wrong. Only ever hit during this one-time
-    migration, never by the running app (which only ever reads)."""
-    import time
-
-    from google.api_core.exceptions import Aborted, ServiceUnavailable
-
-    delay = 1.0
-    for attempt in range(1, _COMMIT_MAX_ATTEMPTS + 1):
-        try:
-            batch.commit()
-            return
-        except (Aborted, ServiceUnavailable) as exc:
-            if attempt == _COMMIT_MAX_ATTEMPTS:
-                raise
-            print(f"  [retry] batch commit contention (attempt {attempt}): {exc}"
-                  f" — retrying in {delay:.1f}s")
-            time.sleep(delay)
-            delay *= 2
 
 
 def migrate(
@@ -122,29 +66,14 @@ def migrate(
     client: Any = None
     if not dry_run:
         try:
-            from google.cloud import firestore
+            client = build_firestore_client(
+                project_id, database_id, credentials_path, ca_bundle_path
+            )
         except ImportError as exc:  # pragma: no cover - env dependent
             raise SystemExit(
                 "The 'google-cloud-firestore' package is not installed. "
                 "Run: pip install google-cloud-firestore"
             ) from exc
-        if ca_bundle_path:
-            # See FirestoreChaosRepository._build_client's own comment —
-            # same fix, same reason (grpc has its own TLS stack, unaffected
-            # by pip-system-certs), needed here too since this script talks
-            # to Firestore directly, not through that class.
-            os.environ.setdefault("GRPC_DEFAULT_SSL_ROOTS_FILE_PATH", ca_bundle_path)
-        if credentials_path:
-            from google.oauth2.service_account import Credentials
-
-            credentials = Credentials.from_service_account_file(  # type: ignore[no-untyped-call]
-                credentials_path
-            )
-            client = firestore.Client(
-                project=project_id, database=database_id, credentials=credentials
-            )
-        else:
-            client = firestore.Client(project=project_id, database=database_id)
 
     files = list(_iter_chaos_files(source))
     if not files:
@@ -168,27 +97,7 @@ def migrate(
         if dry_run:
             continue
 
-        tier_ref = client.collection(collection).document(tier_id)
-        _commit_with_retry(_new_batch_with(client, tier_ref, {"info": _strip_empty_keys(info)}))
-
-        batch = client.batch()
-        pending = 0
-        written = 0
-        for species_name, mon_data in species_data.items():
-            doc_ref = tier_ref.collection("species").document(normalize_species(species_name))
-            clean_mon_data = _strip_empty_keys(mon_data)
-            batch.set(doc_ref, {**clean_mon_data, "original_name": species_name})
-            pending += 1
-            if pending >= _BATCH_LIMIT:
-                _commit_with_retry(batch)
-                written += pending
-                print(f"  ... {written}/{len(species_data)} species written")
-                batch = client.batch()
-                pending = 0
-        if pending:
-            _commit_with_retry(batch)
-            written += pending
-        print(f"  done: {written}/{len(species_data)} species written")
+        write_tier(client, collection, tier_id, info, species_data)
 
     verb = "Would write" if dry_run else "Wrote"
     print(
@@ -200,6 +109,8 @@ def migrate(
 
 
 def main() -> None:
+    import argparse
+
     parser = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )

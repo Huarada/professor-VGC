@@ -210,6 +210,174 @@ certificate — most commonly a security suite's "web/SSL scanning" feature
    next to your service account key, outside the repo — it's machine-specific,
    not project config, and isn't a secret either way.
 
+## Automated Smogon sync (Cloud Run Job) — keep Firestore current automatically
+
+`scripts/sync_smogon_chaos_to_firestore.py` fetches current-generation VGC
+Chaos stats **directly from Smogon's own stats site**
+(`https://www.smogon.com/stats/<month>/chaos/`) — no local files, no manual
+download — decompresses each `.json.gz`, and upserts into Firestore through
+the exact same write path (`chaos_firestore_writer.py`) as the manual
+`migrate_chaos_to_firestore.py` above. Same storage layout, same
+sanitization, same idempotent overwrite-in-place semantics.
+
+```bash
+python -m scripts.sync_smogon_chaos_to_firestore --project-id YOUR_PROJECT \
+    [--month 2026-07] [--credentials path/to/key.json] [--dry-run]
+```
+
+**Scope: current-gen VGC only** (filename starts with `gen9` and contains
+`vgc`) — Smogon publishes ~150 other formats a month (every OU/Ubers/
+Randoms/... across every generation) this project has no use for and that
+would blow well past Firestore's free tier for zero product benefit. As of
+2026-07 this is 8 files (`gen9championsvgc2026regmb*` and its Bo3-format
+sibling, at 4 rating cutoffs each), ~2,165 species documents total — still
+comfortably free-tier.
+
+**No history kept.** Each run overwrites the CURRENT regulation's species
+documents with whatever Smogon most recently published for that same tier
+id — there is no per-month snapshot. This project's own regulation-fallback
+mechanism (walking OLDER regulations, not older MONTHS of the same
+regulation) already covers "what if this species has no current data"; a
+month-over-month trend history is a different feature this script doesn't
+attempt.
+
+### Why a scheduled Cloud Run Job, not Pub/Sub
+
+Pub/Sub fits when something WE control emits an event we can subscribe to
+(e.g. a new object landing in our own GCS bucket). Smogon's static file
+server has no webhook/event mechanism at all — there is nothing to
+subscribe to on the ingestion side. The right pattern for "poll an external
+source that only publishes, never notifies" is a scheduled, idempotent job:
+
+```
+Cloud Scheduler (cron) --HTTP POST (OAuth)--> Cloud Run Jobs API --run--> Cloud Run Job --> Firestore
+```
+
+Smogon publishes once a month; a **weekly** schedule catches that within a
+few days at negligible cost (the job itself runs in well under a minute and
+is a safe no-op when nothing changed).
+
+### Deploy runbook
+
+One-time setup, run from the repo root. Replace `professorvgc-data` /
+`firestore-professorvgc` / `us-central1` with your own project id / database
+id / region if different.
+
+**1. Enable the needed APIs:**
+
+```bash
+gcloud services enable run.googleapis.com artifactregistry.googleapis.com \
+    cloudscheduler.googleapis.com cloudbuild.googleapis.com \
+    --project=professorvgc-data
+```
+
+**2. Create an Artifact Registry repo for the image (one time):**
+
+```bash
+gcloud artifacts repositories create professorvgc-images \
+    --repository-format=docker --location=us-central1 \
+    --project=professorvgc-data
+```
+
+**3. Build and push the image** (Cloud Build — no local Docker needed):
+
+```bash
+gcloud builds submit --config scripts/cloudbuild.chaos-sync.yaml \
+    --project=professorvgc-data .
+```
+
+**4. Create the Cloud Run Job**, reusing the SAME `professorvgc-firestore`
+service account already scoped to `roles/datastore.user` from the manual
+migration setup above — no key file needed here at all, Cloud Run attaches
+this identity's credentials automatically:
+
+```bash
+gcloud run jobs create chaos-sync \
+    --image=us-central1-docker.pkg.dev/professorvgc-data/professorvgc-images/chaos-sync:latest \
+    --region=us-central1 \
+    --service-account=professorvgc-firestore@professorvgc-data.iam.gserviceaccount.com \
+    --set-env-vars="PROFESSORVGC_FIRESTORE_PROJECT_ID=professorvgc-data,PROFESSORVGC_FIRESTORE_DATABASE_ID=firestore-professorvgc,PROFESSORVGC_FIRESTORE_CHAOS_COLLECTION=chaos_tiers" \
+    --max-retries=1 --task-timeout=600 \
+    --project=professorvgc-data
+```
+
+**5. Test it manually once** before scheduling anything:
+
+```bash
+gcloud run jobs execute chaos-sync --region=us-central1 --project=professorvgc-data --wait
+```
+
+**6. Grant that same service account permission to BE invoked** (a
+DIFFERENT permission than reading/writing Firestore — scoped to just this
+one job, not project-wide):
+
+```bash
+gcloud run jobs add-iam-policy-binding chaos-sync \
+    --region=us-central1 --project=professorvgc-data \
+    --member="serviceAccount:professorvgc-firestore@professorvgc-data.iam.gserviceaccount.com" \
+    --role="roles/run.invoker"
+```
+
+**7. Create the weekly Cloud Scheduler trigger:**
+
+```bash
+gcloud scheduler jobs create http chaos-sync-weekly \
+    --location=us-central1 \
+    --schedule="0 6 * * 1" \
+    --uri="https://run.googleapis.com/v2/projects/professorvgc-data/locations/us-central1/jobs/chaos-sync:run" \
+    --http-method=POST \
+    --oauth-service-account-email=professorvgc-firestore@professorvgc-data.iam.gserviceaccount.com \
+    --project=professorvgc-data
+```
+
+(`0 6 * * 1` = every Monday at 06:00 in the scheduler's configured
+timezone — `gcloud scheduler jobs create http` also takes a `--time-zone`
+flag if you want a specific one; it defaults to UTC.)
+
+**Updating after a code change:** re-run steps 3 (rebuild/push) then
+
+```bash
+gcloud run jobs update chaos-sync \
+    --image=us-central1-docker.pkg.dev/professorvgc-data/professorvgc-images/chaos-sync:latest \
+    --region=us-central1 --project=professorvgc-data
+```
+
+**Checking logs / history:** Cloud Run Jobs execution history and logs are
+in the Console (Cloud Run > Jobs > chaos-sync > Executions/Logs), or
+`gcloud run jobs executions list --job=chaos-sync --region=us-central1 --project=professorvgc-data`.
+
+**Cost:** the job itself (a container running for well under a minute, once
+a week) and Cloud Scheduler (one HTTP call a week) are both effectively
+free at this frequency; Artifact Registry storage for one small image is a
+few cents/month at most. The only genuinely recurring cost this adds beyond
+the Firestore free tier itself.
+
+### Optional follow-up: disable automatic indexing on the `species` collection
+
+Every field of every Firestore document is automatically indexed by
+default. This project **never queries** `species` documents by content —
+every read is a direct `document(normalized_id).get()`
+(`FirestoreChaosRepository.mon_data`) — so those automatic indexes are
+pure waste: extra write cost on every sync (this is what live-migrating
+Smogon's July 2026 dump ran into: `write_tier`'s adaptive commit-splitting,
+above, exists specifically because index-entry overhead pushed some
+batches' real wire size well past their raw-JSON estimate) and extra
+storage, for indexes nothing ever uses. Exempting the collection fixes
+both, permanently:
+
+```bash
+gcloud firestore indexes fields update '*' \
+    --collection-group=species \
+    --database=firestore-professorvgc \
+    --disable-indexes \
+    --project=professorvgc-data
+```
+
+Not required for correctness (the adaptive splitting in
+`chaos_firestore_writer.py` already handles oversized commits regardless),
+but recommended — cheaper and faster syncs going forward, and the honest
+reflection of how this data is actually accessed.
+
 ## 2. Your own scraper output
 
 If you scrape/aggregate your own JSON, produce the **same Chaos schema** above
