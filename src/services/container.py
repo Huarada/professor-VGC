@@ -103,6 +103,7 @@ class Container:
                     database_id=self._settings.firestore_database_id,
                     collection=self._settings.firestore_chaos_collection,
                     credentials_path=self._settings.firestore_credentials_path,
+                    grpc_ca_bundle_path=self._settings.firestore_grpc_ca_bundle_path,
                     reg_fallback_depth=self._settings.reg_fallback_depth,
                 )
             else:

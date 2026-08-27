@@ -49,6 +49,16 @@ class Settings(BaseSettings):
     # Credentials (gcloud auth application-default login, or
     # GOOGLE_APPLICATION_CREDENTIALS already set in the environment).
     firestore_credentials_path: str | None = None
+    # Optional: a CA bundle (PEM) gRPC should trust, IN ADDITION TO its own
+    # built-in roots — needed only on a machine where something TLS-
+    # intercepts outbound HTTPS with a locally-installed root cert (a
+    # security suite's "web shield"/"SSL scanning" feature, a corporate
+    # proxy, ...), which grpc's own bundled roots.pem has no way to know
+    # about (unlike Python's `ssl` module, which `pip-system-certs` already
+    # patches to read the OS trust store — grpc uses its own TLS stack).
+    # See DATA.md's Firestore section for how to detect this and generate
+    # the bundle. Unset = grpc's normal default roots only.
+    firestore_grpc_ca_bundle_path: str | None = None
 
     # --- Node / calc engine -------------------------------------------- #
     node_binary: str = "node"

@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Iterator
@@ -43,12 +44,69 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, for `
 from src.adapters.chaos.chaos_tier_index import parse_tier_id
 from src.adapters.chaos.species_normalize import normalize_species
 
-_BATCH_LIMIT = 500
+_BATCH_LIMIT = 50
+_COMMIT_MAX_ATTEMPTS = 6
+
+
+def _strip_empty_keys(value: Any) -> Any:
+    """Recursively drop any dict entry keyed by an empty string.
+
+    Smogon's own Chaos export format universally includes a `"": <weight>`
+    entry under every species' "Moves" map (observed in 100% of species
+    checked in this project's real dumps) — Chaos's own convention for "the
+    remaining probability mass with no confirmed 5th/6th move slot", not a
+    real move. This is not a project-invented filter: `ChaosAdapter.
+    _top_items`/`_summarize` already drop exactly this same falsy key when
+    reading a LOCAL file (`if key` guards), so dropping it here too keeps
+    Firestore-backed data consistent with how the local backend already
+    treats it — the difference is that Firestore's field-path validation
+    rejects an empty string as a map key outright (`ValueError: One or more
+    components is not a string or is empty`), so this is not optional the
+    way it was for the local backend, just newly enforced by the storage
+    layer. Every other key, at every depth, is preserved byte-for-byte."""
+    if isinstance(value, dict):
+        return {
+            key: _strip_empty_keys(val) for key, val in value.items() if key
+        }
+    if isinstance(value, list):
+        return [_strip_empty_keys(item) for item in value]
+    return value
 
 
 def _iter_chaos_files(source: Path) -> Iterator[Path]:
     for path in sorted(source.glob("*.json")):
         yield path
+
+
+def _new_batch_with(client: Any, ref: Any, data: dict[str, Any]) -> Any:
+    batch = client.batch()
+    batch.set(ref, data)
+    return batch
+
+
+def _commit_with_retry(batch: Any) -> None:
+    """Commit a batch, retrying with exponential backoff on Firestore's
+    transient ``ABORTED``/``Too much contention on these documents`` error —
+    expected, documented Firestore behavior for a burst of writes into a
+    brand-new collection (its automatic sharding hasn't warmed up yet), not
+    a sign anything is actually wrong. Only ever hit during this one-time
+    migration, never by the running app (which only ever reads)."""
+    import time
+
+    from google.api_core.exceptions import Aborted, ServiceUnavailable
+
+    delay = 1.0
+    for attempt in range(1, _COMMIT_MAX_ATTEMPTS + 1):
+        try:
+            batch.commit()
+            return
+        except (Aborted, ServiceUnavailable) as exc:
+            if attempt == _COMMIT_MAX_ATTEMPTS:
+                raise
+            print(f"  [retry] batch commit contention (attempt {attempt}): {exc}"
+                  f" — retrying in {delay:.1f}s")
+            time.sleep(delay)
+            delay *= 2
 
 
 def migrate(
@@ -58,6 +116,7 @@ def migrate(
     collection: str,
     database_id: str,
     credentials_path: str | None,
+    ca_bundle_path: str | None,
     dry_run: bool,
 ) -> None:
     client: Any = None
@@ -69,6 +128,12 @@ def migrate(
                 "The 'google-cloud-firestore' package is not installed. "
                 "Run: pip install google-cloud-firestore"
             ) from exc
+        if ca_bundle_path:
+            # See FirestoreChaosRepository._build_client's own comment —
+            # same fix, same reason (grpc has its own TLS stack, unaffected
+            # by pip-system-certs), needed here too since this script talks
+            # to Firestore directly, not through that class.
+            os.environ.setdefault("GRPC_DEFAULT_SSL_ROOTS_FILE_PATH", ca_bundle_path)
         if credentials_path:
             from google.oauth2.service_account import Credentials
 
@@ -104,19 +169,26 @@ def migrate(
             continue
 
         tier_ref = client.collection(collection).document(tier_id)
+        _commit_with_retry(_new_batch_with(client, tier_ref, {"info": _strip_empty_keys(info)}))
+
         batch = client.batch()
-        batch.set(tier_ref, {"info": info})
-        pending = 1
+        pending = 0
+        written = 0
         for species_name, mon_data in species_data.items():
             doc_ref = tier_ref.collection("species").document(normalize_species(species_name))
-            batch.set(doc_ref, {**mon_data, "original_name": species_name})
+            clean_mon_data = _strip_empty_keys(mon_data)
+            batch.set(doc_ref, {**clean_mon_data, "original_name": species_name})
             pending += 1
             if pending >= _BATCH_LIMIT:
-                batch.commit()
+                _commit_with_retry(batch)
+                written += pending
+                print(f"  ... {written}/{len(species_data)} species written")
                 batch = client.batch()
                 pending = 0
         if pending:
-            batch.commit()
+            _commit_with_retry(batch)
+            written += pending
+        print(f"  done: {written}/{len(species_data)} species written")
 
     verb = "Would write" if dry_run else "Wrote"
     print(
@@ -136,6 +208,13 @@ def main() -> None:
         "--credentials", default=None,
         help="path to a service account JSON key (omit to use Application Default Credentials)",
     )
+    parser.add_argument(
+        "--ca-bundle", default=None,
+        help="a CA bundle (PEM) for grpc to trust in addition to its own roots — only "
+             "needed if something on this machine TLS-intercepts outbound HTTPS with a "
+             "locally-installed root cert (a security suite, a corporate proxy, ...); "
+             "see DATA.md's Firestore section",
+    )
     parser.add_argument("--source", default="data/chaos", help="directory of local Chaos *.json files")
     parser.add_argument("--collection", default="chaos_tiers", help="Firestore root collection name")
     parser.add_argument("--database", default="(default)", help="Firestore database id")
@@ -151,6 +230,7 @@ def main() -> None:
         collection=args.collection,
         database_id=args.database,
         credentials_path=args.credentials,
+        ca_bundle_path=args.ca_bundle,
         dry_run=args.dry_run,
     )
 
