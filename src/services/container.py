@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
+from src.adapters.chaos.chaos_repository import ChaosRepository, ChaosRepositoryLike
+from src.adapters.chaos.firestore_chaos_repository import FirestoreChaosRepository
 from src.adapters.llm.adk_provider import build_adk_model
 from src.adapters.llm.gemini_embedding_provider import GeminiEmbeddingProvider
 from src.adapters.llm.gemini_provider import GeminiProvider
@@ -42,6 +44,7 @@ if TYPE_CHECKING:
 
 _PROVIDERS = {"openai", "gemini"}
 _ORCHESTRATORS = {"native", "langchain", "adk"}
+_CHAOS_BACKENDS = {"local", "firestore"}
 
 
 class Container:
@@ -52,6 +55,12 @@ class Container:
         self._memory: ConversationMemory | None = None
         self._calc: SmogonCalcAdapter | None = None
         self._dex: SmogonDexAdapter | None = None
+        # Shared between chaos() and _chaos_strategy() — both need a
+        # ChaosRepositoryLike, and building it twice would mean the
+        # Firestore backend doubling every read for no reason (the local
+        # backend already avoided this by being cheap to re-glob; Firestore
+        # is not "free" the same way, so this cache matters more there).
+        self._chaos_repo: ChaosRepositoryLike | None = None
         # Keyed by provider name ("openai"/"gemini") — a session may switch
         # provider mid-conversation via the sidebar, so this caches at most
         # one retriever per provider actually used, each with its own
@@ -77,18 +86,37 @@ class Container:
             )
         return self._calc
 
+    def chaos_repository(self) -> ChaosRepositoryLike:
+        """The shared Chaos data source — local files or Firestore, per
+        PROFESSORVGC_CHAOS_BACKEND. Built once and cached: for the Firestore
+        backend this is what makes chaos()/_chaos_strategy() sharing one
+        instance actually save reads, not just avoid a redundant object."""
+        if self._chaos_repo is None:
+            backend = self._settings.chaos_backend.lower()
+            if backend not in _CHAOS_BACKENDS:
+                raise ConfigurationError(
+                    f"Unknown chaos backend '{backend}'. Available: {sorted(_CHAOS_BACKENDS)}"
+                )
+            if backend == "firestore":
+                self._chaos_repo = FirestoreChaosRepository(
+                    self._settings.firestore_project_id or "",
+                    database_id=self._settings.firestore_database_id,
+                    collection=self._settings.firestore_chaos_collection,
+                    credentials_path=self._settings.firestore_credentials_path,
+                    reg_fallback_depth=self._settings.reg_fallback_depth,
+                )
+            else:
+                self._chaos_repo = ChaosRepository(
+                    self._settings.chaos_data_path,
+                    reg_fallback_depth=self._settings.reg_fallback_depth,
+                )
+        return self._chaos_repo
+
     def chaos(self) -> ChaosAdapter:
-        return ChaosAdapter(
-            self._settings.chaos_data_path,
-            top_n=self._settings.chaos_top_n,
-            reg_fallback_depth=self._settings.reg_fallback_depth,
-        )
+        return ChaosAdapter(repository=self.chaos_repository(), top_n=self._settings.chaos_top_n)
 
     def _chaos_strategy(self) -> ChaosStrategyAdapter:
-        return ChaosStrategyAdapter(
-            self._settings.chaos_data_path,
-            reg_fallback_depth=self._settings.reg_fallback_depth,
-        )
+        return ChaosStrategyAdapter(repository=self.chaos_repository())
 
     def smogon_dex(self) -> SmogonDexAdapter | None:
         """Official @pkmn/smogon adapter (None when disabled)."""
@@ -244,10 +272,17 @@ class Container:
         return self.build_native_pipeline(provider)
 
     def shutdown(self) -> None:
-        """Release long-lived resources (Node subprocesses)."""
+        """Release long-lived resources (Node subprocesses, Firestore gRPC channel)."""
         if self._calc is not None:
             self._calc.close()
             self._calc = None
         if self._dex is not None:
             self._dex.close()
             self._dex = None
+        if self._chaos_repo is not None:
+            # ChaosRepository (local files) has no close() at all — nothing
+            # to release; FirestoreChaosRepository does (its gRPC channel).
+            close = getattr(self._chaos_repo, "close", None)
+            if close is not None:
+                close()
+            self._chaos_repo = None

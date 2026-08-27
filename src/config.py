@@ -28,9 +28,27 @@ class Settings(BaseSettings):
     # --- Paths ---------------------------------------------------------- #
     project_root: Path = _PROJECT_ROOT
     # Directory of Chaos files (per rating tier / regulation) OR a single file.
+    # Only read when chaos_backend="local" (the default) — see below.
     chaos_data_path: Path = Field(default=_PROJECT_ROOT / "data" / "chaos")
     reg_fallback_depth: int = 3
     node_calc_dir: Path = Field(default=_PROJECT_ROOT / "node_calc")
+
+    # --- Chaos data backend ("local" | "firestore") ---------------------- #
+    # "local" reads chaos_data_path (unchanged default behavior). "firestore"
+    # reads the same data from Google Cloud Firestore instead (see
+    # scripts/migrate_chaos_to_firestore.py to populate it, and
+    # src/adapters/chaos/firestore_chaos_repository.py for the storage
+    # layout) — everything downstream (tier/regulation-fallback selection,
+    # EV/nature back-fill, strategy derivation) is byte-for-byte identical
+    # either way; only where the raw JSON comes from changes.
+    chaos_backend: str = "local"
+    firestore_project_id: str | None = None
+    firestore_database_id: str = "(default)"
+    firestore_chaos_collection: str = "chaos_tiers"
+    # Path to a service account JSON key. Unset = Application Default
+    # Credentials (gcloud auth application-default login, or
+    # GOOGLE_APPLICATION_CREDENTIALS already set in the environment).
+    firestore_credentials_path: str | None = None
 
     # --- Node / calc engine -------------------------------------------- #
     node_binary: str = "node"

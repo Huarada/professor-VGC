@@ -14,97 +14,89 @@ for a given match:
   Champions stays in Champions) are tried, nearest first, up to a depth limit.
 
 Only file discovery and selection live here; per-Pokemon extraction stays in the
-adapters that consume this repository.
+adapters that consume this repository. Tier selection itself (ideal/current/
+regulation-fallback) is storage-agnostic and lives in ``chaos_tier_index.py``,
+shared verbatim with ``FirestoreChaosRepository`` — this file's own
+responsibility is narrowed to "where do the JSON bytes come from" (the local
+filesystem), which is the only thing genuinely specific to this backend.
 """
 
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol, runtime_checkable
 
+from src.adapters.chaos.chaos_tier_index import ChaosFileMeta, ChaosTierIndex, parse_tier_id
+from src.adapters.chaos.species_normalize import normalize_species
 from src.domain.exceptions import ChaosDataError
-
-# gen9 [champions] vgc 2026 reg mb  ->  franchise groups Champions vs base VGC.
-_META_RE = re.compile(
-    r"^(?P<gen>gen\d+)(?P<franchise>[a-z]*?)vgc(?P<year>\d{4})reg(?P<reg>[a-z]+)$"
-)
-_FILE_RE = re.compile(r"^(?P<metagame>.+?)(?:-(?P<cutoff>\d+))?\.json$")
 
 
 @dataclass(frozen=True)
-class ChaosFile:
-    """One discovered Chaos file and its parsed coordinates."""
+class ChaosFile(ChaosFileMeta):
+    """One discovered local Chaos file — its parsed coordinates plus path."""
 
     path: Path
-    metagame: str
-    cutoff: int
-    gen: str
-    franchise: str  # "champions" or "" (base VGC) — the game family
-    year: int
-    reg: str
 
-    @property
-    def game_key(self) -> str:
-        """Franchise-level key (year-independent) used to group same-game regs."""
-        return f"{self.gen}{self.franchise}"
 
-    @property
-    def reg_order(self) -> tuple[int, str]:
-        """Sortable key: newer year first, then later regulation letter."""
-        return (self.year, self.reg)
+@runtime_checkable
+class ChaosRepositoryLike(Protocol):
+    """The narrow subset of ``ChaosRepository`` that ``ChaosAdapter`` and
+    ``ChaosStrategyAdapter`` actually depend on — satisfied structurally by
+    both ``ChaosRepository`` (local files) and ``FirestoreChaosRepository``
+    (see that module), so either can be injected into those adapters without
+    either adapter's own code changing at all. A new storage backend (a
+    database, a different bucket layout, ...) only ever needs to satisfy
+    this shape, per the same Dependency Inversion pattern this project
+    already applies to ``CalcEngineAdapter``/``StrategyKnowledgeProvider``.
+    """
 
-    @property
-    def label(self) -> str:
-        return f"{self.metagame}@{self.cutoff}"
+    def resolve_metagame(self, metagame: str | None) -> str: ...
+    def default_metagame(self) -> str: ...
+    def ideal_file(self, metagame: str) -> Any: ...
+    def current_file(self, metagame: str, rating: int | None) -> Any: ...
+    def mon_data(self, file: Any, species: str) -> dict[str, Any] | None: ...
+    def resolve_mon(
+        self, metagame: str, species: str
+    ) -> tuple[dict[str, Any], str] | None: ...
 
 
 class ChaosRepository:
-    """Indexes Chaos files in a directory and resolves tiers / reg fallback."""
+    """Indexes local Chaos files in a directory and resolves tiers / reg fallback."""
 
     def __init__(self, path: str | Path, reg_fallback_depth: int = 3) -> None:
-        self._depth = max(0, int(reg_fallback_depth))
         root = Path(path)
-        files: list[Path]
+        paths: list[Path]
         if root.is_dir():
-            files = sorted(root.glob("*.json"))
+            paths = sorted(root.glob("*.json"))
         elif root.is_file():
-            files = [root]
+            paths = [root]
         else:
             raise ChaosDataError(f"Chaos path not found: {root}")
 
         self._files: list[ChaosFile] = []
-        for file in files:
-            parsed = self._parse_file(file)
+        for file_path in paths:
+            parsed = self._parse_file(file_path)
             if parsed is not None:
                 self._files.append(parsed)
         if not self._files:
             raise ChaosDataError(f"No usable Chaos files found at: {root}")
+        self._index: ChaosTierIndex[ChaosFile] = ChaosTierIndex(
+            self._files, reg_fallback_depth=reg_fallback_depth
+        )
         self._cache: dict[Path, dict[str, Any]] = {}
 
     # -- discovery ------------------------------------------------------- #
 
     @staticmethod
     def _parse_file(path: Path) -> ChaosFile | None:
-        m = _FILE_RE.match(path.name)
-        if not m:
-            return None
-        metagame = m.group("metagame")
-        cutoff = int(m.group("cutoff") or 0)
-        meta = _META_RE.match(metagame)
+        meta = parse_tier_id(path.stem)
         if meta is None:
-            # Unrecognized naming: still usable as a single, tier-0, standalone meta.
-            return ChaosFile(path, metagame, cutoff, "gen0", metagame, 0, "")
+            return None
         return ChaosFile(
-            path=path,
-            metagame=metagame,
-            cutoff=cutoff,
-            gen=meta.group("gen"),
-            franchise=meta.group("franchise"),
-            year=int(meta.group("year")),
-            reg=meta.group("reg"),
+            path=path, metagame=meta.metagame, cutoff=meta.cutoff, gen=meta.gen,
+            franchise=meta.franchise, year=meta.year, reg=meta.reg,
         )
 
     def _load(self, file: ChaosFile) -> dict[str, Any]:
@@ -116,62 +108,28 @@ class ChaosRepository:
                 raise ChaosDataError(f"Unable to read Chaos file {file.path}: {exc}") from exc
         return self._cache[file.path]
 
-    # -- selection ------------------------------------------------------- #
+    # -- selection (delegates to the shared, storage-agnostic index) ----- #
 
     def metagames(self) -> set[str]:
-        return {f.metagame for f in self._files}
+        return self._index.metagames()
 
     def knows(self, metagame: str | None) -> bool:
-        return bool(metagame) and metagame in self.metagames()
+        return self._index.knows(metagame)
 
     def resolve_metagame(self, metagame: str | None) -> str:
-        """Return the given metagame if known, else the newest available one."""
-        if self.knows(metagame):
-            assert metagame is not None  # knows() is False for None, so this always holds
-            return metagame
-        return self.default_metagame()
+        return self._index.resolve_metagame(metagame)
 
     def default_metagame(self) -> str:
-        """Newest metagame available (latest year, latest regulation)."""
-        newest = max(self._files, key=lambda f: f.reg_order)
-        return newest.metagame
-
-    def _files_for(self, metagame: str) -> list[ChaosFile]:
-        return sorted(
-            (f for f in self._files if f.metagame == metagame), key=lambda f: f.cutoff
-        )
+        return self._index.default_metagame()
 
     def ideal_file(self, metagame: str) -> ChaosFile | None:
-        files = self._files_for(metagame)
-        return files[-1] if files else None
+        return self._index.ideal_file(metagame)
 
     def current_file(self, metagame: str, rating: int | None) -> ChaosFile | None:
-        """The tier bracket a rating falls into (largest cutoff <= rating)."""
-        files = self._files_for(metagame)
-        if not files:
-            return None
-        if rating is None:
-            return files[-1]
-        eligible = [f for f in files if f.cutoff <= rating]
-        return (eligible or files)[0] if not eligible else eligible[-1]
+        return self._index.current_file(metagame, rating)
 
     def reg_fallback_files(self, metagame: str) -> list[ChaosFile]:
-        """Ideal-tier files of older regulations in the SAME game family."""
-        current = next((f for f in self._files if f.metagame == metagame), None)
-        if current is None:
-            return []
-        older_metas: dict[str, ChaosFile] = {}
-        for f in self._files:
-            if f.game_key != current.game_key:
-                continue  # stay within the same game (Champions -> Champions)
-            if f.reg_order >= current.reg_order:
-                continue  # only strictly older regulations
-            # keep the highest-cutoff (ideal) file per older metagame
-            best = older_metas.get(f.metagame)
-            if best is None or f.cutoff > best.cutoff:
-                older_metas[f.metagame] = f
-        ordered = sorted(older_metas.values(), key=lambda f: f.reg_order, reverse=True)
-        return ordered[: self._depth]
+        return self._index.reg_fallback_files(metagame)
 
     # -- data access ----------------------------------------------------- #
 
@@ -185,11 +143,11 @@ class ChaosRepository:
         data: dict[str, dict[str, Any]] = self._load(file).get("data") or {}
         if species in data:
             return data[species]
-        index = {_normalize(k): k for k in data}
+        index = {normalize_species(k): k for k in data}
         parts = species.split("-")
         for cut in range(len(parts), 0, -1):
             candidate = "-".join(parts[:cut])
-            key = index.get(_normalize(candidate))
+            key = index.get(normalize_species(candidate))
             if key:
                 return data[key]
         return None
@@ -216,7 +174,3 @@ class ChaosRepository:
     def metagame_info(self, file: ChaosFile) -> str:
         info: dict[str, Any] = self._load(file).get("info") or {}
         return str(info.get("metagame", file.metagame))
-
-
-def _normalize(name: str) -> str:
-    return name.lower().replace(" ", "").replace("-", "").replace(".", "").replace("'", "")

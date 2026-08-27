@@ -90,6 +90,64 @@ Naming decoded: `gen9` + `champions` (franchise, empty for base VGC) + `vgc` +
 grouping uses `gen9champions` vs `gen9` (base), so year/regulation can differ but
 the game family stays fixed.
 
+## Firestore backend (optional) — the same data, hosted in Google Cloud
+
+By default (`PROFESSORVGC_CHAOS_BACKEND=local`) everything above reads from
+`data/chaos/*.json` on disk. Set `PROFESSORVGC_CHAOS_BACKEND=firestore` to read
+the exact same data from a Google Cloud Firestore database instead — tier
+selection, regulation fallback, EV/nature back-fill and strategy derivation
+are all byte-for-byte identical either way (`ChaosAdapter`/`ChaosStrategyAdapter`
+depend only on the storage-agnostic `ChaosRepositoryLike` shape, satisfied by
+both `ChaosRepository`, local files, and `FirestoreChaosRepository`, Firestore).
+
+**Setup:**
+
+1. A GCP project with a Firestore database (Native mode, any single region —
+   this data is small enough to stay in the free tier regardless of region;
+   `us-central1` is a reasonable default) and a service account scoped to
+   `roles/datastore.user` (read/write on Firestore only — never grant
+   project-wide Editor/Owner for this).
+2. Populate it once from your local `data/chaos/*.json` files (never edits
+   them — read-only):
+
+   ```bash
+   pip install google-cloud-firestore   # or: pip install -e ".[firestore]"
+   python -m scripts.migrate_chaos_to_firestore --project-id YOUR_PROJECT \
+       --credentials path/to/service-account-key.json
+   # --dry-run first to see file/species counts with no Firestore connection at all
+   ```
+
+3. Point the app at it in `.env`:
+
+   ```env
+   PROFESSORVGC_CHAOS_BACKEND=firestore
+   PROFESSORVGC_FIRESTORE_PROJECT_ID=your-project-id
+   PROFESSORVGC_FIRESTORE_CREDENTIALS_PATH=path/to/service-account-key.json
+   ```
+
+   Leave `PROFESSORVGC_FIRESTORE_CREDENTIALS_PATH` empty to use Application
+   Default Credentials instead (`gcloud auth application-default login`, or an
+   already-set `GOOGLE_APPLICATION_CREDENTIALS`) rather than a key file.
+
+**Storage layout** (see `src/adapters/chaos/firestore_chaos_repository.py`'s
+own docstring for the full rationale): one small document per tier
+(`chaos_tiers/{metagame}-{cutoff}`, e.g. `chaos_tiers/gen9championsvgc2026regmb-1760`)
+holding just the original `info` block, and one document PER SPECIES under a
+`species` subcollection, keyed by a normalized species id, holding that
+species' Chaos JSON object **verbatim** (Abilities/Items/Moves/Spreads/
+Teammates/Checks and Counters/Raw count — unchanged shape, just relocated).
+A real tier file is 250-300+ species and 2.5-4.5MB — one document per FILE
+would risk Firestore's 1MiB document-size limit and force every lookup to
+download species nobody asked about; one document per species means a
+lookup is always a single, direct, cheap read by id.
+
+**Cost:** the full dataset (4 tiers, ~1,100 species total in the shipped
+sample) is roughly 13MB — comfortably inside Firestore's free tier (1GiB
+storage, 50k reads/day, 20k writes/day) for any realistic usage volume. The
+one-time migration itself is ~1,150 writes, also free-tier. A real GCP
+project with billing enabled is still required to create a Firestore
+database at all, even to stay entirely within the free tier.
+
 ## 2. Your own scraper output
 
 If you scrape/aggregate your own JSON, produce the **same Chaos schema** above

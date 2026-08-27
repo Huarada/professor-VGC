@@ -11,3 +11,11 @@ dist/
 build/
 *.bundle
 CLAUDE.md
+
+# GCP service account keys — never commit these (see .env.example's
+# PROFESSORVGC_FIRESTORE_CREDENTIALS_PATH). Matches the common naming
+# conventions the GCP Console downloads a key under, as a safety net in
+# case one ever lands inside the repo despite being told to live outside it.
+*service-account*.json
+*-key.json
+firestore-key*.json
