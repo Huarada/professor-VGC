@@ -30,6 +30,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 
+from src.adapters.llm.base import require_modern_gemini_model
 from src.config import Settings
 from src.domain.exceptions import ConfigurationError
 
@@ -55,6 +56,7 @@ def build_adk_model(provider: str, settings: Settings) -> "str | BaseLlm":
             raise ConfigurationError(
                 "Gemini API key required (PROFESSORVGC_GEMINI_API_KEY)"
             )
+        require_modern_gemini_model(settings.gemini_model)
         os.environ["GOOGLE_API_KEY"] = settings.gemini_api_key
         return settings.gemini_model
     if not settings.openai_api_key:

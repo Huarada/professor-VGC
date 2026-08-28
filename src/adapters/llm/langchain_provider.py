@@ -16,6 +16,7 @@ from typing import TYPE_CHECKING, Any, Sequence
 
 from pydantic import SecretStr
 
+from src.adapters.llm.base import require_modern_gemini_model
 from src.config import Settings
 from src.domain.exceptions import ConfigurationError, LLMProviderError
 from src.domain.models import ChatMessage
@@ -126,6 +127,7 @@ def build_chat_model(provider: str, settings: Settings) -> BaseChatModel:
         )
     if not settings.gemini_api_key:
         raise ConfigurationError("Gemini API key required (PROFESSORVGC_GEMINI_API_KEY)")
+    require_modern_gemini_model(settings.gemini_model)
     try:
         from langchain_google_genai import ChatGoogleGenerativeAI
     except ImportError as exc:  # pragma: no cover - env dependent

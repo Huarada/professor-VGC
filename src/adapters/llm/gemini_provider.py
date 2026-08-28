@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
+from src.adapters.llm.base import require_modern_gemini_model
 from src.domain.exceptions import ConfigurationError, LLMProviderError
 from src.domain.models import ChatMessage
 
@@ -13,9 +14,10 @@ class GeminiProvider:
 
     name = "gemini"
 
-    def __init__(self, api_key: str | None, model: str = "gemini-1.5-flash") -> None:
+    def __init__(self, api_key: str | None, model: str = "gemini-3.5-flash") -> None:
         if not api_key:
             raise ConfigurationError("Gemini API key is required (PROFESSORVGC_GEMINI_API_KEY)")
+        require_modern_gemini_model(model)
         self._model_name = model
         try:
             import google.generativeai as genai  # noqa: PLC0415 - lazy optional dep
