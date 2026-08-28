@@ -24,12 +24,16 @@ def _settings(**overrides) -> Settings:
         "use_semantic_strategy": True,
         "openai_api_key": "test-key",
         "gemini_api_key": "test-key",
+        # Explicit "local": chaos_backend now DEFAULTS to "firestore" (the
+        # showcased competition demo path), which needs real project
+        # credentials container.strategy() below would otherwise try to
+        # use — this suite only cares about the semantic/dex wiring, not
+        # which Chaos backend powers it, so pin the network-free one.
+        "chaos_backend": "local",
     }
     base.update(overrides)
     # _env_file=None: keeps this suite hermetic regardless of what a
-    # contributor's own real .env sets (e.g. PROFESSORVGC_CHAOS_BACKEND=
-    # firestore would otherwise make container.strategy() below silently
-    # attempt a real Firestore connection via _chaos_strategy()'s fallback).
+    # contributor's own real .env sets.
     return Settings(_env_file=None, **base)
 
 

@@ -34,14 +34,18 @@ class Settings(BaseSettings):
     node_calc_dir: Path = Field(default=_PROJECT_ROOT / "node_calc")
 
     # --- Chaos data backend ("local" | "firestore") ---------------------- #
-    # "local" reads chaos_data_path (unchanged default behavior). "firestore"
-    # reads the same data from Google Cloud Firestore instead (see
-    # scripts/migrate_chaos_to_firestore.py to populate it, and
+    # "local" reads chaos_data_path. "firestore" reads the same data from
+    # Google Cloud Firestore instead (see scripts/migrate_chaos_to_firestore.py
+    # / scripts/sync_smogon_chaos_to_firestore.py to populate it, and
     # src/adapters/chaos/firestore_chaos_repository.py for the storage
     # layout) — everything downstream (tier/regulation-fallback selection,
     # EV/nature back-fill, strategy derivation) is byte-for-byte identical
-    # either way; only where the raw JSON comes from changes.
-    chaos_backend: str = "local"
+    # either way; only where the raw JSON comes from changes. Defaults to
+    # "firestore" as the showcased demo path (requires
+    # PROFESSORVGC_FIRESTORE_PROJECT_ID + a populated database — see
+    # DATA.md); falls back to "local" data/chaos/*.json with no other
+    # config change needed if you'd rather not set that up.
+    chaos_backend: str = "firestore"
     firestore_project_id: str | None = None
     firestore_database_id: str = "(default)"
     firestore_chaos_collection: str = "chaos_tiers"
@@ -85,11 +89,15 @@ class Settings(BaseSettings):
     orchestrator: str = "adk"
 
     # --- LLM (bring your own key) -------------------------------------- #
-    default_provider: str = "openai"
+    # Defaults to Gemini as the showcased provider (paired with
+    # orchestrator="adk" above and chaos_backend="firestore" — a full
+    # Google-stack demo path); "openai" remains fully supported, just no
+    # longer the default.
+    default_provider: str = "gemini"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     gemini_api_key: str | None = None
-    gemini_model: str = "gemini-1.5-flash"
+    gemini_model: str = "gemini-3.5-flash"
     llm_temperature: float = 0.2
 
     # --- Chaos extraction tunables ------------------------------------- #
