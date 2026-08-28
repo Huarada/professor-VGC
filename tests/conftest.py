@@ -79,3 +79,40 @@ def sample_replay_path() -> Path:
 @pytest.fixture
 def fake_calc() -> FakeCalcEngine:
     return FakeCalcEngine()
+
+
+@pytest.fixture
+def patch_firestore_repo(monkeypatch):
+    """Redirects Container.chaos_repository()'s FirestoreChaosRepository
+    construction onto a fake Firestore client (test_firestore_chaos_
+    repository.py's own _FakeFirestoreClient/_seed_store — the exact same
+    fixture data as test_chaos_repository.py's local-file fixture, so
+    Container-level tests exercise realistic species/tier data without any
+    network/credentials). Since the app's own Chaos backend is Firestore-
+    only now (no local-file option — see config.py), this is the standard
+    way any test that builds a real Container and reaches chaos()/
+    _chaos_strategy()/strategy() stays hermetic.
+
+    Local import (not a top-of-file one): keeps conftest.py's own import
+    order independent of the test-module import order pytest happens to
+    use.
+    """
+    from src.adapters.chaos.firestore_chaos_repository import FirestoreChaosRepository
+    from tests.test_firestore_chaos_repository import _FakeFirestoreClient, _seed_store
+
+    def _fake_constructor(
+        project_id,
+        *,
+        database_id="(default)",
+        collection="chaos_tiers",
+        credentials_path=None,
+        grpc_ca_bundle_path=None,
+        reg_fallback_depth=3,
+    ):
+        return FirestoreChaosRepository(
+            project_id or "test-project",
+            client=_FakeFirestoreClient(_seed_store()),
+            reg_fallback_depth=reg_fallback_depth,
+        )
+
+    monkeypatch.setattr("src.services.container.FirestoreChaosRepository", _fake_constructor)

@@ -187,17 +187,24 @@ memory — is where retrieval genuinely earns its keep in this project.
 
 ## Chaos data
 
-Point `PROFESSORVGC_CHAOS_DATA_PATH` at a real Smogon Chaos dump, e.g.
-`gen9championsvgc2026regmb.json`. A trimmed sample lives in `sample_data/`.
-The adapter converts Chaos's `Nature:e/e/e/e/e/e` (EVs ÷ 8) encoding back to
-real 0-252 EVs and keeps only the Top-N per category to stay ~1 KB per prompt.
+The running app reads Chaos usage stats **exclusively from Google Cloud
+Firestore** — set `PROFESSORVGC_FIRESTORE_PROJECT_ID` (and, once, populate the
+database — see DATA.md's "Firestore: the app's ONLY Chaos data source"
+section for the full setup). There is no local-file fallback: this is a
+deliberate requirement, not a default.
 
-**Optional: host this data in Google Cloud Firestore instead of local files** —
-set `PROFESSORVGC_CHAOS_BACKEND=firestore` and run
-`python -m scripts.migrate_chaos_to_firestore --project-id YOUR_PROJECT` once
-to populate it. Same tier/regulation-fallback logic, same EV/nature back-fill,
-byte-for-byte identical behavior either way — see DATA.md's "Firestore
-backend" section for the full setup and cost/storage-layout rationale.
+Populate Firestore from a real Smogon Chaos dump (a trimmed sample lives in
+`sample_data/`) with:
+
+```bash
+python -m scripts.migrate_chaos_to_firestore --project-id YOUR_PROJECT
+# or, directly from Smogon's own site, no local file needed:
+python -m scripts.sync_smogon_chaos_to_firestore --project-id YOUR_PROJECT
+```
+
+The adapter converts Chaos's `Nature:e/e/e/e/e/e` (EVs ÷ 8) encoding back to
+real 0-252 EVs and keeps only the Top-N per category to stay ~1 KB per prompt
+— identical logic whether the raw JSON was loaded via either script above.
 
 ## Tests
 

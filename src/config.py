@@ -7,12 +7,34 @@ injected into the composition root (``src/services/container.py``).
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+# This project's own requirement (not a Google-imposed floor): only Gemini
+# 3.5 and newer may ever be configured — a competition rule, enforced here
+# as an actual guarantee rather than just a default value someone could
+# still override with an older id. Checked at Settings CONSTRUCTION time
+# (below) — the earliest possible point, before the app even finishes
+# starting up — and AGAIN at every point a Gemini client actually gets
+# built (src/adapters/llm/base.py's require_modern_gemini_model, which
+# reuses this same parser) as defense in depth for an already-running
+# process whose cached Settings predate a later config change.
+_GEMINI_MODEL_RE = re.compile(r"^gemini-(\d+)(?:\.(\d+))?")
+MIN_GEMINI_VERSION = (3, 5)
+
+
+def parse_gemini_version(model: str) -> tuple[int, int] | None:
+    """Parse the leading "gemini-X[.Y]" version out of a model id string.
+    Returns ``None`` when the string doesn't match that shape at all."""
+    match = _GEMINI_MODEL_RE.match((model or "").strip().lower())
+    if match is None:
+        return None
+    return (int(match.group(1)), int(match.group(2) or 0))
 
 
 class Settings(BaseSettings):
@@ -27,25 +49,21 @@ class Settings(BaseSettings):
 
     # --- Paths ---------------------------------------------------------- #
     project_root: Path = _PROJECT_ROOT
-    # Directory of Chaos files (per rating tier / regulation) OR a single file.
-    # Only read when chaos_backend="local" (the default) — see below.
-    chaos_data_path: Path = Field(default=_PROJECT_ROOT / "data" / "chaos")
     reg_fallback_depth: int = 3
     node_calc_dir: Path = Field(default=_PROJECT_ROOT / "node_calc")
 
-    # --- Chaos data backend ("local" | "firestore") ---------------------- #
-    # "local" reads chaos_data_path. "firestore" reads the same data from
-    # Google Cloud Firestore instead (see scripts/migrate_chaos_to_firestore.py
-    # / scripts/sync_smogon_chaos_to_firestore.py to populate it, and
-    # src/adapters/chaos/firestore_chaos_repository.py for the storage
-    # layout) — everything downstream (tier/regulation-fallback selection,
-    # EV/nature back-fill, strategy derivation) is byte-for-byte identical
-    # either way; only where the raw JSON comes from changes. Defaults to
-    # "firestore" as the showcased demo path (requires
-    # PROFESSORVGC_FIRESTORE_PROJECT_ID + a populated database — see
-    # DATA.md); falls back to "local" data/chaos/*.json with no other
-    # config change needed if you'd rather not set that up.
-    chaos_backend: str = "firestore"
+    # --- Chaos data: Google Cloud Firestore, unconditionally ------------ #
+    # The running app has exactly ONE Chaos data source — Firestore — with
+    # no local-file fallback and no config knob to select one: see
+    # Container.chaos_repository(), which always builds a
+    # FirestoreChaosRepository. This is a deliberate, competition-driven
+    # requirement (the app must genuinely depend on Firestore, not merely
+    # default to it), not just a preference. Populate it with
+    # scripts/migrate_chaos_to_firestore.py (from a local Chaos dump) and/or
+    # scripts/sync_smogon_chaos_to_firestore.py (live from Smogon) — both
+    # remain local-file-aware as OFFLINE DATA-LOADING TOOLS, which is a
+    # different concern entirely from what the running app itself reads
+    # to answer a question. See DATA.md.
     firestore_project_id: str | None = None
     firestore_database_id: str = "(default)"
     firestore_chaos_collection: str = "chaos_tiers"
@@ -90,15 +108,33 @@ class Settings(BaseSettings):
 
     # --- LLM (bring your own key) -------------------------------------- #
     # Defaults to Gemini as the showcased provider (paired with
-    # orchestrator="adk" above and chaos_backend="firestore" — a full
-    # Google-stack demo path); "openai" remains fully supported, just no
-    # longer the default.
+    # orchestrator="adk" above and the Firestore-only Chaos backend — a
+    # full Google-stack demo path); "openai" remains fully supported, just
+    # no longer the default.
     default_provider: str = "gemini"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.5-flash"
     llm_temperature: float = 0.2
+
+    @field_validator("gemini_model")
+    @classmethod
+    def _require_modern_gemini_model(cls, value: str) -> str:
+        """Fail at Settings CONSTRUCTION time — app startup — for any
+        Gemini model below MIN_GEMINI_VERSION, regardless of which
+        provider happens to be selected right now. See this module's own
+        top-of-file comment for why this is checked here AND again at
+        point-of-use."""
+        version = parse_gemini_version(value)
+        if version is None or version < MIN_GEMINI_VERSION:
+            min_str = ".".join(str(part) for part in MIN_GEMINI_VERSION)
+            raise ValueError(
+                f"PROFESSORVGC_GEMINI_MODEL='{value}' is not supported — this "
+                f"project requires Gemini {min_str} or newer (e.g. "
+                f"'gemini-3.5-flash')."
+            )
+        return value
 
     # --- Chaos extraction tunables ------------------------------------- #
     chaos_top_n: int = 3

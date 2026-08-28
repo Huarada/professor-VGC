@@ -1556,9 +1556,10 @@ def main() -> None:
             if not any(s.top_moves for s in result.meta_context.pokemon_stats.values()):
                 st.info(
                     f"{_icon_md(_POKEBALL_ICON)} No metagame (Chaos) data was loaded for "
-                    "these Pokemon, so the Smogon strategy section is empty. Point "
-                    "`PROFESSORVGC_CHAOS_DATA_PATH` at a Chaos dump that covers this format — "
-                    "see DATA.md."
+                    "these Pokemon, so the Smogon strategy section is empty. Load a Chaos "
+                    "dump covering this format into Firestore — "
+                    "`python -m scripts.migrate_chaos_to_firestore` or "
+                    "`scripts.sync_smogon_chaos_to_firestore` — see DATA.md."
                 )
 
             with st.expander(
