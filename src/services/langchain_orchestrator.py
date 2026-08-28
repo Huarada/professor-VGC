@@ -55,6 +55,7 @@ from src.services.battle_context import (
     outcome_summary,
     rosters,
 )
+from src.services.concept_tracking import recurring_concepts
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
 from src.services.suggestion_service import (
     SmogonSuggestionSource,
@@ -209,6 +210,7 @@ class LangChainAnalysisOrchestrator:
             turn_checks=turn_checks,
             protect_reads=protect_reads,
             improvement_suggestions=improvement,
+            recurring_concepts=recurring_concepts(history, request.question),
         )
         # The agent talks to the raw LangChain chat model directly (not
         # through OpenAIProvider/GeminiProvider, which already wrap SDK

@@ -33,6 +33,7 @@ from src.domain.models import (
     TurnCheck,
 )
 from src.services.battle_context import candidate_species, context_species, outcome_summary
+from src.services.concept_tracking import recurring_concepts
 from src.services.suggestion_service import (
     SmogonSuggestionSource,
     build_improvement_context,
@@ -166,6 +167,7 @@ class AnalysisService:
             turn_checks=turn_checks,
             protect_reads=protect_reads,
             improvement_suggestions=improvement,
+            recurring_concepts=recurring_concepts(history, request.question),
         )
         user_turn = ChatMessage(
             role="user",
@@ -192,6 +194,7 @@ def build_explanation_context(
     turn_checks: Sequence[TurnCheck] | None = None,
     protect_reads: Sequence[ProtectRead] | None = None,
     improvement_suggestions: dict[str, Any] | None = None,
+    recurring_concepts: Sequence[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     """Assemble the trusted-context payload for the 2nd AI (shared)."""
     return {
@@ -206,6 +209,11 @@ def build_explanation_context(
         # something the LLM should ever narrate about — the explanation
         # must read as expert analysis, not describe its own plumbing.
         "strategies": [s.model_dump(exclude={"retrieval_note"}) for s in strategies],
+        # [] the overwhelming majority of turns (first-ever question, or a
+        # question that doesn't repeat an earlier topic) — see
+        # concept_tracking.py's own docstring for exactly what this is and
+        # isn't a claim of.
+        "recurring_concepts": list(recurring_concepts or []),
         "improvement_suggestions": improvement_suggestions or {},
         "selection_rationale": selection.rationale,
     }

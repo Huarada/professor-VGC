@@ -63,6 +63,35 @@ def test_memory_accumulates(sample_chaos_path, sample_replay_path):
     assert len(memory.load("s9")) == 4
 
 
+def test_recurring_concept_reaches_the_explanation_prompt_on_a_later_turn(
+    sample_chaos_path, sample_replay_path
+):
+    """End-to-end: a second question that repeats an earlier turn's VGC
+    topic must carry a recurring_concepts entry into the explanation
+    stage's own user-turn text — this is the actual wiring a demo would
+    show, not just the pure concept_tracking.py functions in isolation."""
+    llm = FakeLLM(json.dumps({"focus_species": [], "matchups": []}), "ok")
+    service = _build(sample_chaos_path, llm)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+
+    service.analyze(AnalysisRequest(
+        session_id="concepts-1", replay_json=replay,
+        question="How does Trick Room flip the turn order here?",
+    ))
+    service.analyze(AnalysisRequest(
+        session_id="concepts-1", replay_json=replay,
+        question="Right, and was Trick Room still up on the turn Garchomp fainted?",
+    ))
+
+    # calls: [selection#1, explanation#1, selection#2, explanation#2]
+    explanation_call_2 = llm.calls[3]
+    assert explanation_call_2["json_mode"] is False
+    user_turn_text = explanation_call_2["messages"][-1].content
+    assert '"recurring_concepts"' in user_turn_text
+    assert "Trick Room" in user_turn_text
+    assert "How does Trick Room flip the turn order here?" in user_turn_text
+
+
 def test_meta_context_covers_all_inplay_not_just_focus(sample_chaos_path, sample_replay_path):
     """Meta/strategy context must cover every in-play Pokemon, not only the focus."""
     llm = FakeLLM(
