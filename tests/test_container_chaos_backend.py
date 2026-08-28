@@ -1,75 +1,49 @@
-"""Wiring tests for PROFESSORVGC_CHAOS_BACKEND through the Container.
+"""Wiring tests for Container.chaos_repository() — Firestore,
+UNCONDITIONALLY (there is no local-file backend anymore; see config.py's
+own comment on why that's a deliberate requirement, not a preference).
 
-Construction-only for the Firestore branch (no real network/credentials
-here — just confirms the Container validates config the same way for
-either backend), plus the shared-instance caching behavior that matters
-most for the Firestore case (see chaos_repository()'s own docstring).
+patch_firestore_repo (conftest.py) redirects the real
+FirestoreChaosRepository construction onto a fake Firestore client, so
+these stay hermetic without network/credentials — except the missing-
+project-id test, which needs no fake at all: that error fires before any
+network call is ever attempted.
 """
 
 from __future__ import annotations
 
 import pytest
 
-from src.adapters.chaos.chaos_repository import ChaosRepository
+from src.adapters.chaos.firestore_chaos_repository import FirestoreChaosRepository
 from src.config import Settings
 from src.domain.exceptions import ConfigurationError
 from src.services.container import Container
 
 
-# _env_file=None on every Settings() below is deliberate, not decoration:
-# this suite must stay hermetic (README's own promise — "no Node or API
-# keys REQUIRED to pass") regardless of what a contributor's own real .env
-# happens to set PROFESSORVGC_CHAOS_BACKEND/FIRESTORE_* to. Without it, a
-# real .env with chaos_backend=firestore silently flips these tests onto a
-# real network call to real Firestore — reported: exactly this happened
-# once this project's own local .env was updated for live Firestore use.
+def test_chaos_repository_is_always_firestore(patch_firestore_repo):
+    container = Container(Settings(_env_file=None, firestore_project_id="test-project"))
+    assert isinstance(container.chaos_repository(), FirestoreChaosRepository)
 
 
-def test_firestore_is_the_class_default(sample_chaos_path):
-    """The showcased competition demo path — see config.py's own comment.
-    Construction-only: never actually connects (no project id given here),
-    just confirms the class-level default itself, without needing real
-    credentials to assert it."""
-    assert Settings(_env_file=None, chaos_data_path=sample_chaos_path).chaos_backend == "firestore"
-
-
-def test_local_backend_works_when_explicitly_selected(sample_chaos_path):
-    container = Container(
-        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="local")
-    )
-    assert isinstance(container.chaos_repository(), ChaosRepository)
-
-
-def test_chaos_repository_is_cached_and_shared_between_adapters(sample_chaos_path):
-    container = Container(
-        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="local")
-    )
+def test_chaos_repository_is_cached_and_shared_between_adapters(patch_firestore_repo):
+    container = Container(Settings(_env_file=None, firestore_project_id="test-project"))
     repo = container.chaos_repository()
     assert container.chaos_repository() is repo  # cached, not rebuilt
     assert container.chaos()._repo is repo
     assert container._chaos_strategy()._repo is repo
 
 
-def test_unknown_chaos_backend_raises_configuration_error(sample_chaos_path):
-    container = Container(
-        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="s3")
-    )
+def test_missing_project_id_raises_configuration_error_with_no_network():
+    """No patch_firestore_repo needed: FirestoreChaosRepository's own
+    constructor checks project_id BEFORE ever touching the network (see
+    firestore_chaos_repository._build_client) — this is the PRIMARY error
+    case now that there is no local-file fallback to silently degrade to."""
+    container = Container(Settings(_env_file=None, firestore_project_id=None))
     with pytest.raises(ConfigurationError):
         container.chaos_repository()
 
 
-def test_firestore_backend_without_project_id_raises_configuration_error():
-    container = Container(
-        Settings(_env_file=None, chaos_backend="firestore", firestore_project_id=None)
-    )
-    with pytest.raises(ConfigurationError):
-        container.chaos_repository()
-
-
-def test_shutdown_clears_the_cached_chaos_repository(sample_chaos_path):
-    container = Container(
-        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="local")
-    )
+def test_shutdown_clears_the_cached_chaos_repository(patch_firestore_repo):
+    container = Container(Settings(_env_file=None, firestore_project_id="test-project"))
     container.chaos_repository()
     container.shutdown()
     assert container._chaos_repo is None

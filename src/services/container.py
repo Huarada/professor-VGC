@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
-from src.adapters.chaos.chaos_repository import ChaosRepository, ChaosRepositoryLike
+from src.adapters.chaos.chaos_repository import ChaosRepositoryLike
 from src.adapters.chaos.firestore_chaos_repository import FirestoreChaosRepository
 from src.adapters.llm.adk_provider import build_adk_model
 from src.adapters.llm.gemini_embedding_provider import GeminiEmbeddingProvider
@@ -44,7 +44,6 @@ if TYPE_CHECKING:
 
 _PROVIDERS = {"openai", "gemini"}
 _ORCHESTRATORS = {"native", "langchain", "adk"}
-_CHAOS_BACKENDS = {"local", "firestore"}
 
 
 class Container:
@@ -60,7 +59,7 @@ class Container:
         # Firestore backend doubling every read for no reason (the local
         # backend already avoided this by being cheap to re-glob; Firestore
         # is not "free" the same way, so this cache matters more there).
-        self._chaos_repo: ChaosRepositoryLike | None = None
+        self._chaos_repo: FirestoreChaosRepository | None = None
         # Keyed by provider name ("openai"/"gemini") — a session may switch
         # provider mid-conversation via the sidebar, so this caches at most
         # one retriever per provider actually used, each with its own
@@ -87,30 +86,32 @@ class Container:
         return self._calc
 
     def chaos_repository(self) -> ChaosRepositoryLike:
-        """The shared Chaos data source — local files or Firestore, per
-        PROFESSORVGC_CHAOS_BACKEND. Built once and cached: for the Firestore
-        backend this is what makes chaos()/_chaos_strategy() sharing one
-        instance actually save reads, not just avoid a redundant object."""
+        """The Chaos data source — Google Cloud Firestore, unconditionally.
+
+        No local-file fallback and no config knob to select one: this
+        project's own competition requirement is that the running app
+        genuinely, always queries Firestore for this data, not merely
+        defaults to it with an escape hatch. See config.py's own comment
+        on this. Built once and cached — this is what makes
+        chaos()/_chaos_strategy() sharing one instance actually save reads,
+        not just avoid a redundant object.
+
+        A local Chaos dump is still very much part of this project (see
+        scripts/migrate_chaos_to_firestore.py and
+        scripts/sync_smogon_chaos_to_firestore.py) — as the OFFLINE TOOLING
+        that populates Firestore in the first place, a different concern
+        entirely from what the running app itself reads to answer a
+        question.
+        """
         if self._chaos_repo is None:
-            backend = self._settings.chaos_backend.lower()
-            if backend not in _CHAOS_BACKENDS:
-                raise ConfigurationError(
-                    f"Unknown chaos backend '{backend}'. Available: {sorted(_CHAOS_BACKENDS)}"
-                )
-            if backend == "firestore":
-                self._chaos_repo = FirestoreChaosRepository(
-                    self._settings.firestore_project_id or "",
-                    database_id=self._settings.firestore_database_id,
-                    collection=self._settings.firestore_chaos_collection,
-                    credentials_path=self._settings.firestore_credentials_path,
-                    grpc_ca_bundle_path=self._settings.firestore_grpc_ca_bundle_path,
-                    reg_fallback_depth=self._settings.reg_fallback_depth,
-                )
-            else:
-                self._chaos_repo = ChaosRepository(
-                    self._settings.chaos_data_path,
-                    reg_fallback_depth=self._settings.reg_fallback_depth,
-                )
+            self._chaos_repo = FirestoreChaosRepository(
+                self._settings.firestore_project_id or "",
+                database_id=self._settings.firestore_database_id,
+                collection=self._settings.firestore_chaos_collection,
+                credentials_path=self._settings.firestore_credentials_path,
+                grpc_ca_bundle_path=self._settings.firestore_grpc_ca_bundle_path,
+                reg_fallback_depth=self._settings.reg_fallback_depth,
+            )
         return self._chaos_repo
 
     def chaos(self) -> ChaosAdapter:
@@ -281,9 +282,5 @@ class Container:
             self._dex.close()
             self._dex = None
         if self._chaos_repo is not None:
-            # ChaosRepository (local files) has no close() at all — nothing
-            # to release; FirestoreChaosRepository does (its gRPC channel).
-            close = getattr(self._chaos_repo, "close", None)
-            if close is not None:
-                close()
+            self._chaos_repo.close()
             self._chaos_repo = None

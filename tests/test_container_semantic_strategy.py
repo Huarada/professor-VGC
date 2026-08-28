@@ -24,12 +24,13 @@ def _settings(**overrides) -> Settings:
         "use_semantic_strategy": True,
         "openai_api_key": "test-key",
         "gemini_api_key": "test-key",
-        # Explicit "local": chaos_backend now DEFAULTS to "firestore" (the
-        # showcased competition demo path), which needs real project
-        # credentials container.strategy() below would otherwise try to
-        # use — this suite only cares about the semantic/dex wiring, not
-        # which Chaos backend powers it, so pin the network-free one.
-        "chaos_backend": "local",
+        # The Chaos backend is Firestore-unconditionally now (no local-file
+        # option — see config.py). container.strategy() below always
+        # reaches it via _chaos_strategy(); the patch_firestore_repo
+        # fixture (used by every test function here) redirects that
+        # construction onto a fake client, so this id only needs to be
+        # non-empty to satisfy FirestoreChaosRepository's own upfront check.
+        "firestore_project_id": "test-project",
     }
     base.update(overrides)
     # _env_file=None: keeps this suite hermetic regardless of what a
@@ -37,27 +38,27 @@ def _settings(**overrides) -> Settings:
     return Settings(_env_file=None, **base)
 
 
-def test_semantic_strategy_enabled_wraps_dex_with_retriever():
+def test_semantic_strategy_enabled_wraps_dex_with_retriever(patch_firestore_repo):
     container = Container(_settings())
     provider = container.strategy("openai")
     assert isinstance(provider, CompositeStrategyProvider)
     assert isinstance(provider._primary, SemanticStrategyRetriever)
 
 
-def test_semantic_strategy_disabled_uses_plain_dex():
+def test_semantic_strategy_disabled_uses_plain_dex(patch_firestore_repo):
     container = Container(_settings(use_semantic_strategy=False))
     provider = container.strategy("openai")
     assert isinstance(provider, CompositeStrategyProvider)
     assert isinstance(provider._primary, SmogonDexAdapter)
 
 
-def test_dex_disabled_uses_chaos_only_regardless_of_semantic_flag():
+def test_dex_disabled_uses_chaos_only_regardless_of_semantic_flag(patch_firestore_repo):
     container = Container(_settings(use_smogon_dex=False))
     provider = container.strategy("openai")
     assert isinstance(provider, ChaosStrategyAdapter)
 
 
-def test_semantic_retriever_is_cached_per_provider():
+def test_semantic_retriever_is_cached_per_provider(patch_firestore_repo):
     container = Container(_settings())
     first = container.strategy("openai")
     second = container.strategy("openai")

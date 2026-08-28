@@ -8,7 +8,12 @@ and how the code reads it.
 ## 1. Metagame / Chaos usage stats  → `MetaStatsProvider`
 
 This is the "meta context" the AI uses for likely EVs/items, common teammates
-and checks-and-counters.
+and checks-and-counters. **The running app reads this data exclusively from
+Google Cloud Firestore — see "Firestore: the app's only Chaos data source"
+below.** What follows here is the raw Chaos JSON *shape*, and where a LOCAL
+copy of it goes for the OFFLINE tooling that loads Firestore in the first
+place (`scripts/migrate_chaos_to_firestore.py`) — the app itself never opens
+these files directly.
 
 - **Format:** Smogon *Chaos* JSON schema, i.e. an object shaped like:
 
@@ -30,17 +35,9 @@ and checks-and-counters.
   ```
 
 - **Where to drop the file:** put it under `data/chaos/` (e.g.
-  `data/chaos/gen9championsvgc2026regmb.json`).
-
-- **How to point the app at it:** set the env var in your `.env`:
-
-  ```env
-  PROFESSORVGC_CHAOS_DATA_PATH=data/chaos/gen9championsvgc2026regmb.json
-  ```
-
-  Read by `src/config.py` (`Settings.chaos_data_path`) and consumed by
-  `src/adapters/chaos/chaos_adapter.py` (`ChaosAdapter`) and
-  `src/adapters/smogon/smogon_strategy_adapter.py` (`ChaosStrategyAdapter`).
+  `data/chaos/gen9championsvgc2026regmb.json`) — this directory is read by
+  `scripts/migrate_chaos_to_firestore.py`'s `--source` flag (defaults to
+  `data/chaos`) to POPULATE Firestore; it is not read by anything else.
 
 - **Where to get a real file:** Smogon publishes monthly stats at
   `https://www.smogon.com/stats/` → open a month → the `chaos/` sub-folder →
@@ -90,15 +87,26 @@ Naming decoded: `gen9` + `champions` (franchise, empty for base VGC) + `vgc` +
 grouping uses `gen9champions` vs `gen9` (base), so year/regulation can differ but
 the game family stays fixed.
 
-## Firestore backend (optional) — the same data, hosted in Google Cloud
+## Firestore: the app's ONLY Chaos data source
 
-By default (`PROFESSORVGC_CHAOS_BACKEND=local`) everything above reads from
-`data/chaos/*.json` on disk. Set `PROFESSORVGC_CHAOS_BACKEND=firestore` to read
-the exact same data from a Google Cloud Firestore database instead — tier
-selection, regulation fallback, EV/nature back-fill and strategy derivation
-are all byte-for-byte identical either way (`ChaosAdapter`/`ChaosStrategyAdapter`
-depend only on the storage-agnostic `ChaosRepositoryLike` shape, satisfied by
-both `ChaosRepository`, local files, and `FirestoreChaosRepository`, Firestore).
+The running app reads Chaos usage stats from Google Cloud Firestore
+**unconditionally** — there is no local-file backend and no config knob to
+select one (see `src/config.py`'s own comment, and `Container.
+chaos_repository()`, which always builds a `FirestoreChaosRepository`). This
+is a deliberate requirement — the app must genuinely depend on Firestore,
+not merely default to it with a fallback — not just a preference between two
+equally-supported options.
+
+A local `data/chaos/*.json` dump is still very much part of this project, as
+the source `scripts/migrate_chaos_to_firestore.py` reads FROM to populate
+Firestore in the first place (`scripts/sync_smogon_chaos_to_firestore.py`
+does the same directly from Smogon's own site, no local file needed at all)
+— that is offline data-loading tooling, a different concern entirely from
+what the running app itself queries to answer a question. `ChaosRepository`
+(the class that reads local files, still used internally by
+`ChaosTierIndex`'s shared tier-selection logic and by this project's own
+fast, network-free tests) remains in the codebase for exactly that reason —
+it's just never wired into `Container` for the live app anymore.
 
 **Setup:**
 
@@ -120,7 +128,6 @@ both `ChaosRepository`, local files, and `FirestoreChaosRepository`, Firestore).
 3. Point the app at it in `.env`:
 
    ```env
-   PROFESSORVGC_CHAOS_BACKEND=firestore
    PROFESSORVGC_FIRESTORE_PROJECT_ID=your-project-id
    PROFESSORVGC_FIRESTORE_CREDENTIALS_PATH=path/to/service-account-key.json
    ```
@@ -380,9 +387,10 @@ reflection of how this data is actually accessed.
 
 ## 2. Your own scraper output
 
-If you scrape/aggregate your own JSON, produce the **same Chaos schema** above
-and drop it in `data/chaos/`. Nothing else changes — just repoint
-`PROFESSORVGC_CHAOS_DATA_PATH`.
+If you scrape/aggregate your own JSON, produce the **same Chaos schema** above,
+drop it in `data/chaos/`, and run `scripts/migrate_chaos_to_firestore.py`
+(optionally `--source your/directory` if it's elsewhere) to load it into
+Firestore — nothing else changes.
 
 If your scraper produces a *different* schema, don't reshape the whole app:
 write one adapter that implements the `MetaStatsProvider` Protocol
@@ -414,7 +422,7 @@ the raw material for building your own aggregated Chaos-style stats.
 
 | Data | Put it in | Env var / hook |
 |------|-----------|----------------|
-| Meta / Chaos usage stats | `data/chaos/<format>.json` | `PROFESSORVGC_CHAOS_DATA_PATH` |
+| Meta / Chaos usage stats | Firestore, loaded from `data/chaos/<format>.json` via `migrate_chaos_to_firestore.py` | `PROFESSORVGC_FIRESTORE_PROJECT_ID` |
 | Custom-schema meta | anywhere | implement `MetaStatsProvider`, wire in `Container` |
 | Raw replay dataset | `data/replays/*.json` | parse with `ShowdownReplayParser` |
 
