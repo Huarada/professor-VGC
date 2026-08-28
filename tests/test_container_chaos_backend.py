@@ -25,13 +25,25 @@ from src.services.container import Container
 # once this project's own local .env was updated for live Firestore use.
 
 
-def test_local_backend_is_the_default(sample_chaos_path):
-    container = Container(Settings(_env_file=None, chaos_data_path=sample_chaos_path))
+def test_firestore_is_the_class_default(sample_chaos_path):
+    """The showcased competition demo path — see config.py's own comment.
+    Construction-only: never actually connects (no project id given here),
+    just confirms the class-level default itself, without needing real
+    credentials to assert it."""
+    assert Settings(_env_file=None, chaos_data_path=sample_chaos_path).chaos_backend == "firestore"
+
+
+def test_local_backend_works_when_explicitly_selected(sample_chaos_path):
+    container = Container(
+        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="local")
+    )
     assert isinstance(container.chaos_repository(), ChaosRepository)
 
 
 def test_chaos_repository_is_cached_and_shared_between_adapters(sample_chaos_path):
-    container = Container(Settings(_env_file=None, chaos_data_path=sample_chaos_path))
+    container = Container(
+        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="local")
+    )
     repo = container.chaos_repository()
     assert container.chaos_repository() is repo  # cached, not rebuilt
     assert container.chaos()._repo is repo
@@ -55,7 +67,9 @@ def test_firestore_backend_without_project_id_raises_configuration_error():
 
 
 def test_shutdown_clears_the_cached_chaos_repository(sample_chaos_path):
-    container = Container(Settings(_env_file=None, chaos_data_path=sample_chaos_path))
+    container = Container(
+        Settings(_env_file=None, chaos_data_path=sample_chaos_path, chaos_backend="local")
+    )
     container.chaos_repository()
     container.shutdown()
     assert container._chaos_repo is None
