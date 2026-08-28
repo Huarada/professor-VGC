@@ -62,7 +62,7 @@ class FakeLLM:
         temperature: float = 0.2,
         json_mode: bool = False,
     ) -> str:
-        self.calls.append({"system": system, "json_mode": json_mode})
+        self.calls.append({"system": system, "json_mode": json_mode, "messages": list(messages)})
         return self._selection_json if json_mode else self._explanation
 
 
