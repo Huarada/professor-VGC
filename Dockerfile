@@ -83,6 +83,16 @@ USER appuser
 # front-end proxy sits in front of exactly one deployed origin.
 EXPOSE 8080
 ENV PROFESSORVGC_NODE_BINARY=node
+# `streamlit run src/ui/app.py` puts src/ui/ (the SCRIPT's own directory),
+# not the WORKDIR, at the front of sys.path — so `from src.adapters...`
+# resolves locally only because of something specific to that dev
+# environment (an editable install, an IDE-set PYTHONPATH, etc.), not
+# because of anything this command guarantees on its own. Confirmed live:
+# without this, the container raises `ModuleNotFoundError: No module named
+# 'src'` on the very first page load. Setting PYTHONPATH explicitly makes
+# `src` importable as a top-level package regardless of which directory
+# Streamlit decides to prepend, matching the layout COPYed above.
+ENV PYTHONPATH=/app
 CMD streamlit run src/ui/app.py \
     --server.port=${PORT:-8080} \
     --server.address=0.0.0.0 \
