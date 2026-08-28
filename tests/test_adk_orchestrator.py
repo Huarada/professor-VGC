@@ -11,6 +11,7 @@ test_langchain_orchestrator.py convention.
 
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any, AsyncGenerator, Iterable
 
@@ -79,12 +80,64 @@ class _RaisingFakeAdkModel(BaseLlm):
         yield  # pragma: no cover - unreachable; keeps this an async generator
 
 
-def _build(chaos_path, model: BaseLlm) -> AdkAnalysisOrchestrator:
+class _HangingFakeAdkModel(BaseLlm):
+    """Stands in for the live failure mode this project actually hit
+    (2026-08-28 faithfulness benchmark, ADK+Gemini 3.5-flash): a turn that
+    never raises and never returns within any reasonable time — NOT a
+    retriable error (adk_provider.py's retry_options bound handles those),
+    a stuck tool-calling loop. Sleeps far longer than any timeout a test
+    below configures, so reaching the assertion at all proves the timeout
+    actually cut the call off rather than the fake happening to finish
+    fast enough on its own."""
+
+    model: str = "fake-adk-model-hanging"
+
+    async def generate_content_async(
+        self, llm_request: LlmRequest, stream: bool = False
+    ) -> AsyncGenerator[LlmResponse, None]:
+        await asyncio.sleep(30)
+        yield LlmResponse(content=types.Content(role="model", parts=[types.Part(text="too late")]))
+
+
+class _HangsOnFirstCallOnlyAdkModel(BaseLlm):
+    """Hangs (see _HangingFakeAdkModel) on exactly the FIRST turn (the
+    selection agent's, since it always runs before the explanation agent —
+    see analyze()), then answers normally on every subsequent turn —
+    isolates "the selection stage's own timeout falls back correctly and
+    the pipeline still completes" from "a hung explanation turn eventually
+    raises too", which a model that hangs on every call can't distinguish."""
+
+    model: str = "fake-adk-model-hangs-once"
+    _remaining_answers: Any = PrivateAttr()
+    _call_count: Any = PrivateAttr()
+
+    def __init__(self, answers_after_hang: Iterable[_Turn], **data: Any) -> None:
+        super().__init__(**data)
+        self._remaining_answers = iter(answers_after_hang)
+        self._call_count = 0
+
+    async def generate_content_async(
+        self, llm_request: LlmRequest, stream: bool = False
+    ) -> AsyncGenerator[LlmResponse, None]:
+        self._call_count += 1
+        if self._call_count == 1:
+            await asyncio.sleep(30)
+            yield LlmResponse(content=types.Content(role="model", parts=[types.Part(text="too late")]))
+            return
+        turn = next(self._remaining_answers)
+        part = types.Part(text=turn) if isinstance(turn, str) else types.Part(
+            function_call=types.FunctionCall(name=turn[0], args=turn[1])
+        )
+        yield LlmResponse(content=types.Content(role="model", parts=[part]))
+
+
+def _build(chaos_path, model: BaseLlm, **kwargs: Any) -> AdkAnalysisOrchestrator:
     return AdkAnalysisOrchestrator(
         parser=ShowdownReplayParser(), model=model,
         meta_provider=ChaosAdapter(chaos_path), calc_engine=FakeCalcEngine(),
         strategy_provider=ChaosStrategyAdapter(chaos_path),
         memory=InMemoryConversationMemory(), provider_name="adk:fake",
+        **kwargs,
     )
 
 
@@ -121,6 +174,40 @@ def test_unparseable_selection_falls_back(sample_chaos_path, sample_replay_path)
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
     result = orch.analyze(AnalysisRequest(session_id="adk-2", replay_json=replay, question="q"))
     assert result.verdicts
+
+
+def test_explanation_turn_timeout_raises_llm_provider_error(
+    sample_chaos_path, sample_replay_path
+):
+    """Port of the wall-clock cutoff that shielded today's faithfulness
+    benchmark (scripts/faithfulness_benchmark/run.py's
+    _FIXTURE_WALL_CLOCK_TIMEOUT_SECONDS) into the actual production
+    pipeline: a stuck explanation turn must surface as the same typed
+    LLMProviderError a Streamlit session already knows how to render,
+    within a bounded time — not hang the request indefinitely."""
+    model = _HangingFakeAdkModel()
+    orch = _build(sample_chaos_path, model, agent_timeout_seconds=0.05)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    with pytest.raises(LLMProviderError, match="exceeded its"):
+        orch.analyze(AnalysisRequest(session_id="adk-timeout-1", replay_json=replay, question="q"))
+
+
+def test_selection_turn_timeout_falls_back_like_any_other_failure(
+    sample_chaos_path, sample_replay_path
+):
+    """The selection stage already tolerates any model failure by falling
+    back to the deterministic species list (test_unparseable_selection_
+    falls_back exercises the same fallback for bad JSON) — a timeout must
+    take that same path, not a special one: the pipeline should still
+    complete normally once the (fast, non-hanging) explanation turn runs,
+    proving _select()'s own try/except actually swallows the timeout
+    rather than letting it propagate uncaught."""
+    model = _HangsOnFirstCallOnlyAdkModel(["plain answer, no tools needed"])
+    orch = _build(sample_chaos_path, model, agent_timeout_seconds=0.05)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    result = orch.analyze(AnalysisRequest(session_id="adk-timeout-2", replay_json=replay, question="q"))
+    assert result.answer == "plain answer, no tools needed"
+    assert result.verdicts  # deterministic fallback still picked candidate species
 
 
 def test_explanation_provider_failure_is_wrapped_not_left_raw(

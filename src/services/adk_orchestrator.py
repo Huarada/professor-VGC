@@ -209,6 +209,7 @@ class AdkAnalysisOrchestrator:
         max_matchups: int = 6,
         suggestion_source: SmogonSuggestionSource | None = None,
         agent_max_llm_calls: int = 10,
+        agent_timeout_seconds: float = 180.0,
     ) -> None:
         from google.adk.agents import Agent
         from google.adk.runners import Runner
@@ -229,6 +230,20 @@ class AdkAnalysisOrchestrator:
         # applied to the selection stage in spirit (it has no tools to loop
         # on) even though the same RunConfig is reused there for simplicity.
         self._agent_max_llm_calls = agent_max_llm_calls
+        # Observed live (2026-08-28, faithfulness benchmark against Gemini
+        # 3.5-flash): one agent turn stalled 30+ minutes with no exception
+        # ever raised — not a retriable error (adk_provider.py's own
+        # retry_options bound already handles those), but a long
+        # think/call-tool/think loop that just never returned. Unbounded,
+        # that turns into a Streamlit request stuck until Cloud Run's own
+        # (much longer, and less informative to the user) request timeout
+        # kills the connection. `_run_agent_bounded` wraps every ADK turn in
+        # `asyncio.wait_for` so a stuck turn surfaces as a clear, typed
+        # error within this budget instead — see that method's own
+        # docstring for why true coroutine cancellation is used here rather
+        # than the thread-based, best-effort approach the benchmark script
+        # (scripts/faithfulness_benchmark/run.py) had to fall back on.
+        self._agent_timeout_seconds = agent_timeout_seconds
 
         self._session_service = InMemorySessionService()
 
@@ -297,6 +312,42 @@ class AdkAnalysisOrchestrator:
                     final_text = text
         return final_text, events
 
+    def _run_agent_bounded(self, runner: Any, message_text: str) -> tuple[str, list[Any]]:
+        """Synchronous entry point for one ADK agent turn, with a
+        wall-clock ceiling (see ``__init__``'s ``agent_timeout_seconds``
+        comment for why this exists).
+
+        ``asyncio.wait_for`` — not a thread/executor with a timeout — on
+        purpose: it cancels the underlying coroutine for real (a
+        ``CancelledError`` is thrown into it at its current await point,
+        which the ADK/genai async HTTP client propagates into actually
+        aborting the in-flight request) rather than abandoning a thread
+        that keeps running and consuming quota in the background. That
+        matters here specifically because, unlike the benchmark script's
+        own timeout (which had to isolate each attempt in its own
+        throwaway ``Container``/subprocess to make an abandoned thread
+        safe), every call here shares this orchestrator's long-lived
+        ``Runner``/``InMemorySessionService`` — a leaked thread could still
+        be mutating that shared state after this method returns.
+        ``asyncio.run`` gives ``wait_for`` a fresh event loop per call,
+        matching every other call site in this class.
+        """
+        try:
+            return asyncio.run(
+                asyncio.wait_for(
+                    self._run_agent(runner, message_text),
+                    timeout=self._agent_timeout_seconds,
+                )
+            )
+        except (TimeoutError, asyncio.TimeoutError) as exc:
+            raise LLMProviderError(
+                f"The agent turn exceeded its {self._agent_timeout_seconds:.0f}s "
+                "budget (no further response arrived — likely a stuck "
+                "tool-calling loop or a slow provider, not a single failed "
+                "call). Try again; if it keeps happening, the provider may "
+                "be degraded."
+            ) from exc
+
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         history = self._memory.load(request.session_id)
         game_state = self._parse(request)
@@ -340,9 +391,9 @@ class AdkAnalysisOrchestrator:
         # inside the loop does NOT reach here — adk_tools.py degrades those
         # to {"ok": False, "error": ...} instead of raising.
         try:
-            answer, events = asyncio.run(
-                self._run_agent(self._explanation_runner, message_text)
-            )
+            answer, events = self._run_agent_bounded(self._explanation_runner, message_text)
+        except LLMProviderError:
+            raise  # already the typed error _run_agent_bounded raises on timeout — don't re-wrap it
         except Exception as exc:  # noqa: BLE001 - many SDK exception types
             raise LLMProviderError(
                 f"The explanation model call failed ({request.provider}): {exc}"
@@ -386,10 +437,8 @@ class AdkAnalysisOrchestrator:
             outcome_summary(game_state),
         )
         try:
-            raw, _events = asyncio.run(
-                self._run_agent(self._selection_runner, message_text)
-            )
-        except Exception:  # noqa: BLE001 - model failure -> deterministic fallback
+            raw, _events = self._run_agent_bounded(self._selection_runner, message_text)
+        except Exception:  # noqa: BLE001 - model failure (including a timeout) -> deterministic fallback
             raw = "{}"
         plan = parse_selection(raw, species, side_of)
         return sanitize_plan(plan, species, self._max_matchups, side_of)

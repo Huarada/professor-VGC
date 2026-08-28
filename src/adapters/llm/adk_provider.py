@@ -58,7 +58,26 @@ def build_adk_model(provider: str, settings: Settings) -> "str | BaseLlm":
             )
         require_modern_gemini_model(settings.gemini_model)
         os.environ["GOOGLE_API_KEY"] = settings.gemini_api_key
-        return settings.gemini_model
+        # A bare model-id string works too (ADK wraps it in a default
+        # `Gemini` instance), but that default retries a transient 503
+        # ("high demand") internally for minutes before ever raising —
+        # observed live: single calls stuck retrying well past 10 minutes,
+        # long enough to make a Streamlit request feel hung and to make the
+        # benchmark's own fixture-level retry/checkpoint (run.py's
+        # `_with_retry`) pointless, since control never returns to it.
+        # Bounding it here means a real outage surfaces as a clear,
+        # reasonably prompt `LLMProviderError` instead — the caller's own
+        # retry logic (this codebase's or the benchmark's) is a better
+        # place for the longer backoff than a stuck SDK call.
+        from google.adk.models import Gemini
+        from google.genai import types as genai_types
+
+        return Gemini(
+            model=settings.gemini_model,
+            retry_options=genai_types.HttpRetryOptions(
+                attempts=3, initial_delay=1.0, max_delay=8.0
+            ),
+        )
     if not settings.openai_api_key:
         raise ConfigurationError("OpenAI API key required (PROFESSORVGC_OPENAI_API_KEY)")
     try:
