@@ -937,7 +937,7 @@ def _battle_stage_html(replay: BattleReplay, snapshot: ReplayTurnSnapshot) -> st
 
 
 def _step_turn(delta: int, max_idx: int) -> None:
-    current = st.session_state.get("turn_index", max_idx)
+    current = st.session_state.get("turn_index", 0)
     st.session_state["turn_index"] = max(0, min(max_idx, current + delta))
 
 
@@ -1001,7 +1001,7 @@ def _highlight_answer_by_turn(answer_md: str, turn: int) -> str:
 def _render_battle_panel(replay: BattleReplay) -> None:
     max_idx = len(replay.snapshots) - 1
     if "turn_index" not in st.session_state:
-        st.session_state["turn_index"] = max_idx  # default: final turn, most informative
+        st.session_state["turn_index"] = 0  # default: first turn (Leads)
     # Clamp defensively — a new replay may have fewer turns than whatever
     # was selected while viewing a previous one.
     st.session_state["turn_index"] = max(0, min(max_idx, st.session_state["turn_index"]))
@@ -1336,7 +1336,7 @@ def main() -> None:
 
     with st.sidebar:
         st.header("Configuration (BYOK)")
-        provider = st.selectbox("LLM provider", ["openai", "gemini"], index=0)
+        provider = st.selectbox("LLM provider", ["gemini", "openai"], index=0)
         orchestrator = st.selectbox(
             "Orchestration", ["adk", "langchain", "native"], index=0,
             help="Google ADK agents (default), LangChain LCEL chains, or the "
@@ -1447,10 +1447,10 @@ def main() -> None:
                         except Exception:  # noqa: BLE001 - this panel is best-effort only
                             replay = BattleReplay()
                     st.session_state["last_replay"] = replay
-                    # Reset the stepper to the final (most informative) turn
-                    # for a freshly analyzed battle, rather than leaving it
+                    # Reset the stepper to the first turn (Leads) for a
+                    # freshly analyzed battle, rather than leaving it
                     # wherever it was left on a previous, unrelated replay.
-                    turn_index = max(0, len(replay.snapshots) - 1)
+                    turn_index = 0
                     st.session_state["turn_index"] = turn_index
 
                     request = AnalysisRequest(
