@@ -1,0 +1,54 @@
+[resume] reusing 29 already-completed fixture(s) from scripts\faithfulness_benchmark\out\full-adk-gemini.json
+=== bench_only (bench_only) === [resumed from checkpoint]
+=== mega_evolution (mega_evolution) === [resumed from checkpoint]
+=== stat_stage_intimidate (stat_stage) === [resumed from checkpoint]
+=== protect_spread (protect_read) === [resumed from checkpoint]
+=== forfeit (forfeit) === [resumed from checkpoint]
+=== protect_genuine_read (protect_read) ===
+C:\Users\lucas\AppData\Roaming\Python\Python312\site-packages\google\adk\models\llm_request.py:273: UserWarning: [EXPERIMENTAL] feature FeatureName.JSON_SCHEMA_FOR_FUNC_DECL is enabled.
+  declaration = tool._get_declaration()
+C:\Users\lucas\OneDrive\Documentos\Google-Hackathon-ProfessorVGC\professor-VGC\src\adapters\llm\gemini_provider.py:23: FutureWarning: 
+
+All support for the `google.generativeai` package has ended. It will no longer be receiving 
+updates or bug fixes. Please switch to the `google.genai` package as soon as possible.
+See README for more details:
+
+https://github.com/google-gemini/deprecated-generative-ai-python/blob/main/README.md
+
+  import google.generativeai as genai  # noqa: PLC0415 - lazy optional dep
+  [filter] dropped 1 non-damage-dealt percent claim(s) (A)
+  A (grounded):  7 claims, strict=1.0, lenient=1.0
+  B (naive):     8 claims, strict=0.875, lenient=0.875
+=== protect_misallocated (protect_read) === [resumed from checkpoint]
+=== mirror_match_protect (protect_read, mirror_match) === [resumed from checkpoint]
+=== normal_clean (control) === [resumed from checkpoint]
+=== bench_plus_mega (bench_only, mega_evolution) === [resumed from checkpoint]
+=== dmg01_dragapult_volcarona (damage_dense) === [resumed from checkpoint]
+=== dmg02_skeledirge_bellibolt (damage_dense) === [resumed from checkpoint]
+=== dmg03_rotomwash_grimmsnarl (damage_dense) === [resumed from checkpoint]
+=== dmg04_malamar_chandelure (damage_dense) === [resumed from checkpoint]
+=== dmg05_farigiraf_armarouge (damage_dense) === [resumed from checkpoint]
+=== dmg06_maushold_azumarill (damage_dense) === [resumed from checkpoint]
+=== dmg07_gallade_vaporeon (damage_dense) === [resumed from checkpoint]
+=== dmg08_vileplume_tyranitar (damage_dense) === [resumed from checkpoint]
+=== dmg09_corviknight_hippowdon (damage_dense) === [resumed from checkpoint]
+=== dmg10_whimsicott_glimmora (damage_dense) === [resumed from checkpoint]
+=== dmg11_mamoswine_dragonite (damage_dense) === [resumed from checkpoint]
+=== dmg12_palafin_swampert (damage_dense) === [resumed from checkpoint]
+=== dmg13_ceruledge_kingambit (damage_dense) === [resumed from checkpoint]
+=== dmg14_raichu_incineroar (damage_dense) === [resumed from checkpoint]
+=== dmg15_volcarona_toxapex (damage_dense) === [resumed from checkpoint]
+=== dmg16_annihilape_gholdengo (damage_dense) === [resumed from checkpoint]
+=== dmg17_sinistcha_hatterene (damage_dense) === [resumed from checkpoint]
+=== dmg18_krookodile_klefki (damage_dense) === [resumed from checkpoint]
+=== dmg19_arcanine_gliscor (damage_dense) === [resumed from checkpoint]
+=== dmg20_milotic_sceptile (damage_dense) === [resumed from checkpoint]
+
+=== PRIMARY RESULT: damage_range, orchestrator=adk (n=30 fixtures) ===
+A: 44/60 (73.3%)  vs  B: 10/91 (11.0%)
+Fisher's exact test — odds ratio: 22.27, two-sided p=0.0000, one-sided (A>B) p=0.0000 -> significant at alpha=0.05
+
+=== secondary context: all claim types combined ===
+A: 245/268 (91.4%)  vs  B: 255/372 (68.5%)  -- mixes categories with and without an effect; not the headline, see README
+
+Full report written to scripts\faithfulness_benchmark\out\full-adk-gemini.json

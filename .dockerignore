@@ -1,0 +1,52 @@
+# Never let real credentials reach a build context that gets baked into an
+# image layer (image layers are immutable and pushed to Artifact Registry —
+# deleting the file afterward does NOT remove it from an already-pushed
+# layer). This is the single most important rule in this file; see the risk
+# assessment that led to it. Cloud Run gets its secrets at deploy time via
+# --set-secrets / --set-env-vars, never via a file copied into the image.
+.env
+.env.*
+!.env.example
+*service-account*.json
+*-key.json
+firestore-key*.json
+**/chaveGCP/**
+
+# VCS / editor / OS cruft
+.git/
+.gitignore
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Python build/test artifacts — never needed at runtime
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Node — node_modules is rebuilt inside the image from package-lock.json
+# (reproducible, correct platform/arch); shipping a host-built copy here
+# would fight that and can bake in the wrong platform's native binaries.
+node_calc/node_modules/
+
+# Tests, benchmark tooling and its (large, run-specific) output, docs,
+# deployment artifacts for the OTHER (chaos-sync) container — none of this
+# is imported by the running app; shipping it only costs image size and
+# surface area.
+tests/
+scripts/faithfulness_benchmark/out/
+.github/
+*.bundle
+*.patch
+data/replays/
+CLAUDE.md
+README.md
+DATA.md
