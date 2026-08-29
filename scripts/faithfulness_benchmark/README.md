@@ -17,7 +17,11 @@ defensible." See "Round 4: orchestrator comparison" below for the same
 question asked across all three `AnalysisPipeline` backends (`adk`
 default, `langchain`, `native`) — no pairwise difference between them is
 statistically significant; the faithfulness advantage over the naive
-baseline holds for all three alike.
+baseline holds for all three alike. See "Round 5: cross-provider check"
+below for the same question asked across LLM vendor: Gemini 3.5-flash on
+`adk` (73.3% vs 11.0%, odds ratio 22.27) lands within the same band as
+every OpenAI-backed combination — a full model × orchestrator comparison
+table is there.
 
 ## Running it
 
@@ -732,6 +736,86 @@ per orchestrator, not done here. Full transcripts:
 `out/orchestrator_comparison_n30.json` (and console log
 `out/orchestrator_comparison_n30_log.txt`), reproducible via `python -m
 scripts.faithfulness_benchmark.run_orchestrator_comparison`.
+
+## Round 5: cross-provider check — Gemini 3.5-flash vs OpenAI gpt-4o-mini (both on ADK)
+
+Every round above ran on OpenAI (`gpt-4o-mini`) — the project's provider
+default at the time. Once `PROFESSORVGC_DEFAULT_PROVIDER` became `gemini`
+and `Settings.gemini_model` started enforcing Gemini 3.5+ at construction
+time (a competition requirement — see `src/config.py`), the open question
+was whether the grounding effect this whole benchmark measures is specific
+to OpenAI or holds regardless of LLM vendor, since the architecture's own
+claim (CLAUDE.md §1) is that the LLM only ever explains ground truth,
+never invents it — a claim that should be vendor-agnostic if it's actually
+true of the pipeline and not an artifact of one provider's behavior.
+
+**Method — same `run.py`, `--provider gemini`, `--orchestrator adk`, same
+30 fixtures.** Run live 2026-08-28 against the real Gemini 3.5-flash API.
+Needed real resilience work to complete at all: Gemini was returning
+sustained `503 UNAVAILABLE` ("high demand") that ADK's own internal SDK
+retry doesn't bound in practice (one call was observed stalling 30+
+minutes with no exception ever raised — a stuck tool-calling loop, not a
+retriable error), so `run.py` gained incremental checkpointing, `--resume`,
+a per-fixture wall-clock timeout, and its own bounded retry on top of a
+new `retry_options` bound added to `adk_provider.py`'s Gemini path
+(production code, not just the benchmark — see git history around
+2026-08-28 for both). One fixture needed `--resume` to fill in after
+hitting that timeout; every other fixture completed on the first pass.
+
+**Result — n=30 fixtures (same 30 as every round above), `damage_range`:**
+
+| | Condition A (grounded, ADK+Gemini 3.5-flash) | Condition B (naive, same Gemini) |
+|---|---|---|
+| Claims | 60 | 91 |
+| Correct | 44 | 10 |
+| **Rate** | **73.3%** | **11.0%** |
+
+**Fisher's exact test: odds ratio 22.27, two-sided p = 2.70e-15 —
+significant at α=0.05 by an enormous margin**, same shape as every
+OpenAI-backed round above. Secondary/all-claim-types context: A 245/268
+(91.4%) vs B 255/372 (68.5%).
+
+**All results at a glance — model × orchestration** (`damage_range`,
+Condition A grounded rate / Condition B naive rate / Fisher odds ratio;
+claim counts differ across rows because the claim-extraction judge is
+itself the row's own LLM, which doesn't extract identical claim sets from
+the same prose — see each round's own source file for exact counts):
+
+| Provider / model | Orchestrator | A rate | B rate | Odds ratio | p (two-sided) | Source |
+|---|---|---|---|---|---|---|
+| OpenAI gpt-4o-mini | native | 92.0% (81/88) | 12.6% (12/95) | 80.0 | <0.0001 | `out/run7_n30.json` (Primary Result) |
+| OpenAI gpt-4o-mini | adk | 72.2% (78/108) | 14.1% (14/99)\* | 15.23 | <0.0001 | `out/orchestrator_comparison_n30.json` (Round 4) |
+| OpenAI gpt-4o-mini | langchain | 73.8% (79/107) | 14.1% (14/99)\* | 17.14 | <0.0001 | `out/orchestrator_comparison_n30.json` (Round 4) |
+| **Gemini 3.5-flash** | **adk** | **73.3% (44/60)** | **11.0% (10/91)** | **22.27** | **2.70e-15** | `out/full-adk-gemini.json` (this round) |
+
+\* Round 4's B_naive is shared across all three orchestrator rows by
+design (see that round's own Method note) — same underlying 99 claims,
+14 correct, restated per row here only for readability.
+
+**Reading this honestly:** Gemini 3.5-flash's grounded rate (73.3%) lands
+almost exactly on OpenAI+ADK's own historical rate (72.2%) — well inside
+the noise band Round 4 already showed between orchestrators on the SAME
+provider, and nowhere near the native-only outlier (92.0%, itself flagged
+in Round 4 as unexplained run-to-run variance, not a real native-specific
+effect). Both providers' naive baselines sit in the same 11–14% floor.
+This is the result the architecture's own claim predicts: swapping the
+LLM vendor underneath an unchanged deterministic core (`MatchupEvaluator`,
+`TurnReplaySimulator`, real `@smogon/calc`, real Chaos data) does not move
+the grounding effect — the same enormous, significant gap over the naive
+baseline (odds ratio 15–80x across every provider/orchestrator combination
+tested) shows up regardless of which LLM is doing the explaining, which is
+exactly what "the LLM explains ground truth, it never invents it" should
+look like when it's actually true of the pipeline rather than a property
+of one specific model's behavior.
+
+**Residual, stated plainly:** this is Gemini's first appearance in this
+benchmark and only on one orchestrator (`adk`, the competition default) —
+unlike OpenAI, there is no Gemini×langchain or Gemini×native row yet, and
+only a single pass (no repeated-sampling confidence interval, same
+limitation every prior round states). Re-running `run.py --provider
+gemini --orchestrator langchain` (and `native`) would close that gap
+directly; nothing about the current result suggests it would come out
+differently, but that is an expectation, not a measurement.
 
 ## Extending this
 
