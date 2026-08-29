@@ -45,6 +45,10 @@ jobs:
         run: npm run smoke
         working-directory: node_calc
 
+      - name: Node unit tests (node --test, no framework dependency)
+        run: npm test
+        working-directory: node_calc
+
       - name: pytest
         run: pytest -q
 

@@ -8,7 +8,8 @@
   "scripts": {
     "start": "node calc_server.js",
     "smoke": "node calc_server.js --smoke",
-    "dex": "node smogon_dex_server.js"
+    "dex": "node smogon_dex_server.js",
+    "test": "node --test"
   },
   "dependencies": {
     "@pkmn/data": "^0.10.11",
