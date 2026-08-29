@@ -27,15 +27,20 @@ COPY node_calc/package.json node_calc/package-lock.json ./
 # Optional: trust an extra CA cert during `npm ci` if one was dropped into
 # docker/extra-ca-certs/ (see that directory's own README) — needed on
 # networks that intercept TLS to the npm registry with a root not in
-# Node's bundled trust store (observed here: Avast's Web/Mail Shield). A
-# bind mount (build-time only, BuildKit) rather than COPY: the cert never
-# becomes part of any image layer, so there's nothing to clean up
-# afterward and nothing that could later leak via layer history. On every
-# other network (CI included) this directory holds only its README, no
+# Node's bundled trust store (observed here: Avast's Web/Mail Shield).
+# Plain COPY, not a BuildKit bind mount: `gcloud run deploy --source .`
+# builds via Cloud Build's classic (non-BuildKit) docker builder, which
+# doesn't understand `RUN --mount` at all (confirmed live: "the --mount
+# option requires BuildKit") — and a build sourced from git (Cloud Build's
+# case, always) can never actually contain a real cert here regardless,
+# since a real one is git-ignored (see that directory's own .gitignore)
+# and only ever exists locally, uncommitted, on a machine that needs the
+# workaround. On every other build (CI, Cloud Build, any machine without
+# the interception problem) this directory holds only its README, no
 # .pem/.crt matches, and npm's default trust store is used completely
-# unchanged — this never affects a normal build.
-RUN --mount=type=bind,source=docker/extra-ca-certs,target=/tmp/extra-ca-certs \
-    bundle="$(find /tmp/extra-ca-certs -maxdepth 1 \( -name '*.pem' -o -name '*.crt' \) | head -n1)"; \
+# unchanged.
+COPY docker/extra-ca-certs/ /tmp/extra-ca-certs/
+RUN bundle="$(find /tmp/extra-ca-certs -maxdepth 1 \( -name '*.pem' -o -name '*.crt' \) | head -n1)"; \
     if [ -n "$bundle" ]; then export NODE_EXTRA_CA_CERTS="$bundle"; fi; \
     npm ci --omit=dev
 
@@ -48,10 +53,12 @@ COPY --from=node-deps /build/node_calc/node_modules /app/node_calc/node_modules
 
 # --- Python dependencies (layer cached independently of app code below) ---
 COPY requirements.txt .
-# Same optional extra-CA mechanism as the node-deps stage above, this time
-# for pip against PyPI (a TLS-intercepting network breaks both identically).
-RUN --mount=type=bind,source=docker/extra-ca-certs,target=/tmp/extra-ca-certs \
-    bundle="$(find /tmp/extra-ca-certs -maxdepth 1 \( -name '*.pem' -o -name '*.crt' \) | head -n1)"; \
+# Same optional extra-CA mechanism as the node-deps stage above (plain
+# COPY, not a BuildKit mount — same Cloud Build compatibility reason),
+# this time for pip against PyPI (a TLS-intercepting network breaks both
+# identically).
+COPY docker/extra-ca-certs/ /tmp/extra-ca-certs/
+RUN bundle="$(find /tmp/extra-ca-certs -maxdepth 1 \( -name '*.pem' -o -name '*.crt' \) | head -n1)"; \
     if [ -n "$bundle" ]; then export PIP_CERT="$bundle"; fi; \
     pip install --no-cache-dir -r requirements.txt
 
