@@ -210,6 +210,50 @@ def test_selection_turn_timeout_falls_back_like_any_other_failure(
     assert result.verdicts  # deterministic fallback still picked candidate species
 
 
+def test_explanation_empty_final_text_raises_instead_of_blank_answer(
+    sample_chaos_path, sample_replay_path
+):
+    """Live bug (2026-08-29): the explanation agent's final event
+    sometimes carries no usable text (empty/whitespace parts, or a
+    non-text part) — is_final_response() is still True (no exception,
+    no timeout: `_run_agent`'s loop just ends normally), but `_final_text`
+    resolves to "". Before this fix, AnalysisResult.answer == "" reached
+    the UI with NO error at all — a blank response with no indication
+    anything had gone wrong. Confirmed NOT to be RunConfig.max_llm_calls
+    exhaustion (that raises google.adk's own LlmCallsLimitExceededError,
+    already correctly wrapped by analyze()'s existing except clause) —
+    this is a distinct failure mode this test isolates directly by
+    scripting the final turn as an empty string."""
+    model = _FakeAdkModel([
+        json.dumps({"focus_species": ["Garchomp"], "matchups": [], "rationale": "r"}),
+        "",  # explanation's "final" turn carries no text
+    ])
+    orch = _build(sample_chaos_path, model)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    with pytest.raises(LLMProviderError, match="without producing a final answer"):
+        orch.analyze(AnalysisRequest(session_id="adk-empty-1", replay_json=replay, question="q"))
+
+
+def test_selection_empty_final_text_falls_back_like_any_other_failure(
+    sample_chaos_path, sample_replay_path
+):
+    """Same failure mode as the test above, but on the selection stage —
+    must take the existing any-failure-falls-back-to-deterministic-species
+    path, not a special one: the pipeline should still complete normally
+    once the (fast, real-text) explanation turn runs, proving _select()'s
+    own try/except actually swallows this new error rather than letting
+    it propagate uncaught."""
+    model = _FakeAdkModel([
+        "",  # selection's "final" turn carries no text
+        "plain answer, no tools needed",
+    ])
+    orch = _build(sample_chaos_path, model)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    result = orch.analyze(AnalysisRequest(session_id="adk-empty-2", replay_json=replay, question="q"))
+    assert result.answer == "plain answer, no tools needed"
+    assert result.verdicts  # deterministic fallback still picked candidate species
+
+
 def test_explanation_provider_failure_is_wrapped_not_left_raw(
     sample_chaos_path, sample_replay_path
 ):

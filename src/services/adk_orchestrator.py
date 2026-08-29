@@ -208,7 +208,7 @@ class AdkAnalysisOrchestrator:
         provider_name: str = "adk",
         max_matchups: int = 6,
         suggestion_source: SmogonSuggestionSource | None = None,
-        agent_max_llm_calls: int = 10,
+        agent_max_llm_calls: int = 20,
         agent_timeout_seconds: float = 180.0,
     ) -> None:
         from google.adk.agents import Agent
@@ -229,6 +229,12 @@ class AdkAnalysisOrchestrator:
         # think/call-tool/think loop (see RunConfig.max_llm_calls), never
         # applied to the selection stage in spirit (it has no tools to loop
         # on) even though the same RunConfig is reused there for simplicity.
+        # Raised from 10 to 20 (2026-08-29) after a live failure: a
+        # genuinely complex, open-ended question (explaining a multi-turn
+        # Trick Room comeback) exhausted a budget of 10 mid-loop — see
+        # _run_agent's own comment for what that used to do (silently
+        # return an empty answer, no error at all) before that was also
+        # fixed to fail loud instead.
         self._agent_max_llm_calls = agent_max_llm_calls
         # Observed live (2026-08-28, faithfulness benchmark against Gemini
         # 3.5-flash): one agent turn stalled 30+ minutes with no exception
@@ -310,6 +316,27 @@ class AdkAnalysisOrchestrator:
                 text = _final_text(event)
                 if text:
                     final_text = text
+        if not final_text:
+            # Live bug (2026-08-29): a genuinely complex question (a
+            # multi-turn Trick Room comeback explanation) exhausted
+            # `run_config.max_llm_calls` mid tool-calling loop, so
+            # `run_async` simply stopped yielding events — no exception,
+            # no timeout (each individual LLM call was fast; it was the
+            # CUMULATIVE call count that ran out) — and this returned an
+            # empty string with no error at all. The UI rendered a blank
+            # answer with no indication anything had gone wrong. The
+            # LangChain backend already fails LOUD in the equivalent case
+            # (LangGraph's own recursion_limit raises GraphRecursionError,
+            # caught by analyze()'s except clause) — this makes the ADK
+            # backend match that instead of the silent-empty-string path.
+            raise LLMProviderError(
+                f"The agent turn ended without producing a final answer after "
+                f"{len(events)} events (run_config.max_llm_calls="
+                f"{self._agent_max_llm_calls}) — likely a question complex "
+                "enough that the agent's tool-calling budget ran out before "
+                "it synthesized a response, not a single failed call. Try "
+                "asking a narrower question, or increase agent_max_llm_calls."
+            )
         return final_text, events
 
     def _run_agent_bounded(self, runner: Any, message_text: str) -> tuple[str, list[Any]]:

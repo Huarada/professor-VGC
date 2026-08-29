@@ -96,7 +96,7 @@ class LangChainAnalysisOrchestrator:
         provider_name: str = "langchain",
         max_matchups: int = 6,
         suggestion_source: SmogonSuggestionSource | None = None,
-        agent_max_steps: int = 10,
+        agent_max_steps: int = 20,
     ) -> None:
         self._parser = parser
         self._meta = meta_provider
@@ -111,7 +111,11 @@ class LangChainAnalysisOrchestrator:
         # explanation agent may take before its own run is cut off — not a
         # count of tool calls directly, but generous enough for a handful of
         # them (see ADR-028). Never applies to the selection stage, which
-        # stays a single plain completion.
+        # stays a single plain completion. Raised from 10 to 20 (2026-08-29)
+        # alongside the ADK backend's equivalent bump — see
+        # adk_orchestrator.py's own comment: a live, genuinely complex
+        # question (a multi-turn Trick Room comeback explanation) needed
+        # more budget than 10 to actually reach an answer.
         self._agent_max_steps = agent_max_steps
 
         self._selection_system = load_prompt("selection_system")
