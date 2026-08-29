@@ -32,12 +32,23 @@ _BoostLedger = dict[tuple[str, str], dict[str, int]]
 
 _BEST_ALTERNATIVES_KEPT = 4
 
-# Non-damaging moves we should not try to run through the damage calc.
+# Non-damaging (0 base power) moves we should not try to run through the
+# damage calc. Fake Out (40 BP Normal) and Matcha Gotcha (80 BP Grass) are
+# NOT status moves despite reading like utility/support moves at a glance —
+# both deal real damage and MUST go through the calc like any other attack.
+# Silently skipping them here used to mean best_alternatives/damage_checks
+# never computed a real figure for either: a Fake Out candidate against a
+# Ghost-type (immune to Normal) was simply absent instead of coming back as
+# the correct "0%, no effect" from @smogon/calc — leaving the explanation
+# model with no grounded data to catch a bad suggestion like "use Fake Out"
+# against a Ghost-type target. Fixed here rather than in the prompt: this
+# project's own rule is to push a judgment call into deterministic code
+# whenever possible (see ADR-010), and immunity is exactly that.
 _STATUS_MOVES = {
     "tailwind", "protect", "willowisp", "thunderwave", "reflect", "lightscreen",
-    "trickroom", "helpinghand", "fakeout", "ragepowder", "followme", "swordsdance",
+    "trickroom", "helpinghand", "ragepowder", "followme", "swordsdance",
     "nastyplot", "calmmind", "dragondance", "strengthsap", "lifedew", "spore",
-    "sleeppowder", "partingshot", "matchagotcha",
+    "sleeppowder", "partingshot",
 }
 
 

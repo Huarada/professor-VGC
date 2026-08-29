@@ -104,11 +104,26 @@ function calcDamage(genNum, attackerSpec, defenderSpec, moveName, fieldSpec) {
     koChanceText = '';
   }
 
+  // @smogon/calc's own result.fullDesc()/desc() throw an internal assertion
+  // ("damage[damage.length - 1] === 0") specifically on a GUARANTEED-0-damage
+  // result (e.g. a type immunity like Fake Out into a Ghost-type, or an
+  // ability block) — confirmed live against the real engine. Left uncaught
+  // this would crash the calc; caught blindly it used to leave `desc` empty,
+  // silently discarding the one human-readable signal for WHY it's 0 right
+  // when that explanation matters most for catching a bad move suggestion.
+  // maxDmg === 0 with a non-empty damage array (as opposed to an entirely
+  // absent computation) is exactly that case, so synthesize the equivalent
+  // of Showdown's own "no effect" messaging instead of leaving it blank.
   let desc = '';
-  try {
-    desc = result.fullDesc ? result.fullDesc() : '';
-  } catch (_e) {
-    desc = '';
+  if (flatDamage.length && maxDmg === 0) {
+    desc = `${attackerSpec.species} ${moveName} vs. ${defenderSpec.species}: `
+      + '0 (0%) -- this move has no effect on the target (immune).';
+  } else {
+    try {
+      desc = result.fullDesc ? result.fullDesc() : '';
+    } catch (_e) {
+      desc = '';
+    }
   }
 
   return {
