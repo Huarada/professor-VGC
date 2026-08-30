@@ -37,3 +37,14 @@ def test_settings_construction_accepts_the_configured_default():
     settings = Settings(_env_file=None)
     assert settings.gemini_model == "gemini-3.5-flash"
     assert settings.default_provider == "gemini"
+
+
+def test_agent_timeout_seconds_defaults_and_is_overridable():
+    """PROFESSORVGC_AGENT_TIMEOUT_SECONDS -- made configurable (was a
+    hardcoded 180 in AdkAnalysisOrchestrator) after a live finding: a
+    session's first request on Cloud Run pays one-time cold costs (its
+    own Node subprocesses, a fresh Firestore channel, a fresh ADK/genai
+    client) a long-running local dev process never pays, needing more
+    headroom than 180s comfortably covers locally."""
+    assert Settings(_env_file=None).agent_timeout_seconds == 240.0
+    assert Settings(_env_file=None, agent_timeout_seconds=90.0).agent_timeout_seconds == 90.0
