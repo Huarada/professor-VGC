@@ -253,6 +253,7 @@ class Container:
             default_gen=self._settings.calc_gen,
             provider_name=f"adk:{name}",
             suggestion_source=self.smogon_dex(),
+            agent_timeout_seconds=self._settings.agent_timeout_seconds,
         )
 
     def build_pipeline(

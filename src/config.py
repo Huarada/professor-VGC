@@ -117,6 +117,18 @@ class Settings(BaseSettings):
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.5-flash"
     llm_temperature: float = 0.2
+    # Wall-clock ceiling per ADK agent turn (src/services/adk_orchestrator.py's
+    # _run_agent_bounded) — was a hardcoded 180s; made configurable after a
+    # live finding: a brand-new Streamlit session's FIRST request on Cloud
+    # Run pays real, one-time cold costs a local dev process never pays
+    # (spinning up this session's own Node calc/dex subprocesses from
+    # scratch, a fresh Firestore gRPC channel, a fresh ADK/genai client) on
+    # top of whatever the model call itself takes — 180s that's comfortable
+    # locally can be too tight for a session's first call specifically on
+    # Cloud Run. Raised default reflects that; override lower again once
+    # Cloud Run logs pin down how much of the overrun is actually the model
+    # call itself vs. this cold one-time setup.
+    agent_timeout_seconds: float = 240.0
 
     @field_validator("gemini_model")
     @classmethod
