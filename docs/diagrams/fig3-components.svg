@@ -1,0 +1,141 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 660" role="img" aria-label="Component diagram: the composition root wires three AnalysisPipeline implementations — AdkAnalysisOrchestrator (default), LangChainAnalysisOrchestrator, and AnalysisService (native) — which all call a shared deterministic core; below a dependency-inversion boundary sit eight concrete adapters, each implementing exactly one Protocol port.">
+  <style>
+    text{font-family:-apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif;}
+    .box{fill:#FFFFFF;stroke:#1B2229;stroke-width:1.4;}
+    .box.det{stroke:#0F7A72;} .box.prob{stroke:#A8660A;}
+    .box.orch{stroke:#6E4FA3;} .box.neutral{stroke:#56606A;}
+    .box.ext{stroke-dasharray:5 3;} .box.emph{stroke-width:2.4;}
+    .fill-det{fill:#E4F1EE;} .fill-prob{fill:#F5EBDA;} .fill-orch{fill:#EDE7F5;}
+    .t-tag{font-family:ui-monospace,"Cascadia Code","SFMono-Regular",Consolas,monospace;font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;fill:#56606A;}
+    .t-title{font-size:14px;font-weight:700;fill:#1B2229;}
+    .t-desc{font-size:10.6px;fill:#56606A;}
+    .t-label{font-size:10.6px;fill:#1B2229;}
+    .arrow{fill:none;stroke:#56606A;stroke-width:1.3;}
+    .boundary-label{font-family:ui-monospace,"Cascadia Code","SFMono-Regular",Consolas,monospace;font-size:10px;letter-spacing:.05em;text-transform:uppercase;fill:#56606A;}
+    .divider{stroke:#D3D7CB;stroke-width:1.2;stroke-dasharray:3 3;}
+  </style>
+  <rect x="0" y="0" width="1000" height="660" fill="#FFFFFF"/>
+
+  <defs>
+    <marker id="c-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#56606A"/>
+    </marker>
+    <marker id="c-arrow-open" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8" fill="none" stroke="#56606A" stroke-width="1.4"/>
+    </marker>
+    <marker id="c-arrow-orch" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#6E4FA3"/>
+    </marker>
+  </defs>
+
+  <!-- composition root -->
+  <rect class="box neutral" x="250" y="16" width="500" height="58" rx="8"/>
+  <text class="t-tag" x="266" y="36">[Composition root]</text>
+  <text class="t-title" x="266" y="56">Container — src/services/container.py</text>
+
+  <!-- three orchestrators -->
+  <rect class="box orch fill-orch" x="20" y="112" width="300" height="82" rx="8"/>
+  <text class="t-tag" x="36" y="132">«implements» AnalysisPipeline</text>
+  <text class="t-title" x="36" y="154" style="font-size:13px">AnalysisService</text>
+  <text class="t-desc" x="36" y="174">native, hand-rolled orchestration</text>
+
+  <rect class="box orch emph fill-orch" x="350" y="112" width="300" height="82" rx="8"/>
+  <text class="t-tag" x="366" y="132">«implements» AnalysisPipeline — default</text>
+  <text class="t-title" x="366" y="154" style="font-size:13px">AdkAnalysisOrchestrator</text>
+  <text class="t-desc" x="366" y="174">Google ADK LlmAgents — schema + tools</text>
+
+  <rect class="box orch fill-orch" x="680" y="112" width="300" height="82" rx="8"/>
+  <text class="t-tag" x="696" y="132">«implements» AnalysisPipeline</text>
+  <text class="t-title" x="696" y="154" style="font-size:13px">LangChainAnalysisOrchestrator</text>
+  <text class="t-desc" x="696" y="174">LCEL: selection_chain / explanation_chain</text>
+
+  <!-- shared deterministic core -->
+  <rect class="box det fill-det emph" x="260" y="228" width="480" height="70" rx="8"/>
+  <text class="t-tag" x="276" y="250">[shared, reused verbatim by all three backends]</text>
+  <text class="t-title" x="276" y="272">MatchupEvaluator + TurnReplaySimulator</text>
+
+  <!-- dependency inversion divider -->
+  <line class="divider" x1="30" y1="336" x2="970" y2="336"/>
+  <text class="boundary-label" x="330" y="330">depends only on Protocols below — Dependency Inversion</text>
+
+  <!-- adapter grid row 1 -->
+  <g>
+    <rect class="box neutral" x="30" y="360" width="220" height="76" rx="7"/>
+    <text class="t-tag" x="42" y="380">«port» LogParser</text>
+    <text class="t-title" x="42" y="400" style="font-size:12.5px">ShowdownReplayParser</text>
+    <text class="t-desc" x="42" y="418">log → GameState, single linear pass</text>
+  </g>
+  <g>
+    <rect class="box prob fill-prob" x="270" y="360" width="220" height="76" rx="7"/>
+    <text class="t-tag" x="282" y="380">«port» MetaStatsProvider</text>
+    <text class="t-title" x="282" y="400" style="font-size:12.5px">ChaosAdapter</text>
+    <text class="t-desc" x="282" y="418">rating tiers + reg. fallback</text>
+  </g>
+  <g>
+    <rect class="box det fill-det" x="510" y="360" width="220" height="76" rx="7"/>
+    <text class="t-tag" x="522" y="380">«port» CalcEngineAdapter</text>
+    <text class="t-title" x="522" y="400" style="font-size:12.5px">SmogonCalcAdapter</text>
+    <text class="t-desc" x="522" y="418">→ Node IPC (calc_server.js)</text>
+  </g>
+  <g>
+    <rect class="box neutral" x="750" y="360" width="220" height="76" rx="7"/>
+    <text class="t-tag" x="762" y="380">«port» ConversationMemory</text>
+    <text class="t-title" x="762" y="400" style="font-size:12.5px">InMemoryConversationMemory</text>
+    <text class="t-desc" x="762" y="418">per session_id, process lifetime</text>
+  </g>
+
+  <!-- adapter grid row 2 -->
+  <g>
+    <rect class="box orch fill-orch" x="30" y="452" width="220" height="82" rx="7"/>
+    <text class="t-tag" x="42" y="472">«port» SelectionStrategy — 1st AI</text>
+    <text class="t-title" x="42" y="492" style="font-size:12.5px">LLMSelectionService / LCEL chain</text>
+    <text class="t-desc" x="42" y="510">JSON-mode plan; cross-side guardrail</text>
+  </g>
+  <g>
+    <rect class="box prob fill-prob" x="270" y="452" width="220" height="82" rx="7"/>
+    <text class="t-tag" x="282" y="472">«port» StrategyKnowledgeProvider</text>
+    <text class="t-title" x="282" y="492" style="font-size:12.5px">CompositeStrategyProvider</text>
+    <text class="t-desc" x="282" y="510">official Smogon → Chaos fallback</text>
+  </g>
+  <g>
+    <rect class="box orch fill-orch" x="510" y="452" width="220" height="82" rx="7"/>
+    <text class="t-tag" x="522" y="472">«port» LLMProvider — 2nd AI</text>
+    <text class="t-title" x="522" y="492" style="font-size:12.5px">OpenAIProvider / GeminiProvider</text>
+    <text class="t-desc" x="522" y="510">native 1-shot · LangChain/ADK agent loop</text>
+  </g>
+  <g>
+    <rect class="box orch ext fill-orch" x="750" y="452" width="220" height="82" rx="7"/>
+    <text class="t-tag" x="762" y="472">«port» EmbeddingProvider — optional</text>
+    <text class="t-title" x="762" y="492" style="font-size:12.5px">SemanticStrategyRetriever</text>
+    <text class="t-desc" x="762" y="510">ranks analysis passages by question</text>
+  </g>
+
+  <!-- ticks from adapters to divider -->
+  <path class="arrow" d="M140,358 L140,338" marker-end="url(#c-arrow-open)"/>
+  <path class="arrow" d="M380,358 L380,338" marker-end="url(#c-arrow-open)"/>
+  <path class="arrow" d="M620,358 L620,338" marker-end="url(#c-arrow-open)"/>
+  <path class="arrow" d="M860,358 L860,338" marker-end="url(#c-arrow-open)"/>
+  <path class="arrow" d="M140,450 L140,338" marker-end="url(#c-arrow-open)"/>
+  <path class="arrow" d="M380,450 L380,338" marker-end="url(#c-arrow-open)"/>
+  <path class="arrow" d="M620,450 L620,338" marker-end="url(#c-arrow-open)"/>
+  <path class="arrow" d="M860,450 L860,338" marker-end="url(#c-arrow-open)"/>
+
+  <!-- root wires all three orchestrators -->
+  <path class="arrow" d="M330,74 L180,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+  <path class="arrow" d="M500,74 L500,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+  <path class="arrow" d="M670,74 L820,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+  <text class="t-label" x="510" y="93">wires (PROFESSORVGC_ORCHESTRATOR selects one)</text>
+
+  <!-- all three orchestrators call the shared core -->
+  <path class="arrow" d="M240,196 L340,226" marker-end="url(#c-arrow)"/>
+  <path class="arrow" d="M500,196 L500,226" marker-end="url(#c-arrow)"/>
+  <path class="arrow" d="M760,196 L660,226" marker-end="url(#c-arrow)"/>
+
+  <!-- ADR-028: LangChain/ADK explanation agent may call back into three ports
+       on demand — the one edge that is NOT dependency inversion, drawn
+       dashed + violet + arrowed both ways to read as "new, conditional,
+       bounded" rather than "always happens" like the solid arrows above. -->
+  <path class="arrow" style="stroke:#6E4FA3;stroke-dasharray:5 3" d="M615,452 L615,438" marker-end="url(#c-arrow-orch)"/>
+  <path class="arrow" style="stroke:#6E4FA3;stroke-dasharray:5 3" d="M508,480 L492,480" marker-end="url(#c-arrow-orch)"/>
+  <path class="arrow" style="stroke:#6E4FA3;stroke-dasharray:5 3" d="M510,464 C460,440 420,410 400,438" marker-end="url(#c-arrow-orch)"/>
+</svg>

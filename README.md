@@ -238,3 +238,31 @@ actual `@smogon/calc` subprocess instead of skipping — this is what
   regulation-fallback selection, only "where the JSON bytes come from" is
   backend-specific) and wire it in `Container.chaos_repository`.
   `ChaosAdapter`/`ChaosStrategyAdapter` never change.
+
+## Architecture diagram
+
+C4 model, built from source (not generated) — reading
+`src/domain/interfaces.py`, `src/services/container.py`, all three
+`AnalysisPipeline` implementations and every adapter's own docstring, cross-
+checked against `CLAUDE.md` and the ADRs. The two views below are the ones
+that answer "how does Gemini connect to the backend/database/frontend" and
+"how is responsibility separated" most directly; the full five-view walkthrough
+(System Context, Containers, Components, a Dynamic view of the ADR-028
+tool-calling loop, and the stage-by-stage data flow) lives in
+[`docs/architecture-blueprint.html`](docs/architecture-blueprint.html).
+
+**Containers — how Gemini connects to the backend, Firestore, and the UI:**
+
+![Container diagram: Streamlit UI, the Python application core, two Node.js subprocesses, and Google Cloud Firestore, all inside one Cloud Run container, plus the external BYOK LLM provider and optional Smogon host](docs/diagrams/fig2-containers.svg)
+
+**Components — the separation of responsibilities (Dependency Inversion in practice):**
+
+![Component diagram: three interchangeable AnalysisPipeline backends (AdkAnalysisOrchestrator default, LangChainAnalysisOrchestrator, AnalysisService native) all calling one shared deterministic core, with eight adapters below a dependency-inversion boundary, each implementing exactly one Protocol port](docs/diagrams/fig3-components.svg)
+
+Every orchestrator implements the same `AnalysisPipeline` port and shares the
+same `MatchupEvaluator`/`TurnReplaySimulator` instances — switching
+orchestration technology never changes a single damage roll, which is a
+structural guarantee here, not just a claim in prose. Below the dependency-
+inversion boundary, every side effect (parsing, calc, Chaos, Smogon, memory,
+the LLM itself) is a Protocol in `src/domain/interfaces.py`; no service ever
+imports a concrete adapter directly.

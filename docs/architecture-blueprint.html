@@ -222,7 +222,7 @@
 </style>
 
 <header class="hero">
-  <div class="eyebrow"><span class="dot"></span> architecture map · c4 model <span style="opacity:.6">· revised for ADR-028</span></div>
+  <div class="eyebrow"><span class="dot"></span> architecture map · c4 model <span style="opacity:.6">· revised for Google ADK + Firestore</span></div>
   <h1>ProfessorVGC Blueprint</h1>
   <p class="sub">How the VGC-battle-analysis orchestration is actually wired, at four C4 views (Context, Container, Component, Dynamic), and what shape the data takes at every stage between a pasted replay and the final explanation.</p>
 </header>
@@ -230,14 +230,14 @@
 <div class="callout">
   <h2>Is there a tool that does this automatically?</h2>
   <p>No — not one that is both automatic <em>and</em> precise. Nothing in this environment reverse-engineers a codebase into a trustworthy C4 model, and that isn't a gap specific to this toolchain: C4's whole premise is a <em>chosen</em> abstraction boundary — deciding which box counts as a "Container" versus a "Component" — and static analysis can enumerate imports and classes, but it can't make that editorial call. Diagram generators (Structurizr, C4-PlantUML, arch-as-code, IDE dependency graphs) all still require a human to draw the boxes; at best they render a hand-written model.</p>
-  <p>So this was built the only reliable way: reading <code>src/domain/interfaces.py</code> (the ports), <code>src/services/container.py</code> (the composition root), both <code>AnalysisPipeline</code> implementations, the Node IPC boundary, and every adapter's own docstring — then cross-checked against <code>CLAUDE.md</code> and the ADRs, not copied from either. Written in English per this repo's own language policy (<code>CLAUDE.md</code> §0).</p>
-  <p><strong>This revision adds Fig. 4</strong>, a C4 <em>Dynamic</em> view (the fourth, less-common C4 diagram type — a specific runtime scenario rather than a static structure) for the one thing that changed since the first pass: <code>ADR-028</code> gave the LangChain explanation stage a bounded loop back into the deterministic/probabilistic ports, where before there was none.</p>
+  <p>So this was built the only reliable way: reading <code>src/domain/interfaces.py</code> (the ports), <code>src/services/container.py</code> (the composition root), all three <code>AnalysisPipeline</code> implementations, the Node IPC boundary, and every adapter's own docstring — then cross-checked against <code>CLAUDE.md</code> and the ADRs, not copied from either. Written in English per this repo's own language policy (<code>CLAUDE.md</code> §0).</p>
+  <p><strong>This revision adds the Google ADK backend</strong> (now the default <code>AnalysisPipeline</code>, alongside LangChain and native) and moves Chaos usage-stat storage from local JSON files to <strong>Google Cloud Firestore</strong> (the app's only source now, no local-file fallback) — both reflected throughout Figs. 1–5. <code>ADR-028</code>'s bounded explanation-time tool loop, originally LangChain-only, now has an ADK equivalent too (<code>adk_tools.py</code>, the same three ports) — see Fig. 4.</p>
 </div>
 
 <div class="legend">
   <span class="chip"><span class="sw det"></span>deterministic — log &amp; calc, exact</span>
-  <span class="chip"><span class="sw prob"></span>probabilistic — Chaos &amp; Smogon stats</span>
-  <span class="chip"><span class="sw orch"></span>orchestration — the two LLM calls</span>
+  <span class="chip"><span class="sw prob"></span>probabilistic — Chaos (Firestore) &amp; Smogon stats</span>
+  <span class="chip"><span class="sw orch"></span>orchestration — the two LLM calls, three interchangeable backends</span>
 </div>
 
 <section id="context">
@@ -245,7 +245,7 @@
   <p class="sec-desc">Who uses ProfessorVGC, and which outside systems it talks to. Both external data sources are optional-degrading: the app never crashes because one is unreachable.</p>
 
   <figure class="diagram">
-    <svg viewBox="0 0 900 460" role="img" aria-label="System context diagram: a VGC player sends a replay and question to ProfessorVGC, which in turn calls a BYOK LLM provider, reads local Smogon Chaos files, and optionally fetches official Smogon data.">
+    <svg viewBox="0 0 900 460" role="img" aria-label="System context diagram: a VGC player sends a replay and question to ProfessorVGC, which in turn calls a BYOK Gemini/OpenAI LLM provider, queries Google Cloud Firestore for Smogon Chaos usage stats, and optionally fetches official Smogon data.">
       <defs>
         <marker id="a-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
@@ -272,14 +272,14 @@
       <rect class="box orch fill-orch" x="650" y="30" width="220" height="90" rx="8"/>
       <text class="t-tag" x="666" y="52">[External · BYOK]</text>
       <text class="t-title" x="666" y="74">LLM Provider</text>
-      <text class="t-desc" x="666" y="94">OpenAI or Gemini</text>
+      <text class="t-desc" x="666" y="94">Gemini 3.5+ (default) or OpenAI</text>
 
-      <!-- Chaos files -->
+      <!-- Chaos data: Firestore -->
       <rect class="box prob fill-prob" x="650" y="185" width="220" height="90" rx="8"/>
-      <text class="t-tag" x="666" y="207">[External · local files]</text>
-      <text class="t-title" x="666" y="229">Smogon Chaos stats</text>
-      <text class="t-desc" x="666" y="249">data/chaos/*.json</text>
-      <text class="t-desc" x="666" y="262">read-only, tiered by rating</text>
+      <text class="t-tag" x="666" y="207">[External · Google Cloud]</text>
+      <text class="t-title" x="666" y="229">Chaos stats (Firestore)</text>
+      <text class="t-desc" x="666" y="249">only source — no local-file</text>
+      <text class="t-desc" x="666" y="262">fallback, tiered by rating</text>
 
       <!-- Smogon official host -->
       <rect class="box prob ext fill-prob" x="650" y="340" width="220" height="90" rx="8"/>
@@ -296,13 +296,13 @@
       <text class="t-label" x="562" y="163">gets NL explanation</text>
 
       <path class="arrow" d="M560,230 L648,230" marker-end="url(#a-arrow)"/>
-      <text class="t-label" x="565" y="222">reads tiered usage dumps</text>
+      <text class="t-label" x="565" y="222">queries tiered usage docs (gRPC)</text>
 
       <path class="arrow" d="M560,255 C600,290 610,340 648,375" marker-end="url(#a-arrow)"/>
       <text class="t-label" x="562" y="320">fetches analyses / sets / stats</text>
       <text class="t-label" x="562" y="333">(degrades to Chaos if unreachable)</text>
     </svg>
-    <figcaption>Fig. 1 — System context. ProfessorVGC is the only box the player interacts with directly; both data sources on the right are read-only from the app's point of view, and only the Smogon host requires network at runtime.</figcaption>
+    <figcaption>Fig. 1 — System context. ProfessorVGC is the only box the player interacts with directly; all three boxes on the right are read-only from the app's point of view, and all three now require network at runtime — Chaos usage stats moved from local files to Firestore, so it's no longer the one offline-safe dependency it used to be.</figcaption>
   </figure>
 </section>
 
@@ -311,7 +311,7 @@
   <p class="sec-desc">Inside the ProfessorVGC boundary: one Python process hosting the UI and the application core, plus two long-lived Node.js subprocesses reached over a private stdio JSON protocol (<code>src/adapters/node_ipc.py</code>) — never a network call, never a shared database.</p>
 
   <figure class="diagram">
-    <svg viewBox="0 0 1000 660" role="img" aria-label="Container diagram: Streamlit UI calls the Python application core, which talks to a Node calc-engine subprocess, an optional Node Smogon-dex subprocess, local Chaos JSON files, an in-process conversation memory, and BYOK LLM provider APIs; the dex subprocess in turn reaches the optional Smogon official host.">
+    <svg viewBox="0 0 1000 660" role="img" aria-label="Container diagram: Streamlit UI calls the Python application core, which talks to a Node calc-engine subprocess, an optional Node Smogon-dex subprocess, Google Cloud Firestore for Chaos data, an in-process conversation memory, and BYOK LLM provider APIs; the dex subprocess in turn reaches the optional Smogon official host. The whole boundary runs as one container on Cloud Run in production.">
       <defs>
         <marker id="b-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
@@ -319,7 +319,7 @@
       </defs>
 
       <rect class="boundary" x="20" y="20" width="700" height="580" rx="12"/>
-      <text class="boundary-label" x="36" y="44">ProfessorVGC — this repo</text>
+      <text class="boundary-label" x="36" y="44">ProfessorVGC — this repo (deployed as one container on Cloud Run)</text>
 
       <!-- UI -->
       <rect class="box neutral" x="50" y="66" width="270" height="86" rx="8"/>
@@ -333,7 +333,7 @@
       <text class="t-tag" x="66" y="212">[Container · Python]</text>
       <text class="t-title" x="66" y="234">Application Core</text>
       <text class="t-desc" x="66" y="254">src/domain + src/services + src/adapters</text>
-      <text class="t-desc" x="66" y="267">two interchangeable AnalysisPipeline backends, one DI root</text>
+      <text class="t-desc" x="66" y="267">three interchangeable AnalysisPipeline backends (ADK default), one DI root</text>
 
       <!-- Calc engine subprocess -->
       <rect class="box det fill-det" x="50" y="336" width="290" height="90" rx="8"/>
@@ -355,11 +355,11 @@
       <text class="t-title" x="66" y="500">Conversation Memory</text>
       <text class="t-desc" x="66" y="520">per-session ChatMessage history</text>
 
-      <!-- External: Chaos files -->
+      <!-- External: Chaos data via Firestore -->
       <rect class="box prob fill-prob" x="770" y="66" width="210" height="86" rx="8"/>
-      <text class="t-tag" x="786" y="88">[External · filesystem]</text>
-      <text class="t-title" x="786" y="110">Chaos usage files</text>
-      <text class="t-desc" x="786" y="130">data/chaos/*.json</text>
+      <text class="t-tag" x="786" y="88">[External · Google Cloud]</text>
+      <text class="t-title" x="786" y="110">Chaos stats (Firestore)</text>
+      <text class="t-desc" x="786" y="130">chaos_tiers collection</text>
 
       <!-- External: LLM provider -->
       <rect class="box orch fill-orch" x="770" y="190" width="210" height="86" rx="8"/>
@@ -389,25 +389,25 @@
       <text class="t-label" x="345" y="450">load / append(session_id)</text>
 
       <path class="arrow" d="M670,220 L768,110" marker-end="url(#b-arrow)"/>
-      <text class="t-label" x="672" y="170">read + parse tiered JSON</text>
+      <text class="t-label" x="672" y="170">Firestore client: query by species+tier</text>
 
       <path class="arrow" d="M670,240 L768,233" marker-end="url(#b-arrow)"/>
-      <text class="t-label" x="672" y="255">BYOK HTTPS: completion + embeddings</text>
+      <text class="t-label" x="672" y="222">BYOK API calls</text>
 
       <path class="arrow" d="M670,395 C710,395 730,395 768,390" marker-end="url(#b-arrow)"/>
       <text class="t-label" x="672" y="440">HTTPS fetch → {ok:false,error}</text>
       <text class="t-label" x="672" y="453">on failure — never crashes the pipeline</text>
     </svg>
-    <figcaption>Fig. 2 — Containers. The two Node subprocesses are stateless request/response workers over stdin/stdout (<code>NodeIpcClient</code>, one JSON line in, one JSON line out) — replacing <code>@smogon/calc</code> or adding a Rust backend only touches <code>calcEngine.js</code> and the Python <code>CalcEngineAdapter</code>.</figcaption>
+    <figcaption>Fig. 2 — Containers. The two Node subprocesses are stateless request/response workers over stdin/stdout (<code>NodeIpcClient</code>, one JSON line in, one JSON line out) — replacing <code>@smogon/calc</code> or adding a Rust backend only touches <code>calcEngine.js</code> and the Python <code>CalcEngineAdapter</code>. In production this whole boundary is one Cloud Run container (Dockerfile at the repo root); Firestore access uses the container's own runtime service account (Application Default Credentials), never a checked-in key file.</figcaption>
   </figure>
 </section>
 
 <section id="components" class="full">
   <h2 class="sec"><span class="no">03</span> Components — inside the Application Core</h2>
-  <p class="sec-desc">The Dependency Inversion in practice: two orchestrators sit behind one <code>AnalysisPipeline</code> port and share the same deterministic middle, while every side effect (parsing, calc, Chaos, Smogon, memory, the LLM itself) is a Protocol in <code>src/domain/interfaces.py</code> — the services never import a concrete adapter. One edge breaks the otherwise strictly one-directional flow: since <code>ADR-028</code>, the LangChain explanation agent can call back into three of these same ports on demand (dashed violet arrows below) — see Fig. 4 for how that loop actually runs.</p>
+  <p class="sec-desc">The Dependency Inversion in practice: three orchestrators sit behind one <code>AnalysisPipeline</code> port and share the same deterministic middle, while every side effect (parsing, calc, Chaos, Smogon, memory, the LLM itself) is a Protocol in <code>src/domain/interfaces.py</code> — the services never import a concrete adapter. One edge breaks the otherwise strictly one-directional flow: since <code>ADR-028</code>, the LangChain AND ADK explanation agents can each call back into three of these same ports on demand (dashed violet arrows below) — see Fig. 4 for how that loop actually runs.</p>
 
   <figure class="diagram">
-    <svg viewBox="0 0 1000 660" role="img" aria-label="Component diagram: the composition root wires both AnalysisService and LangChainAnalysisOrchestrator, which both implement AnalysisPipeline and both call a shared deterministic core; below a dependency-inversion boundary sit eight concrete adapters, each implementing exactly one Protocol port.">
+    <svg viewBox="0 0 1000 660" role="img" aria-label="Component diagram: the composition root wires three AnalysisPipeline implementations — AdkAnalysisOrchestrator (default), LangChainAnalysisOrchestrator, and AnalysisService (native) — which all call a shared deterministic core; below a dependency-inversion boundary sit eight concrete adapters, each implementing exactly one Protocol port.">
       <defs>
         <marker id="c-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
@@ -421,24 +421,29 @@
       </defs>
 
       <!-- composition root -->
-      <rect class="box neutral" x="300" y="16" width="400" height="58" rx="8"/>
-      <text class="t-tag" x="316" y="36">[Composition root]</text>
-      <text class="t-title" x="316" y="56">Container — src/services/container.py</text>
+      <rect class="box neutral" x="250" y="16" width="500" height="58" rx="8"/>
+      <text class="t-tag" x="266" y="36">[Composition root]</text>
+      <text class="t-title" x="266" y="56">Container — src/services/container.py</text>
 
-      <!-- two orchestrators -->
-      <rect class="box orch fill-orch" x="90" y="112" width="330" height="82" rx="8"/>
-      <text class="t-tag" x="106" y="132">«implements» AnalysisPipeline</text>
-      <text class="t-title" x="106" y="154">AnalysisService</text>
-      <text class="t-desc" x="106" y="174">native, hand-rolled orchestration</text>
+      <!-- three orchestrators -->
+      <rect class="box orch fill-orch" x="20" y="112" width="300" height="82" rx="8"/>
+      <text class="t-tag" x="36" y="132">«implements» AnalysisPipeline</text>
+      <text class="t-title" x="36" y="154" style="font-size:13px">AnalysisService</text>
+      <text class="t-desc" x="36" y="174">native, hand-rolled orchestration</text>
 
-      <rect class="box orch fill-orch" x="560" y="112" width="350" height="82" rx="8"/>
-      <text class="t-tag" x="576" y="132">«implements» AnalysisPipeline</text>
-      <text class="t-title" x="576" y="154">LangChainAnalysisOrchestrator</text>
-      <text class="t-desc" x="576" y="174">LCEL: selection_chain / explanation_chain</text>
+      <rect class="box orch emph fill-orch" x="350" y="112" width="300" height="82" rx="8"/>
+      <text class="t-tag" x="366" y="132">«implements» AnalysisPipeline — default</text>
+      <text class="t-title" x="366" y="154" style="font-size:13px">AdkAnalysisOrchestrator</text>
+      <text class="t-desc" x="366" y="174">Google ADK LlmAgents — schema + tools</text>
+
+      <rect class="box orch fill-orch" x="680" y="112" width="300" height="82" rx="8"/>
+      <text class="t-tag" x="696" y="132">«implements» AnalysisPipeline</text>
+      <text class="t-title" x="696" y="154" style="font-size:13px">LangChainAnalysisOrchestrator</text>
+      <text class="t-desc" x="696" y="174">LCEL: selection_chain / explanation_chain</text>
 
       <!-- shared deterministic core -->
       <rect class="box det fill-det emph" x="260" y="228" width="480" height="70" rx="8"/>
-      <text class="t-tag" x="276" y="250">[shared, reused verbatim by both backends]</text>
+      <text class="t-tag" x="276" y="250">[shared, reused verbatim by all three backends]</text>
       <text class="t-title" x="276" y="272">MatchupEvaluator + TurnReplaySimulator</text>
 
       <!-- dependency inversion divider -->
@@ -488,7 +493,7 @@
         <rect class="box orch fill-orch" x="510" y="452" width="220" height="82" rx="7"/>
         <text class="t-tag" x="522" y="472">«port» LLMProvider — 2nd AI</text>
         <text class="t-title" x="522" y="492" style="font-size:12.5px">OpenAIProvider / GeminiProvider</text>
-        <text class="t-desc" x="522" y="510">native 1-shot · LangChain agent loop</text>
+        <text class="t-desc" x="522" y="510">native 1-shot · LangChain/ADK agent loop</text>
       </g>
       <g>
         <rect class="box orch ext fill-orch" x="750" y="452" width="220" height="82" rx="7"/>
@@ -507,14 +512,16 @@
       <path class="arrow" d="M620,450 L620,338" marker-end="url(#c-arrow-open)"/>
       <path class="arrow" d="M860,450 L860,338" marker-end="url(#c-arrow-open)"/>
 
-      <!-- root wires orchestrators -->
-      <path class="arrow" d="M400,74 L280,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
-      <path class="arrow" d="M600,74 L720,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
-      <text class="t-label" x="410" y="98">wires</text>
+      <!-- root wires all three orchestrators -->
+      <path class="arrow" d="M330,74 L180,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+      <path class="arrow" d="M500,74 L500,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+      <path class="arrow" d="M670,74 L820,110" stroke-dasharray="3 3" marker-end="url(#c-arrow)"/>
+      <text class="t-label" x="510" y="93">wires (PROFESSORVGC_ORCHESTRATOR selects one)</text>
 
-      <!-- orchestrators call shared core -->
-      <path class="arrow" d="M280,196 L400,226" marker-end="url(#c-arrow)"/>
-      <path class="arrow" d="M720,196 L610,226" marker-end="url(#c-arrow)"/>
+      <!-- all three orchestrators call the shared core -->
+      <path class="arrow" d="M240,196 L340,226" marker-end="url(#c-arrow)"/>
+      <path class="arrow" d="M500,196 L500,226" marker-end="url(#c-arrow)"/>
+      <path class="arrow" d="M760,196 L660,226" marker-end="url(#c-arrow)"/>
 
       <!-- ADR-028: LangChain explanation agent may call back into three ports
            on demand — the one edge that is NOT dependency inversion, drawn
@@ -524,16 +531,16 @@
       <path class="arrow" style="stroke:var(--lane-orch);stroke-dasharray:5 3" d="M508,480 L492,480" marker-end="url(#c-arrow-orch)"/>
       <path class="arrow" style="stroke:var(--lane-orch);stroke-dasharray:5 3" d="M510,464 C460,440 420,410 400,438" marker-end="url(#c-arrow-orch)"/>
     </svg>
-    <figcaption>Fig. 3 — Components. Both orchestrators reuse the same <code>MatchupEvaluator</code>/<code>TurnReplaySimulator</code> instances, so "switching orchestration never changes a damage roll" (<code>CLAUDE.md</code> §3) is structural, not a promise. Ticks below the dashed line mark "implements this port" — no adapter is ever imported by a service directly. The three short dashed violet arrows are the one exception (ADR-028): the LangChain explanation agent, and only it, may call back into <code>CalcEngineAdapter</code>/<code>MetaStatsProvider</code>/<code>StrategyKnowledgeProvider</code> mid-answer — see Fig. 4.</figcaption>
+    <figcaption>Fig. 3 — Components. All three orchestrators reuse the same <code>MatchupEvaluator</code>/<code>TurnReplaySimulator</code> instances, so "switching orchestration never changes a damage roll" (<code>CLAUDE.md</code> §3) is structural, not a promise — ADK is the default (<code>PROFESSORVGC_ORCHESTRATOR=adk</code>), reachable identically via any of the three. Ticks below the dashed line mark "implements this port" — no adapter is ever imported by a service directly. The three short dashed violet arrows are the one exception (ADR-028): the LangChain and ADK explanation agents (never native, which has no agent loop) may call back into <code>CalcEngineAdapter</code>/<code>MetaStatsProvider</code>/<code>StrategyKnowledgeProvider</code> mid-answer — see Fig. 4.</figcaption>
   </figure>
 </section>
 
 <section id="dynamic" class="full">
   <h2 class="sec"><span class="no">04</span> Dynamic view — the one loop (ADR-028)</h2>
-  <p class="sec-desc">A C4 <em>Dynamic</em> diagram: not a structure, a specific runtime scenario. Every other diagram on this page is a DAG — data flows one way, ending at the explanation. This is the one place a response loops back into its own inputs, so it earns its own picture rather than a note on Fig. 3. LangChain backend only; the native <code>AnalysisService</code> has no equivalent.</p>
+  <p class="sec-desc">A C4 <em>Dynamic</em> diagram: not a structure, a specific runtime scenario. Every other diagram on this page is a DAG — data flows one way, ending at the explanation. This is the one place a response loops back into its own inputs, so it earns its own picture rather than a note on Fig. 3. Shown for the LangChain backend; the <strong>ADK backend runs the structurally identical loop</strong> (<code>adk_tools.py</code>, the same three ports, same <code>{"ok":...}</code>/<code>{"ok":false,"error":...}</code> degrade shape, its own bounded step count — see the note in stage 1 below) — the native <code>AnalysisService</code> is the only backend with no equivalent, since it has no agent loop at all.</p>
 
   <figure class="diagram">
-    <svg viewBox="0 0 900 660" role="img" aria-label="Dynamic diagram: the LangChain explanation agent may call a tool, which calls the same CalcEngineAdapter, MetaStatsProvider or StrategyKnowledgeProvider ports as the rest of the pipeline, gets back an ok-or-error result, and loops — bounded to 10 steps — before emitting a final answer and a list of AgentToolInvocation records that reach AnalysisResult and a UI alert.">
+    <svg viewBox="0 0 900 660" role="img" aria-label="Dynamic diagram: the explanation agent (LangChain or ADK) may call a tool, which calls the same CalcEngineAdapter, MetaStatsProvider or StrategyKnowledgeProvider ports as the rest of the pipeline, gets back an ok-or-error result, and loops — bounded to a fixed step count — before emitting a final answer and a list of AgentToolInvocation records that reach AnalysisResult and a UI alert.">
       <defs>
         <marker id="e-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
           <path d="M0,0 L8,4 L0,8 Z" fill="var(--muted)"/>
@@ -545,9 +552,9 @@
 
       <!-- 1. Explanation Agent -->
       <rect class="box orch emph fill-orch" x="200" y="20" width="440" height="64" rx="8"/>
-      <text class="t-tag" x="216" y="42">[LangChain only]</text>
-      <text class="t-title" x="216" y="62">Explanation Agent (create_agent)</text>
-      <text class="t-desc" x="216" y="78">bounded to 10 LangGraph steps (~a few tool round-trips)</text>
+      <text class="t-tag" x="216" y="42">[LangChain shown; ADK's own loop is structurally identical]</text>
+      <text class="t-title" x="216" y="62">Explanation Agent (create_agent / ADK LlmAgent)</text>
+      <text class="t-desc" x="216" y="78">bounded to 20 steps/LLM calls (~a few tool round-trips), either backend</text>
 
       <!-- loop pair 1: agent <-> tool layer -->
       <path class="arrow" style="stroke:var(--lane-orch)" d="M400,88 L400,146" marker-end="url(#e-arrow-orch)"/>
@@ -558,7 +565,7 @@
 
       <!-- 2. Tool layer -->
       <rect class="box orch fill-orch" x="220" y="150" width="400" height="60" rx="8"/>
-      <text class="t-tag" x="236" y="170">[langchain_tools.py]</text>
+      <text class="t-tag" x="236" y="170">[langchain_tools.py / adk_tools.py — mirrored 1:1]</text>
       <text class="t-title" x="236" y="190" style="font-size:12.5px">damage_calc · chaos_meta_stats · smogon_strategy</text>
 
       <!-- loop pair 2: tool layer <-> ports -->
@@ -574,7 +581,7 @@
       <text class="t-title" x="156" y="312" style="font-size:12.5px">CalcEngineAdapter · MetaStatsProvider · StrategyKnowledgeProvider</text>
       <text class="t-desc" x="620" y="292" style="font-size:9.5px">det + prob</text>
 
-      <text class="t-desc" x="450" y="356" style="text-anchor:middle">→ the SAME Calc Engine subprocess / Chaos files / Smogon Dex Worker as Fig. 2 — no second source of truth</text>
+      <text class="t-desc" x="450" y="356" style="text-anchor:middle">→ the SAME Calc Engine subprocess / Firestore Chaos data / Smogon Dex Worker as Fig. 2 — no second source of truth</text>
 
       <!-- exit path: once satisfied, final answer -->
       <path class="arrow" d="M640,52 L850,52 L850,405" marker-end="url(#e-arrow)"/>
@@ -604,7 +611,7 @@
       <rect class="box det fill-det" x="180" y="600" width="540" height="50" rx="8"/>
       <text class="t-title" x="196" y="630" style="font-size:13px">UI: st.info / st.warning + expander (app.py)</text>
     </svg>
-    <figcaption>Fig. 4 — Dynamic: the ADR-028 loop, scoped to one explanation turn on the LangChain backend. The tool layer never becomes a second source of truth — every result traces back to the exact same ports Fig. 3 already shows, just called on demand instead of ahead of time. If <code>agent_tool_calls</code> is empty (the overwhelmingly common case), stages 2–3 never fire and the turn looks exactly like it did before ADR-028.</figcaption>
+    <figcaption>Fig. 4 — Dynamic: the ADR-028 loop, scoped to one explanation turn — drawn for LangChain, but ADK's own <code>adk_tools.py</code> loop is the same shape end to end (same three ports, same degrade convention, its own bounded step count). The tool layer never becomes a second source of truth — every result traces back to the exact same ports Fig. 3 already shows, just called on demand instead of ahead of time. If <code>agent_tool_calls</code> is empty (the overwhelmingly common case), stages 2–3 never fire and the turn looks exactly like it did before ADR-028.</figcaption>
   </figure>
 </section>
 
@@ -691,14 +698,14 @@
       <text class="t-desc" x="64" y="910">LLMProvider.complete() / explanation_agent.invoke() — 2nd AI, ground-truth-locked prompt</text>
       <text class="t-type type-orch" x="64" y="930">answer: str</text>
       <text class="t-desc" x="220" y="930">forbidden from recomputing or contradicting any number in the JSON above</text>
-      <text class="t-desc" x="64" y="948" style="fill:var(--lane-orch)">LangChain only: may loop back into damage_calc/chaos_meta_stats/smogon_strategy first — see Fig. 4</text>
+      <text class="t-desc" x="64" y="948" style="fill:var(--lane-orch)">LangChain/ADK only: may loop back into damage_calc/chaos_meta_stats/smogon_strategy first — see Fig. 4</text>
 
       <!-- final output -->
       <rect class="box det emph fill-det" x="64" y="970" width="820" height="80" rx="8"/>
       <text class="t-tag" x="80" y="992">output → Streamlit UI</text>
       <text class="t-title" x="80" y="1012" style="font-size:13px">AnalysisResult</text>
       <text class="t-desc" x="80" y="1030">answer + selection + meta_context + verdicts + strategies + turn_checks + protect_reads + battle_result + provider</text>
-      <text class="t-desc" x="80" y="1043" style="fill:var(--lane-orch)">+ agent_tool_calls: list[AgentToolInvocation] — empty except on the LangChain path (Fig. 4)</text>
+      <text class="t-desc" x="80" y="1043" style="fill:var(--lane-orch)">+ agent_tool_calls: list[AgentToolInvocation] — empty except on the LangChain/ADK path (Fig. 4)</text>
       <path class="arrow" d="M40,927 L40,970" marker-end="url(#d-arrow)"/>
       <path class="arrow" d="M40,970 L64,970" marker-end="url(#d-arrow)"/>
     </svg>
@@ -719,7 +726,7 @@
       <tr><td>7 · Suggestions (optional)</td><td><code>SuggestionService</code></td><td><code>dict | None</code></td><td><span class="lane-tag prob">probabilistic</span></td></tr>
       <tr><td>8 · Assemble context</td><td><code>build_explanation_context</code></td><td>one JSON <code>dict</code></td><td>—</td></tr>
       <tr><td>9 · Explain (2nd AI)</td><td><code>LLMProvider</code></td><td><code>answer: str</code></td><td><span class="lane-tag orch">orchestration</span></td></tr>
-      <tr><td>9b · On-demand follow-up (optional, LangChain only)</td><td><code>build_langchain_tools</code> → same 3 ports</td><td><code>list[AgentToolInvocation]</code></td><td><span class="lane-tag orch">orchestration</span></td></tr>
+      <tr><td>9b · On-demand follow-up (optional, LangChain/ADK only)</td><td><code>build_langchain_tools</code> / <code>build_adk_tools</code> → same 3 ports</td><td><code>list[AgentToolInvocation]</code></td><td><span class="lane-tag orch">orchestration</span></td></tr>
       <tr><td>10 · Return + persist</td><td><code>AnalysisService</code> / orchestrator</td><td><code>AnalysisResult</code> (+ <code>agent_tool_calls</code>) + 2 <code>ChatMessage</code>s appended to memory</td><td>—</td></tr>
     </tbody>
   </table>
@@ -732,8 +739,10 @@
     <li><strong>Every Node call degrades, never crashes.</strong> <code>NodeIpcClient</code> and both <code>*_server.js</code> scripts speak one JSON line in, one JSON line out; a failed lookup returns <code>{ok:false,error}</code> and the Python side falls back (official Smogon → Chaos), rather than raising past the boundary.</li>
     <li><strong>The cross-side guardrail lives in code, not the prompt.</strong> <code>selection_logic.sanitize_plan()</code> physically cannot pair two Pokémon from the same roster — it isn't a rule the 1st AI is asked to follow.</li>
     <li><strong>The LLM receives one JSON object first, always.</strong> <code>build_explanation_context()</code> is still the entire precomputed ground truth handed to stage 9 before anything else — tool access (Fig. 4) only reaches for what that object doesn't contain, and is forbidden by its own prompt addendum from re-deriving a number already in it.</li>
-    <li><strong>The one loop degrades exactly like the IPC boundary does.</strong> <code>langchain_tools.py</code> wraps every on-demand call in the same <code>{"ok": false, "error": ...}</code> shape as <code>NodeIpcClient</code> — a bad follow-up lookup ends that tool call, never the whole turn — and it is explicitly bounded (<code>recursion_limit</code>), not open-ended.</li>
-    <li><strong>Two orchestrators, one ground truth — one documented asymmetry.</strong> <code>AnalysisService</code> and <code>LangChainAnalysisOrchestrator</code> both import the same <code>MatchupEvaluator</code>/<code>TurnReplaySimulator</code> instances, so every number either backend reports is identical. Only the LangChain backend can also fetch a NEW number on demand (ADR-028) — same shape of accepted asymmetry as ADR-011's unused <code>LangChainLLMProvider</code>.</li>
+    <li><strong>The one loop degrades exactly like the IPC boundary does.</strong> <code>langchain_tools.py</code>/<code>adk_tools.py</code> both wrap every on-demand call in the same <code>{"ok": false, "error": ...}</code> shape as <code>NodeIpcClient</code> — a bad follow-up lookup ends that tool call, never the whole turn — and each is explicitly bounded (LangChain's <code>recursion_limit</code>, ADK's <code>RunConfig.max_llm_calls</code>), not open-ended. The ADK path also has its own wall-clock ceiling (<code>_run_agent_bounded</code>, <code>asyncio.wait_for</code>): a turn that ends without ever producing final text (observed live, no exception involved) now raises a typed error instead of silently returning an empty answer.</li>
+    <li><strong>Three orchestrators, one ground truth — one documented asymmetry.</strong> <code>AnalysisService</code>, <code>LangChainAnalysisOrchestrator</code>, and <code>AdkAnalysisOrchestrator</code> all import the same <code>MatchupEvaluator</code>/<code>TurnReplaySimulator</code> instances, so every number any backend reports is identical. Only LangChain and ADK can also fetch a NEW number on demand (ADR-028) — native has no agent loop at all — same shape of accepted asymmetry as ADR-011's unused <code>LangChainLLMProvider</code>.</li>
+    <li><strong>Chaos is Firestore-only, deliberately.</strong> <code>Container.chaos_repository()</code> unconditionally builds a <code>FirestoreChaosRepository</code> — there is no local-file fallback and no config knob to select one for the running app, a competition requirement enforced in code, not just documentation.</li>
+    <li><strong>Gemini 3.5+ is enforced at construction time, not point-of-use.</strong> A <code>Settings</code> field validator (<code>src/config.py</code>) refuses to build a <code>Settings</code> object at all with an older Gemini model id — fails at app startup, before any provider is even selected.</li>
     <li><strong>A stale "this is approximate" caveat is treated as a bug.</strong> <code>forme_caveat()</code> live-checks <code>forme_resolves()</code> against the real calc engine on each run instead of hardcoding a permanent disclaimer — see ADR-009/ADR-010.</li>
   </ul>
 </section>
@@ -745,9 +754,11 @@
       <li>src/domain/interfaces.py — the eight Protocol ports</li>
       <li>src/domain/models.py — GameState, SelectionPlan, MetaContext, MatchupVerdict, TurnCheck, ProtectRead, SmogonStrategy, AgentToolInvocation, AnalysisResult</li>
       <li>src/services/container.py — composition root / DI wiring</li>
-      <li>src/services/analysis_service.py, langchain_orchestrator.py — the two AnalysisPipeline backends</li>
-      <li>src/adapters/llm/langchain_tools.py, prompts/explanation_agent_addendum.txt — the ADR-028 tool layer (Fig. 4)</li>
+      <li>src/services/analysis_service.py, langchain_orchestrator.py, adk_orchestrator.py — the three AnalysisPipeline backends (adk is the default)</li>
+      <li>src/adapters/llm/langchain_tools.py, adk_tools.py, prompts/explanation_agent_addendum.txt — the ADR-028 tool layer, mirrored across both agentic backends (Fig. 4)</li>
+      <li>src/adapters/chaos/firestore_chaos_repository.py — the Chaos data source (Google Cloud Firestore, no local-file fallback)</li>
       <li>src/adapters/node_ipc.py, node_calc/src/calcEngine.js — the stdio IPC boundary</li>
+      <li>Dockerfile, .dockerignore — the Cloud Run deployment image (Python + Node, two-stage build)</li>
       <li>CLAUDE.md §3, §7 · ADR.md (ADR-001 … ADR-028) — architectural rationale, cross-checked against the above</li>
     </ul>
   </div>
