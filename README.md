@@ -1,6 +1,6 @@
 # ProfessorVGC
 
-[![CI](https://github.com/Huarada/oracle-vgc/actions/workflows/ci.yml/badge.svg)](https://github.com/Huarada/oracle-vgc/actions/workflows/ci.yml)
+[![CI](https://github.com/Huarada/professor-VGC/actions/workflows/ci.yml/badge.svg)](https://github.com/Huarada/professor-VGC/actions/workflows/ci.yml)
 
 A **Clean-Architecture** engine that analyzes Pokemon VGC battles by combining a
 **deterministic** damage-calc layer (`@smogon/calc` via Node IPC) with a
@@ -8,6 +8,29 @@ A **Clean-Architecture** engine that analyzes Pokemon VGC battles by combining a
 orchestrated with **Google ADK** (Agent Development Kit) by default — **LangChain**
 and a hand-rolled **native** pipeline remain available as interchangeable
 backends — for selection and natural-language explainability (bring your own key).
+
+## All Things Agentic Hackathon — pre-existing work disclosure
+
+This repository was created **August 26, 2026** (GitHub's own repository
+timestamp — verifiable via the GitHub API, not editable after the fact),
+inside the Contest's Submission Period (August 3–31, 2026). Its deterministic
+battle-analysis core (the Showdown replay parser, the `@smogon/calc`
+damage-engine integration, base Chaos usage-stats lookup) originated in an
+earlier personal project first written **July 23, 2026** — never itself an
+agentic system, with no LLM orchestration, no autonomous agent, and none of
+Gemini, Google ADK, or any Google Cloud infrastructure integrated. That
+pre-existing work is disclosed here and incorporated the same way a starter
+template would be.
+
+**Everything the Contest requires was newly designed and built during the
+Submission Period**, with git history as evidence: the Google ADK agent
+orchestration (default backend, [`94a074b`](https://github.com/Huarada/professor-VGC/commit/94a074b),
+2026-08-25), the Google Cloud Firestore metagame-memory backend
+([`f871f80`](https://github.com/Huarada/professor-VGC/commit/f871f80), 2026-08-26), the enforced
+Gemini 3.5+ requirement ([`8320737`](https://github.com/Huarada/professor-VGC/commit/8320737),
+2026-08-27), and the Cloud Run deployment
+([`e1e57af`](https://github.com/Huarada/professor-VGC/commit/e1e57af), 2026-08-28). Full detail:
+[`HACKATHON_DISCLOSURE.md`](HACKATHON_DISCLOSURE.md).
 
 ## Pipeline (maps 1:1 to the flow diagram)
 
