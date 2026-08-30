@@ -36,18 +36,18 @@ Gemini 3.5+ requirement ([`8320737`](https://github.com/Huarada/professor-VGC/co
 
 ```
 replay JSON + question
-   │  LogParser.parse                       ← "LIMPEZA / FILTRAR (DETERMINISMO)"
+   │  LogParser.parse                       ← "CLEANUP / FILTER (DETERMINISM)"
    ▼
 GameState (species involved)
-   │  SelectionStrategy / LCEL selection    ← 1ª IA  (needs memory)
+   │  SelectionStrategy / LCEL selection    ← 1st AI  (needs memory)
    ▼
 SelectionPlan (focus species + matchups)
    ├─▶ MetaStatsProvider (Chaos)            ← EV/IV/items/abilities/counters
-   ├─▶ CalcEngineAdapter (Node @smogon/calc)← "Determinismo": damage + speed
+   ├─▶ CalcEngineAdapter (Node @smogon/calc)← "Determinism": damage + speed
    └─▶ StrategyKnowledgeProvider (Smogon)   ← archetypes + teammates
-   │  LLM explanation (LCEL)                ← 2ª IA  (needs memory)
+   │  LLM explanation (LCEL)                ← 2nd AI  (needs memory)
    ▼
-AnalysisResult  ─────────────────────────▶ green "Resposta OUTPUT" node
+AnalysisResult  ─────────────────────────▶ green "Answer OUTPUT" node
 ```
 
 ## Layers
@@ -108,6 +108,29 @@ All three backends share the deterministic core (`MatchupEvaluator`,
 `selection_logic`), so switching orchestration technology never changes a single
 damage roll — the LLM only ever explains ground-truth numbers, never invents them.
 
+## Faithfulness benchmark — grounding measured, not asserted
+
+An atomic-claim-verification benchmark (extract → verify → rate — the same
+shape RAG faithfulness evaluation uses) measures what fraction of the LLM's
+factual claims match deterministic ground truth: **Condition A** (the real
+pipeline) vs **Condition B** (the same LLM given only the raw Showdown log,
+no grounding at all). Headline metric: `damage_range` claims — the one
+category where the real `@smogon/calc` engine and real Chaos-derived EV/
+nature spreads do genuine, otherwise-unavailable work.
+
+| Provider / model | Orchestrator | Grounded rate | Naive rate | Fisher odds ratio | p (two-sided) |
+|---|---|---|---|---|---|
+| OpenAI gpt-4o-mini | native | 92.0% | 12.6% | 80.0 | <0.0001 |
+| OpenAI gpt-4o-mini | adk | 72.2% | 14.1% | 15.23 | <0.0001 |
+| OpenAI gpt-4o-mini | langchain | 73.8% | 14.1% | 17.14 | <0.0001 |
+| **Gemini 3.5-flash** | **adk (competition default)** | **73.3%** | **11.0%** | **22.27** | **2.70e-15** |
+
+The grounding effect holds across LLM vendor and orchestration framework
+alike — every combination tested clears statistical significance by an
+enormous margin (odds ratio 15–80x). Full methodology, every round's raw
+numbers, and an honesty audit for unintentional bias toward the grounded
+condition: [`scripts/faithfulness_benchmark/README.md`](scripts/faithfulness_benchmark/README.md).
+
 ## Setup
 
 ```bash
@@ -135,59 +158,15 @@ cd node_calc && npm run smoke      # prints a Garchomp→Sinistcha calc as JSON
 streamlit run src/ui/app.py
 ```
 
-## Design
+## Customizing the UI (optional)
 
-The app's visual language — a light "battle notebook" sky-blue theme (Lora
-display / Nunito body / Space Mono label typography, frosted glass cards,
-color-coded accents) — is ported from a Figma Make design prototype; see
-ADR-026 for the decision and what was and wasn't carried over (notably: no
-JS-driven canvas background, since Streamlit's `st.markdown` HTML can't
-reliably execute injected `<script>` tags — a static CSS gradient stands in
-for it). `.streamlit/config.toml` drives Streamlit's own native widget
-theming; `src/ui/app.py`'s `_DESIGN_TOKENS_CSS`/`_COMPONENT_THEME_CSS`
-carry the rest.
-
-The app's backdrop (the whole page, not just the battle panel) is a built-in
-CSS wallpaper — a sky-blue gradient with a faint graph-paper grid, no
-external image, so it can never fail to load. It's a fixed background
-(`background-attachment: fixed`), which is what gives the parallax feel: the
-wallpaper stays put in the viewport while the Q&A/analysis content scrolls
-over it. The battle-replay panel (the field the sprites stand on) keeps its
-own, deliberately darker "genetics lab" gradient backdrop — a different room
-of the same facility, unaffected by the page theme around it.
-
-**To use your own image instead, no code edit needed** — drop a file into
-[`src/ui/assets/backgrounds/`](src/ui/assets/backgrounds/):
-
-| Drop this file | Replaces |
-|---|---|
-| `page.jpg` / `.jpeg` / `.png` / `.webp` | The whole app's backdrop |
-| `battle-stage.jpg` / `.jpeg` / `.png` / `.webp` | The battle panel's backdrop |
-
-It's picked up automatically on the next page load, base64-embedded behind a
-legibility scrim (light-blue for the page, dark for the battle stage — each
-matched to that backdrop's own text color) and the same
-`background-attachment: fixed`/`background-size: cover` rules the built-in
-gradient uses — see that folder's own README for size/format guidance.
-Nobody has dropped an image in by default, which is a working state, not a
-gap: the built-in gradients (`_LAB_BACKGROUND_CSS_DEFAULT` /
-`_PAGE_BACKGROUND_CSS_DEFAULT` in [`src/ui/app.py`](src/ui/app.py)) are
-complete backdrops on their own.
-
-## Adding background music (optional)
-
-Drop an audio file into [`src/ui/assets/audio/`](src/ui/assets/audio/),
-named `theme.mp3` / `theme.mp4` / `theme.m4a` / `theme.wav` / `theme.ogg` —
-a small player, with its own "Background music" on/off checkbox in the
-sidebar, appears automatically, no code edit needed. Unchecking it removes
-the player entirely, not just pauses it. It requests autoplay with sound
-on page load and loops once started — a *request*, not a guarantee:
-browsers enforce their own autoplay policy and commonly block it on a
-visitor's first visit regardless, in which case the visible player
-controls are how they start it manually. Nobody has dropped a track in by
-default, which is a working
-state — no player or checkbox at all, not a gap; see that folder's own
-README for size guidance and how to change the loop/autoplay defaults.
+The default theme (light "battle notebook" sky-blue, no external assets)
+works with nothing configured. To customize it without touching code: drop
+an image into [`src/ui/assets/backgrounds/`](src/ui/assets/backgrounds/)
+(`page.*` for the whole app, `battle-stage.*` for the battle panel) or an
+audio file into [`src/ui/assets/audio/`](src/ui/assets/audio/)
+(`theme.mp3`/`.mp4`/`.m4a`/`.wav`/`.ogg`, with its own on/off toggle in the
+sidebar). Each folder's own README covers size/format guidance.
 
 ## Official Smogon data (optional)
 
