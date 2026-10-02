@@ -208,8 +208,8 @@ def _cascade_img_html(urls: list[str], alt: str, style: str) -> str:
 def _condition_icon_url(condition: str) -> str | None:
     """The real Showdown fx icon for this field-condition label, if one
     exists (see _WEATHER_ICON_FILES above for which do and don't)."""
-    if condition == "Trick Room":
-        name = "trickroom"
+    if condition in ("Trick Room", "Gravity", "Magic Room", "Wonder Room"):
+        name = condition.lower().replace(" ", "")
     elif condition.startswith("weather "):
         name = condition[len("weather "):].lower().replace(" ", "")
     elif condition.startswith("terrain "):
