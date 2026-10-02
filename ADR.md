@@ -3365,9 +3365,9 @@ orchestration backends (native, LangChain, Google ADK) able to drift apart:
 - Orchestrator and selection-service constructors changed (they now take
   `evidence`, `prompts` and, for agents, `tools`); every construction site
   is the container or a test.
-- `showdown_log_reader.py` is still long (~840 lines) because the protocol
-  surface grew (see ADR-031); it is one cohesive state machine with small
-  handlers rather than one large method.
+- `showdown_log_reader.py` was still long (~840 lines) because the protocol
+  surface grew (see ADR-031); ADR-032 split it into a package by
+  responsibility.
 
 ### Files touched
 `src/services/{ground_truth,analysis_service,langchain_orchestrator,adk_orchestrator,selection_service,suggestion_service,container}.py`,
@@ -3465,7 +3465,7 @@ in ways a player would notice:
   integration tests against the real engine (`test_calc_engine_field.py`).
 
 ### Files touched
-`src/adapters/parsers/{showdown_parser,showdown_log_reader}.py`,
+`src/adapters/parsers/{showdown_parser,showdown_log_reader}.py` (now the `showdown_log` package, ADR-032),
 `src/services/{battle_moment,decision_review,turn_simulator,matchup_evaluator,battle_context}.py`,
 `src/adapters/calc/smogon_calc_adapter.py`, `node_calc/src/calcEngine.js`,
 `node_calc/calc_server.js`, `src/domain/models.py`,
@@ -3473,5 +3473,53 @@ in ways a player would notice:
 tests (`test_battle_state_per_move.py`, `test_decision_review.py`,
 `test_calc_engine_field.py`, updated `test_field_conditions.py`,
 `test_boost_tracking.py`).
+
+---
+
+## ADR-032 — Split the Showdown log reader into a package by responsibility
+
+**Status:** Accepted · follow-up to ADR-030/031
+
+### Context
+After ADR-031 the log reader (`showdown_log_reader.py`) was one ~840-line
+class mixing five concerns: protocol vocabulary, roster identity, the
+ordered timeline, per-Pokemon battle state (HP/status/items/field presence)
+and field conditions, plus ~35 handler methods touching all of them.
+
+### Decision
+Replace it with the package `src/adapters/parsers/showdown_log/`, moving
+code without changing behavior:
+
+| Module | Responsibility |
+|---|---|
+| `protocol.py` | wire-format vocabulary and fragment parsing (pure functions) |
+| `roster.py` | players, `MonDraft`, stable `(player, key)` identity |
+| `timeline.py` | ordered events, current move, faints, `BattleOutcome` |
+| `combatants.py` | HP, status, held items, field presence (+ their timeline events) |
+| `field_ledger.py` | Tailwind, Trick Room, weather, terrain, screens and their windows |
+| `state.py` | `ParseState` aggregate, per-move `BattleSnapshot`, final `GameState` |
+| `handlers/` | one `HandlerGroup` per concern (flow, roster, actions, field, conditions) |
+| `reader.py` | line splitting and dispatch (`read_log`) |
+
+`dispatch_table` merges every group's routes and refuses a command handled
+twice. `tests/test_showdown_log_package.py` pins the exact command set.
+
+### Verification
+Characterization against the pre-split reader: 43 inputs (40 real
+`gen9championsvgc2026regmb` replays downloaded from replay.pokemonshowdown.com,
+the synthetic decision-review logs and the bundled sample) produced
+byte-identical `GameState.model_dump_json()` output; the full suite and
+`mypy --strict` stayed green.
+
+### Consequences
+The largest module is now ~140 lines. Adding a protocol command means one
+method in the matching handler group (or a new group registered in
+`HANDLER_GROUPS`). The package keeps the anti-corruption rule: no protocol
+string leaves it.
+
+### Files touched
+`src/adapters/parsers/showdown_log/**` (new), `src/adapters/parsers/showdown_log_reader.py`
+(removed), `src/adapters/parsers/showdown_parser.py` (import),
+`tests/test_showdown_log_package.py`.
 
 ---
