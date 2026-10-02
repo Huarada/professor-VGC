@@ -3284,3 +3284,194 @@ default-`None` domain field.
 `src/services/turn_simulator.py` (`_actual_results`, `_parse_percent`,
 `_damage_checks`), `src/adapters/llm/prompts/explanation_system.txt`,
 `tests/test_turn_simulator.py` (3 new/extended tests).
+
+## ADR-030 — One shared evidence stage, one tool core, ports for prompts (architecture debt pay-down)
+
+**Status:** Accepted
+
+### Context
+An architecture review found structural debt that made the three
+orchestration backends (native, LangChain, Google ADK) able to drift apart:
+
+1. **P1** — the deterministic sequence (meta context → verdicts → per-turn
+   checks → Protect reads → strategies → improvements → explanation context
+   → memory → `AnalysisResult`) was copy-pasted into all three
+   orchestrators. A new piece of evidence had to be added three times; the
+   LangChain and ADK backends imported `build_explanation_context` from the
+   native backend's module (a sibling dependency).
+2. **P1** — `adk_tools.py` and `langchain_tools.py` reimplemented the same
+   three agent tools.
+3. **P2** — services imported adapters (`adapters.llm.prompts.load_prompt`,
+   the tool builders, `langchain_provider.to_lc_messages`); the
+   `SmogonSuggestionSource` port lived in `services`, not `domain`. The UI
+   also imported two adapters directly (replay viewer parser, replay URL
+   fetcher).
+4. **P3** — a `_noop()` "placeholder anchor" contradicted the "no
+   placeholder code" rule; only `StatSpread` was immutable; `ui/app.py` was
+   ~1,700 lines and the Showdown parser was one ~580-line method.
+
+### Decision
+- **`GroundTruthAssembler`** (`src/services/ground_truth.py`) builds a typed,
+  frozen **`AnalysisEvidence`** (domain model) once per turn. Shared helpers
+  live next to it: `parse_replay`, `build_explanation_context`,
+  `build_explanation_input`, `remember_turn`, `build_result`. Each
+  orchestrator now owns only *how* it runs selection and explanation, and
+  receives the assembler by constructor injection (composition, not a base
+  class). A parity test (`tests/test_backend_parity.py`) asserts the three
+  backends return identical evidence for the same input.
+- **`EvidenceTools`** (`src/adapters/llm/evidence_tools.py`) is the single
+  implementation of `damage_calc` / `chaos_meta_stats` / `smogon_strategy`,
+  with Gemini-safe signatures (no defaults). `adk_tools.py` passes its bound
+  methods through; `langchain_tools.py` wraps them as `StructuredTool`s.
+  The container builds the tool list and injects it into the orchestrator.
+- **New ports** in `domain/interfaces.py`: `PromptRepository` (implemented by
+  `FilePromptRepository` over the existing `.txt` prompts) and the moved
+  `SmogonSuggestionSource`. The LangChain orchestrator passes OpenAI-style
+  role/content dicts (natively accepted by LangChain) instead of importing
+  the adapter's message converter. The UI reaches the replay fetcher and the
+  viewer parser through `Container.resolve_replay_text` /
+  `Container.parse_replay_for_viewer`. After this change no module in
+  `src/services` or `src/ui` imports `src/adapters` except the composition
+  root.
+- `Container._resolve_provider` replaces four copies of the provider
+  normalization/validation block.
+- **Value objects are frozen** (`PokemonSet`, `CalcRequest`, `DamageResult`,
+  `SpeedComparison`, `MatchupVerdict`, `TurnCheck`, `ProtectRead`,
+  `SelectionPlan`, `ChatMessage`, `FieldConditions`, ... and every new
+  model). The parser builds rosters with a private mutable `_MonDraft` and
+  freezes them at the end. `BattleEvent.kind` is a `Literal`.
+  `GameState`/`BattleEvent` stay mutable: they are the aggregate and the
+  record the parser builds incrementally.
+- **Module splits:** the log protocol moved to
+  `showdown_log_reader.py` (one handler per protocol command, dispatch
+  table); the per-turn simulator was split into `battle_moment.py` (the
+  battle state at one move) and `decision_review.py`; `ui/app.py` was split
+  into `theme`, `landing`, `loading`, `battle_panel`, `results`, `audio`,
+  `icons` (code moved verbatim by an AST script; `tests/test_ui_smoke.py`
+  drives the real app through `streamlit.testing.AppTest`).
+- `_noop()` was removed (nothing referenced it).
+
+### Alternatives considered
+- *Template-method base class for the orchestrators* — rejected in favour
+  of composition: the backends differ in constructor shape and async model
+  (ADK), and a base class would couple them more than one injected stage.
+- *Moving the framework orchestrators to `src/adapters/orchestration/`* —
+  would make their framework imports "legal", but they depend on services
+  (the assembler, selection logic), which adapters may not import.
+
+### Consequences
+- Adding evidence means one edit in `GroundTruthAssembler`; parity is
+  tested, not assumed.
+- Orchestrator and selection-service constructors changed (they now take
+  `evidence`, `prompts` and, for agents, `tools`); every construction site
+  is the container or a test.
+- `showdown_log_reader.py` is still long (~840 lines) because the protocol
+  surface grew (see ADR-031); it is one cohesive state machine with small
+  handlers rather than one large method.
+
+### Files touched
+`src/services/{ground_truth,analysis_service,langchain_orchestrator,adk_orchestrator,selection_service,suggestion_service,container}.py`,
+`src/adapters/llm/{evidence_tools,adk_tools,langchain_tools}.py`,
+`src/adapters/llm/prompts/__init__.py`, `src/domain/{interfaces,models}.py`,
+`src/ui/*.py`, tests (`test_backend_parity.py`, `test_evidence_tools.py`,
+`test_ui_smoke.py`, updated constructors in the orchestrator tests).
+
+---
+
+## ADR-031 — Every per-move re-check uses the battle state at that move; decisions beyond "hardest hit"
+
+**Status:** Accepted
+
+### Context
+A review by an experienced VGC player found the per-turn ground truth wrong
+in ways a player would notice:
+
+1. **Weather** was one value for the whole game (the last `-weather` line),
+   so a weather war (Charizard-Mega-Y sun vs. rain) mis-calculated every
+   earlier turn. Worse, verified live while fixing this: the value sent was
+   the Showdown id (`SunnyDay`), which `@smogon/calc` silently ignores —
+   weather had **never** changed a calc (Heat Wave: 21.9% plain, 21.9% with
+   "SunnyDay", 32.8% with "Sun").
+2. **Status** was whole-game: a burn from turn 6 lowered turn-1 physical
+   damage, and cures were never removed.
+3. **Terrain, Reflect, Light Screen, Aurora Veil, Helping Hand and Friend
+   Guard** never reached the calc (each changes damage by 25–50%).
+4. **Items** revealed or consumed in the log were ignored (always Chaos's top
+   item), and KO chances assumed a full-HP target.
+5. **"Best alternatives"** only compared the damage of already-seen moves
+   into the same target — no Protect, switch, retarget or speed control.
+6. **Mirror matches** collapsed: `index_sets` keyed sets by species.
+7. **`_STATUS_MOVES`** was a hand-kept, incomplete list.
+
+### Decision
+- The parser (the only component that reads the raw log) keeps a running
+  ledger of HP, status, held item, weather, terrain, screens and who is on
+  the field, and stamps a frozen **`BattleSnapshot`** on every move event.
+  It also records side-qualified **`TargetHit`**s per move and emits ordered
+  timeline events for weather/terrain/screen/status/cure/item changes, so
+  the explanation model can narrate a weather war or a consumed berry.
+  Helping Hand is attached to the boosted move (`effects` "helping hand").
+  Protocol ids are translated to in-game names (`Sun`, `Electric`, ...).
+- `FieldConditions` keeps a turn-level summary (weather/terrain/screen
+  windows, end-of-game statuses) for the timeline headers and the
+  whole-game verdicts, which use the condition that covered most turns.
+- **`MoveMoment`** (`battle_moment.py`) is the one view every per-move
+  check reads: enriched sets with the status/item/stages at that move, a
+  typed **`CalcField`** (weather, terrain, Trick Room, Tailwind, screens,
+  Helping Hand, Friend Guard from the ally's confirmed or Chaos ability),
+  and the defender's current HP (`CalcRequest.defender_hp_percent`). A
+  revealed item applies from the start of the game (it was held all along);
+  a consumed/removed one is "no item" and blocks the Chaos guess; a Tricked
+  one applies from the swap.
+- The Node engine builds the `Field` from that spec (weather/terrain name
+  mapping, side flags) and sets `curHP`, so KO text reflects real HP.
+- **Decision review** (`decision_review.py`): per move, `incoming_threats`
+  (each opposing active's strongest confirmed attack into the actor at its
+  real HP, `can_ko`, `moves_first`) and — only when a threat can KO —
+  `decision_options`: Protect (a confirmed Protect-family move), switch (a
+  brought, non-fainted, benched Pokemon and the most it would take), speed
+  control (a confirmed Tailwind/Trick Room/speed drop/paralysis move that
+  flips the order, verified with a second speed calc). `best_alternatives`
+  now covers every opposing target (retarget). Engine calls are memoized
+  per simulation.
+- **Move data comes from the engine:** a `moveInfo` command (category and
+  target from `@smogon/calc`; Protect-family and speed-control flags from
+  `@pkmn/dex`, already a dependency) behind `CalcEngineAdapter.move_info`.
+  `_STATUS_MOVES` was deleted. Unknown moves count as damaging so the
+  engine itself rejects them.
+- Sets are indexed by `(player, species)`; verdict and Protect-read side
+  resolution prefer the side opposite the attacker.
+- `explanation_system.txt` documents the new fields and forbids recommending
+  a Protect/switch/speed-control play that is not in `decision_options`.
+
+### Alternatives considered
+- *Ordered state events replayed by the simulator* (no snapshot) — the
+  events are emitted for the narrative anyway, but reconstructing HP from
+  them would miss residual damage and duplicate the parser's bookkeeping.
+  The snapshot keeps the parser as the single reader of the log.
+- *Turn-level windows for weather* — cannot represent a mid-turn weather
+  change, which is exactly the weather-war case.
+- *A curated speed-control list* — replaced by `@pkmn/dex` move effects.
+
+### Consequences
+- Turn checks carry more data (threats/options); the decision review only
+  adds options when a KO is possible, to avoid noise on safe turns.
+- Tailwind and Trick Room still use turn windows (unchanged behaviour); a
+  Tailwind set mid-turn counts for the whole turn.
+- Switch options assume the switch-in takes the threat's strongest
+  confirmed hit; they do not model the opponent re-targeting.
+- Not yet re-measured with the live faithfulness benchmark (needs API
+  calls); the deterministic parts are covered by tests, including Node
+  integration tests against the real engine (`test_calc_engine_field.py`).
+
+### Files touched
+`src/adapters/parsers/{showdown_parser,showdown_log_reader}.py`,
+`src/services/{battle_moment,decision_review,turn_simulator,matchup_evaluator,battle_context}.py`,
+`src/adapters/calc/smogon_calc_adapter.py`, `node_calc/src/calcEngine.js`,
+`node_calc/calc_server.js`, `src/domain/models.py`,
+`src/adapters/llm/prompts/explanation_system.txt`, `src/ui/{results,battle_panel}.py`,
+tests (`test_battle_state_per_move.py`, `test_decision_review.py`,
+`test_calc_engine_field.py`, updated `test_field_conditions.py`,
+`test_boost_tracking.py`).
+
+---

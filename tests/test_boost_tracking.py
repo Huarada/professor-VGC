@@ -15,6 +15,7 @@ be asserted on directly.
 
 from __future__ import annotations
 
+from tests.conftest import fake_move_info
 from src.domain.models import (
     BattleEvent,
     BattleOutcome,
@@ -52,6 +53,9 @@ class _RecordingCalc:
             faster=request.attacker.species, slower=request.defender.species,
             faster_speed=100, slower_speed=50,
         )
+
+    def move_info(self, gen, move):  # noqa: ANN001, ANN201 - test double
+        return fake_move_info(move)
 
     def forme_resolves(self, gen: int, species: str) -> bool:
         return True
@@ -121,14 +125,16 @@ def test_boost_persists_across_turns_until_switch():
     )
     calc = _RecordingCalc()
     TurnReplaySimulator(calc).simulate(state, MetaContext())
-    # Both _damage_checks and _best_alternatives issue their own
-    # CalcRequest per move event (best_alternatives re-checks Earthquake
-    # too, since it's this Garchomp's only confirmed move) — every one of
-    # them, across both turns, must see the still-active -1 def with no
-    # intervening switch.
+    # Identical CalcRequests are memoized within one simulation, so turn 2
+    # (same field, same stages) reuses turn 1's engine answer — which is only
+    # correct because the still-active -1 def is part of the request: every
+    # request issued, on either turn, must carry it.
     damage_calls = [r for r in calc.requests if r.move == "Earthquake"]
-    assert len(damage_calls) == 4
+    assert damage_calls
     assert all(r.defender.boosts == {"def": -1} for r in damage_calls)
+    checks = TurnReplaySimulator(calc).simulate(state, MetaContext())
+    assert [c.turn for c in checks] == [1, 2]
+    assert checks[0].damage_checks == checks[1].damage_checks
 
 
 def test_boost_resets_on_switch_out_and_back_in():
@@ -159,11 +165,10 @@ def test_boost_resets_on_switch_out_and_back_in():
     )
     calc = _RecordingCalc()
     TurnReplaySimulator(calc).simulate(state, MetaContext())
+    # Identical requests are memoized, so each distinct (boost state) shows
+    # up once: first with the -1 def, then — after the switch — neutral.
     damage_calls = [r for r in calc.requests if r.move == "Earthquake"]
-    assert len(damage_calls) == 4  # 2 calc calls (damage_checks + best_alternatives) per turn
-    before_switch, after_switch = damage_calls[:2], damage_calls[2:]
-    assert all(r.defender.boosts == {"def": -1} for r in before_switch)
-    assert all(r.defender.boosts == {} for r in after_switch), (
+    assert [r.defender.boosts for r in damage_calls] == [{"def": -1}, {}], (
         "boost must reset after switching back in"
     )
 

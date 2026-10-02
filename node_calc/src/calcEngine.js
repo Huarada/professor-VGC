@@ -10,6 +10,7 @@
  */
 
 const smogon = require('@smogon/calc');
+const { Dex } = require('@pkmn/dex');
 
 const { Generations, Pokemon, Move, calculate, Field } = smogon;
 
@@ -27,12 +28,60 @@ function toID(name) {
   return String(name || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+// @smogon/calc only recognizes its own weather/terrain names ('Sun', 'Rain',
+// 'Electric', ...); anything else is silently ignored — which is exactly how
+// Showdown protocol ids like 'SunnyDay' used to reach the engine and drop the
+// weather from every calc. The Python side sends in-game names; the Showdown
+// ids are accepted here too as a defensive alias.
+const WEATHER = {
+  sun: 'Sun', sunnyday: 'Sun', rain: 'Rain', raindance: 'Rain', sand: 'Sand',
+  sandstorm: 'Sand', snow: 'Snow', snowscape: 'Snow', hail: 'Hail',
+  harshsunshine: 'Harsh Sunshine', desolateland: 'Harsh Sunshine',
+  heavyrain: 'Heavy Rain', primordialsea: 'Heavy Rain',
+  strongwinds: 'Strong Winds', deltastream: 'Strong Winds',
+};
+const TERRAIN = {
+  electric: 'Electric', electricterrain: 'Electric', grassy: 'Grassy',
+  grassyterrain: 'Grassy', psychic: 'Psychic', psychicterrain: 'Psychic',
+  misty: 'Misty', mistyterrain: 'Misty',
+};
+const SIDE_FLAGS = [
+  'isTailwind', 'isReflect', 'isLightScreen', 'isAuroraVeil', 'isHelpingHand', 'isFriendGuard',
+];
+const SPREAD_TARGETS = new Set(['allAdjacent', 'allAdjacentFoes']);
+
 // @smogon/calc's species lookup only matches the lowercased/stripped `id`
 // form (e.g. "charizardmegay"), not display names like "Charizard-Mega-Y" —
 // this is the one reliable way to tell "genuinely unknown forme" (undefined)
 // apart from "known, just needs the right casing".
 function speciesResolves(gen, name) {
   return !!gen.species.get(toID(name));
+}
+
+function buildSide(sideSpec) {
+  const side = {};
+  for (const flag of SIDE_FLAGS) {
+    if (sideSpec && sideSpec[flag]) side[flag] = true;
+  }
+  return side;
+}
+
+function buildField(fieldSpec) {
+  const spec = fieldSpec || {};
+  // This project is VGC-only (always Doubles). @smogon/calc only applies the
+  // standard 0.75x spread-move damage reduction (and other doubles-specific
+  // mechanics, e.g. Follow Me/redirection-aware moves) when the field is
+  // explicitly told it's a Doubles battle — the default (Singles) silently
+  // overstates every spread move's damage by ~33% (e.g. Earthquake/Rock
+  // Slide/Heat Wave hitting 2 targets).
+  return new Field({
+    gameType: 'Doubles',
+    weather: WEATHER[toID(spec.weather)] || undefined,
+    terrain: TERRAIN[toID(spec.terrain)] || undefined,
+    isGravity: !!spec.gravity,
+    attackerSide: buildSide(spec.attackerSide),
+    defenderSide: buildSide(spec.defenderSide),
+  });
 }
 
 function buildPokemon(gen, spec) {
@@ -66,21 +115,21 @@ function buildPokemon(gen, spec) {
   const species = spec.battleForme && speciesResolves(gen, spec.battleForme)
     ? spec.battleForme
     : spec.species;
-  return new Pokemon(gen, species, options);
+  const pokemon = new Pokemon(gen, species, options);
+  if (spec.hpPercent == null) return pokemon;
+  // Current HP (damage already taken this game), so the KO-chance text
+  // reflects the real remaining HP instead of assuming a full-HP target.
+  const maxHP = pokemon.maxHP();
+  const curHP = Math.max(1, Math.min(maxHP, Math.round((maxHP * spec.hpPercent) / 100)));
+  return new Pokemon(gen, species, { ...options, curHP });
 }
 
-function calcDamage(genNum, attackerSpec, defenderSpec, moveName, fieldSpec) {
+function calcDamage(genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent) {
   const gen = Generations.get(genNum);
   const attacker = buildPokemon(gen, attackerSpec);
-  const defender = buildPokemon(gen, defenderSpec);
+  const defender = buildPokemon(gen, { ...defenderSpec, hpPercent: defenderHpPercent });
   const move = new Move(gen, moveName);
-  // This project is VGC-only (always Doubles). @smogon/calc only applies the
-  // standard 0.75x spread-move damage reduction (and other doubles-specific
-  // mechanics, e.g. Follow Me/redirection-aware moves) when the field is
-  // explicitly told it's a Doubles battle — the default (Singles) silently
-  // overstates every spread move's damage by ~33% (e.g. Earthquake/Rock
-  // Slide/Heat Wave hitting 2 targets).
-  const field = new Field({ gameType: 'Doubles', ...(fieldSpec || {}) });
+  const field = buildField(fieldSpec);
 
   const result = calculate(gen, attacker, defender, move, field);
 
@@ -158,13 +207,7 @@ function compareSpeed(genNum, attackerSpec, defenderSpec, fieldSpec) {
   const attacker = buildPokemon(gen, attackerSpec);
   const defender = buildPokemon(gen, defenderSpec);
   const spec = fieldSpec || {};
-  const field = new Field({
-    gameType: 'Doubles',
-    weather: spec.weather || undefined,
-    isGravity: !!spec.gravity,
-    attackerSide: { isTailwind: !!spec.attackerTailwind },
-    defenderSide: { isTailwind: !!spec.defenderTailwind },
-  });
+  const field = buildField(spec);
   return {
     attackerSpeed: effectiveSpeed(gen, attacker, field, field.attackerSide),
     defenderSpeed: effectiveSpeed(gen, defender, field, field.defenderSide),
@@ -177,4 +220,47 @@ function formeResolves(genNum, name) {
   return speciesResolves(gen, name);
 }
 
-module.exports = { calcDamage, compareSpeed, formeResolves };
+// Guaranteed (100%) Speed stages a move removes from its target (@pkmn/dex data).
+function speedDropStages(dexMove) {
+  const own = dexMove.boosts && dexMove.boosts.spe;
+  if (own && own < 0 && dexMove.target !== 'self') return -own;
+  const sec = dexMove.secondary;
+  if (sec && sec.chance === 100 && sec.boosts && sec.boosts.spe < 0) return -sec.boosts.spe;
+  return 0;
+}
+
+function speedControlKind(dexMove) {
+  if (dexMove.sideCondition === 'tailwind') return 'tailwind';
+  if (dexMove.pseudoWeather === 'trickroom') return 'trick_room';
+  if (speedDropStages(dexMove) > 0) return 'speed_drop';
+  const sec = dexMove.secondary;
+  if (dexMove.status === 'par' || (sec && sec.chance === 100 && sec.status === 'par')) {
+    return 'paralysis';
+  }
+  return '';
+}
+
+// Static move data. Category and target come from @smogon/calc itself (the
+// same dex the damage calc uses); the Protect-family and speed-control flags
+// come from @pkmn/dex, which carries the move effects @smogon/calc's trimmed
+// data doesn't expose.
+function moveInfo(genNum, name) {
+  const gen = Generations.get(genNum);
+  if (!gen.moves.get(toID(name))) {
+    return { name, known: false, category: '', isSpread: false };
+  }
+  const move = new Move(gen, name);
+  const dexMove = Dex.forGen(genNum).moves.get(name);
+  const hasDex = !!(dexMove && dexMove.exists);
+  return {
+    name: move.name,
+    known: true,
+    category: move.category,
+    isSpread: SPREAD_TARGETS.has(move.target),
+    isProtect: hasDex && !!dexMove.stallingMove,
+    speedControl: hasDex ? speedControlKind(dexMove) : '',
+    speedDropStages: hasDex ? speedDropStages(dexMove) : 0,
+  };
+}
+
+module.exports = { calcDamage, compareSpeed, formeResolves, moveInfo };

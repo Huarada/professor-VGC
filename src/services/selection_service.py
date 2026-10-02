@@ -9,8 +9,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from src.adapters.llm.prompts import load_prompt
-from src.domain.interfaces import LLMProvider
+from src.domain.interfaces import LLMProvider, PromptRepository
 from src.domain.models import AnalysisRequest, ChatMessage, GameState, SelectionPlan
 from src.services.battle_context import candidate_species, outcome_summary, rosters
 from src.services.selection_logic import (
@@ -24,12 +23,17 @@ class LLMSelectionService:
     """Concrete :class:`~src.domain.interfaces.SelectionStrategy`."""
 
     def __init__(
-        self, llm: LLMProvider, *, temperature: float = 0.0, max_matchups: int = 6
+        self,
+        llm: LLMProvider,
+        *,
+        prompts: PromptRepository,
+        temperature: float = 0.0,
+        max_matchups: int = 6,
     ) -> None:
         self._llm = llm
         self._temperature = temperature
         self._max_matchups = max_matchups
-        self._system = load_prompt("selection_system")
+        self._system = prompts.get("selection_system")
 
     def select(
         self,

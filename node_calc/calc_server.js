@@ -8,16 +8,18 @@
  * src/adapters/calc/smogon_calc_adapter.py.
  *
  * Requests:
- *   {"cmd":"calc","gen":9,"attacker":{...},"defender":{...},"move":"Earthquake","field":{}}
+ *   {"cmd":"calc","gen":9,"attacker":{...},"defender":{...},"move":"Earthquake","field":{},
+ *    "defenderHpPercent":62.5}
  *   {"cmd":"speed","gen":9,"attacker":{...},"defender":{...}}
  *   {"cmd":"formeResolves","gen":9,"species":"Staraptor-Mega"}
+ *   {"cmd":"moveInfo","gen":9,"move":"Icy Wind"}
  *   {"cmd":"ping"}
  * Responses:
  *   {"ok":true,"result":{...}}  |  {"ok":false,"error":"message"}
  */
 
 const readline = require('readline');
-const { calcDamage, compareSpeed, formeResolves } = require('./src/calcEngine');
+const { calcDamage, compareSpeed, formeResolves, moveInfo } = require('./src/calcEngine');
 
 function handle(request) {
   const cmd = request.cmd || 'calc';
@@ -32,7 +34,8 @@ function handle(request) {
           request.attacker,
           request.defender,
           request.move,
-          request.field
+          request.field,
+          request.defenderHpPercent
         ),
       };
     case 'speed':
@@ -45,6 +48,8 @@ function handle(request) {
         ok: true,
         result: { resolves: formeResolves(request.gen || 9, request.species) },
       };
+    case 'moveInfo':
+      return { ok: true, result: moveInfo(request.gen || 9, request.move) };
     default:
       return { ok: false, error: `Unknown cmd: ${cmd}` };
   }

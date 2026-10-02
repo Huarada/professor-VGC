@@ -7,10 +7,12 @@ Implements the same :class:`~src.domain.interfaces.AnalysisPipeline` port as
 ``PROFESSORVGC_ORCHESTRATOR`` value (``adk`` — the default). Same shape as
 the LangChain backend: a plain, tool-less ``LlmAgent`` for selection (1st
 AI), a tool-calling ``LlmAgent`` for explanation (2nd AI) wired to the exact
-same deterministic ports (:func:`~src.adapters.llm.adk_tools.build_adk_tools`
-mirrors ``langchain_tools.py``'s three tools verbatim) — so a result from
-this backend is exactly as trustworthy as any other, and switching
-orchestration technology never changes a single damage roll.
+same deterministic ports (the injected ``tools`` are the shared
+``EvidenceTools`` core, also used by the LangChain backend), and the same
+shared :class:`~src.services.ground_truth.GroundTruthAssembler` evidence
+stage — so a result from this backend is exactly as trustworthy as any
+other, and switching orchestration technology never changes a single damage
+roll.
 
 Two deliberate simplifications relative to full ADK idiom, both documented
 here rather than left implicit:
@@ -50,16 +52,8 @@ from typing import TYPE_CHECKING, Any, Sequence
 
 from pydantic import BaseModel, Field
 
-from src.adapters.llm.adk_tools import build_adk_tools
-from src.adapters.llm.prompts import load_prompt
 from src.domain.exceptions import LLMProviderError
-from src.domain.interfaces import (
-    CalcEngineAdapter,
-    ConversationMemory,
-    LogParser,
-    MetaStatsProvider,
-    StrategyKnowledgeProvider,
-)
+from src.domain.interfaces import ConversationMemory, LogParser, PromptRepository
 from src.domain.models import (
     AgentToolInvocation,
     AnalysisRequest,
@@ -68,24 +62,14 @@ from src.domain.models import (
     GameState,
     SelectionPlan,
 )
-from src.services.analysis_service import (
-    build_explanation_context,
+from src.services.battle_context import candidate_species, outcome_summary, rosters
+from src.services.ground_truth import (
+    GroundTruthAssembler,
     build_explanation_input,
+    build_result,
+    parse_replay,
+    remember_turn,
 )
-from src.services.battle_context import (
-    candidate_species,
-    context_species,
-    outcome_summary,
-    rosters,
-)
-from src.services.concept_tracking import recurring_concepts
-from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
-from src.services.suggestion_service import (
-    SmogonSuggestionSource,
-    build_improvement_context,
-    wants_suggestions,
-)
-from src.services.turn_simulator import TurnReplaySimulator
 from src.services.selection_logic import (
     build_selection_input,
     parse_selection,
@@ -200,14 +184,12 @@ class AdkAnalysisOrchestrator:
         *,
         parser: LogParser,
         model: "str | BaseLlm",
-        meta_provider: MetaStatsProvider,
-        calc_engine: CalcEngineAdapter,
-        strategy_provider: StrategyKnowledgeProvider,
+        evidence: GroundTruthAssembler,
         memory: ConversationMemory,
-        default_gen: int = 9,
+        prompts: PromptRepository,
+        tools: Sequence[Any] = (),
         provider_name: str = "adk",
         max_matchups: int = 6,
-        suggestion_source: SmogonSuggestionSource | None = None,
         agent_max_llm_calls: int = 20,
         agent_timeout_seconds: float = 180.0,
     ) -> None:
@@ -216,12 +198,8 @@ class AdkAnalysisOrchestrator:
         from google.adk.sessions import InMemorySessionService
 
         self._parser = parser
-        self._meta = meta_provider
-        self._strategy = strategy_provider
+        self._evidence = evidence
         self._memory = memory
-        self._evaluator = MatchupEvaluator(calc_engine, default_gen)
-        self._simulator = TurnReplaySimulator(calc_engine, default_gen)
-        self._suggestion_source = suggestion_source
         self._provider_name = provider_name
         self._max_matchups = max_matchups
         # Mirrors LangChainAnalysisOrchestrator's `agent_max_steps`: a
@@ -253,8 +231,7 @@ class AdkAnalysisOrchestrator:
 
         self._session_service = InMemorySessionService()
 
-        self._selection_system = load_prompt("selection_system")
-        self._explanation_system = load_prompt("explanation_system")
+        self._selection_system = prompts.get("selection_system")
 
         self._selection_agent = Agent(
             name="professorvgc_selection",
@@ -268,20 +245,15 @@ class AdkAnalysisOrchestrator:
             session_service=self._session_service,
         )
 
-        tools = build_adk_tools(
-            calc_engine=calc_engine,
-            meta_provider=meta_provider,
-            strategy_provider=strategy_provider,
-            default_gen=default_gen,
-        )
         explanation_instruction = (
-            f"{self._explanation_system}\n\n{load_prompt('explanation_agent_addendum')}"
+            f"{prompts.get('explanation_system')}\n\n"
+            f"{prompts.get('explanation_agent_addendum')}"
         )
         self._explanation_agent = Agent(
             name="professorvgc_explanation",
             model=model,
             instruction=explanation_instruction,
-            tools=tools,
+            tools=list(tools),
         )
         self._explanation_runner = Runner(
             agent=self._explanation_agent,
@@ -377,46 +349,21 @@ class AdkAnalysisOrchestrator:
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         history = self._memory.load(request.session_id)
-        game_state = self._parse(request)
-
+        game_state = parse_replay(self._parser, request)
         selection = self._select(request, game_state, history)
-        context_mons = context_species(game_state, selection.focus_species)
-        meta_context = self._meta.build_match_context(
-            context_mons, metagame=game_state.format_id, rating=game_state.rating
-        )
-        verdicts = self._evaluator.evaluate(game_state, selection, meta_context)
-        turn_checks = self._simulator.simulate(game_state, meta_context)
-        protect_reads = self._simulator.build_protect_reads(turn_checks, game_state)
-        strategies = collect_strategies(
-            self._strategy, context_mons, metagame=game_state.format_id,
-            question=request.question,
-        )
-
-        improvement = None
-        if self._suggestion_source is not None and wants_suggestions(request.question):
-            improvement = build_improvement_context(
-                self._suggestion_source,
-                (selection.focus_species or candidate_species(game_state))[:6],
-                game_state.format_id,
-            )
-        context = build_explanation_context(
-            selection, meta_context, verdicts, strategies,
-            battle_result=outcome_summary(game_state),
-            turn_checks=turn_checks,
-            protect_reads=protect_reads,
-            improvement_suggestions=improvement,
-            recurring_concepts=recurring_concepts(history, request.question),
+        evidence = self._evidence.assemble(
+            request=request, game_state=game_state, selection=selection, history=history
         )
         message_text = _render_history(history) + build_explanation_input(
-            request.question, context
+            request.question, evidence
         )
         # Same rationale as ADR-011 (LangChain backend): the agent talks to
         # the raw ADK/model SDK directly, so a provider failure (rate limit,
         # exhausted quota, auth, network) is wrapped here into the typed
         # error the presentation layer already knows how to render, instead
         # of reaching the UI as a raw SDK exception. A bad/failed TOOL call
-        # inside the loop does NOT reach here — adk_tools.py degrades those
-        # to {"ok": False, "error": ...} instead of raising.
+        # inside the loop does NOT reach here — evidence_tools.py degrades
+        # those to {"ok": False, "error": ...} instead of raising.
         try:
             answer, events = self._run_agent_bounded(self._explanation_runner, message_text)
         except LLMProviderError:
@@ -425,28 +372,14 @@ class AdkAnalysisOrchestrator:
             raise LLMProviderError(
                 f"The explanation model call failed ({request.provider}): {exc}"
             ) from exc
-        agent_tool_calls = _extract_tool_invocations(events)
 
-        self._memory.append(
-            request.session_id, ChatMessage(role="user", content=request.question)
-        )
-        self._memory.append(
-            request.session_id, ChatMessage(role="assistant", content=answer)
-        )
-
-        return AnalysisResult(
-            session_id=request.session_id,
-            question=request.question,
+        remember_turn(self._memory, request, answer)
+        return build_result(
+            request=request,
+            evidence=evidence,
             answer=answer,
-            selection=selection,
-            meta_context=meta_context,
-            verdicts=verdicts,
-            strategies=strategies,
-            turn_checks=turn_checks,
-            protect_reads=protect_reads,
-            agent_tool_calls=agent_tool_calls,
-            battle_result=outcome_summary(game_state),
             provider=self._provider_name,
+            agent_tool_calls=_extract_tool_invocations(events),
         )
 
     def _select(
@@ -469,13 +402,3 @@ class AdkAnalysisOrchestrator:
             raw = "{}"
         plan = parse_selection(raw, species, side_of)
         return sanitize_plan(plan, species, self._max_matchups, side_of)
-
-    def _parse(self, request: AnalysisRequest) -> GameState:
-        source = (
-            request.replay_json
-            if request.replay_json is not None
-            else request.replay_raw_text
-        )
-        if source is None:
-            return GameState()
-        return self._parser.parse(source)

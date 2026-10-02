@@ -19,6 +19,8 @@ from src.domain.models import (
     DamageResult,
     GameState,
     MetaContext,
+    MoveInfo,
+    PokemonMetaSummary,
     SelectionPlan,
     SmogonStrategy,
     SpeedComparison,
@@ -78,6 +80,16 @@ class CalcEngineAdapter(Protocol):
         """
         ...
 
+    def move_info(self, gen: int, move: str) -> MoveInfo:
+        """Static data for one move from the engine's own dex (category,
+        spread target, Protect-family, speed control) — the single source
+        for "is this a damaging move?", never a hand-kept list.
+
+        Raises:
+            CalcEngineError: On transport failure or invalid engine output.
+        """
+        ...
+
     def forme_resolves(self, gen: int, species: str) -> bool:
         """Whether the engine's dex has real stat data for this exact forme
         string (e.g. a Mega Evolution) — vs. it being unresolvable, in which
@@ -117,6 +129,48 @@ class StrategyKnowledgeProvider(Protocol):
 
         Raises:
             StrategyKnowledgeError: If the source is unavailable.
+        """
+        ...
+
+
+@runtime_checkable
+class SmogonSuggestionSource(Protocol):
+    """Official Smogon sets/usage stats used for team-improvement suggestions."""
+
+    def get_sets(self, species: str, *, metagame: str | None = None) -> list[dict[str, Any]]:
+        """Official competitive sets for a species.
+
+        Raises:
+            StrategyKnowledgeError: If the source is unavailable.
+        """
+        ...
+
+    def get_stats(self, species: str, *, metagame: str | None = None) -> PokemonMetaSummary:
+        """Official usage statistics for a species.
+
+        Raises:
+            StrategyKnowledgeError: If the source is unavailable.
+        """
+        ...
+
+    def get_teammates(self, species: str, *, metagame: str | None = None) -> dict[str, float]:
+        """Teammate usage percentages for a species.
+
+        Raises:
+            StrategyKnowledgeError: If the source is unavailable.
+        """
+        ...
+
+
+@runtime_checkable
+class PromptRepository(Protocol):
+    """Source of the versioned prompt artifacts (never inlined in logic)."""
+
+    def get(self, name: str) -> str:
+        """Return the prompt text registered under ``name``.
+
+        Raises:
+            ConfigurationError: If no such prompt exists.
         """
         ...
 
@@ -203,8 +257,8 @@ class SelectionStrategy(Protocol):
 class AnalysisPipeline(Protocol):
     """End-to-end analysis orchestration port.
 
-    Both the native :class:`AnalysisService` and the LangChain orchestrator
-    implement this. The presentation layer depends only on this abstraction,
+    The native :class:`AnalysisService`, the LangChain orchestrator and the
+    Google ADK orchestrator implement this. The presentation layer depends only on this abstraction,
     so the orchestration technology can be swapped from configuration alone.
     """
 

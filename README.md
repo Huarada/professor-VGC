@@ -86,11 +86,14 @@ never appears in a domain signature:
   returning the `model=` argument for an ADK `Agent`: a plain Gemini model-id
   string (ADK's native path, no extra dependency) for `gemini`, or ADK's own
   documented `LiteLlm` wrapper (needs the separate `litellm` package) for `openai`.
-- `src/adapters/llm/adk_tools.py` — the calc/Chaos/strategy ports exposed as
-  plain, type-hinted functions (ADK auto-wraps a function's signature + Google-
-  style docstring into a tool) for the explanation agent's interactive
-  "what-if" follow-ups. Every parameter is required (no defaults): the Gemini
-  API's function-calling schema rejects a declaration that has one.
+- `src/adapters/llm/evidence_tools.py` — `EvidenceTools`, the ONE
+  implementation of the calc/Chaos/strategy tools the explanation agents may
+  call for interactive "what-if" follow-ups. Every parameter is required (no
+  defaults): the Gemini API's function-calling schema rejects a declaration
+  that has one.
+- `src/adapters/llm/adk_tools.py` — passes those tools to ADK as plain,
+  type-hinted functions (ADK auto-wraps a function's signature + Google-style
+  docstring into a tool).
 - `src/services/adk_orchestrator.py` — the ADK pipeline. Conversation history
   is rendered into the prompt text (like the other two backends, via the
   project's own `ConversationMemory` port) rather than relying on ADK's own
@@ -99,14 +102,15 @@ never appears in a domain signature:
 - `src/adapters/llm/langchain_provider.py` — `LangChainLLMProvider` (implements
   the domain `LLMProvider` on any `BaseChatModel`) + a BYOK `build_chat_model`
   factory for `ChatOpenAI` / `ChatGoogleGenerativeAI`.
-- `src/adapters/llm/langchain_tools.py` — the calc/Chaos/strategy ports exposed
-  as `StructuredTool`s, ready for a `langchain.agents.create_agent` tool-calling
-  agent for interactive "what-if" follow-ups.
+- `src/adapters/llm/langchain_tools.py` — the same `EvidenceTools` wrapped as
+  `StructuredTool`s for the `langchain.agents.create_agent` tool-calling agent.
 - `src/services/langchain_orchestrator.py` — the LCEL pipeline.
 
-All three backends share the deterministic core (`MatchupEvaluator`,
+All three backends receive the same injected evidence stage
+(`GroundTruthAssembler` in `src/services/ground_truth.py`, plus the shared
 `selection_logic`), so switching orchestration technology never changes a single
-damage roll — the LLM only ever explains ground-truth numbers, never invents them.
+damage roll (a parity test pins this) — the LLM only ever explains ground-truth
+numbers, never invents them.
 
 ## Faithfulness benchmark — grounding measured, not asserted
 

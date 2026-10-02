@@ -10,10 +10,10 @@ the network calls (and prompt size) targeted.
 
 from __future__ import annotations
 
-from typing import Any, Protocol, Sequence
+from typing import Any, Sequence
 
 from src.domain.exceptions import StrategyKnowledgeError
-from src.domain.models import PokemonMetaSummary
+from src.domain.interfaces import SmogonSuggestionSource
 
 _INTENT_KEYWORDS = (
     "improve", "improvement", "suggest", "suggestion", "synergy", "adjust",
@@ -23,23 +23,6 @@ _INTENT_KEYWORDS = (
     "melhor", "melhoria", "melhorar", "sugest", "sinergia", "ajuste", "ajustar",
     "otimiz", "montar", "movimento", "conjunto", "equipe", "time",
 )
-
-
-class SmogonSuggestionSource(Protocol):
-    """Minimal port for the official Smogon sets/stats needed for suggestions."""
-
-    def get_sets(self, species: str, *, metagame: str | None = None) -> list[dict[str, Any]]:
-        ...
-
-    def get_stats(
-        self, species: str, *, metagame: str | None = None
-    ) -> PokemonMetaSummary:
-        ...
-
-    def get_teammates(
-        self, species: str, *, metagame: str | None = None
-    ) -> dict[str, float]:
-        ...
 
 
 def wants_suggestions(question: str) -> bool:

@@ -4,25 +4,22 @@ from __future__ import annotations
 
 import json
 
-from src.adapters.chaos.chaos_adapter import ChaosAdapter
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
-from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
 from src.domain.models import AnalysisRequest
 from src.services.analysis_service import AnalysisService
 from src.services.selection_service import LLMSelectionService
-from tests.conftest import FakeCalcEngine, FakeLLM
+from tests.conftest import PROMPTS, FakeLLM, build_evidence
 
 
 def _build(chaos_path, llm) -> AnalysisService:
     return AnalysisService(
         parser=ShowdownReplayParser(),
-        selector=LLMSelectionService(llm),
-        meta_provider=ChaosAdapter(chaos_path),
-        calc_engine=FakeCalcEngine(),
-        strategy_provider=ChaosStrategyAdapter(chaos_path),
+        selector=LLMSelectionService(llm, prompts=PROMPTS),
+        evidence=build_evidence(chaos_path),
         llm=llm,
         memory=InMemoryConversationMemory(),
+        prompts=PROMPTS,
     )
 
 
@@ -53,9 +50,8 @@ def test_memory_accumulates(sample_chaos_path, sample_replay_path):
     llm = FakeLLM(json.dumps({"focus_species": [], "matchups": []}), "ok")
     memory = InMemoryConversationMemory()
     service = AnalysisService(
-        parser=ShowdownReplayParser(), selector=LLMSelectionService(llm),
-        meta_provider=ChaosAdapter(sample_chaos_path), calc_engine=FakeCalcEngine(),
-        strategy_provider=ChaosStrategyAdapter(sample_chaos_path), llm=llm, memory=memory,
+        parser=ShowdownReplayParser(), selector=LLMSelectionService(llm, prompts=PROMPTS),
+        evidence=build_evidence(sample_chaos_path), llm=llm, memory=memory, prompts=PROMPTS,
     )
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
     service.analyze(AnalysisRequest(session_id="s9", replay_json=replay, question="q1"))

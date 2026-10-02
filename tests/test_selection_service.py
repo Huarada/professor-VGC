@@ -6,7 +6,7 @@ import json
 
 from src.domain.models import AnalysisRequest, GameState, PokemonSet, SideState
 from src.services.selection_service import LLMSelectionService
-from tests.conftest import FakeLLM
+from tests.conftest import PROMPTS, FakeLLM
 
 
 def _state() -> GameState:
@@ -26,7 +26,7 @@ def test_parses_valid_selection_json():
         ),
         explanation="",
     )
-    plan = LLMSelectionService(llm).select(
+    plan = LLMSelectionService(llm, prompts=PROMPTS).select(
         request=AnalysisRequest(session_id="s", question="who wins"),
         game_state=_state(), history=[],
     )
@@ -41,14 +41,14 @@ def test_filters_hallucinated_species():
         ),
         explanation="",
     )
-    plan = LLMSelectionService(llm).select(
+    plan = LLMSelectionService(llm, prompts=PROMPTS).select(
         request=AnalysisRequest(session_id="s"), game_state=_state(), history=[]
     )
     assert all(a != "Pikachu" and b != "Pikachu" for a, b in plan.matchups)
 
 
 def test_unparseable_output_falls_back():
-    plan = LLMSelectionService(FakeLLM("not json at all", "")).select(
+    plan = LLMSelectionService(FakeLLM("not json at all", ""), prompts=PROMPTS).select(
         request=AnalysisRequest(session_id="s"), game_state=_state(), history=[]
     )
     assert plan.matchups

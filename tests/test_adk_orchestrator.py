@@ -25,15 +25,14 @@ from google.adk.models.llm_response import LlmResponse  # noqa: E402
 from google.genai import types  # noqa: E402
 from pydantic import PrivateAttr  # noqa: E402
 
-from src.adapters.chaos.chaos_adapter import ChaosAdapter
+from src.adapters.llm.adk_tools import build_adk_tools
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
-from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
 from src.domain.exceptions import CalcEngineError, LLMProviderError
 from src.domain.interfaces import AnalysisPipeline
 from src.domain.models import AnalysisRequest
 from src.services.adk_orchestrator import AdkAnalysisOrchestrator
-from tests.conftest import FakeCalcEngine
+from tests.conftest import PROMPTS, FakeCalcEngine, build_evidence, build_tools
 
 # Each scripted "turn" is either a plain string (a final text response) or a
 # (tool_name, args_dict) pair (a function-call response, to exercise the
@@ -134,8 +133,8 @@ class _HangsOnFirstCallOnlyAdkModel(BaseLlm):
 def _build(chaos_path, model: BaseLlm, **kwargs: Any) -> AdkAnalysisOrchestrator:
     return AdkAnalysisOrchestrator(
         parser=ShowdownReplayParser(), model=model,
-        meta_provider=ChaosAdapter(chaos_path), calc_engine=FakeCalcEngine(),
-        strategy_provider=ChaosStrategyAdapter(chaos_path),
+        evidence=build_evidence(chaos_path), prompts=PROMPTS,
+        tools=build_adk_tools(build_tools(chaos_path)),
         memory=InMemoryConversationMemory(), provider_name="adk:fake",
         **kwargs,
     )
@@ -356,9 +355,9 @@ def test_failed_tool_call_degrades_instead_of_crashing_the_turn(
     )
     orch = AdkAnalysisOrchestrator(
         parser=ShowdownReplayParser(), model=model,
-        meta_provider=ChaosAdapter(sample_chaos_path),
-        calc_engine=_SelectivelyFailingCalcEngine(),
-        strategy_provider=ChaosStrategyAdapter(sample_chaos_path),
+        evidence=build_evidence(sample_chaos_path, _SelectivelyFailingCalcEngine()),
+        prompts=PROMPTS,
+        tools=build_adk_tools(build_tools(sample_chaos_path, _SelectivelyFailingCalcEngine())),
         memory=InMemoryConversationMemory(), provider_name="adk:fake",
     )
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
