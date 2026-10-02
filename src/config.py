@@ -16,7 +16,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 # This project's own requirement (not a Google-imposed floor): only Gemini
-# 3.5 and newer may ever be configured — a competition rule, enforced here
+# 3.5 and newer may ever be configured — a project rule, enforced here
 # as an actual guarantee rather than just a default value someone could
 # still override with an older id. Checked at Settings CONSTRUCTION time
 # (below) — the earliest possible point, before the app even finishes
@@ -56,7 +56,7 @@ class Settings(BaseSettings):
     # The running app has exactly ONE Chaos data source — Firestore — with
     # no local-file fallback and no config knob to select one: see
     # Container.chaos_repository(), which always builds a
-    # FirestoreChaosRepository. This is a deliberate, competition-driven
+    # FirestoreChaosRepository. This is a deliberate project
     # requirement (the app must genuinely depend on Firestore, not merely
     # default to it), not just a preference. Populate it with
     # scripts/migrate_chaos_to_firestore.py (from a local Chaos dump) and/or

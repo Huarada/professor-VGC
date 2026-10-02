@@ -27,7 +27,7 @@ def test_parse_gemini_version_returns_none_for_unparseable_input():
 def test_settings_construction_rejects_a_stale_gemini_model_immediately():
     """Fails at Settings() construction — app startup — not lazily on
     first actual Gemini call. Regardless of which provider is currently
-    selected: this project's own competition requirement is that Gemini
+    selected: this project's own requirement is that Gemini
     3.5+ is guaranteed, not merely defaulted to."""
     with pytest.raises(ValidationError, match="3.5"):
         Settings(_env_file=None, gemini_model="gemini-1.5-flash")
