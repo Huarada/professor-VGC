@@ -7,9 +7,10 @@ Condition B against assumptions B never saw. This verifier uses the observed
 damage from the raw log (``observed_damage.py``) instead, the same external
 truth for both conditions:
 
-- ``correct``: the claimed range is consistent with an observed hit of that
-  attacker/move/defender (within HP-rounding tolerance; for a KO, the claim
-  must be at least the HP the target had);
+- ``correct``: the claimed range, widened by a :class:`ToleranceBand`
+  (default ±2pp HP rounding and ±5% for spread variance), is consistent with
+  an observed hit of that attacker/move/defender (for a KO, the widened claim
+  must reach the HP the target had);
 - ``incorrect``: such a hit exists and the claim contradicts it;
 - ``not_in_log``: no such hit happened in the game — a hypothetical or a
   misattributed figure. Reported separately, never counted as correct.
@@ -25,10 +26,10 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Literal
 
-from scripts.faithfulness_benchmark.engine_calibration import DEFAULT_TOLERANCE_PP
 from scripts.faithfulness_benchmark.ground_truth import _norm, resolve_species
 from scripts.faithfulness_benchmark.models import AtomicClaim, ClaimVerdict
 from scripts.faithfulness_benchmark.observed_damage import ObservedHit
+from scripts.faithfulness_benchmark.tolerance import DEFAULT_BAND, ToleranceBand
 
 LogVerdict = Literal["correct", "incorrect", "not_in_log", "unverifiable"]
 
@@ -40,17 +41,17 @@ class LogClaimVerdict:
     reason: str = ""
 
 
-def _consistent(claim: AtomicClaim, hit: ObservedHit, tolerance: float) -> bool:
-    lo, hi = sorted((claim.min_percent or 0.0, claim.max_percent or 0.0))
+def _consistent(claim: AtomicClaim, hit: ObservedHit, band: ToleranceBand) -> bool:
+    lo, hi = claim.min_percent or 0.0, claim.max_percent or 0.0
     if hit.fainted:
-        return hi + tolerance >= hit.hp_before
-    return lo - tolerance <= hit.damage <= hi + tolerance
+        return band.reaches(max(lo, hi), hit.hp_before)
+    return band.contains(lo, hi, hit.damage)
 
 
 def verify_damage_claim_against_log(
     claim: AtomicClaim,
     hits: list[ObservedHit],
-    tolerance: float = DEFAULT_TOLERANCE_PP,
+    band: ToleranceBand = DEFAULT_BAND,
 ) -> LogClaimVerdict:
     """Judge one ``damage_range`` claim against the observed hits of one game."""
     if claim.claim_type != "damage_range":
@@ -70,7 +71,7 @@ def verify_damage_claim_against_log(
     ]
     if not matching:
         return LogClaimVerdict(claim, "not_in_log", "no such hit happened in this game")
-    if any(_consistent(claim, h, tolerance) for h in matching):
+    if any(_consistent(claim, h, band) for h in matching):
         return LogClaimVerdict(claim, "correct")
     observed = ", ".join(
         f"T{h.turn} {h.damage}%" + (" (KO)" if h.fainted else "") for h in matching
