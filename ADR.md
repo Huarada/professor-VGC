@@ -3561,7 +3561,7 @@ Use the battle log as an external truth, read independently of the product:
 569 observed hits, 530 judged (25 crit/multi-hit excluded, 14 without a
 projection). The projected range contained the real damage for **39.6% of
 non-KO hits**; KOs were consistent with the projection 82.8% of the time;
-misses were off by 9.6 percentage points on average (median observed/
+misses were off by 9.6 percentage points on average (*corrected in ADR-034: 12.7pp; 9.6 averaged in the hits inside the range*) (median observed/
 projected ratio 1.22: the engine under-projects more often than not). Causes
 seen in the misses: unrevealed abilities that change typing or immunities
 (Liquid Voice, Scrappy), offensive items and spreads that differ from the
@@ -3592,5 +3592,56 @@ model reported the real damage it read in the log).
 `scripts/faithfulness_benchmark/{observed_damage,engine_calibration,log_claims,replay_corpus,bench_container,run_engine_calibration,run_log_grounded}.py`,
 `scripts/faithfulness_benchmark/{ground_truth,run}.py`, `tests/test_log_grounded_benchmark.py`,
 `tests/fixtures/replays/*.json`, `.gitignore`.
+
+---
+
+## ADR-034 — Tolerance bands and confidence intervals instead of exact matches
+
+**Status:** Accepted · refines ADR-033
+
+### Context
+ADR-033 judged a damage figure "correct" only within ±2pp of the reference
+and reported bare point estimates. Two problems: (1) a projection is computed
+under ONE assumed spread, while real Pokémon carry different EVs/natures, so
+an exact match is the wrong bar; (2) a single rate over a few hundred claims
+is only known to within several points, and LLM output varies from run to
+run — a point estimate invites over-reading.
+
+### Decision
+- `ToleranceBand` (`scripts/faithfulness_benchmark/tolerance.py`): agreement
+  within the reference widened by ±2pp (HP display rounding) and a relative
+  ±5% (default) per bound for spread variance. Used by both the engine
+  calibration and the claim verifier; every report prints its band.
+- 95% Wilson intervals for every rate; the odds ratio's exact 95% interval
+  next to Fisher's test.
+- Sensitivity tables re-score the same data at 0/5/10/15%.
+- EV/nature envelope (`ev_envelope.py`): each miss's exact calc request
+  re-run at minimum and maximum investment → misses explained by spread alone.
+- Saved runs are re-scored without LLM calls (`rescore_log_grounded.py`);
+  runs are pooled only over **distinct** games (`--offset`), overlapping runs
+  are refused.
+- Fix: the "mean miss" averaged in the hits inside the range; it now covers
+  misses only (9.6pp → 12.7pp).
+
+### Result (revalidated on `master` with `@smogon/calc` 0.12)
+- Engine, 40 games, ±2pp ±5%: projection contains the real damage for 47.9%
+  (95% CI 42.7–53.2%) of non-KO hits; KOs reachable 83.3% (77.4–87.9%);
+  69.6% (63.0–75.4%) of misses fit some other EV/nature spread. The calc
+  upgrade changed no rate by more than 0.5pp.
+- AI claims, 40 distinct games (two runs of 20), ±2pp ±5%: A 59.9%
+  (55.0–64.7%) vs B 51.1% (46.0–56.1%), odds ratio 1.43 (1.06–1.93),
+  p=0.016; significant at every tolerance from 0% (p=0.049) to 15%
+  (p=0.0008). Each run of 20 games alone was NOT significant at ±5%
+  (p=0.088 and p=0.10), and an earlier run on games 1–20 gave OR 1.86.
+
+### Consequences
+- The grounding advantage is real but modest (~9 points, OR ~1.4–1.7);
+  conclusions need pooled runs over distinct games, reported with intervals.
+- 30% of engine misses are not explained by EVs/natures — unrevealed
+  abilities, items and Chaos coverage gaps remain the larger product issue.
+
+### Files touched
+`scripts/faithfulness_benchmark/{tolerance,ev_envelope,log_grounded_scoring,rescore_log_grounded,engine_calibration,log_claims,stats,replay_corpus,run_engine_calibration,run_log_grounded}.py`,
+`tests/test_benchmark_tolerance_and_intervals.py`, benchmark `out/` reports, READMEs.
 
 ---

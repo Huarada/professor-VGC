@@ -10,6 +10,7 @@ re-scored across several tolerances.
 
 from __future__ import annotations
 
+import json
 import math
 
 import pytest
@@ -168,3 +169,30 @@ def test_saved_claims_are_rescored_without_new_llm_calls():
     ten = summarize(results, hits, ToleranceBand(relative=0.10))
     assert ten["A_grounded"]["correct"] == 2
     assert ten["comparison_95ci"]["A_grounded"].startswith("100.0%")
+
+
+# -- distinct games per run / pooling ---------------------------------------------
+
+
+def test_offset_selects_different_games(tmp_path):
+    from scripts.faithfulness_benchmark.replay_corpus import load_replays
+
+    for i in range(4):
+        (tmp_path / f"g{i}.json").write_text(json.dumps({"id": f"g{i}", "log": "|"}), encoding="utf-8")
+    first = load_replays(tmp_path, limit=2)
+    second = load_replays(tmp_path, limit=2, offset=2)
+    assert list(first) == ["g0", "g1"] and list(second) == ["g2", "g3"]
+
+
+def test_pooling_refuses_reports_that_share_a_game(tmp_path, monkeypatch):
+    from scripts.faithfulness_benchmark import rescore_log_grounded
+
+    report = {"replays": [{"replay_id": "g1", "A_grounded": {"claims": []}, "B_naive": {"claims": []}}]}
+    paths = []
+    for name in ("a.json", "b.json"):
+        path = tmp_path / name
+        path.write_text(json.dumps(report), encoding="utf-8")
+        paths.append(str(path))
+    monkeypatch.setattr("sys.argv", ["rescore", *paths, "--replays", str(tmp_path)])
+    with pytest.raises(SystemExit, match="share games"):
+        rescore_log_grounded.main()

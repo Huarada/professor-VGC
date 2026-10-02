@@ -27,13 +27,22 @@ _USER_AGENT = "ProfessorVGC-benchmark (+https://github.com/Huarada/professor-VGC
 _POLITE_DELAY_SECONDS = 0.5
 
 
-def load_replays(directory: Path, limit: int | None = None) -> dict[str, dict[str, Any]]:
-    """Every ``*.json`` replay (with a ``log``) in ``directory``, by id, sorted."""
+def load_replays(
+    directory: Path, limit: int | None = None, offset: int = 0
+) -> dict[str, dict[str, Any]]:
+    """``*.json`` replays (with a ``log``) in ``directory``, by id, sorted by
+    file name; ``offset`` skips the first N so later runs can use DIFFERENT
+    games (pooling two runs over the same games would double-count them)."""
     replays: dict[str, dict[str, Any]] = {}
+    seen = 0
     for path in sorted(directory.glob("*.json")):
         data = json.loads(path.read_text(encoding="utf-8"))
-        if isinstance(data, dict) and isinstance(data.get("log"), str):
-            replays[str(data.get("id") or path.stem)] = data
+        if not (isinstance(data, dict) and isinstance(data.get("log"), str)):
+            continue
+        seen += 1
+        if seen <= offset:
+            continue
+        replays[str(data.get("id") or path.stem)] = data
         if limit is not None and len(replays) >= limit:
             break
     return replays

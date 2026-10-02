@@ -140,6 +140,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--replays", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--offset", type=int, default=0, help="skip the first N replays (use different games per run)")
     parser.add_argument("--provider", default=None, help="openai|gemini (default: config default)")
     parser.add_argument("--orchestrator", default="native", help="native (default) | langchain | adk")
     parser.add_argument("--chaos", default="firestore", help="firestore (default) | local")
@@ -149,7 +150,7 @@ def main() -> None:
     args = parser.parse_args()
     band = ToleranceBand(relative=args.relative_tolerance)
 
-    replays = load_replays(args.replays, limit=args.limit)
+    replays = load_replays(args.replays, limit=args.limit, offset=args.offset)
     if not replays:
         raise SystemExit(f"No replays in {args.replays} (see replay_corpus.py).")
     container = build_container(args.chaos)

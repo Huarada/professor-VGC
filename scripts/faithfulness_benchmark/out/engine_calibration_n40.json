@@ -1,496 +1,202 @@
 {
   "summary": {
+    "tolerance_band": "±2pp ±5%",
     "observed_hits": 569,
     "judged": 530,
-    "correct": 293,
-    "incorrect": 237,
+    "correct": 322,
+    "incorrect": 208,
     "excluded_crit_or_multihit": 25,
     "unmatched_no_projection": 14,
-    "coverage_rate_all": 0.5528301886792453,
-    "coverage_rate_non_ko": 0.39644970414201186,
-    "consistency_rate_ko": 0.828125,
-    "mean_abs_error_outside_range_pp": 9.63
+    "coverage_rate_all": 0.6075471698113207,
+    "coverage_rate_non_ko": 0.47928994082840237,
+    "consistency_rate_ko": 0.8333333333333334,
+    "coverage_non_ko_95ci": "47.9% (95% CI 42.7-53.2%, 162/338)",
+    "consistency_ko_95ci": "83.3% (95% CI 77.4-87.9%, 160/192)",
+    "mean_abs_error_outside_raw_range_pp": 12.69,
+    "sensitivity_by_relative_tolerance": {
+      "±2pp ±0%": {
+        "non_ko": "39.6% (95% CI 34.6-44.9%, 134/338)",
+        "ko": "82.8% (95% CI 76.8-87.5%, 159/192)"
+      },
+      "±2pp ±5%": {
+        "non_ko": "47.9% (95% CI 42.7-53.2%, 162/338)",
+        "ko": "83.3% (95% CI 77.4-87.9%, 160/192)"
+      },
+      "±2pp ±10%": {
+        "non_ko": "60.4% (95% CI 55.1-65.4%, 204/338)",
+        "ko": "84.4% (95% CI 78.6-88.8%, 162/192)"
+      },
+      "±2pp ±15%": {
+        "non_ko": "66.0% (95% CI 60.8-70.8%, 223/338)",
+        "ko": "84.9% (95% CI 79.1-89.3%, 163/192)"
+      }
+    },
+    "misses_vs_ev_nature_envelope": {
+      "misses_with_envelope": 207,
+      "explained_by_ev_nature_variance": "69.6% (95% CI 63.0-75.4%, 144/207)",
+      "outside_any_ev_nature_spread": 63
+    }
   },
   "per_replay": {
     "gen9championsvgc2026regmb-2691395464": {
-      "observed_hits": 12,
       "judged": 12,
-      "correct": 7,
-      "incorrect": 5,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5833333333333334,
-      "coverage_rate_non_ko": 0.3333333333333333,
-      "consistency_rate_ko": 0.8333333333333334,
-      "mean_abs_error_outside_range_pp": 18.58
+      "correct": 7
     },
     "gen9championsvgc2026regmb-2691398217": {
-      "observed_hits": 11,
       "judged": 11,
-      "correct": 7,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6363636363636364,
-      "coverage_rate_non_ko": 0.2,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 6.38
+      "correct": 8
     },
     "gen9championsvgc2026regmb-2691404852": {
-      "observed_hits": 17,
       "judged": 13,
-      "correct": 5,
-      "incorrect": 8,
-      "excluded_crit_or_multihit": 2,
-      "unmatched_no_projection": 2,
-      "coverage_rate_all": 0.38461538461538464,
-      "coverage_rate_non_ko": 0.2,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 6.46
+      "correct": 8
     },
     "gen9championsvgc2026regmb-2691407397": {
-      "observed_hits": 12,
       "judged": 11,
-      "correct": 8,
-      "incorrect": 3,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.7272727272727273,
-      "coverage_rate_non_ko": 0.6666666666666666,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 1.08
+      "correct": 9
     },
     "gen9championsvgc2026regmb-2691408930": {
-      "observed_hits": 16,
       "judged": 13,
-      "correct": 6,
-      "incorrect": 7,
-      "excluded_crit_or_multihit": 2,
-      "unmatched_no_projection": 1,
-      "coverage_rate_all": 0.46153846153846156,
-      "coverage_rate_non_ko": 0.5,
-      "consistency_rate_ko": 0.4,
-      "mean_abs_error_outside_range_pp": 4.62
+      "correct": 7
     },
     "gen9championsvgc2026regmb-2691411925": {
-      "observed_hits": 16,
       "judged": 13,
-      "correct": 7,
-      "incorrect": 6,
-      "excluded_crit_or_multihit": 2,
-      "unmatched_no_projection": 1,
-      "coverage_rate_all": 0.5384615384615384,
-      "coverage_rate_non_ko": 0.4,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 5.64
+      "correct": 9
     },
     "gen9championsvgc2026regmb-2691413893": {
-      "observed_hits": 8,
       "judged": 8,
-      "correct": 6,
-      "incorrect": 2,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.75,
-      "coverage_rate_non_ko": 0.6,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 7.62
+      "correct": 6
     },
     "gen9championsvgc2026regmb-2691414894": {
-      "observed_hits": 13,
       "judged": 12,
-      "correct": 8,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6666666666666666,
-      "coverage_rate_non_ko": 0.5,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 9.41
+      "correct": 9
     },
     "gen9championsvgc2026regmb-2691416022": {
-      "observed_hits": 12,
       "judged": 12,
-      "correct": 8,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6666666666666666,
-      "coverage_rate_non_ko": 0.6,
-      "consistency_rate_ko": 0.7142857142857143,
-      "mean_abs_error_outside_range_pp": 5.78
+      "correct": 8
     },
     "gen9championsvgc2026regmb-2691421022": {
-      "observed_hits": 17,
       "judged": 17,
-      "correct": 12,
-      "incorrect": 5,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.7058823529411765,
-      "coverage_rate_non_ko": 0.6666666666666666,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 2.96
+      "correct": 12
     },
     "gen9championsvgc2026regmb-2691423168": {
-      "observed_hits": 25,
       "judged": 24,
-      "correct": 17,
-      "incorrect": 7,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.7083333333333334,
-      "coverage_rate_non_ko": 0.6111111111111112,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 3.44
+      "correct": 18
     },
     "gen9championsvgc2026regmb-2691424832": {
-      "observed_hits": 20,
       "judged": 20,
-      "correct": 9,
-      "incorrect": 11,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.45,
-      "coverage_rate_non_ko": 0.3333333333333333,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 6.1
+      "correct": 11
     },
     "gen9championsvgc2026regmb-2691456663": {
-      "observed_hits": 10,
       "judged": 9,
-      "correct": 4,
-      "incorrect": 5,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.4444444444444444,
-      "coverage_rate_non_ko": 0.0,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 63.27
+      "correct": 4
     },
     "gen9championsvgc2026regmb-2691462161": {
-      "observed_hits": 12,
       "judged": 12,
-      "correct": 2,
-      "incorrect": 10,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.16666666666666666,
-      "coverage_rate_non_ko": 0.16666666666666666,
-      "consistency_rate_ko": 0.16666666666666666,
-      "mean_abs_error_outside_range_pp": 10.82
+      "correct": 3
     },
     "gen9championsvgc2026regmb-2691463439": {
-      "observed_hits": 14,
       "judged": 13,
-      "correct": 6,
-      "incorrect": 7,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.46153846153846156,
-      "coverage_rate_non_ko": 0.25,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 9.71
+      "correct": 7
     },
     "gen9championsvgc2026regmb-2691464509": {
-      "observed_hits": 13,
       "judged": 12,
-      "correct": 8,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6666666666666666,
-      "coverage_rate_non_ko": 0.4,
-      "consistency_rate_ko": 0.8571428571428571,
-      "mean_abs_error_outside_range_pp": 16.92
+      "correct": 8
     },
     "gen9championsvgc2026regmb-2691515746": {
-      "observed_hits": 9,
       "judged": 8,
-      "correct": 5,
-      "incorrect": 3,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.625,
-      "coverage_rate_non_ko": 0.5,
-      "consistency_rate_ko": 0.75,
-      "mean_abs_error_outside_range_pp": 2.52
+      "correct": 5
     },
     "gen9championsvgc2026regmb-2691517028": {
-      "observed_hits": 9,
       "judged": 8,
-      "correct": 5,
-      "incorrect": 3,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 1,
-      "coverage_rate_all": 0.625,
-      "coverage_rate_non_ko": 0.25,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 22.82
+      "correct": 5
     },
     "gen9championsvgc2026regmb-2691547644": {
-      "observed_hits": 14,
       "judged": 14,
-      "correct": 8,
-      "incorrect": 6,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5714285714285714,
-      "coverage_rate_non_ko": 0.375,
-      "consistency_rate_ko": 0.8333333333333334,
-      "mean_abs_error_outside_range_pp": 3.75
+      "correct": 9
     },
     "gen9championsvgc2026regmb-2691549515": {
-      "observed_hits": 19,
       "judged": 18,
-      "correct": 10,
-      "incorrect": 8,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5555555555555556,
-      "coverage_rate_non_ko": 0.4166666666666667,
-      "consistency_rate_ko": 0.8333333333333334,
-      "mean_abs_error_outside_range_pp": 10.79
+      "correct": 11
     },
     "gen9championsvgc2026regmb-2691550421": {
-      "observed_hits": 15,
       "judged": 15,
-      "correct": 10,
-      "incorrect": 5,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6666666666666666,
-      "coverage_rate_non_ko": 0.5454545454545454,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 11.45
+      "correct": 10
     },
     "gen9championsvgc2026regmb-2691551534": {
-      "observed_hits": 10,
       "judged": 9,
-      "correct": 4,
-      "incorrect": 5,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.4444444444444444,
-      "coverage_rate_non_ko": 0.3333333333333333,
-      "consistency_rate_ko": 0.5,
-      "mean_abs_error_outside_range_pp": 13.07
+      "correct": 4
     },
     "gen9championsvgc2026regmb-2691557933": {
-      "observed_hits": 14,
       "judged": 13,
-      "correct": 6,
-      "incorrect": 7,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.46153846153846156,
-      "coverage_rate_non_ko": 0.2222222222222222,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 9.96
+      "correct": 6
     },
     "gen9championsvgc2026regmb-2691559448": {
-      "observed_hits": 7,
       "judged": 7,
-      "correct": 5,
-      "incorrect": 2,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.7142857142857143,
-      "coverage_rate_non_ko": 0.6666666666666666,
-      "consistency_rate_ko": 0.75,
-      "mean_abs_error_outside_range_pp": 3.93
+      "correct": 5
     },
     "gen9championsvgc2026regmb-2691560240": {
-      "observed_hits": 14,
       "judged": 14,
-      "correct": 7,
-      "incorrect": 7,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5,
-      "coverage_rate_non_ko": 0.3333333333333333,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 8.39
+      "correct": 8
     },
     "gen9championsvgc2026regmb-2691561961": {
-      "observed_hits": 10,
       "judged": 8,
-      "correct": 6,
-      "incorrect": 2,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 2,
-      "coverage_rate_all": 0.75,
-      "coverage_rate_non_ko": 0.8,
-      "consistency_rate_ko": 0.6666666666666666,
-      "mean_abs_error_outside_range_pp": 3.62
+      "correct": 6
     },
     "gen9championsvgc2026regmb-2691564110": {
-      "observed_hits": 25,
       "judged": 24,
-      "correct": 14,
-      "incorrect": 10,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5833333333333334,
-      "coverage_rate_non_ko": 0.5,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 4.82
+      "correct": 16
     },
     "gen9championsvgc2026regmb-2691565060": {
-      "observed_hits": 7,
       "judged": 5,
-      "correct": 4,
-      "incorrect": 1,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 1,
-      "coverage_rate_all": 0.8,
-      "coverage_rate_non_ko": 0.0,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 4.9
+      "correct": 4
     },
     "gen9championsvgc2026regmb-2691566133": {
-      "observed_hits": 23,
       "judged": 23,
-      "correct": 15,
-      "incorrect": 8,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6521739130434783,
-      "coverage_rate_non_ko": 0.5555555555555556,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 5.43
+      "correct": 16
     },
     "gen9championsvgc2026regmb-2691579291": {
-      "observed_hits": 12,
       "judged": 10,
-      "correct": 6,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 2,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6,
-      "coverage_rate_non_ko": 0.3333333333333333,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 4.77
+      "correct": 7
     },
     "gen9championsvgc2026regmb-2691581493": {
-      "observed_hits": 12,
       "judged": 12,
-      "correct": 7,
-      "incorrect": 5,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5833333333333334,
-      "coverage_rate_non_ko": 0.42857142857142855,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 11.91
+      "correct": 7
     },
     "gen9championsvgc2026regmb-2691594600": {
-      "observed_hits": 17,
       "judged": 17,
-      "correct": 10,
-      "incorrect": 7,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5882352941176471,
-      "coverage_rate_non_ko": 0.4,
-      "consistency_rate_ko": 0.8571428571428571,
-      "mean_abs_error_outside_range_pp": 25.76
+      "correct": 10
     },
     "gen9championsvgc2026regmb-2691598129": {
-      "observed_hits": 15,
       "judged": 9,
-      "correct": 5,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 5,
-      "coverage_rate_all": 0.5555555555555556,
-      "coverage_rate_non_ko": 0.5,
-      "consistency_rate_ko": 0.6666666666666666,
-      "mean_abs_error_outside_range_pp": 3.88
+      "correct": 6
     },
     "gen9championsvgc2026regmb-2691630272": {
-      "observed_hits": 14,
       "judged": 14,
-      "correct": 6,
-      "incorrect": 8,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.42857142857142855,
-      "coverage_rate_non_ko": 0.2222222222222222,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 8.44
+      "correct": 7
     },
     "gen9championsvgc2026regmb-2691633690": {
-      "observed_hits": 18,
       "judged": 17,
-      "correct": 5,
-      "incorrect": 12,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 1,
-      "coverage_rate_all": 0.29411764705882354,
-      "coverage_rate_non_ko": 0.08333333333333333,
-      "consistency_rate_ko": 0.8,
-      "mean_abs_error_outside_range_pp": 24.44
+      "correct": 5
     },
     "gen9championsvgc2026regmb-2691635975": {
-      "observed_hits": 16,
       "judged": 16,
-      "correct": 7,
-      "incorrect": 9,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.4375,
-      "coverage_rate_non_ko": 0.2,
-      "consistency_rate_ko": 0.8333333333333334,
-      "mean_abs_error_outside_range_pp": 20.47
+      "correct": 8
     },
     "gen9championsvgc2026regmb-2691728675": {
-      "observed_hits": 30,
       "judged": 29,
-      "correct": 13,
-      "incorrect": 16,
-      "excluded_crit_or_multihit": 1,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.4482758620689655,
-      "coverage_rate_non_ko": 0.30434782608695654,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 5.91
+      "correct": 15
     },
     "gen9championsvgc2026regmb-2691729686": {
-      "observed_hits": 9,
       "judged": 9,
-      "correct": 5,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.5555555555555556,
-      "coverage_rate_non_ko": 0.0,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 9.03
+      "correct": 6
     },
     "gen9championsvgc2026regmb-2691731702": {
-      "observed_hits": 11,
       "judged": 8,
-      "correct": 3,
-      "incorrect": 5,
-      "excluded_crit_or_multihit": 3,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.375,
-      "coverage_rate_non_ko": 0.2,
-      "consistency_rate_ko": 0.6666666666666666,
-      "mean_abs_error_outside_range_pp": 11.08
+      "correct": 5
     },
     "gen9championsvgc2026regmb-2691732184": {
-      "observed_hits": 11,
       "judged": 11,
-      "correct": 7,
-      "incorrect": 4,
-      "excluded_crit_or_multihit": 0,
-      "unmatched_no_projection": 0,
-      "coverage_rate_all": 0.6363636363636364,
-      "coverage_rate_non_ko": 0.5,
-      "consistency_rate_ko": 1.0,
-      "mean_abs_error_outside_range_pp": 15.2
+      "correct": 7
     }
   },
   "misses": [
@@ -506,6 +212,11 @@
         17.4,
         21.0
       ],
+      "ev_envelope": [
+        16.2,
+        51.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 33.0% vs projected 17.4-21.0%"
     },
     {
@@ -520,6 +231,11 @@
         32.7,
         38.6
       ],
+      "ev_envelope": [
+        26.7,
+        95.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 86.0% vs projected 32.7-38.6%"
     },
     {
@@ -534,6 +250,11 @@
         25.9,
         30.5
       ],
+      "ev_envelope": [
+        22.8,
+        74.5
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 54.0% vs projected 25.9-30.5%"
     },
     {
@@ -548,6 +269,11 @@
         14.5,
         17.4
       ],
+      "ev_envelope": [
+        18.8,
+        61.7
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 46.0% vs projected 14.5-17.4%"
     },
     {
@@ -562,6 +288,11 @@
         25.9,
         30.5
       ],
+      "ev_envelope": [
+        22.8,
+        74.5
+      ],
+      "explained_by_ev_nature": true,
       "reason": "KO from 46.0% but projected max 30.5%"
     },
     {
@@ -576,21 +307,12 @@
         24.0,
         28.7
       ],
-      "reason": "observed 37.0% vs projected 24.0-28.7%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Tsareena",
-      "move": "High Jump Kick",
-      "defender": "Archaludon",
-      "observed": 31.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        33.5,
-        40.1
+      "ev_envelope": [
+        20.3,
+        64.2
       ],
-      "reason": "observed 31.0% vs projected 33.5-40.1%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 37.0% vs projected 24.0-28.7%"
     },
     {
       "turn": 4,
@@ -604,6 +326,11 @@
         25.7,
         30.5
       ],
+      "ev_envelope": [
+        11.7,
+        33.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 12.0% vs projected 25.7-30.5%"
     },
     {
@@ -618,35 +345,12 @@
         35.1,
         41.6
       ],
+      "ev_envelope": [
+        33.2,
+        117.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 49.0% vs projected 35.1-41.6%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Dragonite",
-      "move": "Heat Wave",
-      "defender": "Froslass",
-      "observed": 39.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        31.0,
-        36.6
-      ],
-      "reason": "observed 39.0% vs projected 31.0-36.6%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Dragonite",
-      "move": "Heat Wave",
-      "defender": "Basculegion",
-      "observed": 11.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        7.1,
-        8.6
-      ],
-      "reason": "observed 11.0% vs projected 7.1-8.6%"
     },
     {
       "turn": 4,
@@ -660,6 +364,11 @@
         23.7,
         28.5
       ],
+      "ev_envelope": [
+        17.4,
+        55.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 36.0% vs projected 23.7-28.5%"
     },
     {
@@ -674,21 +383,12 @@
         25.6,
         30.4
       ],
-      "reason": "observed 47.0% vs projected 25.6-30.4%"
-    },
-    {
-      "turn": 5,
-      "attacker": "Kingambit",
-      "move": "Kowtow Cleave",
-      "defender": "Dragonite",
-      "observed": 56.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        43.7,
-        52.1
+      "ev_envelope": [
+        13.5,
+        44.0
       ],
-      "reason": "observed 56.0% vs projected 43.7-52.1%"
+      "explained_by_ev_nature": false,
+      "reason": "observed 47.0% vs projected 25.6-30.4%"
     },
     {
       "turn": 7,
@@ -702,6 +402,11 @@
         8.4,
         10.2
       ],
+      "ev_envelope": [
+        4.0,
+        12.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 15.0% vs projected 8.4-10.2%"
     },
     {
@@ -716,6 +421,11 @@
         38.6,
         45.7
       ],
+      "ev_envelope": [
+        15.0,
+        49.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 58.0% vs projected 38.6-45.7%"
     },
     {
@@ -730,21 +440,12 @@
         13.0,
         15.9
       ],
-      "reason": "observed 27.0% vs projected 13.0-15.9%"
-    },
-    {
-      "turn": 1,
-      "attacker": "Sneasler",
-      "move": "Dire Claw",
-      "defender": "Basculegion",
-      "observed": 24.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        26.9,
-        32.0
+      "ev_envelope": [
+        7.2,
+        22.9
       ],
-      "reason": "observed 24.0% vs projected 26.9-32.0%"
+      "explained_by_ev_nature": false,
+      "reason": "observed 27.0% vs projected 13.0-15.9%"
     },
     {
       "turn": 4,
@@ -758,6 +459,11 @@
         11.1,
         13.0
       ],
+      "ev_envelope": [
+        7.2,
+        23.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 16.0% vs projected 11.1-13.0%"
     },
     {
@@ -772,21 +478,12 @@
         62.3,
         73.9
       ],
-      "reason": "KO from 80.0% but projected max 73.9%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Kingambit",
-      "move": "Kowtow Cleave",
-      "defender": "Froslass",
-      "observed": 83.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        66.9,
-        80.0
+      "ev_envelope": [
+        31.4,
+        96.6
       ],
-      "reason": "observed 83.0% vs projected 66.9-80.0%"
+      "explained_by_ev_nature": true,
+      "reason": "KO from 80.0% but projected max 73.9%"
     },
     {
       "turn": 4,
@@ -800,6 +497,11 @@
         5.3,
         6.3
       ],
+      "ev_envelope": [
+        2.9,
+        9.1
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 19.0% vs projected 5.3-6.3%"
     },
     {
@@ -814,6 +516,11 @@
         29.9,
         35.7
       ],
+      "ev_envelope": [
+        8.0,
+        29.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 48.0% but projected max 35.7%"
     },
     {
@@ -828,6 +535,11 @@
         13.0,
         15.9
       ],
+      "ev_envelope": [
+        4.8,
+        15.4
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 26.0% vs projected 13.0-15.9%"
     },
     {
@@ -842,6 +554,11 @@
         13.0,
         15.9
       ],
+      "ev_envelope": [
+        7.2,
+        22.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 26.0% vs projected 13.0-15.9%"
     },
     {
@@ -856,6 +573,11 @@
         13.0,
         15.9
       ],
+      "ev_envelope": [
+        7.2,
+        22.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "KO from 24.0% but projected max 15.9%"
     },
     {
@@ -870,6 +592,11 @@
         30.6,
         36.3
       ],
+      "ev_envelope": [
+        11.8,
+        44.5
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 36.3%"
     },
     {
@@ -884,6 +611,11 @@
         16.4,
         19.8
       ],
+      "ev_envelope": [
+        10.6,
+        34.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 23.0% vs projected 16.4-19.8%"
     },
     {
@@ -898,21 +630,12 @@
         38.2,
         45.4
       ],
-      "reason": "observed 71.0% vs projected 38.2-45.4%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Kingambit",
-      "move": "Kowtow Cleave",
-      "defender": "Froslass",
-      "observed": 85.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        66.9,
-        80.0
+      "ev_envelope": [
+        20.3,
+        65.7
       ],
-      "reason": "observed 85.0% vs projected 66.9-80.0%"
+      "explained_by_ev_nature": false,
+      "reason": "observed 71.0% vs projected 38.2-45.4%"
     },
     {
       "turn": 3,
@@ -926,6 +649,11 @@
         55.8,
         67.0
       ],
+      "ev_envelope": [
+        23.8,
+        83.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 75.0% vs projected 55.8-67.0%"
     },
     {
@@ -940,21 +668,12 @@
         8.7,
         10.6
       ],
-      "reason": "observed 18.0% vs projected 8.7-10.6%"
-    },
-    {
-      "turn": 5,
-      "attacker": "Froslass",
-      "move": "Blizzard",
-      "defender": "Sneasler",
-      "observed": 40.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        31.8,
-        37.6
+      "ev_envelope": [
+        4.8,
+        15.4
       ],
-      "reason": "observed 40.0% vs projected 31.8-37.6%"
+      "explained_by_ev_nature": false,
+      "reason": "observed 18.0% vs projected 8.7-10.6%"
     },
     {
       "turn": 1,
@@ -968,6 +687,11 @@
         38.2,
         45.4
       ],
+      "ev_envelope": [
+        20.3,
+        65.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 75.0% vs projected 38.2-45.4%"
     },
     {
@@ -982,21 +706,12 @@
         54.1,
         63.7
       ],
-      "reason": "observed 72.0% vs projected 54.1-63.7%"
-    },
-    {
-      "turn": 1,
-      "attacker": "Froslass",
-      "move": "Blizzard",
-      "defender": "Scovillain",
-      "observed": 53.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        41.6,
-        49.1
+      "ev_envelope": [
+        19.8,
+        71.6
       ],
-      "reason": "observed 53.0% vs projected 41.6-49.1%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 72.0% vs projected 54.1-63.7%"
     },
     {
       "turn": 3,
@@ -1010,6 +725,11 @@
         9.3,
         11.2
       ],
+      "ev_envelope": [
+        5.2,
+        18.6
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 14.0% vs projected 9.3-11.2%"
     },
     {
@@ -1024,6 +744,11 @@
         18.5,
         22.3
       ],
+      "ev_envelope": [
+        7.5,
+        27.1
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 85.0% vs projected 18.5-22.3%"
     },
     {
@@ -1038,6 +763,11 @@
         5.1,
         6.6
       ],
+      "ev_envelope": [
+        2.2,
+        8.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 9.0% vs projected 5.1-6.6%"
     },
     {
@@ -1052,6 +782,11 @@
         93.2,
         109.3
       ],
+      "ev_envelope": [
+        48.8,
+        162.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 70.0% vs projected 93.2-109.3%"
     },
     {
@@ -1066,6 +801,11 @@
         15.9,
         19.3
       ],
+      "ev_envelope": [
+        10.1,
+        34.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 23.0% vs projected 15.9-19.3%"
     },
     {
@@ -1080,6 +820,11 @@
         49.7,
         58.6
       ],
+      "ev_envelope": [
+        10.2,
+        36.8
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 81.0% but projected max 58.6%"
     },
     {
@@ -1094,6 +839,11 @@
         47.6,
         57.9
       ],
+      "ev_envelope": [
+        18.1,
+        70.3
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 91.0% but projected max 57.9%"
     },
     {
@@ -1108,6 +858,11 @@
         59.4,
         71.0
       ],
+      "ev_envelope": [
+        28.9,
+        105.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 90.0% vs projected 59.4-71.0%"
     },
     {
@@ -1122,6 +877,11 @@
         25.8,
         30.9
       ],
+      "ev_envelope": [
+        12.9,
+        46.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 22.0% vs projected 25.8-30.9%"
     },
     {
@@ -1136,6 +896,11 @@
         30.9,
         37.1
       ],
+      "ev_envelope": [
+        13.3,
+        46.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 25.0% vs projected 30.9-37.1%"
     },
     {
@@ -1150,6 +915,11 @@
         15.9,
         19.3
       ],
+      "ev_envelope": [
+        12.1,
+        39.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 24.0% vs projected 15.9-19.3%"
     },
     {
@@ -1164,6 +934,11 @@
         42.6,
         50.3
       ],
+      "ev_envelope": [
+        25.5,
+        84.8
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 50.3%"
     },
     {
@@ -1178,6 +953,11 @@
         56.2,
         66.3
       ],
+      "ev_envelope": [
+        29.0,
+        102.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 49.0% vs projected 56.2-66.3%"
     },
     {
@@ -1192,6 +972,11 @@
         76.6,
         91.0
       ],
+      "ev_envelope": [
+        30.5,
+        109.7
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 99.0% vs projected 76.6-91.0%"
     },
     {
@@ -1206,6 +991,11 @@
         37.4,
         44.5
       ],
+      "ev_envelope": [
+        19.7,
+        68.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 58.0% vs projected 37.4-44.5%"
     },
     {
@@ -1220,6 +1010,11 @@
         11.8,
         14.0
       ],
+      "ev_envelope": [
+        4.8,
+        15.7
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 9.0% vs projected 11.8-14.0%"
     },
     {
@@ -1234,21 +1029,12 @@
         65.7,
         78.6
       ],
-      "reason": "observed 50.0% vs projected 65.7-78.6%"
-    },
-    {
-      "turn": 6,
-      "attacker": "Garchomp",
-      "move": "Earthquake",
-      "defender": "Incineroar",
-      "observed": 36.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
+      "ev_envelope": [
         38.4,
-        47.5
+        128.6
       ],
-      "reason": "observed 36.0% vs projected 38.4-47.5%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 50.0% vs projected 65.7-78.6%"
     },
     {
       "turn": 7,
@@ -1262,6 +1048,11 @@
         63.3,
         75.7
       ],
+      "ev_envelope": [
+        27.7,
+        87.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 56.0% vs projected 63.3-75.7%"
     },
     {
@@ -1276,21 +1067,12 @@
         47.3,
         56.0
       ],
-      "reason": "observed 62.0% vs projected 47.3-56.0%"
-    },
-    {
-      "turn": 1,
-      "attacker": "Garchomp",
-      "move": "Earthquake",
-      "defender": "Wyrdeer",
-      "observed": 28.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
+      "ev_envelope": [
         30.9,
-        37.1
+        96.0
       ],
-      "reason": "observed 28.0% vs projected 30.9-37.1%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 62.0% vs projected 47.3-56.0%"
     },
     {
       "turn": 1,
@@ -1304,6 +1086,11 @@
         15.9,
         19.3
       ],
+      "ev_envelope": [
+        12.1,
+        39.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 24.0% vs projected 15.9-19.3%"
     },
     {
@@ -1318,6 +1105,11 @@
         0.0,
         0.0
       ],
+      "ev_envelope": [
+        0.0,
+        0.0
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 0.0%"
     },
     {
@@ -1332,21 +1124,12 @@
         17.9,
         21.4
       ],
-      "reason": "observed 15.0% vs projected 17.9-21.4%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Garchomp",
-      "move": "Stomping Tantrum",
-      "defender": "Wyrdeer",
-      "observed": 19.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        21.3,
-        25.3
+      "ev_envelope": [
+        6.4,
+        21.4
       ],
-      "reason": "observed 19.0% vs projected 21.3-25.3%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 15.0% vs projected 17.9-21.4%"
     },
     {
       "turn": 3,
@@ -1360,6 +1143,11 @@
         45.8,
         54.2
       ],
+      "ev_envelope": [
+        20.8,
+        68.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 41.0% vs projected 45.8-54.2%"
     },
     {
@@ -1374,6 +1162,11 @@
         30.5,
         36.2
       ],
+      "ev_envelope": [
+        20.8,
+        68.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 25.0% vs projected 30.5-36.2%"
     },
     {
@@ -1388,6 +1181,11 @@
         25.3,
         30.3
       ],
+      "ev_envelope": [
+        20.0,
+        69.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 21.0% vs projected 25.3-30.3%"
     },
     {
@@ -1402,6 +1200,11 @@
         25.3,
         30.3
       ],
+      "ev_envelope": [
+        13.3,
+        46.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 21.0% vs projected 25.3-30.3%"
     },
     {
@@ -1416,6 +1219,11 @@
         29.0,
         33.8
       ],
+      "ev_envelope": [
+        16.9,
+        62.1
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 83.0% vs projected 29.0-33.8%"
     },
     {
@@ -1430,6 +1238,11 @@
         7.9,
         9.4
       ],
+      "ev_envelope": [
+        6.9,
+        22.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 20.0% vs projected 7.9-9.4%"
     },
     {
@@ -1444,6 +1257,11 @@
         22.4,
         28.1
       ],
+      "ev_envelope": [
+        16.3,
+        57.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 28.1%"
     },
     {
@@ -1458,6 +1276,11 @@
         200.0,
         236.6
       ],
+      "ev_envelope": [
+        100.0,
+        360.8
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 0.0% vs projected 200.0-236.6%"
     },
     {
@@ -1472,6 +1295,11 @@
         35.9,
         42.7
       ],
+      "ev_envelope": [
+        19.8,
+        73.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 58.0% vs projected 35.9-42.7%"
     },
     {
@@ -1486,6 +1314,11 @@
         16.8,
         20.8
       ],
+      "ev_envelope": [
+        13.4,
+        44.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 48.0% vs projected 16.8-20.8%"
     },
     {
@@ -1500,6 +1333,11 @@
         40.2,
         47.6
       ],
+      "ev_envelope": [
+        23.2,
+        90.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 47.6%"
     },
     {
@@ -1514,6 +1352,11 @@
         33.1,
         40.1
       ],
+      "ev_envelope": [
+        11.2,
+        45.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 46.0% vs projected 33.1-40.1%"
     },
     {
@@ -1528,6 +1371,11 @@
         90.7,
         108.1
       ],
+      "ev_envelope": [
+        34.4,
+        121.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 60.0% vs projected 90.7-108.1%"
     },
     {
@@ -1542,21 +1390,12 @@
         20.6,
         24.4
       ],
-      "reason": "KO from 100.0% but projected max 24.4%"
-    },
-    {
-      "turn": 4,
-      "attacker": "Altaria",
-      "move": "Flamethrower",
-      "defender": "Mawile",
-      "observed": 77.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        62.4,
-        73.6
+      "ev_envelope": [
+        10.9,
+        37.5
       ],
-      "reason": "observed 77.0% vs projected 62.4-73.6%"
+      "explained_by_ev_nature": false,
+      "reason": "KO from 100.0% but projected max 24.4%"
     },
     {
       "turn": 5,
@@ -1570,6 +1409,11 @@
         11.2,
         13.6
       ],
+      "ev_envelope": [
+        5.7,
+        20.8
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 23.0% but projected max 13.6%"
     },
     {
@@ -1584,6 +1428,11 @@
         7.6,
         8.7
       ],
+      "ev_envelope": [
+        4.7,
+        15.7
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 17.0% vs projected 7.6-8.7%"
     },
     {
@@ -1598,6 +1447,11 @@
         20.7,
         25.0
       ],
+      "ev_envelope": [
+        12.6,
+        49.1
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 83.0% but projected max 25.0%"
     },
     {
@@ -1612,6 +1466,11 @@
         8.8,
         10.4
       ],
+      "ev_envelope": [
+        4.9,
+        18.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 27.0% vs projected 8.8-10.4%"
     },
     {
@@ -1626,6 +1485,11 @@
         21.1,
         25.5
       ],
+      "ev_envelope": [
+        10.9,
+        38.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "KO from 40.0% but projected max 25.5%"
     },
     {
@@ -1640,6 +1504,11 @@
         59.2,
         69.4
       ],
+      "ev_envelope": [
+        24.6,
+        85.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 52.0% vs projected 59.2-69.4%"
     },
     {
@@ -1654,6 +1523,11 @@
         22.4,
         26.7
       ],
+      "ev_envelope": [
+        11.5,
+        41.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 19.0% vs projected 22.4-26.7%"
     },
     {
@@ -1668,21 +1542,12 @@
         40.2,
         47.6
       ],
-      "reason": "KO from 100.0% but projected max 47.6%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Diggersby",
-      "move": "Earthquake",
-      "defender": "Mr. Rime",
-      "observed": 44.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        33.1,
-        40.1
+      "ev_envelope": [
+        23.2,
+        90.9
       ],
-      "reason": "observed 44.0% vs projected 33.1-40.1%"
+      "explained_by_ev_nature": false,
+      "reason": "KO from 100.0% but projected max 47.6%"
     },
     {
       "turn": 2,
@@ -1696,6 +1561,11 @@
         90.7,
         108.1
       ],
+      "ev_envelope": [
+        34.4,
+        121.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 60.0% vs projected 90.7-108.1%"
     },
     {
@@ -1710,6 +1580,11 @@
         11.2,
         13.6
       ],
+      "ev_envelope": [
+        5.7,
+        20.8
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 25.0% vs projected 11.2-13.6%"
     },
     {
@@ -1724,6 +1599,11 @@
         76.1,
         91.0
       ],
+      "ev_envelope": [
+        31.6,
+        127.6
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 55.0% vs projected 76.1-91.0%"
     },
     {
@@ -1738,6 +1618,11 @@
         40.2,
         47.6
       ],
+      "ev_envelope": [
+        23.2,
+        90.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 97.0% vs projected 40.2-47.6%"
     },
     {
@@ -1752,6 +1637,11 @@
         90.7,
         108.1
       ],
+      "ev_envelope": [
+        34.4,
+        121.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 66.0% vs projected 90.7-108.1%"
     },
     {
@@ -1766,6 +1656,11 @@
         31.5,
         38.0
       ],
+      "ev_envelope": [
+        14.7,
+        49.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 21.0% vs projected 31.5-38.0%"
     },
     {
@@ -1780,6 +1675,11 @@
         20.7,
         25.0
       ],
+      "ev_envelope": [
+        12.6,
+        49.1
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 85.0% but projected max 25.0%"
     },
     {
@@ -1794,6 +1694,11 @@
         47.0,
         55.7
       ],
+      "ev_envelope": [
+        22.3,
+        69.4
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 55.7%"
     },
     {
@@ -1808,6 +1713,11 @@
         10.5,
         12.4
       ],
+      "ev_envelope": [
+        5.4,
+        19.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 16.0% vs projected 10.5-12.4%"
     },
     {
@@ -1822,6 +1732,11 @@
         53.6,
         63.5
       ],
+      "ev_envelope": [
+        28.6,
+        93.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 70.0% vs projected 53.6-63.5%"
     },
     {
@@ -1836,6 +1751,11 @@
         19.0,
         22.9
       ],
+      "ev_envelope": [
+        9.7,
+        36.6
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 75.0% vs projected 19.0-22.9%"
     },
     {
@@ -1850,6 +1770,11 @@
         23.2,
         28.1
       ],
+      "ev_envelope": [
+        9.8,
+        33.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 40.0% vs projected 23.2-28.1%"
     },
     {
@@ -1864,6 +1789,11 @@
         39.6,
         46.7
       ],
+      "ev_envelope": [
+        21.1,
+        71.8
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 74.0% vs projected 39.6-46.7%"
     },
     {
@@ -1878,6 +1808,11 @@
         7.2,
         8.7
       ],
+      "ev_envelope": [
+        5.3,
+        16.6
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 13.0% vs projected 7.2-8.7%"
     },
     {
@@ -1892,21 +1827,12 @@
         15.9,
         18.8
       ],
-      "reason": "observed 31.0% vs projected 15.9-18.8%"
-    },
-    {
-      "turn": 3,
-      "attacker": "Gengar",
-      "move": "Dazzling Gleam",
-      "defender": "Raichu",
-      "observed": 18.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        20.7,
-        24.4
+      "ev_envelope": [
+        10.6,
+        33.7
       ],
-      "reason": "observed 18.0% vs projected 20.7-24.4%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 31.0% vs projected 15.9-18.8%"
     },
     {
       "turn": 4,
@@ -1920,6 +1846,11 @@
         50.0,
         60.0
       ],
+      "ev_envelope": [
+        19.2,
+        72.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 45.0% vs projected 50.0-60.0%"
     },
     {
@@ -1934,6 +1865,11 @@
         73.8,
         87.5
       ],
+      "ev_envelope": [
+        29.2,
+        96.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 68.0% vs projected 73.8-87.5%"
     },
     {
@@ -1948,6 +1884,11 @@
         23.0,
         27.8
       ],
+      "ev_envelope": [
+        12.8,
+        41.3
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 27.8%"
     },
     {
@@ -1959,10 +1900,15 @@
       "ko": false,
       "spread": false,
       "projected": [
-        36.6,
-        43.9
+        28.0,
+        33.5
       ],
-      "reason": "observed 85.0% vs projected 36.6-43.9%"
+      "ev_envelope": [
+        20.1,
+        70.5
+      ],
+      "explained_by_ev_nature": false,
+      "reason": "observed 85.0% vs projected 28.0-33.5%"
     },
     {
       "turn": 1,
@@ -1976,6 +1922,11 @@
         10.1,
         12.4
       ],
+      "ev_envelope": [
+        9.0,
+        31.5
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 16.0% vs projected 10.1-12.4%"
     },
     {
@@ -1990,21 +1941,12 @@
         74.5,
         87.6
       ],
-      "reason": "observed 64.0% vs projected 74.5-87.6%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Goodra-Hisui",
-      "move": "Breaking Swipe",
-      "defender": "Sinistcha",
-      "observed": 15.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        10.1,
-        12.4
+      "ev_envelope": [
+        29.9,
+        97.8
       ],
-      "reason": "observed 15.0% vs projected 10.1-12.4%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 64.0% vs projected 74.5-87.6%"
     },
     {
       "turn": 3,
@@ -2015,10 +1957,15 @@
       "ko": false,
       "spread": true,
       "projected": [
-        19.8,
-        23.4
+        14.4,
+        17.4
       ],
-      "reason": "observed 71.0% vs projected 19.8-23.4%"
+      "ev_envelope": [
+        14.4,
+        51.1
+      ],
+      "explained_by_ev_nature": false,
+      "reason": "observed 71.0% vs projected 14.4-17.4%"
     },
     {
       "turn": 3,
@@ -2029,10 +1976,15 @@
       "ko": false,
       "spread": true,
       "projected": [
-        11.8,
-        13.9
+        9.1,
+        10.7
       ],
-      "reason": "observed 31.0% vs projected 11.8-13.9%"
+      "ev_envelope": [
+        9.6,
+        32.9
+      ],
+      "explained_by_ev_nature": true,
+      "reason": "observed 31.0% vs projected 9.1-10.7%"
     },
     {
       "turn": 4,
@@ -2046,6 +1998,11 @@
         34.2,
         40.6
       ],
+      "ev_envelope": [
+        23.0,
+        71.6
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 46.0% vs projected 34.2-40.6%"
     },
     {
@@ -2060,6 +2017,11 @@
         39.1,
         46.2
       ],
+      "ev_envelope": [
+        21.1,
+        71.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "KO from 66.0% but projected max 46.2%"
     },
     {
@@ -2074,6 +2036,11 @@
         105.0,
         123.8
       ],
+      "ev_envelope": [
+        46.9,
+        151.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 70.0% vs projected 105.0-123.8%"
     },
     {
@@ -2088,6 +2055,11 @@
         59.4,
         70.6
       ],
+      "ev_envelope": [
+        27.3,
+        94.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 54.0% vs projected 59.4-70.6%"
     },
     {
@@ -2102,6 +2074,11 @@
         18.4,
         22.2
       ],
+      "ev_envelope": [
+        13.5,
+        40.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 27.0% vs projected 18.4-22.2%"
     },
     {
@@ -2116,6 +2093,11 @@
         61.0,
         71.7
       ],
+      "ev_envelope": [
+        41.7,
+        121.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 96.0% vs projected 61.0-71.7%"
     },
     {
@@ -2130,6 +2112,11 @@
         0.0,
         0.0
       ],
+      "ev_envelope": [
+        0.0,
+        0.0
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 53.0% vs projected 0.0-0.0%"
     },
     {
@@ -2144,6 +2131,11 @@
         39.1,
         46.2
       ],
+      "ev_envelope": [
+        21.1,
+        71.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 70.0% vs projected 39.1-46.2%"
     },
     {
@@ -2158,6 +2150,11 @@
         70.3,
         83.6
       ],
+      "ev_envelope": [
+        34.9,
+        122.7
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 99.0% vs projected 70.3-83.6%"
     },
     {
@@ -2169,10 +2166,15 @@
       "ko": true,
       "spread": true,
       "projected": [
-        29.3,
-        34.7
+        21.6,
+        25.7
       ],
-      "reason": "KO from 100.0% but projected max 34.7%"
+      "ev_envelope": [
+        21.6,
+        76.3
+      ],
+      "explained_by_ev_nature": false,
+      "reason": "KO from 100.0% but projected max 25.7%"
     },
     {
       "turn": 4,
@@ -2183,10 +2185,15 @@
       "ko": true,
       "spread": true,
       "projected": [
-        38.7,
-        45.8
+        29.0,
+        34.8
       ],
-      "reason": "KO from 54.0% but projected max 45.8%"
+      "ev_envelope": [
+        18.2,
+        59.4
+      ],
+      "explained_by_ev_nature": true,
+      "reason": "KO from 54.0% but projected max 34.8%"
     },
     {
       "turn": 6,
@@ -2200,6 +2207,11 @@
         55.1,
         65.2
       ],
+      "ev_envelope": [
+        40.4,
+        132.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "KO from 100.0% but projected max 65.2%"
     },
     {
@@ -2214,6 +2226,11 @@
         64.9,
         76.6
       ],
+      "ev_envelope": [
+        14.6,
+        50.3
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 87.0% vs projected 64.9-76.6%"
     },
     {
@@ -2228,6 +2245,11 @@
         26.3,
         31.6
       ],
+      "ev_envelope": [
+        22.1,
+        79.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 39.0% vs projected 26.3-31.6%"
     },
     {
@@ -2242,6 +2264,11 @@
         50.6,
         59.7
       ],
+      "ev_envelope": [
+        26.0,
+        86.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 32.0% vs projected 50.6-59.7%"
     },
     {
@@ -2256,6 +2283,11 @@
         84.1,
         99.4
       ],
+      "ev_envelope": [
+        42.8,
+        144.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 55.0% vs projected 84.1-99.4%"
     },
     {
@@ -2270,6 +2302,11 @@
         29.2,
         34.5
       ],
+      "ev_envelope": [
+        16.0,
+        59.7
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 47.0% vs projected 29.2-34.5%"
     },
     {
@@ -2284,6 +2321,11 @@
         34.4,
         40.6
       ],
+      "ev_envelope": [
+        29.2,
+        101.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 45.0% vs projected 34.4-40.6%"
     },
     {
@@ -2298,6 +2340,11 @@
         27.1,
         32.3
       ],
+      "ev_envelope": [
+        21.9,
+        76.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 38.0% vs projected 27.1-32.3%"
     },
     {
@@ -2312,6 +2359,11 @@
         54.4,
         64.3
       ],
+      "ev_envelope": [
+        31.9,
+        110.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 76.0% vs projected 54.4-64.3%"
     },
     {
@@ -2326,6 +2378,11 @@
         41.4,
         49.3
       ],
+      "ev_envelope": [
+        16.5,
+        62.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "KO from 54.0% but projected max 49.3%"
     },
     {
@@ -2340,21 +2397,12 @@
         54.1,
         65.0
       ],
-      "reason": "observed 71.0% vs projected 54.1-65.0%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Sableye",
-      "move": "Dazzling Gleam",
-      "defender": "Farigiraf",
-      "observed": 31.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        23.3,
-        27.8
+      "ev_envelope": [
+        32.5,
+        104.0
       ],
-      "reason": "observed 31.0% vs projected 23.3-27.8%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 71.0% vs projected 54.1-65.0%"
     },
     {
       "turn": 2,
@@ -2368,6 +2416,11 @@
         45.8,
         54.2
       ],
+      "ev_envelope": [
+        29.2,
+        101.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 61.0% vs projected 45.8-54.2%"
     },
     {
@@ -2382,6 +2435,11 @@
         63.2,
         74.3
       ],
+      "ev_envelope": [
+        25.3,
+        92.0
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 74.3%"
     },
     {
@@ -2396,6 +2454,11 @@
         63.2,
         74.9
       ],
+      "ev_envelope": [
+        50.8,
+        181.2
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 36.0% vs projected 63.2-74.9%"
     },
     {
@@ -2410,6 +2473,11 @@
         9.9,
         11.7
       ],
+      "ev_envelope": [
+        8.3,
+        30.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 19.0% vs projected 9.9-11.7%"
     },
     {
@@ -2424,6 +2492,11 @@
         63.2,
         74.9
       ],
+      "ev_envelope": [
+        33.7,
+        120.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 39.0% vs projected 63.2-74.9%"
     },
     {
@@ -2438,6 +2511,11 @@
         31.8,
         37.6
       ],
+      "ev_envelope": [
+        12.3,
+        41.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 55.0% vs projected 31.8-37.6%"
     },
     {
@@ -2452,6 +2530,11 @@
         31.8,
         37.6
       ],
+      "ev_envelope": [
+        12.3,
+        41.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 45.0% but projected max 37.6%"
     },
     {
@@ -2466,6 +2549,11 @@
         9.3,
         11.2
       ],
+      "ev_envelope": [
+        12.2,
+        39.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 16.0% vs projected 9.3-11.2%"
     },
     {
@@ -2480,21 +2568,12 @@
         24.8,
         29.3
       ],
-      "reason": "observed 33.0% vs projected 24.8-29.3%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Sableye",
-      "move": "Dazzling Gleam",
-      "defender": "Staraptor",
-      "observed": 57.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        45.8,
-        54.2
+      "ev_envelope": [
+        21.7,
+        75.2
       ],
-      "reason": "observed 57.0% vs projected 45.8-54.2%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 33.0% vs projected 24.8-29.3%"
     },
     {
       "turn": 3,
@@ -2508,6 +2587,11 @@
         9.3,
         11.2
       ],
+      "ev_envelope": [
+        8.3,
+        26.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 16.0% vs projected 9.3-11.2%"
     },
     {
@@ -2522,6 +2606,11 @@
         35.4,
         42.2
       ],
+      "ev_envelope": [
+        21.9,
+        71.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 25.0% vs projected 35.4-42.2%"
     },
     {
@@ -2536,21 +2625,12 @@
         150.0,
         177.6
       ],
-      "reason": "observed 99.0% vs projected 150.0-177.6%"
-    },
-    {
-      "turn": 5,
-      "attacker": "Lycanroc-Dusk",
-      "move": "Accelerock",
-      "defender": "Meowstic",
-      "observed": 20.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        22.8,
-        26.9
+      "ev_envelope": [
+        56.0,
+        213.3
       ],
-      "reason": "observed 20.0% vs projected 22.8-26.9%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 99.0% vs projected 150.0-177.6%"
     },
     {
       "turn": 6,
@@ -2564,6 +2644,11 @@
         31.6,
         37.4
       ],
+      "ev_envelope": [
+        14.9,
+        54.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 24.0% vs projected 31.6-37.4%"
     },
     {
@@ -2578,6 +2663,11 @@
         5.9,
         6.8
       ],
+      "ev_envelope": [
+        4.9,
+        16.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 10.0% vs projected 5.9-6.8%"
     },
     {
@@ -2592,6 +2682,11 @@
         28.2,
         33.5
       ],
+      "ev_envelope": [
+        13.2,
+        44.6
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 24.0% vs projected 28.2-33.5%"
     },
     {
@@ -2606,6 +2701,11 @@
         14.1,
         16.1
       ],
+      "ev_envelope": [
+        7.9,
+        27.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 21.0% vs projected 14.1-16.1%"
     },
     {
@@ -2620,6 +2720,11 @@
         89.8,
         106.8
       ],
+      "ev_envelope": [
+        31.7,
+        113.6
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 61.0% vs projected 89.8-106.8%"
     },
     {
@@ -2634,6 +2739,11 @@
         33.5,
         39.8
       ],
+      "ev_envelope": [
+        17.3,
+        58.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 22.0% vs projected 33.5-39.8%"
     },
     {
@@ -2648,21 +2758,12 @@
         30.7,
         35.9
       ],
-      "reason": "observed 44.0% vs projected 30.7-35.9%"
-    },
-    {
-      "turn": 5,
-      "attacker": "Sableye",
-      "move": "Dazzling Gleam",
-      "defender": "Staraptor",
-      "observed": 38.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        30.7,
-        35.9
+      "ev_envelope": [
+        28.6,
+        100.6
       ],
-      "reason": "observed 38.0% vs projected 30.7-35.9%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 44.0% vs projected 30.7-35.9%"
     },
     {
       "turn": 6,
@@ -2676,6 +2777,11 @@
         16.6,
         20.5
       ],
+      "ev_envelope": [
+        12.2,
+        40.5
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 29.0% vs projected 16.6-20.5%"
     },
     {
@@ -2690,6 +2796,11 @@
         35.2,
         41.8
       ],
+      "ev_envelope": [
+        28.0,
+        94.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 60.0% vs projected 35.2-41.8%"
     },
     {
@@ -2704,6 +2815,11 @@
         58.8,
         69.3
       ],
+      "ev_envelope": [
+        21.9,
+        78.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 44.0% vs projected 58.8-69.3%"
     },
     {
@@ -2718,6 +2834,11 @@
         15.6,
         18.8
       ],
+      "ev_envelope": [
+        28.6,
+        100.6
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 22.0% vs projected 15.6-18.8%"
     },
     {
@@ -2732,6 +2853,11 @@
         66.5,
         79.1
       ],
+      "ev_envelope": [
+        30.2,
+        105.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 88.0% vs projected 66.5-79.1%"
     },
     {
@@ -2746,6 +2872,11 @@
         24.0,
         29.1
       ],
+      "ev_envelope": [
+        16.8,
+        57.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 36.0% vs projected 24.0-29.1%"
     },
     {
@@ -2760,21 +2891,12 @@
         10.9,
         13.5
       ],
-      "reason": "observed 20.0% vs projected 10.9-13.5%"
-    },
-    {
-      "turn": 3,
-      "attacker": "Scrafty",
-      "move": "Drain Punch",
-      "defender": "Hydreigon",
-      "observed": 68.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        71.0,
-        85.2
+      "ev_envelope": [
+        7.0,
+        22.1
       ],
-      "reason": "observed 68.0% vs projected 71.0-85.2%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 20.0% vs projected 10.9-13.5%"
     },
     {
       "turn": 1,
@@ -2788,6 +2910,11 @@
         122.3,
         145.2
       ],
+      "ev_envelope": [
+        49.2,
+        179.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 99.0% vs projected 122.3-145.2%"
     },
     {
@@ -2802,6 +2929,11 @@
         133.0,
         157.3
       ],
+      "ev_envelope": [
+        27.0,
+        89.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 90.0% vs projected 133.0-157.3%"
     },
     {
@@ -2816,6 +2948,11 @@
         37.2,
         44.9
       ],
+      "ev_envelope": [
+        13.4,
+        48.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 51.0% vs projected 37.2-44.9%"
     },
     {
@@ -2830,6 +2967,11 @@
         81.0,
         95.8
       ],
+      "ev_envelope": [
+        33.7,
+        109.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 70.0% vs projected 81.0-95.8%"
     },
     {
@@ -2844,6 +2986,11 @@
         56.5,
         66.5
       ],
+      "ev_envelope": [
+        34.9,
+        116.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "KO from 100.0% but projected max 66.5%"
     },
     {
@@ -2858,6 +3005,11 @@
         0.0,
         0.0
       ],
+      "ev_envelope": [
+        0.0,
+        0.0
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 99.0% vs projected 0.0-0.0%"
     },
     {
@@ -2872,6 +3024,11 @@
         6.1,
         7.3
       ],
+      "ev_envelope": [
+        4.3,
+        15.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 11.0% vs projected 6.1-7.3%"
     },
     {
@@ -2886,6 +3043,11 @@
         92.7,
         109.8
       ],
+      "ev_envelope": [
+        46.3,
+        165.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 77.0% vs projected 92.7-109.8%"
     },
     {
@@ -2900,6 +3062,11 @@
         38.0,
         45.3
       ],
+      "ev_envelope": [
+        23.1,
+        82.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 96.0% vs projected 38.0-45.3%"
     },
     {
@@ -2914,6 +3081,11 @@
         37.4,
         44.2
       ],
+      "ev_envelope": [
+        16.4,
+        68.3
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 99.0% vs projected 37.4-44.2%"
     },
     {
@@ -2928,6 +3100,11 @@
         17.0,
         20.0
       ],
+      "ev_envelope": [
+        9.1,
+        30.3
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 53.0% vs projected 17.0-20.0%"
     },
     {
@@ -2942,21 +3119,12 @@
         17.0,
         20.0
       ],
-      "reason": "KO from 28.0% but projected max 20.0%"
-    },
-    {
-      "turn": 3,
-      "attacker": "Kangaskhan",
-      "move": "Rock Slide",
-      "defender": "Ariados",
-      "observed": 35.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        38.4,
-        46.3
+      "ev_envelope": [
+        9.1,
+        30.3
       ],
-      "reason": "observed 35.0% vs projected 38.4-46.3%"
+      "explained_by_ev_nature": true,
+      "reason": "KO from 28.0% but projected max 20.0%"
     },
     {
       "turn": 4,
@@ -2970,6 +3138,11 @@
         11.9,
         14.4
       ],
+      "ev_envelope": [
+        8.4,
+        31.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 22.0% vs projected 11.9-14.4%"
     },
     {
@@ -2984,6 +3157,11 @@
         11.9,
         14.4
       ],
+      "ev_envelope": [
+        8.4,
+        31.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 25.0% vs projected 11.9-14.4%"
     },
     {
@@ -2998,6 +3176,11 @@
         0.0,
         0.0
       ],
+      "ev_envelope": [
+        0.0,
+        0.0
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 100.0% but projected max 0.0%"
     },
     {
@@ -3012,6 +3195,11 @@
         51.2,
         61.0
       ],
+      "ev_envelope": [
+        28.6,
+        104.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 69.0% vs projected 51.2-61.0%"
     },
     {
@@ -3026,6 +3214,11 @@
         70.1,
         83.1
       ],
+      "ev_envelope": [
+        39.0,
+        139.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 54.0% vs projected 70.1-83.1%"
     },
     {
@@ -3040,6 +3233,11 @@
         35.6,
         42.4
       ],
+      "ev_envelope": [
+        19.2,
+        70.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 29.0% vs projected 35.6-42.4%"
     },
     {
@@ -3054,6 +3252,11 @@
         21.8,
         25.6
       ],
+      "ev_envelope": [
+        10.0,
+        35.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 18.0% vs projected 21.8-25.6%"
     },
     {
@@ -3068,21 +3271,12 @@
         51.7,
         61.6
       ],
-      "reason": "KO from 82.0% but projected max 61.6%"
-    },
-    {
-      "turn": 9,
-      "attacker": "Alakazam",
-      "move": "Psychic",
-      "defender": "Heliolisk",
-      "observed": 75.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        79.9,
-        95.0
+      "ev_envelope": [
+        26.5,
+        91.6
       ],
-      "reason": "observed 75.0% vs projected 79.9-95.0%"
+      "explained_by_ev_nature": true,
+      "reason": "KO from 82.0% but projected max 61.6%"
     },
     {
       "turn": 9,
@@ -3096,6 +3290,11 @@
         66.2,
         77.7
       ],
+      "ev_envelope": [
+        27.2,
+        96.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 87.0% vs projected 66.2-77.7%"
     },
     {
@@ -3110,6 +3309,11 @@
         111.0,
         130.8
       ],
+      "ev_envelope": [
+        14.5,
+        47.2
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 84.0% vs projected 111.0-130.8%"
     },
     {
@@ -3124,6 +3328,11 @@
         51.2,
         61.0
       ],
+      "ev_envelope": [
+        28.6,
+        104.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 69.0% vs projected 51.2-61.0%"
     },
     {
@@ -3138,6 +3347,11 @@
         85.4,
         101.5
       ],
+      "ev_envelope": [
+        32.1,
+        115.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 61.0% vs projected 85.4-101.5%"
     },
     {
@@ -3152,6 +3366,11 @@
         125.3,
         148.4
       ],
+      "ev_envelope": [
+        63.7,
+        201.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 99.0% vs projected 125.3-148.4%"
     },
     {
@@ -3166,6 +3385,11 @@
         70.1,
         83.1
       ],
+      "ev_envelope": [
+        39.0,
+        139.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 62.0% vs projected 70.1-83.1%"
     },
     {
@@ -3180,6 +3404,11 @@
         32.4,
         38.5
       ],
+      "ev_envelope": [
+        19.7,
+        65.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 50.0% vs projected 32.4-38.5%"
     },
     {
@@ -3194,6 +3423,11 @@
         51.7,
         61.6
       ],
+      "ev_envelope": [
+        26.5,
+        91.6
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 99.0% vs projected 51.7-61.6%"
     },
     {
@@ -3208,6 +3442,11 @@
         21.8,
         25.6
       ],
+      "ev_envelope": [
+        10.0,
+        35.2
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed -80.0% vs projected 21.8-25.6%"
     },
     {
@@ -3222,6 +3461,8 @@
         51.7,
         61.6
       ],
+      "ev_envelope": null,
+      "explained_by_ev_nature": null,
       "reason": "observed 80.0% vs projected 51.7-61.6%"
     },
     {
@@ -3236,6 +3477,11 @@
         8.9,
         10.8
       ],
+      "ev_envelope": [
+        6.1,
+        21.0
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 25.0% vs projected 8.9-10.8%"
     },
     {
@@ -3250,6 +3496,11 @@
         42.9,
         50.8
       ],
+      "ev_envelope": [
+        26.0,
+        95.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 79.0% vs projected 42.9-50.8%"
     },
     {
@@ -3264,6 +3515,11 @@
         21.6,
         25.8
       ],
+      "ev_envelope": [
+        19.7,
+        65.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 39.0% vs projected 21.6-25.8%"
     },
     {
@@ -3278,6 +3534,11 @@
         10.3,
         12.7
       ],
+      "ev_envelope": [
+        7.5,
+        25.4
+      ],
+      "explained_by_ev_nature": false,
       "reason": "KO from 61.0% but projected max 12.7%"
     },
     {
@@ -3292,21 +3553,12 @@
         35.8,
         42.5
       ],
-      "reason": "observed 55.0% vs projected 35.8-42.5%"
-    },
-    {
-      "turn": 3,
-      "attacker": "Vileplume",
-      "move": "Weather Ball",
-      "defender": "Conkeldurr",
-      "observed": 45.0,
-      "ko": true,
-      "spread": false,
-      "projected": [
-        35.8,
-        42.5
+      "ev_envelope": [
+        25.0,
+        87.2
       ],
-      "reason": "KO from 45.0% but projected max 42.5%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 55.0% vs projected 35.8-42.5%"
     },
     {
       "turn": 4,
@@ -3320,6 +3572,11 @@
         17.5,
         20.3
       ],
+      "ev_envelope": [
+        7.9,
+        28.3
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 14.0% vs projected 17.5-20.3%"
     },
     {
@@ -3334,6 +3591,11 @@
         85.4,
         101.5
       ],
+      "ev_envelope": [
+        32.1,
+        115.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 55.0% vs projected 85.4-101.5%"
     },
     {
@@ -3348,6 +3610,11 @@
         78.0,
         92.1
       ],
+      "ev_envelope": [
+        37.9,
+        126.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 63.0% vs projected 78.0-92.1%"
     },
     {
@@ -3362,6 +3629,11 @@
         51.7,
         61.6
       ],
+      "ev_envelope": [
+        26.5,
+        91.6
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 88.0% vs projected 51.7-61.6%"
     },
     {
@@ -3376,6 +3648,11 @@
         35.1,
         41.2
       ],
+      "ev_envelope": [
+        15.2,
+        55.3
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 7.0% vs projected 35.1-41.2%"
     },
     {
@@ -3390,6 +3667,11 @@
         85.4,
         101.5
       ],
+      "ev_envelope": [
+        32.1,
+        115.4
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 15.0% vs projected 85.4-101.5%"
     },
     {
@@ -3404,6 +3686,11 @@
         23.2,
         27.5
       ],
+      "ev_envelope": [
+        10.0,
+        36.9
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 5.0% vs projected 23.2-27.5%"
     },
     {
@@ -3418,6 +3705,11 @@
         34.6,
         41.2
       ],
+      "ev_envelope": [
+        28.0,
+        86.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 52.0% vs projected 34.6-41.2%"
     },
     {
@@ -3432,6 +3724,11 @@
         36.3,
         43.3
       ],
+      "ev_envelope": [
+        29.8,
+        69.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 31.0% vs projected 36.3-43.3%"
     },
     {
@@ -3446,6 +3743,11 @@
         16.5,
         19.9
       ],
+      "ev_envelope": [
+        17.3,
+        58.0
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 11.0% vs projected 16.5-19.9%"
     },
     {
@@ -3460,21 +3762,12 @@
         70.2,
         84.2
       ],
-      "reason": "observed 60.0% vs projected 70.2-84.2%"
-    },
-    {
-      "turn": 8,
-      "attacker": "Typhlosion-Hisui",
-      "move": "Eruption",
-      "defender": "Aromatisse",
-      "observed": 53.0,
-      "ko": false,
-      "spread": true,
-      "projected": [
-        56.8,
-        67.0
+      "ev_envelope": [
+        29.8,
+        69.8
       ],
-      "reason": "observed 53.0% vs projected 56.8-67.0%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 60.0% vs projected 70.2-84.2%"
     },
     {
       "turn": 9,
@@ -3488,6 +3781,11 @@
         38.0,
         44.9
       ],
+      "ev_envelope": [
+        24.4,
+        82.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 29.0% vs projected 38.0-44.9%"
     },
     {
@@ -3502,6 +3800,11 @@
         22.9,
         27.8
       ],
+      "ev_envelope": [
+        20.5,
+        64.7
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 39.0% vs projected 22.9-27.8%"
     },
     {
@@ -3516,6 +3819,11 @@
         15.1,
         19.0
       ],
+      "ev_envelope": [
+        14.1,
+        43.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 25.0% vs projected 15.1-19.0%"
     },
     {
@@ -3530,6 +3838,11 @@
         38.0,
         44.9
       ],
+      "ev_envelope": [
+        24.4,
+        82.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 32.0% vs projected 38.0-44.9%"
     },
     {
@@ -3544,6 +3857,11 @@
         15.1,
         19.0
       ],
+      "ev_envelope": [
+        14.1,
+        43.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 24.0% vs projected 15.1-19.0%"
     },
     {
@@ -3558,6 +3876,11 @@
         38.0,
         44.9
       ],
+      "ev_envelope": [
+        24.4,
+        82.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 32.0% vs projected 38.0-44.9%"
     },
     {
@@ -3572,6 +3895,11 @@
         16.6,
         20.5
       ],
+      "ev_envelope": [
+        12.2,
+        40.5
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 25.0% vs projected 16.6-20.5%"
     },
     {
@@ -3586,6 +3914,11 @@
         15.1,
         19.0
       ],
+      "ev_envelope": [
+        14.1,
+        43.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 22.0% vs projected 15.1-19.0%"
     },
     {
@@ -3600,21 +3933,12 @@
         11.7,
         13.7
       ],
-      "reason": "observed -30.0% vs projected 11.7-13.7%"
-    },
-    {
-      "turn": 16,
-      "attacker": "Meowscarada",
-      "move": "Knock Off",
-      "defender": "Corviknight",
-      "observed": 16.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        11.7,
-        13.7
+      "ev_envelope": [
+        7.8,
+        27.7
       ],
-      "reason": "observed 16.0% vs projected 11.7-13.7%"
+      "explained_by_ev_nature": false,
+      "reason": "observed -30.0% vs projected 11.7-13.7%"
     },
     {
       "turn": 18,
@@ -3628,6 +3952,11 @@
         8.8,
         10.7
       ],
+      "ev_envelope": [
+        6.3,
+        20.8
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 14.0% vs projected 8.8-10.7%"
     },
     {
@@ -3642,21 +3971,12 @@
         47.6,
         55.9
       ],
-      "reason": "observed 72.0% vs projected 47.6-55.9%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Quaquaval",
-      "move": "Ice Spinner",
-      "defender": "Pidgeot",
-      "observed": 63.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        65.8,
-        78.5
+      "ev_envelope": [
+        29.1,
+        95.4
       ],
-      "reason": "observed 63.0% vs projected 65.8-78.5%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 72.0% vs projected 47.6-55.9%"
     },
     {
       "turn": 2,
@@ -3670,6 +3990,11 @@
         24.3,
         28.8
       ],
+      "ev_envelope": [
+        27.2,
+        87.1
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 39.0% vs projected 24.3-28.8%"
     },
     {
@@ -3684,21 +4009,12 @@
         18.1,
         22.0
       ],
-      "reason": "observed 29.0% vs projected 18.1-22.0%"
-    },
-    {
-      "turn": 1,
-      "attacker": "Incineroar",
-      "move": "Fake Out",
-      "defender": "Pidgeot",
-      "observed": 15.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        17.7,
-        21.5
+      "ev_envelope": [
+        13.4,
+        43.5
       ],
-      "reason": "observed 15.0% vs projected 17.7-21.5%"
+      "explained_by_ev_nature": true,
+      "reason": "observed 29.0% vs projected 18.1-22.0%"
     },
     {
       "turn": 2,
@@ -3712,21 +4028,12 @@
         32.2,
         38.8
       ],
-      "reason": "KO from 100.0% but projected max 38.8%"
-    },
-    {
-      "turn": 2,
-      "attacker": "Incineroar",
-      "move": "Flare Blitz",
-      "defender": "Tyranitar",
-      "observed": 21.0,
-      "ko": false,
-      "spread": false,
-      "projected": [
-        23.2,
-        27.5
+      "ev_envelope": [
+        19.4,
+        69.2
       ],
-      "reason": "observed 21.0% vs projected 23.2-27.5%"
+      "explained_by_ev_nature": false,
+      "reason": "KO from 100.0% but projected max 38.8%"
     },
     {
       "turn": 3,
@@ -3740,6 +4047,11 @@
         23.2,
         28.4
       ],
+      "ev_envelope": [
+        12.8,
+        40.0
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 32.0% vs projected 23.2-28.4%"
     },
     {
@@ -3754,6 +4066,11 @@
         23.2,
         27.1
       ],
+      "ev_envelope": [
+        18.4,
+        61.7
+      ],
+      "explained_by_ev_nature": false,
       "reason": "observed 74.0% vs projected 23.2-27.1%"
     },
     {
@@ -3768,6 +4085,11 @@
         24.8,
         29.9
       ],
+      "ev_envelope": [
+        44.6,
+        159.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 79.0% vs projected 24.8-29.9%"
     },
     {
@@ -3782,6 +4104,11 @@
         61.9,
         73.9
       ],
+      "ev_envelope": [
+        26.4,
+        90.9
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 37.0% vs projected 61.9-73.9%"
     },
     {
@@ -3796,6 +4123,11 @@
         88.6,
         105.1
       ],
+      "ev_envelope": [
+        37.5,
+        128.4
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 52.0% vs projected 88.6-105.1%"
     },
     {
@@ -3810,6 +4142,11 @@
         47.8,
         56.6
       ],
+      "ev_envelope": [
+        24.4,
+        83.2
+      ],
+      "explained_by_ev_nature": true,
       "reason": "observed 37.0% vs projected 47.8-56.6%"
     }
   ]
