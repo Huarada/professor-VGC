@@ -143,7 +143,7 @@ def main() -> None:
     parser.add_argument("--offset", type=int, default=0, help="skip the first N replays (use different games per run)")
     parser.add_argument("--provider", default=None, help="openai|gemini (default: config default)")
     parser.add_argument("--orchestrator", default="native", help="native (default) | langchain | adk")
-    parser.add_argument("--chaos", default="firestore", help="firestore (default) | local")
+    parser.add_argument("--chaos", default="firestore", help="firestore (default) | local | <directory of Chaos dumps>")
     parser.add_argument("--relative-tolerance", type=float, default=0.05,
                         help="relative widening of each claimed bound (default 0.05 = 5%%)")
     parser.add_argument("--out", type=Path, default=None)

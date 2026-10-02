@@ -55,7 +55,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--replays", type=Path, default=DEFAULT_CACHE_DIR)
     parser.add_argument("--limit", type=int, default=None)
-    parser.add_argument("--chaos", default="firestore", help="firestore (default) | local")
+    parser.add_argument("--chaos", default="firestore", help="firestore (default) | local | <directory of Chaos dumps>")
     parser.add_argument("--relative-tolerance", type=float, default=0.05,
                         help="relative widening of each projected bound (default 0.05 = 5%%)")
     parser.add_argument("--no-ev-envelope", action="store_true",
