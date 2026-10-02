@@ -25,6 +25,29 @@ from src.domain.replay_view_models import BattleReplay, ReplayPokemonState, Repl
 
 _REF = re.compile(r"^(?P<player>p\d)(?P<slot>[a-z]?): (?P<nick>.+)$")
 
+_TERRAIN_SUFFIX = " Terrain"
+_ROOMS = ("Gravity", "Magic Room", "Wonder Room")  # field-wide, like Trick Room
+_SCREENS = ("Reflect", "Light Screen", "Aurora Veil")  # one side, like Tailwind
+
+
+def _effect_name(raw: str) -> str:
+    """``"move: Electric Terrain"`` -> ``"Electric Terrain"``; ``"Reflect"`` as is."""
+    name = raw.strip()
+    return name.split(":", 1)[1].strip() if name.startswith("move:") else name
+
+
+def _side_player(raw: str) -> str:
+    """``"p1: Ash"`` -> ``"p1"``."""
+    ref = _split_ref(raw)
+    return ref[0] if ref else (raw.split(":")[0].strip() or "p?")
+
+
+def _field_order(label: str) -> tuple[int, str]:
+    """Terrain first, then rooms, then screens — a stable badge order."""
+    if label.startswith("terrain "):
+        return 0, label
+    return (1 if label in _ROOMS else 2), label
+
 
 def _split_ref(ref: str) -> tuple[str, str, str] | None:
     """Split ``"p1a: Torkoal"`` into ``("p1", "a", "Torkoal")``."""
@@ -110,6 +133,14 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
     trick_room: list[list[int]] = []
     tr_open: int | None = None
     weather = ""
+    # Terrain, rooms (Gravity/Magic Room/Wonder Room) and screens (Reflect/
+    # Light Screen/Aurora Veil). ``field_now`` holds the labels active right
+    # now; ``field_this_turn`` every label active at some point of the current
+    # turn — so, like Tailwind/Trick Room above, an effect that expires in a
+    # turn's residual phase still shows on the turn it applied to.
+    terrain = ""  # label of the active terrain, e.g. "terrain Electric"
+    field_now: set[str] = set()
+    field_this_turn: set[str] = set()
 
     raw_snapshots: list[
         tuple[
@@ -120,8 +151,13 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
             dict[tuple[str, str], str],
             dict[tuple[str, str], dict[str, int]],
             str,
+            list[str],
         ]
     ] = []
+
+    def start_field(label: str) -> None:
+        field_now.add(label)
+        field_this_turn.add(label)
 
     def snapshot() -> None:
         # Copy EVERY per-Pokemon/field tracker at this exact moment — formes,
@@ -139,6 +175,7 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
                 dict(statuses),
                 {k: dict(v) for k, v in boosts.items()},
                 weather,
+                sorted(field_this_turn, key=_field_order),
             )
         )
 
@@ -155,6 +192,7 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
 
         if tag == "turn":
             snapshot()
+            field_this_turn = set(field_now)
             try:
                 turn = int(parts[2])
             except (IndexError, ValueError):
@@ -226,22 +264,41 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
             species = slot_species.get(player + slot) or nick
             hp_percent[(player, species)] = 0.0
             append_log(f"{species} ({player}) fainted.")
-        elif tag == "-sidestart" and len(parts) > 3 and "Tailwind" in parts[3]:
-            ref = _split_ref(parts[2])
-            player = ref[0] if ref else (parts[2].split(":")[0].strip() or "p?")
-            tw_open.setdefault(player, turn)
-        elif tag == "-sideend" and len(parts) > 3 and "Tailwind" in parts[3]:
-            ref = _split_ref(parts[2])
-            player = ref[0] if ref else (parts[2].split(":")[0].strip() or "p?")
-            start = tw_open.pop(player, turn)
-            tailwind.setdefault(player, []).append([start, turn])
-        elif tag == "-fieldstart" and len(parts) > 2 and "Trick Room" in parts[2]:
-            if tr_open is None:
-                tr_open = turn
-        elif tag == "-fieldend" and len(parts) > 2 and "Trick Room" in parts[2]:
-            if tr_open is not None:
-                trick_room.append([tr_open, turn])
-                tr_open = None
+        elif tag in ("-sidestart", "-sideend") and len(parts) > 3:
+            player = _side_player(parts[2])
+            effect = _effect_name(parts[3])
+            if effect == "Tailwind" and tag == "-sidestart":
+                tw_open.setdefault(player, turn)
+            elif effect == "Tailwind":
+                start = tw_open.pop(player, turn)
+                tailwind.setdefault(player, []).append([start, turn])
+            elif effect in _SCREENS and tag == "-sidestart":
+                start_field(f"{effect} {player}")
+            elif effect in _SCREENS:
+                field_now.discard(f"{effect} {player}")
+        elif tag in ("-fieldstart", "-fieldend") and len(parts) > 2:
+            effect = _effect_name(parts[2])
+            if effect == "Trick Room" and tag == "-fieldstart":
+                if tr_open is None:
+                    tr_open = turn
+            elif effect == "Trick Room":
+                if tr_open is not None:
+                    trick_room.append([tr_open, turn])
+                    tr_open = None
+            elif effect.endswith(_TERRAIN_SUFFIX) and tag == "-fieldstart":
+                # Only one terrain exists at a time: a new one replaces the
+                # old WITHOUT a -fieldend line, so drop the old one entirely.
+                field_now.discard(terrain)
+                field_this_turn.discard(terrain)
+                terrain = f"terrain {effect[: -len(_TERRAIN_SUFFIX)]}"
+                start_field(terrain)
+            elif effect.endswith(_TERRAIN_SUFFIX):
+                field_now.discard(terrain)
+                terrain = ""
+            elif effect in _ROOMS and tag == "-fieldstart":
+                start_field(effect)
+            elif effect in _ROOMS:
+                field_now.discard(effect)
         elif tag == "-weather" and len(parts) > 2:
             w = parts[2].strip()
             weather = "" if w.lower() in ("none", "") else w
@@ -297,13 +354,13 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
     def trick_room_active(at_turn: int) -> bool:
         return any(start <= at_turn <= end for start, end in trick_room)
 
-    def conditions_for(at_turn: int, weather_at_turn: str) -> list[str]:
+    def conditions_for(at_turn: int, weather_at_turn: str, field_at_turn: list[str]) -> list[str]:
         labels = [f"Tailwind {p}" for p in player_names if tailwind_active(p, at_turn)]
         if trick_room_active(at_turn):
             labels.append("Trick Room")
         if weather_at_turn:
             labels.append(f"weather {weather_at_turn}")
-        return labels
+        return labels + field_at_turn
 
     winner_player: str | None = None
     if winner_name:
@@ -327,6 +384,7 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
         statuses_at_turn,
         boosts_at_turn,
         weather_at_turn,
+        field_at_turn,
     ) in raw_snapshots:
         active: dict[str, list[str]] = {}
         for key, species in sorted(slots_at_turn.items()):
@@ -349,7 +407,7 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
                 active=active,
                 pokemon=pokemon,
                 log=list(log_lines.get(snap_turn, [])),
-                conditions=conditions_for(snap_turn, weather_at_turn),
+                conditions=conditions_for(snap_turn, weather_at_turn, field_at_turn),
             )
         )
 

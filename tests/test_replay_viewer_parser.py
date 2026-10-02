@@ -174,3 +174,38 @@ def test_boost_tracked_and_reset_on_switch_out():
     # Switching out and back in resets stat stages, matching real game rules.
     t2 = replay.snapshots[2]
     assert t2.pokemon["p1"]["Garchomp"].boosts == {}
+
+
+def test_terrain_rooms_and_screens_reach_the_conditions():
+    # Line shapes copied from real Reg M-C replays: a Surge ability sets the
+    # terrain, a second Surge replaces it with NO -fieldend line, Reflect has
+    # no "move:" prefix while Light Screen does.
+    log = (  # raw log text, not replay JSON
+        "|player|p1|Ash|1|1|\n|player|p2|Gary|2|1|\n"
+        "|switch|p1a: Pincurchin|Pincurchin, L50|100/100\n"
+        "|-fieldstart|move: Electric Terrain|[from] ability: Electric Surge|[of] p1a: Pincurchin\n"
+        "|switch|p2a: Indeedee|Indeedee-F, L50, F|100/100\n"
+        "|turn|1\n"
+        "|switch|p2a: Rillaboom|Rillaboom, L50|100/100\n"
+        "|-fieldstart|move: Grassy Terrain|[from] ability: Grassy Surge|[of] p2a: Rillaboom\n"
+        "|-sidestart|p1: Ash|Reflect\n"
+        "|-sidestart|p2: Gary|move: Light Screen\n"
+        "|-fieldstart|move: Gravity\n"
+        "|turn|2\n"
+        "|-sideend|p1: Ash|Reflect\n"
+        "|-fieldend|move: Grassy Terrain\n"
+        "|turn|3\n"
+        "|-fieldend|move: Gravity\n"
+        "|-sideend|p2: Gary|move: Light Screen\n"
+        "|turn|4\n"
+    )
+    replay = parse_replay_for_viewer(log)
+    leads, t1, t2, t3, t4 = replay.snapshots
+    assert leads.conditions == ["terrain Electric"]
+    # Replaced mid-turn: only the new terrain, never two at once.
+    assert t1.conditions == ["terrain Grassy", "Gravity", "Light Screen p2", "Reflect p1"]
+    # Ending in a turn's residual phase: still shown on the turn it applied to...
+    assert t2.conditions == ["terrain Grassy", "Gravity", "Light Screen p2", "Reflect p1"]
+    # ...and gone from the next one.
+    assert t3.conditions == ["Gravity", "Light Screen p2"]
+    assert t4.conditions == []

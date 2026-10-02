@@ -55,8 +55,8 @@ class ReplayTurnSnapshot(BaseModel):
     log: list[str] = Field(default_factory=list)
     """This turn's rendered event lines (moves, switches, faints), in order."""
     conditions: list[str] = Field(default_factory=list)
-    """e.g. ["Tailwind p1", "Trick Room", "weather Sandstorm"] — active this
-    turn."""
+    """e.g. ["Tailwind p1", "Trick Room", "weather Sandstorm", "terrain
+    Electric", "Gravity", "Reflect p2"] — active at some point of this turn."""
 
 
 class BattleReplay(BaseModel):
