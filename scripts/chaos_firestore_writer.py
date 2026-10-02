@@ -160,9 +160,28 @@ def write_tier(
 ) -> int:
     """Upsert one tier document plus every species document under it.
     Idempotent (``.set()`` overwrites) — safe to re-run on unchanged or
-    updated data alike. Returns the number of species documents written."""
+    updated data alike. Returns the number of species documents written.
+
+    Refuses a tier whose own ``info.metagame`` names another format (e.g. a
+    singles BSS dump saved under a VGC file name) — the app would refuse to
+    read it anyway — and stores a ``species_index`` (every species name) on
+    the tier document, so the app can know which Pokemon a regulation has in
+    one read.
+
+    Raises:
+        ValueError: The tier's data belongs to another format.
+    """
+    from src.adapters.chaos.chaos_tier_index import info_mismatch, parse_tier_id
+
+    meta = parse_tier_id(tier_id)
+    reason = info_mismatch(meta.metagame, info) if meta is not None else None
+    if reason is not None:
+        raise ValueError(f"Refusing to write tier {tier_id!r}: it {reason}.")
     tier_ref = client.collection(collection).document(tier_id)
-    _commit_pairs(client, [(tier_ref, {"info": strip_empty_keys(info)})])
+    _commit_pairs(
+        client,
+        [(tier_ref, {"info": strip_empty_keys(info), "species_index": sorted(species_data)})],
+    )
 
     from src.adapters.chaos.species_normalize import normalize_species
 

@@ -56,6 +56,7 @@ from src.domain.exceptions import LLMProviderError
 from src.domain.interfaces import ConversationMemory, LogParser, PromptRepository
 from src.domain.models import (
     AgentToolInvocation,
+    AnalysisEvidence,
     AnalysisRequest,
     AnalysisResult,
     ChatMessage,
@@ -67,7 +68,6 @@ from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
     build_result,
-    parse_replay,
     remember_turn,
 )
 from src.services.selection_logic import (
@@ -349,13 +349,38 @@ class AdkAnalysisOrchestrator:
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         history = self._memory.load(request.session_id)
-        game_state = parse_replay(self._parser, request)
+        game_state = self._evidence.prepare(self._parser, request)
         selection = self._select(request, game_state, history)
         evidence = self._evidence.assemble(
             request=request, game_state=game_state, selection=selection, history=history
         )
+        tool_calls: list[AgentToolInvocation] = []
+
+        def explain(correction: str) -> str:
+            answer, calls = self._explain(request, history, evidence, correction)
+            tool_calls.extend(calls)
+            return answer
+
+        answer, warnings = self._evidence.explain_within_regulation(explain, evidence, game_state)
+        remember_turn(self._memory, request, answer)
+        return build_result(
+            request=request,
+            evidence=evidence,
+            answer=answer,
+            provider=self._provider_name,
+            agent_tool_calls=tool_calls,
+            regulation_warnings=warnings,
+        )
+
+    def _explain(
+        self,
+        request: AnalysisRequest,
+        history: Sequence[ChatMessage],
+        evidence: AnalysisEvidence,
+        correction: str,
+    ) -> tuple[str, list[AgentToolInvocation]]:
         message_text = _render_history(history) + build_explanation_input(
-            request.question, evidence
+            request.question, evidence, correction
         )
         # Same rationale as ADR-011 (LangChain backend): the agent talks to
         # the raw ADK/model SDK directly, so a provider failure (rate limit,
@@ -372,15 +397,7 @@ class AdkAnalysisOrchestrator:
             raise LLMProviderError(
                 f"The explanation model call failed ({request.provider}): {exc}"
             ) from exc
-
-        remember_turn(self._memory, request, answer)
-        return build_result(
-            request=request,
-            evidence=evidence,
-            answer=answer,
-            provider=self._provider_name,
-            agent_tool_calls=_extract_tool_invocations(events),
-        )
+        return answer, _extract_tool_invocations(events)
 
     def _select(
         self,

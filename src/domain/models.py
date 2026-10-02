@@ -830,6 +830,21 @@ class AgentToolInvocation(BaseModel):
     """Short, UI-facing preview of the result or error — not the full payload."""
 
 
+class RegulationInfo(BaseModel):
+    """The regulation an analysis was bound to, and what is legal in it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    format_id: str
+    label: str
+    strict: bool
+    """Pinned by the regulation controller: no data from any other regulation."""
+    legal_species: list[str] = Field(default_factory=list)
+    """Display names of the Pokemon with usage data in this regulation's own
+    tiers — the only Pokemon the explanation may present as part of it.
+    Empty when no data for this regulation is loaded (legality unverified)."""
+
+
 class AnalysisEvidence(BaseModel):
     """Everything the deterministic + probabilistic stages produced for one
     analysis turn — the single ground-truth bundle every orchestration
@@ -847,6 +862,7 @@ class AnalysisEvidence(BaseModel):
     improvement_suggestions: dict[str, Any] = Field(default_factory=dict)
     recurring_concepts: list[dict[str, str]] = Field(default_factory=list)
     battle_result: str = ""
+    regulation: RegulationInfo | None = None
 
 
 class AnalysisResult(BaseModel):
@@ -864,6 +880,10 @@ class AnalysisResult(BaseModel):
     agent_tool_calls: list[AgentToolInvocation] = Field(default_factory=list)
     battle_result: str = ""
     provider: str = "openai"
+    regulation: RegulationInfo | None = None
+    regulation_warnings: list[str] = Field(default_factory=list)
+    """Deterministic regulation-guard findings shown to the user (e.g. a
+    Pokemon the answer mentions that is not legal in this regulation)."""
 
 
 class ChatMessage(BaseModel):

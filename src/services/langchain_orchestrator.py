@@ -35,6 +35,7 @@ from src.domain.exceptions import LLMProviderError
 from src.domain.interfaces import ConversationMemory, LogParser, PromptRepository
 from src.domain.models import (
     AgentToolInvocation,
+    AnalysisEvidence,
     AnalysisRequest,
     AnalysisResult,
     ChatMessage,
@@ -46,7 +47,6 @@ from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
     build_result,
-    parse_replay,
     remember_turn,
 )
 from src.services.selection_logic import (
@@ -139,11 +139,36 @@ class LangChainAnalysisOrchestrator:
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         history = self._memory.load(request.session_id)
-        game_state = parse_replay(self._parser, request)
+        game_state = self._evidence.prepare(self._parser, request)
         selection = self._select(request, game_state, history)
         evidence = self._evidence.assemble(
             request=request, game_state=game_state, selection=selection, history=history
         )
+        tool_calls: list[AgentToolInvocation] = []
+
+        def explain(correction: str) -> str:
+            answer, calls = self._explain(request, history, evidence, correction)
+            tool_calls.extend(calls)
+            return answer
+
+        answer, warnings = self._evidence.explain_within_regulation(explain, evidence, game_state)
+        remember_turn(self._memory, request, answer)
+        return build_result(
+            request=request,
+            evidence=evidence,
+            answer=answer,
+            provider=self._provider_name,
+            agent_tool_calls=tool_calls,
+            regulation_warnings=warnings,
+        )
+
+    def _explain(
+        self,
+        request: AnalysisRequest,
+        history: Sequence[ChatMessage],
+        evidence: AnalysisEvidence,
+        correction: str,
+    ) -> tuple[str, list[AgentToolInvocation]]:
         # The agent talks to the raw LangChain chat model directly (not
         # through OpenAIProvider/GeminiProvider, which already wrap SDK
         # errors) — this is the one place a provider failure (rate limit,
@@ -154,7 +179,7 @@ class LangChainAnalysisOrchestrator:
         # degrades those to {"ok": False, "error": ...} instead of raising.
         messages = [
             *_as_lc_messages(history),
-            {"role": "user", "content": build_explanation_input(request.question, evidence)},
+            {"role": "user", "content": build_explanation_input(request.question, evidence, correction)},
         ]
         try:
             agent_result = self._explanation_agent.invoke(
@@ -169,15 +194,7 @@ class LangChainAnalysisOrchestrator:
         agent_messages = agent_result.get("messages", [])
         final_content = agent_messages[-1].content if agent_messages else ""
         answer = final_content if isinstance(final_content, str) else str(final_content)
-
-        remember_turn(self._memory, request, answer)
-        return build_result(
-            request=request,
-            evidence=evidence,
-            answer=answer,
-            provider=self._provider_name,
-            agent_tool_calls=_extract_tool_invocations(agent_messages),
-        )
+        return answer, _extract_tool_invocations(agent_messages)
 
     def _select(
         self,

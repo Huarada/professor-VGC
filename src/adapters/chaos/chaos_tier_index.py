@@ -53,6 +53,20 @@ class ChaosFileMeta:
         return f"{self.metagame}@{self.cutoff}"
 
 
+def info_mismatch(tier_metagame: str, info: dict[str, object] | None) -> str | None:
+    """Why a tier's own ``info.metagame`` disqualifies it, or None if it matches.
+
+    A tier is identified by its file name / document id, but its content
+    declares its real format in ``info.metagame``. A mismatch (e.g. a
+    ``gen9championsvgc2026regmb`` tier whose data is actually
+    ``gen9championsbssregmb`` singles stats) means the data belongs to another
+    format and must never be served under this name."""
+    declared = str((info or {}).get("metagame") or "").strip().lower()
+    if declared and declared != tier_metagame.lower():
+        return f"contains {declared!r} data, not {tier_metagame!r}"
+    return None
+
+
 def parse_tier_id(tier_id: str) -> ChaosFileMeta | None:
     """Parse a ``<metagame>`` or ``<metagame>-<cutoff>`` identifier into its
     coordinates. Returns a tier-0, standalone-metagame ``ChaosFileMeta`` for
@@ -105,9 +119,15 @@ class ChaosTierIndex(Generic[_T]):
         return bool(metagame) and metagame in self.metagames()
 
     def resolve_metagame(self, metagame: str | None) -> str:
-        """Return the given metagame if known, else the newest available one."""
-        if self.knows(metagame):
-            assert metagame is not None  # knows() is False for None, so this always holds
+        """The metagame to read: the one asked for, verbatim — even when no
+        tier of it is loaded (lookups then simply find nothing) — and the
+        newest available one only when NONE was asked for.
+
+        An explicitly requested format is never swapped for another: doing so
+        used to hand e.g. a Reg M-B game the Reg M-C data whenever Reg M-B
+        wasn't loaded — the cross-regulation leak this rule prevents.
+        Missing data beats wrong data."""
+        if metagame:
             return metagame
         return self.default_metagame()
 

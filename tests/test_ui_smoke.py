@@ -20,6 +20,7 @@ from streamlit.testing.v1 import AppTest  # noqa: E402
 
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory  # noqa: E402
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser  # noqa: E402
+from src.config import Settings  # noqa: E402
 from src.domain.interfaces import AnalysisPipeline  # noqa: E402
 from src.domain.replay_view_models import BattleReplay  # noqa: E402
 from src.services.analysis_service import AnalysisService  # noqa: E402
@@ -32,6 +33,14 @@ _APP = str(Path(__file__).resolve().parent.parent / "src" / "ui" / "app.py")
 
 
 class _FakeContainer:
+    settings = Settings(_env_file=None)
+
+    def regulation_choices(self) -> dict[str, str]:
+        return {"auto": "Auto (the replay's regulation)", "mb": "Reg M-B only"}
+
+    def data_warnings(self) -> list[str]:
+        return []
+
     def resolve_replay_text(self, text: str) -> str:
         return text
 
@@ -39,7 +48,8 @@ class _FakeContainer:
         return Container.parse_replay_for_viewer(text)
 
     def build_pipeline(
-        self, provider: str | None = None, orchestrator: str | None = None
+        self, provider: str | None = None, orchestrator: str | None = None,
+        regulation: str | None = None,
     ) -> AnalysisPipeline:
         llm = FakeLLM(
             json.dumps({"focus_species": ["Garchomp", "Talonflame"],

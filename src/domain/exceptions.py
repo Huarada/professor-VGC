@@ -56,3 +56,12 @@ class ReplayFetchError(ProfessorVGCError):
     replay content was never obtained at all, as opposed to content that
     was obtained but couldn't be parsed.
     """
+
+
+class RegulationMismatchError(ProfessorVGCError):
+    """The replay belongs to a different regulation than the one the analysis
+    is pinned to (e.g. a Reg M-C game while the controller says Reg M-B).
+
+    Raised instead of analyzing it anyway: mixing one regulation's game with
+    another regulation's data is exactly the leak the controller prevents.
+    """

@@ -15,7 +15,12 @@ from typing import cast
 
 import streamlit as st
 
-from src.domain.exceptions import LLMProviderError, ProfessorVGCError, ReplayFetchError
+from src.domain.exceptions import (
+    LLMProviderError,
+    ProfessorVGCError,
+    RegulationMismatchError,
+    ReplayFetchError,
+)
 from src.domain.models import AnalysisRequest
 from src.domain.replay_view_models import BattleReplay
 from src.services.container import Container
@@ -80,6 +85,11 @@ def _error_tip(exc: Exception) -> str:
             "`PROFESSORVGC_GEMINI_API_KEY` are set and valid, and that the selected "
             "provider in the sidebar matches a key you actually have."
         )
+    if isinstance(exc, RegulationMismatchError):
+        return (
+            "Tip: the regulation controller in the sidebar is pinned to a different "
+            "regulation than this replay. Pick the replay's regulation (or 'Auto')."
+        )
     if isinstance(exc, ReplayFetchError):
         return (
             "Tip: the replay URL couldn't be fetched — double check it's a real, "
@@ -118,6 +128,19 @@ def main() -> None:
             "Orchestration", ["adk", "langchain", "native"], index=0,
             help="Google ADK agents (default), LangChain LCEL chains, or the "
                  "hand-rolled native pipeline.",
+        )
+        # Regulation controller (ADR-035): pin the analysis to one regulation's
+        # data and legal Pokemon, or follow the replay's own regulation.
+        choices = _get_container().regulation_choices()
+        configured = _get_container().settings.regulation
+        regulation = st.selectbox(
+            "Regulation",
+            list(choices),
+            index=list(choices).index(configured) if configured in choices else 0,
+            format_func=lambda key: choices[key],
+            help="Pinned: usage data, Smogon sets and the Pokemon the answer may "
+                 "mention come from that regulation only, and a replay from another "
+                 "regulation is refused. Auto: the replay's own regulation.",
         )
         st.info(
             f"{icon_md(POKEBALL_ICON)} Set your key via environment variables:\n"
@@ -235,7 +258,7 @@ def main() -> None:
                         provider=provider,
                     )
                     try:
-                        pipeline = container.build_pipeline(provider, orchestrator)
+                        pipeline = container.build_pipeline(provider, orchestrator, regulation)
                         st.session_state["last_result"] = pipeline.analyze(request)
                         st.session_state["last_error"] = None
                     except ProfessorVGCError as exc:
@@ -286,6 +309,8 @@ def main() -> None:
                 return
             if result is None:
                 return
+            for warning in container.data_warnings():
+                st.warning(warning)
 
             # Which in-game turn the stepper is currently on — used below to
             # highlight the matching slice of the Answer, and the matching

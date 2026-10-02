@@ -37,7 +37,12 @@ import os
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from src.adapters.chaos.chaos_tier_index import ChaosFileMeta, ChaosTierIndex, parse_tier_id
+from src.adapters.chaos.chaos_tier_index import (
+    ChaosFileMeta,
+    ChaosTierIndex,
+    info_mismatch,
+    parse_tier_id,
+)
 from src.adapters.chaos.species_normalize import normalize_species
 from src.domain.exceptions import ChaosDataError, ConfigurationError
 
@@ -86,6 +91,8 @@ class FirestoreChaosRepository:
 
         self._files: list[FirestoreChaosFile] = []
         self._tier_info: dict[str, dict[str, Any]] = {}
+        self._rejected: dict[str, str] = {}
+        self._legal_cache: dict[str, frozenset[str]] = {}
         try:
             tier_docs = list(self._client.collection(collection).stream())
         except Exception as exc:  # noqa: BLE001 - many concrete gRPC/auth exception types
@@ -97,17 +104,26 @@ class FirestoreChaosRepository:
             meta = parse_tier_id(doc.id)
             if meta is None:
                 continue
+            fields = doc.to_dict() or {}
+            reason = info_mismatch(meta.metagame, fields.get("info"))
+            if reason is not None:
+                # Never serve another format's data under this tier's name
+                # (e.g. singles BSS stats stored as a VGC tier).
+                self._rejected[doc.id] = reason
+                continue
             self._files.append(
                 FirestoreChaosFile(
                     doc_id=doc.id, metagame=meta.metagame, cutoff=meta.cutoff,
                     gen=meta.gen, franchise=meta.franchise, year=meta.year, reg=meta.reg,
                 )
             )
-            self._tier_info[doc.id] = doc.to_dict() or {}
+            self._tier_info[doc.id] = fields
         if not self._files:
+            rejected = "; ".join(f"{k}: {v}" for k, v in self._rejected.items())
             raise ChaosDataError(
                 f"No usable Chaos tiers found in Firestore collection '{collection}' "
-                f"(project={project_id}) — run scripts/migrate_chaos_to_firestore.py first."
+                f"(project={project_id}) — run scripts/sync_smogon_chaos_to_firestore.py."
+                + (f" Rejected tiers: {rejected}" if rejected else "")
             )
         self._index: ChaosTierIndex[FirestoreChaosFile] = ChaosTierIndex(
             self._files, reg_fallback_depth=reg_fallback_depth
@@ -189,6 +205,41 @@ class FirestoreChaosRepository:
                 suffix = " (fallback)" if i > 0 else ""
                 return data, f"{file.metagame}@{file.cutoff}{suffix}"
         return None
+
+    @property
+    def rejected_tiers(self) -> dict[str, str]:
+        """Tier documents refused because their info.metagame names another format."""
+        return dict(self._rejected)
+
+    def legal_species(self, metagame: str) -> frozenset[str]:
+        """Normalized names of every species with data in any tier of
+        ``metagame``. Uses the tier document's species_index when the writer
+        stored one (read already at listing), else lists the tier's species
+        document ids once (cached for this process)."""
+        if metagame in self._legal_cache:
+            return self._legal_cache[metagame]
+        names: set[str] = set()
+        for file in self._files:
+            if file.metagame != metagame:
+                continue
+            index = self._tier_info.get(file.doc_id, {}).get("species_index")
+            if isinstance(index, list):
+                names.update(normalize_species(str(n)) for n in index)
+                continue
+            try:
+                refs = (
+                    self._client.collection(self._collection_name)
+                    .document(file.doc_id)
+                    .collection(_SPECIES_SUBCOLLECTION)
+                    .list_documents()
+                )
+                names.update(ref.id for ref in refs)
+            except Exception as exc:  # noqa: BLE001 - many concrete gRPC/auth exception types
+                raise ChaosDataError(
+                    f"Unable to list species of Firestore tier '{file.doc_id}': {exc}"
+                ) from exc
+        self._legal_cache[metagame] = frozenset(names)
+        return self._legal_cache[metagame]
 
     def metagame_info(self, file: FirestoreChaosFile) -> str:
         info = self._tier_info.get(file.doc_id, {}).get("info") or {}

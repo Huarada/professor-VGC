@@ -52,6 +52,7 @@ class SmogonCalcAdapter:
         self._timeout = float(timeout_seconds)
         self._lock = threading.Lock()
         self._process: subprocess.Popen[str] | None = None
+        self._species_names: dict[int, list[str]] = {}
 
         if not self._script.exists():
             raise CalcEngineError(f"Calc server script not found: {self._script}")
@@ -67,6 +68,11 @@ class SmogonCalcAdapter:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
+                # Node writes UTF-8; without this, Windows decodes with the
+                # locale code page (cp1252) and any non-ASCII species/desc
+                # (Flabebe's accent, Nidoran's symbol) kills the reader thread.
+                encoding="utf-8",
+                errors="replace",
                 bufsize=1,
             )
         except (OSError, ValueError) as exc:
@@ -91,8 +97,10 @@ class SmogonCalcAdapter:
             line = self._read_line_with_timeout(process)
 
         if not line:
-            stderr = self._drain_stderr(process)
+            # Kill first: reading stderr of a still-running process blocks
+            # forever (it never reaches EOF), turning a failed call into a hang.
             self._reap()
+            stderr = self._drain_stderr(process)
             raise CalcEngineError(f"Empty response from calc engine. stderr: {stderr}")
         try:
             response = json.loads(line)
@@ -304,6 +312,19 @@ class SmogonCalcAdapter:
             )
         except (TypeError, ValueError) as exc:
             raise CalcEngineError(f"Malformed move info: {data!r}") from exc
+
+    def species_names(self, gen: int) -> list[str]:
+        """Every species name the engine's dex knows (cached per generation);
+        satisfies :class:`~src.domain.interfaces.SpeciesCatalog`."""
+        cached = self._species_names.get(gen)
+        if cached is None:
+            response = self._rpc({"cmd": "speciesNames", "gen": gen})
+            names = response.get("result", {}).get("names")
+            if not isinstance(names, list):
+                raise CalcEngineError(f"Malformed species list: {response!r}")
+            cached = [str(name) for name in names]
+            self._species_names[gen] = cached
+        return list(cached)
 
     def forme_resolves(self, gen: int, species: str) -> bool:
         """Whether the installed @smogon/calc's dex has real data for this

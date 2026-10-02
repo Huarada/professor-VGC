@@ -28,7 +28,12 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Protocol, runtime_checkable
 
-from src.adapters.chaos.chaos_tier_index import ChaosFileMeta, ChaosTierIndex, parse_tier_id
+from src.adapters.chaos.chaos_tier_index import (
+    ChaosFileMeta,
+    ChaosTierIndex,
+    info_mismatch,
+    parse_tier_id,
+)
 from src.adapters.chaos.species_normalize import normalize_species
 from src.domain.exceptions import ChaosDataError
 
@@ -52,14 +57,19 @@ class ChaosRepositoryLike(Protocol):
     already applies to ``CalcEngineAdapter``/``StrategyKnowledgeProvider``.
     """
 
+    def metagames(self) -> set[str]: ...
     def resolve_metagame(self, metagame: str | None) -> str: ...
     def default_metagame(self) -> str: ...
     def ideal_file(self, metagame: str) -> Any: ...
     def current_file(self, metagame: str, rating: int | None) -> Any: ...
+    def reg_fallback_files(self, metagame: str) -> list[Any]: ...
     def mon_data(self, file: Any, species: str) -> dict[str, Any] | None: ...
     def resolve_mon(
         self, metagame: str, species: str
     ) -> tuple[dict[str, Any], str] | None: ...
+    def legal_species(self, metagame: str) -> frozenset[str]: ...
+    @property
+    def rejected_tiers(self) -> dict[str, str]: ...
 
 
 class ChaosRepository:
@@ -76,16 +86,29 @@ class ChaosRepository:
             raise ChaosDataError(f"Chaos path not found: {root}")
 
         self._files: list[ChaosFile] = []
+        self._cache: dict[Path, dict[str, Any]] = {}
+        self._rejected: dict[str, str] = {}
         for file_path in paths:
             parsed = self._parse_file(file_path)
-            if parsed is not None:
-                self._files.append(parsed)
+            if parsed is None:
+                continue
+            reason = info_mismatch(parsed.metagame, self._load(parsed).get("info"))
+            if reason is not None:
+                # Never serve another format's data under this file's name
+                # (e.g. singles BSS stats saved as a VGC file).
+                self._rejected[file_path.name] = reason
+                self._cache.pop(file_path, None)
+                continue
+            self._files.append(parsed)
         if not self._files:
-            raise ChaosDataError(f"No usable Chaos files found at: {root}")
+            rejected = "; ".join(f"{k}: {v}" for k, v in self._rejected.items())
+            raise ChaosDataError(
+                f"No usable Chaos files found at: {root}"
+                + (f" (rejected: {rejected})" if rejected else "")
+            )
         self._index: ChaosTierIndex[ChaosFile] = ChaosTierIndex(
             self._files, reg_fallback_depth=reg_fallback_depth
         )
-        self._cache: dict[Path, dict[str, Any]] = {}
 
     # -- discovery ------------------------------------------------------- #
 
@@ -171,6 +194,64 @@ class ChaosRepository:
                 return data, f"{file.metagame}@{file.cutoff}{suffix}"
         return None
 
+    @property
+    def rejected_tiers(self) -> dict[str, str]:
+        """Files refused because their own info.metagame names another format."""
+        return dict(self._rejected)
+
+    def legal_species(self, metagame: str) -> frozenset[str]:
+        """Normalized names of every species with data in ANY tier of
+        ``metagame`` (never another format's)."""
+        names: set[str] = set()
+        for file in self._files:
+            if file.metagame == metagame:
+                names.update(normalize_species(k) for k in (self._load(file).get("data") or {}))
+        return frozenset(names)
+
     def metagame_info(self, file: ChaosFile) -> str:
         info: dict[str, Any] = self._load(file).get("info") or {}
         return str(info.get("metagame", file.metagame))
+
+
+class StrictRegulationRepository:
+    """A view of a ``ChaosRepositoryLike`` that never leaves the requested
+    regulation: no regulation fallback (not even to older regulations).
+    Used when the regulation controller pins an analysis to one regulation."""
+
+    def __init__(self, inner: ChaosRepositoryLike) -> None:
+        self._inner = inner
+
+    def metagames(self) -> set[str]:
+        return self._inner.metagames()
+
+    def resolve_metagame(self, metagame: str | None) -> str:
+        return self._inner.resolve_metagame(metagame)
+
+    def default_metagame(self) -> str:
+        return self._inner.default_metagame()
+
+    def ideal_file(self, metagame: str) -> Any:
+        return self._inner.ideal_file(metagame)
+
+    def current_file(self, metagame: str, rating: int | None) -> Any:
+        return self._inner.current_file(metagame, rating)
+
+    def reg_fallback_files(self, metagame: str) -> list[Any]:
+        return []
+
+    def mon_data(self, file: Any, species: str) -> dict[str, Any] | None:
+        return self._inner.mon_data(file, species)
+
+    def resolve_mon(self, metagame: str, species: str) -> tuple[dict[str, Any], str] | None:
+        ideal = self._inner.ideal_file(metagame)
+        if ideal is None:
+            return None
+        data = self._inner.mon_data(ideal, species)
+        return (data, f"{ideal.metagame}@{ideal.cutoff}") if data else None
+
+    def legal_species(self, metagame: str) -> frozenset[str]:
+        return self._inner.legal_species(metagame)
+
+    @property
+    def rejected_tiers(self) -> dict[str, str]:
+        return self._inner.rejected_tiers

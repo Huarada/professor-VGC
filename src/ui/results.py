@@ -12,6 +12,14 @@ from src.ui.icons import PIKACHU_ICON, POKEBALL_ICON, icon_html, icon_md
 def render_result(result: AnalysisResult, current_turn: int) -> None:
     """Render one AnalysisResult; ``current_turn`` is highlighted throughout."""
     st.subheader("Answer")
+    if result.regulation is not None:
+        mode = "pinned" if result.regulation.strict else "from the replay"
+        st.caption(
+            f"Regulation: **{result.regulation.label}** ({mode}) — data and legal "
+            f"Pokemon from `{result.regulation.format_id}` only"
+        )
+    for warning in result.regulation_warnings:
+        st.warning(f"{icon_md(PIKACHU_ICON)} {warning}")
     st.markdown(highlight_answer_by_turn(result.answer, current_turn))
     _render_agent_calls(result)
 

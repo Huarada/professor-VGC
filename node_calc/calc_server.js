@@ -13,13 +13,14 @@
  *   {"cmd":"speed","gen":9,"attacker":{...},"defender":{...}}
  *   {"cmd":"formeResolves","gen":9,"species":"Staraptor-Mega"}
  *   {"cmd":"moveInfo","gen":9,"move":"Icy Wind"}
+ *   {"cmd":"speciesNames","gen":9}
  *   {"cmd":"ping"}
  * Responses:
  *   {"ok":true,"result":{...}}  |  {"ok":false,"error":"message"}
  */
 
 const readline = require('readline');
-const { calcDamage, compareSpeed, formeResolves, moveInfo } = require('./src/calcEngine');
+const { calcDamage, compareSpeed, formeResolves, moveInfo, speciesNames } = require('./src/calcEngine');
 
 function handle(request) {
   const cmd = request.cmd || 'calc';
@@ -48,6 +49,8 @@ function handle(request) {
         ok: true,
         result: { resolves: formeResolves(request.gen || 9, request.species) },
       };
+    case 'speciesNames':
+      return { ok: true, result: { names: speciesNames(request.gen || 9) } };
     case 'moveInfo':
       return { ok: true, result: moveInfo(request.gen || 9, request.move) };
     default:

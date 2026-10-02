@@ -10,6 +10,8 @@ for the read side.
 
 from __future__ import annotations
 
+import pytest
+
 from scripts.chaos_firestore_writer import strip_empty_keys, write_tier
 from tests.test_firestore_chaos_repository import _FakeFirestoreClient
 
@@ -59,7 +61,7 @@ def test_write_tier_upserts_tier_and_species_docs_and_strips_empty_keys():
     )
     assert written == 1
     tier_doc = client._store[("chaos_tiers", "gen9vgc2025regh-0")]
-    assert tier_doc == {"info": {"metagame": "gen9vgc2025regh"}}
+    assert tier_doc == {"info": {"metagame": "gen9vgc2025regh"}, "species_index": ["Garchomp"]}
     species_doc = client._store[("chaos_tiers", "gen9vgc2025regh-0", "species", "garchomp")]
     assert species_doc == {
         "Moves": {"Earthquake": 90}, "Raw count": 100, "original_name": "Garchomp",
@@ -122,3 +124,15 @@ def test_write_tier_flushes_early_on_byte_size_even_under_the_count_limit():
     # 1 (tier doc) + >1 species batches — proves the byte trigger fired
     # despite being nowhere near the 50-document count limit.
     assert client.commit_count > 2
+
+
+def test_write_tier_refuses_data_from_another_format():
+    """A tier whose own info.metagame names another format (e.g. singles BSS
+    stats saved under a VGC name) must never reach Firestore."""
+    client = _FakeFirestoreClient({})
+    with pytest.raises(ValueError, match="gen9championsbssregmb"):
+        write_tier(
+            client, "chaos_tiers", "gen9championsvgc2026regmb-1760",
+            {"metagame": "gen9championsbssregmb"}, {"Garchomp": {"Moves": {}}}, progress=False,
+        )
+    assert client._store == {}
