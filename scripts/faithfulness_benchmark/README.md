@@ -23,6 +23,17 @@ below for the same question asked across LLM vendor: Gemini 3.5-flash on
 every OpenAI-backed combination — a full model × orchestrator comparison
 table is there.
 
+> **Read this first — correctness vs. faithfulness (ADR-033).** The
+> `damage_range` headline below (A 92.0% vs B 12.6%) checks each claim
+> against the pipeline's **own projected ranges** — the numbers Condition A
+> was handed — on hand-authored fixtures. That measures *faithfulness to the
+> evidence*, not *correctness*, and it judges Condition B against
+> assumptions B never saw. Validated against what **actually happened** in
+> 20 real public games, the grounded pipeline is still significantly better,
+> but by ~2x, not ~80x: **A 71.0% vs B 55.5% (odds ratio 1.96, p=0.0043)**.
+> See ["Round 6: validation against real games"](#round-6-validation-against-real-games-log-grounded)
+> below. Cite that section for any claim about correctness.
+
 ## Running it
 
 One-time setup:
@@ -48,6 +59,8 @@ few minutes).
 | Save to a specific file / use Gemini instead | `python -m scripts.faithfulness_benchmark.run --provider gemini --out my_run.json` |
 | **Re-score an already-saved run's damage numbers** (MAE/RMSE/MSRE/RMSRE — no new LLM calls) | `python -m scripts.faithfulness_benchmark.damage_error_metrics out/run7_n30.json` |
 | **Bias self-audit: does the judge extract confident vs hedgy phrasing differently?** (12 LLM calls, seconds) | `python -m scripts.faithfulness_benchmark.style_blindness_check` |
+| **Calibrate the engine against real games** (projected vs. observed damage, no LLM, offline) | `python -m scripts.faithfulness_benchmark.replay_corpus --count 40` then `python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos local` |
+| **Score A and B against real games** (claims vs. damage the log shows — LLM calls) | `python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20` |
 | **Just the deterministic harness itself** (verifier + percent classifier + Fisher's test — no LLM, no network, <1s) | `pytest tests/test_faithfulness_benchmark_verify.py tests/test_percent_classifier.py tests/test_benchmark_stats.py -q` |
 | Re-run everything including the Node-IPC regression | `pytest -q` (whole project's suite; this benchmark's own tests are a small part of it) |
 
@@ -816,6 +829,86 @@ limitation every prior round states). Re-running `run.py --provider
 gemini --orchestrator langchain` (and `native`) would close that gap
 directly; nothing about the current result suggests it would come out
 differently, but that is an expectation, not a measurement.
+
+## Round 6: validation against real games (log-grounded)
+
+Every earlier round has the same blind spot: a `damage_range` claim is
+"correct" when it matches the **pipeline's own projection**. If the
+projection is wrong, a faithful answer is scored correct anyway — the
+measurement cannot see the error, and the naive baseline is penalized for
+not repeating assumptions it was never given. Round 6 replaces that
+reference with the battle log itself.
+
+**External truth, read independently.** `observed_damage.py` reads the raw
+`-damage`/`-heal`/`-crit` lines of a real replay (it imports nothing from
+`src/`, pinned by a test) and yields every direct hit with the target's HP
+before and after. A KO is only a lower bound (overkill isn't shown); crits
+and multi-hit moves are flagged; HP readings carry ±1pp rounding, so damage
+comparisons use ±2pp.
+
+**Corpus.** The 40 most recent public `gen9championsvgc2026regmb` replays
+from replay.pokemonshowdown.com (`replay_corpus.py`, git-ignored cache);
+three anonymized ones are versioned as test fixtures.
+
+### 6a. Engine calibration — is the ground truth itself right? (no LLM)
+
+`run_engine_calibration.py --chaos local`, 40 games, 569 observed hits
+(`out/engine_calibration_n40.json`):
+
+| | |
+|---|---|
+| Judged hits (crit/multi-hit excluded: 25; no projection: 14) | 530 |
+| Projected range contains the real damage — **non-KO hits** | **39.6%** |
+| Projection can reach a real KO | 82.8% |
+| Mean miss outside the range | 9.6 pp |
+| Median observed / projected-midpoint | 1.22 (under-projection more common) |
+
+The deterministic layer is exact *given its assumptions*, but the
+assumptions — the single most-used Chaos spread, item and ability for every
+unrevealed set — miss real sets most of the time. Misses include
+type-changing or immunity-ignoring abilities that were never revealed
+(Primarina's Liquid Voice, Hisuian Decidueye's Scrappy), offensive items and
+spreads unlike the top Chaos spread, and 10 species with no Chaos coverage.
+Mega formes are not the cause: all 23 seen resolve in the engine. This is the
+number the old benchmark could not see.
+
+### 6b. Claims vs. what happened — A vs. B, same external truth
+
+`run_log_grounded.py --provider openai --orchestrator native --chaos local`,
+gpt-4o-mini, 20 games, question asking for the damage of the key attacks
+(`out/log_grounded_n20_openai.json`, player names anonymized):
+
+| | Condition A (grounded) | Condition B (raw log only) |
+|---|---|---|
+| `damage_range` claims consistent with the log | 110 | 96 |
+| Contradicted by the log | 45 | 77 |
+| **Rate** | **71.0%** | **55.5%** |
+| Claims about hits that never happened (`not_in_log`) | 4 | 14 |
+
+**Fisher's exact test: odds ratio 1.96, two-sided p=0.0043** — grounding
+still helps significantly, and B invents hits three times as often, but the
+effect is about 2x, not 80x. B is far from the 12.6% the circular metric
+gave it: the raw log already shows every HP change, and a model that reads
+it carefully can report real damage without any calculator.
+
+**How wrong was the old criterion?** Condition A's 159 claims, verdict by
+projection (old) → verdict by log (new):
+
+| old \ new | correct | incorrect | not in log |
+|---|---|---|---|
+| **correct** | 72 | **25** | 1 |
+| **incorrect** | **38** | 20 | 3 |
+
+26 of the 98 claims the old method called correct (27%) were wrong or about
+hits that never happened; 38 of the 61 it called incorrect (62%) were in
+fact right — typically the model reporting the real damage it read in the
+log instead of the projection. The old criterion agreed with reality on only
+92 of 155 judged claims (59%).
+
+**What this changes.** The explanation should present projected damage as a
+baseline under assumed sets and prefer the observed damage for what
+actually happened; the next product step is inferring an opponent's likely
+set from the damage observed (6a's misses are exactly that signal).
 
 ## Extending this
 

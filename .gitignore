@@ -24,3 +24,5 @@ build/
 *service-account*.json
 *-key.json
 firestore-key*.json
+# Real replays downloaded by scripts/faithfulness_benchmark/replay_corpus.py
+data/replays/cache/

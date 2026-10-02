@@ -141,13 +141,11 @@ class GroundTruth:
                     gt.damage_ranges.setdefault(key, []).append(
                         (dmg.projected_min_percent, dmg.projected_max_percent)
                     )
-                # best_alternatives share the same (single) target as the turn's
-                # real move whenever one exists.
-                target = tc.damage_checks[0].target if tc.damage_checks else None
-                if target:
-                    for alt in tc.best_alternatives:
-                        key = (_norm(tc.actor), _norm(target), _norm(alt.move))
-                        gt.damage_ranges.setdefault(key, []).append((alt.min_percent, alt.max_percent))
+                # Each alternative carries its own target (alternatives cover
+                # every opposing Pokemon on the field, ADR-031).
+                for alt in tc.best_alternatives:
+                    key = (_norm(tc.actor), _norm(alt.target), _norm(alt.move))
+                    gt.damage_ranges.setdefault(key, []).append((alt.min_percent, alt.max_percent))
             for v in analysis.verdicts:
                 dmg = v.best_damage
                 key = (_norm(v.attacker), _norm(v.defender), _norm(v.best_move))

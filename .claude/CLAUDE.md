@@ -353,6 +353,10 @@ cp .env.example .env                     # fill a provider key; optionally enabl
 pytest -q                                # all green; no network or keys required (Node tests skip without Node)
 mypy src                                 # strict; CI runs both on Python 3.10 and 3.12
 streamlit run src/ui/app.py
+# Validation against REAL games (ADR-033):
+python -m scripts.faithfulness_benchmark.replay_corpus --count 40          # public replays -> data/replays/cache
+python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos local   # projections vs real damage, no LLM
+python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai     # AI claims vs real damage (API calls)
 # Node engine smoke test:
 cd node_calc && npm run smoke
 ```
@@ -369,6 +373,12 @@ cd node_calc && npm run smoke
 - **Tailwind / Trick Room** are tracked per turn (a Tailwind set mid-turn counts
   for that whole turn); weather, terrain, screens, status, items and HP are exact
   per move.
+- **Projected damage vs. reality** (ADR-033): on 40 real Reg M-B games the
+  projected range contained the real damage for only ~40% of non-KO hits —
+  unrevealed sets differ from the most-used Chaos set. Treat projections as
+  a baseline; the log's observed damage is what happened. Correctness claims
+  about the AI must come from `run_log_grounded.py`, not the projection-based
+  `run.py` (circular).
 - **Switch options** assume the switch-in takes the threat's strongest confirmed
   hit; they do not model the opponent re-targeting.
 - **Empty meta/strategy sections** = missing Chaos data in Firestore (tier or

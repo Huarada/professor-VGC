@@ -3523,3 +3523,74 @@ string leaves it.
 `tests/test_showdown_log_package.py`.
 
 ---
+
+## ADR-033 — Validate against real games: a log-grounded benchmark and an engine calibration
+
+**Status:** Accepted
+
+### Context
+The faithfulness benchmark's headline (`damage_range`, A 92.0% vs B 12.6%)
+was partially circular. A `damage_range` claim was "correct" when it matched
+the pipeline's own projected range — the exact numbers Condition A had been
+handed — so it measured *faithfulness to the evidence*, not *correctness*.
+It also judged Condition B (raw log only) against Chaos-spread assumptions B
+never saw, and every fixture was a hand-authored log whose HP values were
+chosen by the author, not produced by a real game. A high score therefore
+gave false confidence: it could not detect a projection that is itself wrong.
+
+### Decision
+Use the battle log as an external truth, read independently of the product:
+
+- `observed_damage.py` reads `-damage` / `-heal` / `-crit` lines straight
+  from the raw protocol (it imports nothing from `src/`, pinned by a test)
+  and yields every direct hit with the target's HP before/after, flagging
+  crits, multi-hit moves, spread hits and KOs (a KO is only a lower bound).
+- `run_engine_calibration.py` (no LLM) compares every projected
+  `TurnDamageCheck` range with the observed damage of that same hit.
+- `run_log_grounded.py` scores both conditions' `damage_range` claims against
+  the observed damage (`log_claims.py`), reports claims about hits that never
+  happened as `not_in_log`, and cross-tabulates the old projection-based
+  verdict against the log verdict for Condition A (`circularity_matrix`).
+- `replay_corpus.py` downloads recent public replays into a git-ignored
+  cache; three anonymized real replays (player names replaced, chat removed,
+  nicknames replaced by species) are versioned as test fixtures.
+- `--chaos local` lets tooling read the same `data/chaos/` dumps the
+  migration script uploads (read-only), so calibration runs offline.
+
+### Result — engine calibration (40 real `gen9championsvgc2026regmb` games, no LLM)
+569 observed hits, 530 judged (25 crit/multi-hit excluded, 14 without a
+projection). The projected range contained the real damage for **39.6% of
+non-KO hits**; KOs were consistent with the projection 82.8% of the time;
+misses were off by 9.6 percentage points on average (median observed/
+projected ratio 1.22: the engine under-projects more often than not). Causes
+seen in the misses: unrevealed abilities that change typing or immunities
+(Liquid Voice, Scrappy), offensive items and spreads that differ from the
+single most-used Chaos spread, and 10 species with no Chaos coverage. Mega
+formes are not the cause (all 23 seen resolve in the engine).
+
+### Result — AI claims vs. real games (20 games, gpt-4o-mini, native)
+`damage_range` claims consistent with the log: **A 110/155 (71.0%) vs B
+96/173 (55.5%)**, Fisher odds ratio 1.96, two-sided p=0.0043; claims about
+hits that never happened: A 4, B 14. Cross-tabulating Condition A's 159
+claims, the old projection-based verdict agreed with the log on only 92 of
+155 judged claims: 26 of the 98 it called correct were wrong or never
+happened, and 38 of the 61 it called incorrect were actually right (the
+model reported the real damage it read in the log).
+
+### Consequences
+- The grounding effect is real but about 2x, not the ~80x the circular
+  metric suggested.
+- The old n=30 result stays in the README but is labelled for what it is:
+  faithfulness to the evidence. Correctness claims must cite the
+  log-grounded numbers.
+- The calibration gap is a product finding, not a benchmark artifact:
+  projected damage is a baseline under assumed sets, and the explanation
+  must keep framing it that way. Inferring the opponent's likely set from the
+  damage actually observed is the natural next step.
+
+### Files touched
+`scripts/faithfulness_benchmark/{observed_damage,engine_calibration,log_claims,replay_corpus,bench_container,run_engine_calibration,run_log_grounded}.py`,
+`scripts/faithfulness_benchmark/{ground_truth,run}.py`, `tests/test_log_grounded_benchmark.py`,
+`tests/fixtures/replays/*.json`, `.gitignore`.
+
+---

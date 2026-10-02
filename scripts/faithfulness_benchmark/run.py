@@ -8,6 +8,13 @@ native), runs the ungrounded baseline (Condition B), judges both answers'
 claims with a separate LLM call, verifies every claim deterministically
 against ground truth, and prints/saves a faithfulness-rate comparison table.
 
+Caveat — this script measures FAITHFULNESS, not correctness: its
+``damage_range`` verdicts compare a claim with the pipeline's own projected
+ranges, i.e. the very numbers Condition A was given, and judge Condition B
+against assumptions B never saw. For correctness against what actually
+happened in real games, use ``run_log_grounded.py`` (claims vs. the damage
+the log shows) and ``run_engine_calibration.py`` (projections vs. the log).
+
 To compare Condition A's precision ACROSS orchestrators (rather than one
 orchestrator vs the naive baseline) — e.g. "how does ADK differ from
 LangChain/native" — use `run_orchestrator_comparison.py` instead: it holds
