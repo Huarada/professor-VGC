@@ -112,11 +112,32 @@ All three backends receive the same injected evidence stage
 damage roll (a parity test pins this) — the LLM only ever explains ground-truth
 numbers, never invents them.
 
-## Faithfulness benchmark — grounding measured, not asserted
+## Benchmark — measured against real games, not asserted
 
+**Correctness (real games, ADR-033).** The battle log is the external truth:
+an independent reader takes the damage each hit really did from the raw
+log, and both the AI's claims and the engine's projections are checked
+against it, on 20–40 recent public Reg M-B replays.
+
+| What is checked against the real log | Result |
+|---|---|
+| AI damage claims — Condition A (grounded pipeline) | **71.0%** consistent (110/155) |
+| AI damage claims — Condition B (same LLM, raw log only) | 55.5% (96/173) — Fisher odds ratio **1.96**, p = 0.0043 |
+| Claims about hits that never happened | A: 4 · B: 14 |
+| Engine projection contains the real damage (non-KO hits, no LLM) | **39.6%** of 530 judged hits |
+
+Grounding helps significantly, but projected damage is only as good as the
+assumed sets (most-used Chaos spread/item/ability for anything unrevealed),
+and real sets often differ. Details: "Round 6" in the benchmark README.
+
+### Faithfulness to the evidence (earlier rounds)
+
+These earlier rounds use hand-authored fixtures and check each claim against
+the pipeline's **own projections**, so they measure faithfulness to the
+evidence, not correctness (that is circular for `damage_range`; see above).
 An atomic-claim-verification benchmark (extract → verify → rate — the same
 shape RAG faithfulness evaluation uses) measures what fraction of the LLM's
-factual claims match deterministic ground truth: **Condition A** (the real
+factual claims match the pipeline's evidence: **Condition A** (the real
 pipeline) vs **Condition B** (the same LLM given only the raw Showdown log,
 no grounding at all). Headline metric: `damage_range` claims — the one
 category where the real `@smogon/calc` engine and real Chaos-derived EV/
@@ -129,9 +150,9 @@ nature spreads do genuine, otherwise-unavailable work.
 | OpenAI gpt-4o-mini | langchain | 73.8% | 14.1% | 17.14 | <0.0001 |
 | **Gemini 3.5-flash** | **adk (competition default)** | **73.3%** | **11.0%** | **22.27** | **2.70e-15** |
 
-The grounding effect holds across LLM vendor and orchestration framework
-alike — every combination tested clears statistical significance by an
-enormous margin (odds ratio 15–80x). Full methodology, every round's raw
+Faithfulness to the evidence holds across LLM vendor and orchestration
+framework alike (odds ratio 15–80x) — but these odds ratios overstate the
+correctness gain; against real games it is about 2x (table above). Full methodology, every round's raw
 numbers, and an honesty audit for unintentional bias toward the grounded
 condition: [`scripts/faithfulness_benchmark/README.md`](scripts/faithfulness_benchmark/README.md).
 

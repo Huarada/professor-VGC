@@ -160,7 +160,10 @@ Keep it that way; remaining debt is listed in `references/architecture-debt.md`.
    is stated in the prompt/context (ADR-005), never silent.
 8. **Measure, don't vibe.** Prompt/orchestration changes that affect claims
    should be checked against `scripts/faithfulness_benchmark` (needs a real
-   key — ask the user before spending API calls).
+   key — ask the user before spending API calls). Correctness claims must
+   come from the log-grounded runs (`run_log_grounded.py`,
+   `run_engine_calibration.py`, ADR-033): the projection-based `run.py`
+   only measures faithfulness to the evidence, which is circular.
 
 ---
 

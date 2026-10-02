@@ -123,6 +123,12 @@ against ground truth → LLM judge (style-blindness checked) → statistics
 - It costs real API calls: **ask the user before running it.**
 - Keep fixtures and ground truth deterministic; never let the judge see
   which condition produced a claim.
+- **Never treat the pipeline's own output as the reference for
+  correctness** (ADR-033). `verify.py` against `GroundTruth` measures
+  faithfulness to the evidence; correctness comes from the battle log, read
+  independently of `src/` (`observed_damage.py`): `run_engine_calibration.py`
+  (projections vs. real damage, no LLM) and `run_log_grounded.py` (both
+  conditions' claims vs. real damage, on real public replays).
 
 ---
 
