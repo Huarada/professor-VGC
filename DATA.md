@@ -251,15 +251,23 @@ certificate — most commonly a security suite's "web/SSL scanning" feature
 `scripts/sync_smogon_chaos_to_firestore.py` fetches current-generation VGC
 Chaos stats **directly from Smogon's own stats site**
 (`https://www.smogon.com/stats/<month>/chaos/`) — no local files, no manual
-download — decompresses each `.json.gz`, and upserts into Firestore through
+download — reads each file (plain `.json` from 2026-08 on, gzipped `.json.gz`
+before that; both are accepted), and upserts into Firestore through
 the exact same write path (`chaos_firestore_writer.py`) as the manual
 `migrate_chaos_to_firestore.py` above. Same storage layout, same
 sanitization, same idempotent overwrite-in-place semantics.
 
 ```bash
 python -m scripts.sync_smogon_chaos_to_firestore --project-id YOUR_PROJECT \
-    [--month 2026-07] [--credentials path/to/key.json] [--dry-run]
+    [--month 2026-07] [--formats gen9championsvgc2026regmc,gen9championsvgc2026regmcbo3] \
+    [--credentials path/to/key.json] [--dry-run]
 ```
+
+`--formats` (or `$PROFESSORVGC_SYNC_FORMATS`) limits a run to exact format
+ids — e.g. load a new regulation without rewriting the ones already in
+Firestore. A requested format the month doesn't have fails the run. As of
+2026-09 (published 2026-10-01) Reg M-C adds 8 more tiers
+(`gen9championsvgc2026regmc*` + Bo3), 2,184 species documents.
 
 **Scope: current-gen VGC only** (filename starts with `gen9` and contains
 `vgc`) — Smogon publishes ~150 other formats a month (every OU/Ubers/

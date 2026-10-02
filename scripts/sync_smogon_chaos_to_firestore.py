@@ -2,7 +2,8 @@
 Smogon (https://www.smogon.com/stats/) and sync them into Firestore.
 
     python -m scripts.sync_smogon_chaos_to_firestore --project-id YOUR_PROJECT \
-        [--month 2026-07] [--credentials path/to/key.json] [--dry-run]
+        [--month 2026-07] [--formats gen9championsvgc2026regmc,...] \
+        [--credentials path/to/key.json] [--dry-run]
 
 Designed to run as a **scheduled Cloud Run Job** (Cloud Scheduler -> Cloud
 Run Job, no Pub/Sub — see DATA.md's "Automated Smogon sync" section for why,
@@ -43,7 +44,10 @@ from scripts.chaos_firestore_writer import build_firestore_client, write_tier
 
 _STATS_ROOT = "https://www.smogon.com/stats/"
 _MONTH_RE = re.compile(r'href="(\d{4}-\d{2})/"')
-_FILE_RE = re.compile(r'href="([^"]+\.json\.gz)"')
+# Smogon has served chaos files both gzipped (``.json.gz``, through 2026-07)
+# and plain (``.json``, from 2026-08 on) — accept either.
+_FILE_RE = re.compile(r'href="([^"]+\.json(?:\.gz)?)"')
+_GZIP_MAGIC = b"\x1f\x8b"
 # Identifies this job to Smogon's server logs, per common web-scraping
 # etiquette — a default urllib User-Agent gets blocked by some servers, and
 # an honest one makes it easy for Smogon to see who's hitting their site if
@@ -86,20 +90,52 @@ def _is_current_gen_vgc(filename: str) -> bool:
     right split of responsibility — this filter never needs updating as
     Smogon's own naming conventions shift.
     """
-    name = filename.removesuffix(".json.gz")
+    name = _tier_id(filename)
     return name.startswith("gen9") and "vgc" in name
+
+
+def _tier_id(filename: str) -> str:
+    """``gen9championsvgc2026regmc-1760.json[.gz]`` -> ``gen9championsvgc2026regmc-1760``."""
+    return filename.removesuffix(".gz").removesuffix(".json")
+
+
+def _metagame(filename: str) -> str:
+    """The format id of a chaos file, without its rating cutoff."""
+    return _tier_id(filename).rsplit("-", 1)[0]
+
+
+def _decode_payload(raw: bytes) -> Any:
+    """Parse a chaos file body, gunzipping it first when it is gzipped.
+    Sniffs the gzip magic bytes rather than trusting the file extension."""
+    if raw[:2] == _GZIP_MAGIC:
+        raw = gzip.decompress(raw)
+    return json.loads(raw)
+
+
+def _select_formats(filenames: list[str], formats: list[str] | None) -> list[str]:
+    """Keep only the files of the requested format ids (all when ``formats``
+    is empty). Every requested format must exist in the month, so a typo or a
+    format Smogon hasn't published yet fails loudly instead of syncing
+    nothing."""
+    if not formats:
+        return filenames
+    missing = sorted(set(formats) - {_metagame(f) for f in filenames})
+    if missing:
+        raise SystemExit(f"Format(s) not published for this month: {', '.join(missing)}")
+    return [f for f in filenames if _metagame(f) in formats]
 
 
 def _list_vgc_files(month: str) -> list[str]:
     url = f"{_STATS_ROOT}{month}/chaos/"
     html = _fetch(url).decode("utf-8", errors="replace")
-    return sorted(f for f in _FILE_RE.findall(html) if _is_current_gen_vgc(f))
+    return sorted({f for f in _FILE_RE.findall(html) if _is_current_gen_vgc(f)})
 
 
 def sync(
     *,
     project_id: str,
     month: str | None,
+    formats: list[str] | None,
     collection: str,
     database_id: str,
     credentials_path: str | None,
@@ -115,6 +151,7 @@ def sync(
             f"No current-gen VGC files found for {resolved_month} at "
             f"{_STATS_ROOT}{resolved_month}/chaos/ — check the month actually exists."
         )
+    filenames = _select_formats(filenames, formats)
     print(f"Found {len(filenames)} current-gen VGC file(s): {', '.join(filenames)}")
 
     client: Any = None
@@ -123,14 +160,14 @@ def sync(
 
     total_species = 0
     for filename in filenames:
-        tier_id = filename.removesuffix(".json.gz")
+        tier_id = _tier_id(filename)
         url = f"{_STATS_ROOT}{resolved_month}/chaos/{filename}"
         print(f"=== {tier_id} ===")
         raw = _fetch(url)
-        payload = json.loads(gzip.decompress(raw))
+        payload = _decode_payload(raw)
         info = payload.get("info") or {}
         species_data: dict[str, Any] = payload.get("data") or {}
-        print(f"  downloaded ({len(raw)} bytes gzipped, {len(species_data)} species)")
+        print(f"  downloaded ({len(raw)} bytes, {len(species_data)} species)")
         if dry_run:
             total_species += len(species_data)
             continue
@@ -164,6 +201,12 @@ def main() -> None:
         help="YYYY-MM (default: $PROFESSORVGC_SYNC_MONTH, else the latest month Smogon has published)",
     )
     parser.add_argument(
+        "--formats", default=os.environ.get("PROFESSORVGC_SYNC_FORMATS") or None,
+        help="comma-separated format ids to sync, e.g. gen9championsvgc2026regmc,"
+             "gen9championsvgc2026regmcbo3 (default: $PROFESSORVGC_SYNC_FORMATS, "
+             "else every current-gen VGC format of the month)",
+    )
+    parser.add_argument(
         "--credentials", default=os.environ.get("PROFESSORVGC_FIRESTORE_CREDENTIALS_PATH") or None,
         help="service account JSON key path (omit for Application Default Credentials — "
              "the normal case inside Cloud Run, via its attached runtime service account)",
@@ -194,6 +237,7 @@ def main() -> None:
     sync(
         project_id=args.project_id,
         month=args.month,
+        formats=[f.strip() for f in args.formats.split(",") if f.strip()] if args.formats else None,
         collection=args.collection,
         database_id=args.database,
         credentials_path=args.credentials,

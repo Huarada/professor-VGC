@@ -1,5 +1,6 @@
 """Tests for the pure, network-free logic in sync_smogon_chaos_to_firestore.py:
-the current-gen-VGC filename filter, and month/file-list parsing against
+the current-gen-VGC filename filter, the format filter, plain/gzipped payload
+decoding, and month/file-list parsing against
 captured Apache-autoindex-shaped HTML fixtures (real structure, confirmed
 live against https://www.smogon.com/stats/ before being hardcoded here — not
 guessed).
@@ -7,10 +8,18 @@ guessed).
 
 from __future__ import annotations
 
+import gzip
+import json
+
+import pytest
+
 from scripts.sync_smogon_chaos_to_firestore import (
     _FILE_RE,
     _MONTH_RE,
+    _decode_payload,
     _is_current_gen_vgc,
+    _select_formats,
+    _tier_id,
 )
 
 
@@ -58,3 +67,59 @@ def test_file_regex_matches_real_apache_autoindex_shape():
     )
     files = _FILE_RE.findall(html)
     assert files == ["gen9ou-1825.json.gz", "gen9championsvgc2026regmb-1760.json.gz"]
+
+
+def test_file_regex_matches_plain_json_listing():
+    """From 2026-08 Smogon serves plain ``.json`` files (shape confirmed live
+    against https://www.smogon.com/stats/2026-09/chaos/)."""
+    html = (
+        '<a href="gen9championsvgc2026regmc-1760.json">'
+        'gen9championsvgc2026regmc-1760.json</a>                01-Oct-2026 14:40\n'
+        '<a href="gen9championsvgc2026regmcbo3-0.json">'
+        'gen9championsvgc2026regmcbo3-0.json</a>                01-Oct-2026 14:40\n'
+    )
+    files = _FILE_RE.findall(html)
+    assert files == ["gen9championsvgc2026regmc-1760.json", "gen9championsvgc2026regmcbo3-0.json"]
+    assert all(_is_current_gen_vgc(f) for f in files)
+
+
+def test_tier_id_strips_either_extension():
+    assert _tier_id("gen9championsvgc2026regmc-1760.json") == "gen9championsvgc2026regmc-1760"
+    assert _tier_id("gen9championsvgc2026regmb-0.json.gz") == "gen9championsvgc2026regmb-0"
+
+
+def test_decode_payload_reads_plain_and_gzipped_bodies():
+    body = json.dumps({"info": {"metagame": "gen9championsvgc2026regmc"}, "data": {}}).encode()
+    assert _decode_payload(body)["info"]["metagame"] == "gen9championsvgc2026regmc"
+    assert _decode_payload(gzip.compress(body))["info"]["metagame"] == "gen9championsvgc2026regmc"
+
+
+_MONTH_FILES = [
+    "gen9championsvgc2026regmb-0.json",
+    "gen9championsvgc2026regmb-1760.json",
+    "gen9championsvgc2026regmc-0.json",
+    "gen9championsvgc2026regmc-1760.json",
+    "gen9championsvgc2026regmcbo3-0.json",
+    "gen9championsvgc2026regmcbo3-1760.json",
+]
+
+
+def test_select_formats_keeps_everything_without_a_filter():
+    assert _select_formats(_MONTH_FILES, None) == _MONTH_FILES
+
+
+def test_select_formats_matches_exact_format_ids_only():
+    """``regmc`` must not also pull ``regmcbo3`` (and vice versa)."""
+    assert _select_formats(_MONTH_FILES, ["gen9championsvgc2026regmc"]) == [
+        "gen9championsvgc2026regmc-0.json",
+        "gen9championsvgc2026regmc-1760.json",
+    ]
+    both = _select_formats(
+        _MONTH_FILES, ["gen9championsvgc2026regmc", "gen9championsvgc2026regmcbo3"]
+    )
+    assert both == _MONTH_FILES[2:]
+
+
+def test_select_formats_fails_loudly_on_an_unpublished_format():
+    with pytest.raises(SystemExit, match="gen9championsvgc2026regmd"):
+        _select_formats(_MONTH_FILES, ["gen9championsvgc2026regmc", "gen9championsvgc2026regmd"])
