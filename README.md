@@ -263,10 +263,18 @@ tool-calling loop, and the stage-by-stage data flow) lives in
 
 ![Component diagram: three interchangeable AnalysisPipeline backends (AdkAnalysisOrchestrator default, LangChainAnalysisOrchestrator, AnalysisService native) all calling one shared deterministic core, with eight adapters below a dependency-inversion boundary, each implementing exactly one Protocol port](docs/diagrams/fig3-components.svg)
 
-Every orchestrator implements the same `AnalysisPipeline` port and shares the
-same `MatchupEvaluator`/`TurnReplaySimulator` instances — switching
+Every orchestrator implements the same `AnalysisPipeline` port and receives the
+same injected `GroundTruthAssembler` evidence stage (parity-tested) — switching
 orchestration technology never changes a single damage roll, which is a
 structural guarantee here, not just a claim in prose. Below the dependency-
 inversion boundary, every side effect (parsing, calc, Chaos, Smogon, memory,
 the LLM itself) is a Protocol in `src/domain/interfaces.py`; no service ever
 imports a concrete adapter directly.
+
+## Contributing, security and license
+
+- How to set up, branch, commit and open a PR: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- Architecture invariants and extension points (for humans and AI assistants):
+  [`.claude/CLAUDE.md`](.claude/CLAUDE.md); decisions and trade-offs: [`ADR.md`](ADR.md).
+- Reporting a vulnerability: [`SECURITY.md`](SECURITY.md).
+- Licensed under the [Apache License 2.0](LICENSE).

@@ -10,7 +10,12 @@ node_calc/node_modules/
 dist/
 build/
 *.bundle
-CLAUDE.md
+
+# Claude Code: the project memory (.claude/CLAUDE.md) and the architect skill
+# are shared with contributors; per-developer settings stay local.
+.claude/*
+!.claude/CLAUDE.md
+!.claude/skills/
 
 # GCP service account keys — never commit these (see .env.example's
 # PROFESSORVGC_FIRESTORE_CREDENTIALS_PATH). Matches the common naming

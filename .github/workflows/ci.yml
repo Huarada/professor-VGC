@@ -7,6 +7,15 @@ on:
   push:
     branches: [master]
 
+# Least privilege for the workflow token: CI only reads the repository.
+permissions:
+  contents: read
+
+# A newer push to the same PR/branch supersedes the run in progress.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     name: pytest (Python ${{ matrix.python-version }})
