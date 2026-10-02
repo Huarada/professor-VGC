@@ -166,7 +166,7 @@ Read by `src/config.py` (`Settings`, pydantic-settings; `.env` supported).
 | `PROFESSORVGC_OPENAI_MODEL` / `PROFESSORVGC_GEMINI_MODEL` | gpt-4o-mini / gemini-3.5-flash | Model ids. Gemini model is validated at Settings CONSTRUCTION time (a `field_validator`, `src/config.py`) — this project requires 3.5+; an older id fails immediately at app startup, not lazily on first Gemini call. `require_modern_gemini_model` (`src/adapters/llm/base.py`, reusing the same parser) re-checks at every point-of-use as defense in depth against an already-running process holding a stale cached `Settings`. |
 | `PROFESSORVGC_REG_FALLBACK_DEPTH` | `3` | Max previous regulations to search. |
 | `PROFESSORVGC_CHAOS_TOP_N` | `3` | Top-N kept per category. |
-| `PROFESSORVGC_FIRESTORE_PROJECT_ID` / `..._DATABASE_ID` / `..._CHAOS_COLLECTION` / `..._CREDENTIALS_PATH` | — / `(default)` / `chaos_tiers` / — | Firestore is the app's ONLY Chaos data source — no local-file fallback, no config knob to select one (a competition requirement, not a preference; see DATA.md). Credentials path empty = Application Default Credentials. |
+| `PROFESSORVGC_FIRESTORE_PROJECT_ID` / `..._DATABASE_ID` / `..._CHAOS_COLLECTION` / `..._CREDENTIALS_PATH` | — / `(default)` / `chaos_tiers` / — | Firestore is the app's ONLY Chaos data source — no local-file fallback, no config knob to select one (a project requirement, not a preference; see DATA.md). Credentials path empty = Application Default Credentials. |
 | `PROFESSORVGC_USE_SMOGON_DEX` | `false` | Enable official `@pkmn/smogon` analyses/sets/stats. |
 | `PROFESSORVGC_SMOGON_DEX_TIMEOUT_SECONDS` | `30` | Timeout for the dex worker. |
 | `PROFESSORVGC_USE_SEMANTIC_STRATEGY` | `false` | Rank Smogon analysis passages against the question via embeddings (needs `USE_SMOGON_DEX=true`); see ADR-027. |
@@ -308,7 +308,7 @@ replay JSON/log + question
     whole-tier download — see `firestore_chaos_repository.py`'s docstring.
     `scripts/migrate_chaos_to_firestore.py` populates it from the existing
     local files (read-only, never edits them).
-11. **feat(competition):** two hard guarantees, both enforced in code, not
+11. **feat(config):** two hard guarantees, both enforced in code, not
     just config defaults: (a) `Settings.gemini_model` has a `field_validator`
     (`src/config.py`) requiring Gemini 3.5+ — fails at Settings CONSTRUCTION
     time (app startup), before any provider is even selected;

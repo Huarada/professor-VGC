@@ -110,7 +110,7 @@ class Container:
         """The Chaos data source — Google Cloud Firestore, unconditionally.
 
         No local-file fallback and no config knob to select one: this
-        project's own competition requirement is that the running app
+        project's own requirement is that the running app
         genuinely, always queries Firestore for this data, not merely
         defaults to it with an escape hatch. See config.py's own comment
         on this. Built once and cached — this is what makes

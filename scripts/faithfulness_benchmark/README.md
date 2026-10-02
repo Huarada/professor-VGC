@@ -758,7 +758,7 @@ scripts.faithfulness_benchmark.run_orchestrator_comparison`.
 Every round above ran on OpenAI (`gpt-4o-mini`) — the project's provider
 default at the time. Once `PROFESSORVGC_DEFAULT_PROVIDER` became `gemini`
 and `Settings.gemini_model` started enforcing Gemini 3.5+ at construction
-time (a competition requirement — see `src/config.py`), the open question
+time (a project requirement — see `src/config.py`), the open question
 was whether the grounding effect this whole benchmark measures is specific
 to OpenAI or holds regardless of LLM vendor, since the architecture's own
 claim (CLAUDE.md §1) is that the LLM only ever explains ground truth,
@@ -825,7 +825,7 @@ look like when it's actually true of the pipeline rather than a property
 of one specific model's behavior.
 
 **Residual, stated plainly:** this is Gemini's first appearance in this
-benchmark and only on one orchestrator (`adk`, the competition default) —
+benchmark and only on one orchestrator (`adk`, the default) —
 unlike OpenAI, there is no Gemini×langchain or Gemini×native row yet, and
 only a single pass (no repeated-sampling confidence interval, same
 limitation every prior round states). Re-running `run.py --provider

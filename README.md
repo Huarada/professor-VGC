@@ -2,72 +2,152 @@
 
 [![CI](https://github.com/Huarada/professor-VGC/actions/workflows/ci.yml/badge.svg)](https://github.com/Huarada/professor-VGC/actions/workflows/ci.yml)
 
-A **Clean-Architecture** engine that analyzes Pokemon VGC battles by combining a
+A **Clean-Architecture** engine that analyzes Pokémon VGC battles by combining a
 **deterministic** damage-calc layer (`@smogon/calc` via Node IPC) with a
 **probabilistic** metagame feed (Smogon *Chaos* usage stats) and two LLM stages,
 orchestrated with **Google ADK** (Agent Development Kit) by default — **LangChain**
 and a hand-rolled **native** pipeline remain available as interchangeable
-backends — for selection and natural-language explainability (bring your own key).
+backends — for selection and natural-language coaching (bring your own key).
 
-## All Things Agentic Hackathon — pre-existing work disclosure
+The guiding principle: **the LLM explains ground truth; it never invents it.**
+Every number it may cite — damage, speed order, KO threats, Protect / switch /
+speed-control options — is computed in code first, under the battle state at
+the moment of each move (weather, terrain, screens, HP, status, items), and
+handed to the LLM as typed evidence.
 
-This repository was created **August 26, 2026** (GitHub's own repository
-timestamp — verifiable via the GitHub API, not editable after the fact),
-inside the Contest's Submission Period (August 3–31, 2026). Its deterministic
-battle-analysis core (the Showdown replay parser, the `@smogon/calc`
-damage-engine integration, base Chaos usage-stats lookup) originated in an
-earlier personal project first written **July 23, 2026** — never itself an
-agentic system, with no LLM orchestration, no autonomous agent, and none of
-Gemini, Google ADK, or any Google Cloud infrastructure integrated. That
-pre-existing work is disclosed here and incorporated the same way a starter
-template would be.
+## How well does it match real games?
 
-**Everything the Contest requires was newly designed and built during the
-Submission Period**, with git history as evidence: the Google ADK agent
-orchestration (default backend, [`94a074b`](https://github.com/Huarada/professor-VGC/commit/94a074b),
-2026-08-25), the Google Cloud Firestore metagame-memory backend
-([`f871f80`](https://github.com/Huarada/professor-VGC/commit/f871f80), 2026-08-26), the enforced
-Gemini 3.5+ requirement ([`8320737`](https://github.com/Huarada/professor-VGC/commit/8320737),
-2026-08-27), and the Cloud Run deployment
-([`e1e57af`](https://github.com/Huarada/professor-VGC/commit/e1e57af), 2026-08-28). Full detail:
-[`HACKATHON_DISCLOSURE.md`](HACKATHON_DISCLOSURE.md).
+Measured, not asserted — against what **actually happened** in real public
+Showdown games, not against the pipeline's own numbers.
 
-## Pipeline (maps 1:1 to the flow diagram)
+**The external truth is the battle log.** An independent reader
+([`observed_damage.py`](scripts/faithfulness_benchmark/observed_damage.py),
+which imports nothing from `src/`) takes the damage each hit really did from
+the raw `-damage` lines. Both the AI's damage claims and the engine's projected
+damage ranges are checked against it, on 40 recent public
+`gen9championsvgc2026regmb` replays.
+
+**Agreement is judged within a tolerance band, not as an exact match:** ±2
+percentage points because the log shows HP rounded to whole percents, plus a
+relative **±5%** because a real Pokémon's EVs/nature differ from the one spread
+the projection assumes. Every rate carries a **95% confidence interval**
+(Wilson), and the comparison an exact interval for its odds ratio.
+
+| Checked against the real log (±2pp ±5%) | Rate (95% CI) |
+|---|---|
+| AI damage claims — **A**: the grounded pipeline | **59.9% (55.0–64.7%)**, 229/382 |
+| AI damage claims — **B**: the same LLM given only the raw log | 51.1% (46.0–56.1%), 191/374 |
+| A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
+| Claims about hits that never happened | A: 18 · B: 57 |
+| Engine projection contains the real damage (non-KO hits, no LLM) | **47.9% (42.7–53.2%)**, 162/338 |
+| Engine projection reaches a real KO | 83.3% (77.4–87.9%), 160/192 |
+| Engine misses explained by EV/nature variance alone | 69.6% (63.0–75.4%), 144/207 |
+
+The conclusion does not hinge on the tolerance chosen — the same claims
+re-scored:
+
+| Relative tolerance | A (95% CI) | B (95% CI) | Odds ratio (95% CI) | p |
+|---|---|---|---|---|
+| 0% (±2pp only) | 56.8% (51.8–61.7%) | 49.5% (44.4–54.5%) | 1.34 (1.00–1.81) | 0.049 |
+| **5%** | **59.9% (55.0–64.7%)** | **51.1% (46.0–56.1%)** | **1.43 (1.06–1.93)** | **0.016** |
+| 10% | 63.4% (58.4–68.0%) | 52.9% (47.9–57.9%) | 1.54 (1.14–2.08) | 0.004 |
+| 15% | 67.3% (62.4–71.8%) | 55.3% (50.3–60.3%) | 1.66 (1.22–2.25) | 0.0008 |
+
+**What it means.**
+
+- **Grounding helps, modestly.** About 9 points more claims consistent with
+  the log, significant at every tolerance, and three times fewer invented hits.
+  It is not the 80× an earlier, circular benchmark suggested.
+- **The ceiling is the assumed sets, not the engine.** Unrevealed
+  EVs/natures/items/abilities are backed off the single most-used Chaos set.
+  ~70% of the engine's misses fit some other EV/nature spread; the rest come
+  from unrevealed abilities or items (e.g. Liquid Voice, Scrappy) or species
+  without usage data. Projected damage is a baseline; the log's observed
+  damage is what happened.
+- **Pool runs over distinct games.** LLM output varies from run to run: each
+  run of 20 games alone was *not* significant at ±5% (p = 0.088 and 0.10).
+  Results are reported pooled over different games, with intervals.
+
+Methodology, every run, the sensitivity analysis, the EV/nature envelope and
+the bias audit: [`scripts/faithfulness_benchmark/README.md`](scripts/faithfulness_benchmark/README.md)
+("Round 6"); decisions: ADR-033 and ADR-034 in [`ADR.md`](ADR.md).
+
+<details>
+<summary>Earlier rounds: faithfulness to the evidence (circular for damage)</summary>
+
+The first benchmark rounds used hand-authored fixtures and checked each claim
+against the pipeline's **own projected ranges** — the very numbers Condition A
+was given. That measures faithfulness to the evidence, not correctness, and
+judges Condition B against assumptions it never saw, which is why its odds
+ratios were so large:
+
+| Provider / model | Orchestrator | Grounded | Naive | Odds ratio | p |
+|---|---|---|---|---|---|
+| OpenAI gpt-4o-mini | native | 92.0% | 12.6% | 80.0 | <0.0001 |
+| OpenAI gpt-4o-mini | adk | 72.2% | 14.1% | 15.23 | <0.0001 |
+| OpenAI gpt-4o-mini | langchain | 73.8% | 14.1% | 17.14 | <0.0001 |
+| Gemini 3.5-flash | adk (default) | 73.3% | 11.0% | 22.27 | 2.70e-15 |
+
+Use these only as evidence that the explanation repeats its evidence
+faithfully; cite the real-game table above for correctness.
+
+</details>
+
+### Reproduce
+
+```bash
+python -m scripts.faithfulness_benchmark.replay_corpus --count 40              # public replays -> data/replays/cache (git-ignored)
+python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos local  # engine vs real damage, no LLM, offline
+python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20             # games 1-20 (API calls)
+python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20 --offset 20 # games 21-40
+python -m scripts.faithfulness_benchmark.rescore_log_grounded out/RUN1.json out/RUN2.json --relative-tolerance 0.05  # pool + any band, no API calls
+```
+
+`--relative-tolerance` sets the band (default 0.05); `rescore_log_grounded`
+refuses to pool runs that share a game.
+
+## Pipeline
 
 ```
-replay JSON + question
-   │  LogParser.parse                       ← "CLEANUP / FILTER (DETERMINISM)"
-   ▼
-GameState (species involved)
-   │  SelectionStrategy / LCEL selection    ← 1st AI  (needs memory)
+replay JSON / log / URL + question
+   │  LogParser.parse                     ← deterministic: rosters, ordered timeline,
+   ▼                                        per-move BattleSnapshot (field, HP, status, items)
+GameState
+   │  SelectionStrategy                   ← 1st AI (memory-aware), cross-side matchups only
    ▼
 SelectionPlan (focus species + matchups)
-   ├─▶ MetaStatsProvider (Chaos)            ← EV/IV/items/abilities/counters
-   ├─▶ CalcEngineAdapter (Node @smogon/calc)← "Determinism": damage + speed
-   └─▶ StrategyKnowledgeProvider (Smogon)   ← archetypes + teammates
-   │  LLM explanation (LCEL)                ← 2nd AI  (needs memory)
+   │  GroundTruthAssembler                ← shared by every backend
+   ├─▶ MetaStatsProvider (Chaos)            likely sets, threats (all in-play Pokémon)
+   ├─▶ MatchupEvaluator (@smogon/calc)      field-aware damage + speed verdicts
+   ├─▶ TurnReplaySimulator                  per move: projected vs logged damage, speed,
+   │                                        alternatives into every target, KO threats,
+   │                                        Protect / switch / speed-control options
+   └─▶ StrategyKnowledgeProvider (Smogon)   archetypes, teammates, official analyses
    ▼
-AnalysisResult  ─────────────────────────▶ green "Answer OUTPUT" node
+AnalysisEvidence
+   │  explanation                         ← 2nd AI (memory-aware, ground-truth-locked prompt;
+   ▼                                        agent backends may call read-only EvidenceTools)
+AnalysisResult (UI DTO)
 ```
 
 ## Layers
 
 | Layer | Package | Rule |
 |-------|---------|------|
-| Domain (core) | `src/domain` | Pydantic models, Protocols, exceptions. Zero external deps. |
-| Adapters (infra) | `src/adapters` | Chaos, Showdown parser, Node calc IPC, Smogon strategy, OpenAI/Gemini, LangChain, memory. |
-| Services (use cases) | `src/services` | Orchestration (native + LangChain LCEL) + DI composition root. Depends only on Protocols. |
+| Domain (core) | `src/domain` | Pydantic models (value objects frozen), Protocol ports, exceptions. Zero framework deps. |
+| Adapters (infra) | `src/adapters` | Showdown log reader, Node calc IPC, Chaos (Firestore), Smogon, OpenAI/Gemini/LangChain/ADK, embeddings, memory, prompts. |
+| Services (use cases) | `src/services` | The three orchestrators, the shared `GroundTruthAssembler`, selection, per-move simulation, decision review, DI composition root. Depend only on Protocols. |
 | Presentation | `src/ui` | Streamlit. Pure view — calls a use case, renders a DTO. |
-| Polyglot subsystem | `node_calc` | Node worker exposing `@smogon/calc` over stdin/stdout. |
+| Polyglot subsystem | `node_calc` | Node workers exposing `@smogon/calc` and `@pkmn/smogon` over stdin/stdout. |
 
-Dependency Inversion is enforced everywhere: services import from
-`src.domain.interfaces` only. Concrete adapters are wired in
-`src/services/container.py` and nowhere else.
+Dependency Inversion is enforced everywhere: `services` and `ui` never import
+`adapters`; concrete adapters are wired in `src/services/container.py` and
+nowhere else.
 
 ## Orchestration (Google ADK / LangChain / native)
 
 The orchestration technology is a **pluggable infrastructure choice** behind the
-`AnalysisPipeline` port. Three interchangeable backends implement it identically:
+`AnalysisPipeline` port. Three interchangeable backends implement it:
 
 | Backend | Class | How the LLM stages run |
 |---------|-------|------------------------|
@@ -77,99 +157,25 @@ The orchestration technology is a **pluggable infrastructure choice** behind the
 
 Select at runtime via `PROFESSORVGC_ORCHESTRATOR=adk|langchain|native` or the UI
 dropdown. The LLM *vendor* (`PROFESSORVGC_DEFAULT_PROVIDER=openai|gemini`) is a
-fully independent choice from the orchestrator — any backend works with either key.
-
-Every orchestration framework is confined to the adapters/services layers and
-never appears in a domain signature:
-
-- `src/adapters/llm/adk_provider.py` — `build_adk_model`, a BYOK factory
-  returning the `model=` argument for an ADK `Agent`: a plain Gemini model-id
-  string (ADK's native path, no extra dependency) for `gemini`, or ADK's own
-  documented `LiteLlm` wrapper (needs the separate `litellm` package) for `openai`.
-- `src/adapters/llm/evidence_tools.py` — `EvidenceTools`, the ONE
-  implementation of the calc/Chaos/strategy tools the explanation agents may
-  call for interactive "what-if" follow-ups. Every parameter is required (no
-  defaults): the Gemini API's function-calling schema rejects a declaration
-  that has one.
-- `src/adapters/llm/adk_tools.py` — passes those tools to ADK as plain,
-  type-hinted functions (ADK auto-wraps a function's signature + Google-style
-  docstring into a tool).
-- `src/services/adk_orchestrator.py` — the ADK pipeline. Conversation history
-  is rendered into the prompt text (like the other two backends, via the
-  project's own `ConversationMemory` port) rather than relying on ADK's own
-  session/event replay, so memory behavior stays identical across all three
-  backends; each `analyze()` call runs on a fresh, disposable ADK session.
-- `src/adapters/llm/langchain_provider.py` — `LangChainLLMProvider` (implements
-  the domain `LLMProvider` on any `BaseChatModel`) + a BYOK `build_chat_model`
-  factory for `ChatOpenAI` / `ChatGoogleGenerativeAI`.
-- `src/adapters/llm/langchain_tools.py` — the same `EvidenceTools` wrapped as
-  `StructuredTool`s for the `langchain.agents.create_agent` tool-calling agent.
-- `src/services/langchain_orchestrator.py` — the LCEL pipeline.
+fully independent choice — any backend works with either key.
 
 All three backends receive the same injected evidence stage
-(`GroundTruthAssembler` in `src/services/ground_truth.py`, plus the shared
-`selection_logic`), so switching orchestration technology never changes a single
-damage roll (a parity test pins this) — the LLM only ever explains ground-truth
-numbers, never invents them.
-
-## Benchmark — measured against real games, not asserted
-
-**Correctness (real games, ADR-033/034).** The battle log is the external
-truth: an independent reader takes the damage each hit really did from the
-raw log, and both the AI's claims and the engine's projections are checked
-against it on 40 recent public Reg M-B replays. Agreement is judged within a
-tolerance band — ±2pp for HP rounding and ±5% because real EVs/natures differ
-from the assumed spread — and every rate carries a 95% confidence interval.
-
-| Checked against the real log (±2pp ±5%) | Rate (95% CI) |
-|---|---|
-| AI damage claims — Condition A (grounded pipeline) | **59.9% (55.0–64.7%)**, 229/382 |
-| AI damage claims — Condition B (same LLM, raw log only) | 51.1% (46.0–56.1%), 191/374 |
-| A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
-| Claims about hits that never happened | A: 18 · B: 57 |
-| Engine projection contains the real damage (non-KO hits, no LLM) | **47.9% (42.7–53.2%)**, 162/338 |
-| …of the engine's misses, explained by EV/nature variance alone | 69.6% (63.0–75.4%) |
-
-Grounding helps — by about 9 points, significant at every tolerance tested
-(0–15%) — but projected damage is only as good as the assumed sets
-(most-used Chaos spread/item/ability for anything unrevealed), and real sets
-often differ. Details: "Round 6" in the benchmark README.
-
-### Faithfulness to the evidence (earlier rounds)
-
-These earlier rounds use hand-authored fixtures and check each claim against
-the pipeline's **own projections**, so they measure faithfulness to the
-evidence, not correctness (that is circular for `damage_range`; see above).
-An atomic-claim-verification benchmark (extract → verify → rate — the same
-shape RAG faithfulness evaluation uses) measures what fraction of the LLM's
-factual claims match the pipeline's evidence: **Condition A** (the real
-pipeline) vs **Condition B** (the same LLM given only the raw Showdown log,
-no grounding at all). Headline metric: `damage_range` claims — the one
-category where the real `@smogon/calc` engine and real Chaos-derived EV/
-nature spreads do genuine, otherwise-unavailable work.
-
-| Provider / model | Orchestrator | Grounded rate | Naive rate | Fisher odds ratio | p (two-sided) |
-|---|---|---|---|---|---|
-| OpenAI gpt-4o-mini | native | 92.0% | 12.6% | 80.0 | <0.0001 |
-| OpenAI gpt-4o-mini | adk | 72.2% | 14.1% | 15.23 | <0.0001 |
-| OpenAI gpt-4o-mini | langchain | 73.8% | 14.1% | 17.14 | <0.0001 |
-| **Gemini 3.5-flash** | **adk (competition default)** | **73.3%** | **11.0%** | **22.27** | **2.70e-15** |
-
-Faithfulness to the evidence holds across LLM vendor and orchestration
-framework alike (odds ratio 15–80x) — but these odds ratios overstate the
-correctness gain; against real games it is about 1.4–1.7x (table above). Full methodology, every round's raw
-numbers, and an honesty audit for unintentional bias toward the grounded
-condition: [`scripts/faithfulness_benchmark/README.md`](scripts/faithfulness_benchmark/README.md).
+(`GroundTruthAssembler`, `src/services/ground_truth.py`), so switching
+orchestration technology never changes a single damage roll — a parity test
+pins this. The agents' on-demand tools (`damage_calc`, `chaos_meta_stats`,
+`smogon_strategy`) are one framework-agnostic core
+(`src/adapters/llm/evidence_tools.py`), wrapped per framework; every parameter
+is required because Gemini's function-calling schema rejects defaults.
 
 ## Setup
 
 ```bash
-# 1. Python core
+# 1. Python core (3.10+)
 python -m pip install -r requirements.txt
 # — or, equivalently, the packaging-metadata path (also gives mypy/pytest):
 #   python -m pip install -e ".[dev]"
 
-# 2. Node calc engine
+# 2. Node calc engine (Node 20+)
 cd node_calc && npm install && cd ..
 
 # 3. Configuration (bring your own key)
@@ -188,6 +194,9 @@ cd node_calc && npm run smoke      # prints a Garchomp→Sinistcha calc as JSON
 streamlit run src/ui/app.py
 ```
 
+Paste a Showdown replay URL, its JSON, or the raw battle log, and ask a
+question. Gemini models must be 3.5 or newer (enforced at startup).
+
 ## Customizing the UI (optional)
 
 The default theme (light "battle notebook" sky-blue, no external assets)
@@ -202,28 +211,25 @@ sidebar). Each folder's own README covers size/format guidance.
 
 Set `PROFESSORVGC_USE_SMOGON_DEX=true` to pull Smogon's official analyses/sets/stats via
 `@pkmn/smogon` at runtime (Node deps installed by `npm install` in `node_calc`).
-Strategies then use official analyses (with the local Chaos data as fallback), and
+Strategies then use official analyses (with the Chaos data as fallback), and
 team-improvement questions use official sets + usage stats. See DATA.md.
 
 ### Semantic strategy retrieval (optional, needs the above)
 
 Set `PROFESSORVGC_USE_SEMANTIC_STRATEGY=true` to rank Smogon's official analysis
-passages (one per format's overview, one per set's own description) against the
-user's actual question via embeddings, instead of always using the first available
-format's overview verbatim. Reuses whichever LLM provider key is already
-configured — no separate credential. A lightweight, dependency-free
-implementation (no vector database): embeddings + in-memory cosine similarity
-over the handful of paragraphs Smogon actually publishes per species. See
-ADR-027 for the full design and why this — and not the conversation
-memory — is where retrieval genuinely earns its keep in this project.
+passages against the user's actual question via embeddings, instead of always
+using the first available format's overview. Reuses whichever LLM provider key
+is already configured. A lightweight implementation (no vector database):
+embeddings + in-memory cosine similarity over the handful of paragraphs Smogon
+publishes per species. See ADR-027.
 
 ## Chaos data
 
 The running app reads Chaos usage stats **exclusively from Google Cloud
 Firestore** — set `PROFESSORVGC_FIRESTORE_PROJECT_ID` (and, once, populate the
 database — see DATA.md's "Firestore: the app's ONLY Chaos data source"
-section for the full setup). There is no local-file fallback: this is a
-deliberate requirement, not a default.
+section). There is no local-file fallback in the app; the benchmark tooling can
+read the same dumps from `data/chaos/` offline (`--chaos local`, read-only).
 
 Populate Firestore from a real Smogon Chaos dump (a trimmed sample lives in
 `sample_data/`) with:
@@ -235,24 +241,21 @@ python -m scripts.sync_smogon_chaos_to_firestore --project-id YOUR_PROJECT
 ```
 
 The adapter converts Chaos's `Nature:e/e/e/e/e/e` (EVs ÷ 8) encoding back to
-real 0-252 EVs and keeps only the Top-N per category to stay ~1 KB per prompt
-— identical logic whether the raw JSON was loaded via either script above.
+real 0-252 EVs and keeps only the Top-N per category to stay ~1 KB per prompt.
 
 ## Tests
 
 ```bash
-pytest             # in-memory fakes; no Node or API keys REQUIRED to pass
+pytest -q          # in-memory fakes; no network or API keys required
 mypy src           # strict — the same check CI runs on every PR
 ```
 
-Neither Node nor an LLM/langchain install is required for a green `pytest`
-run — every test either uses an in-memory fake or skips itself cleanly
-(`pytest.skip`/`pytest.importorskip`, never an error) when that specific
-piece of optional infrastructure (the Node calc engine, `langchain_core`)
-isn't present. If Node *is* set up (step 2 above), the calc-engine
-integration tests (`test_calc_engine_*.py`) run for real against the
-actual `@smogon/calc` subprocess instead of skipping — this is what
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) does on every PR.
+Neither Node nor an LLM/LangChain/ADK install is required for a green `pytest`
+run — every test either uses an in-memory fake or skips itself cleanly when
+that optional piece isn't present. With Node set up, the calc-engine
+integration tests (`test_calc_engine_*.py`) run against the real `@smogon/calc`
+subprocess, as [`.github/workflows/ci.yml`](.github/workflows/ci.yml) does on
+every PR (Python 3.10 and 3.12).
 
 ## Extending
 
@@ -260,42 +263,30 @@ actual `@smogon/calc` subprocess instead of skipping — this is what
   `Container.build_llm` / `build_chat_model`. Nothing else changes.
 - **New calc backend (Rust/HTTP/...):** implement `CalcEngineAdapter` and swap
   it in the container. Domain and services are untouched.
-- **New orchestration backend:** implement `AnalysisPipeline` (like
-  `AdkAnalysisOrchestrator`/`LangChainAnalysisOrchestrator`) and register it in
-  `Container.build_pipeline`.
-- **New Chaos storage backend:** implement `ChaosRepositoryLike` (like
-  `FirestoreChaosRepository` — reuses the shared `ChaosTierIndex` for tier/
-  regulation-fallback selection, only "where the JSON bytes come from" is
-  backend-specific) and wire it in `Container.chaos_repository`.
-  `ChaosAdapter`/`ChaosStrategyAdapter` never change.
+- **New orchestration backend:** implement `AnalysisPipeline` owning only
+  selection + explanation, take the shared `GroundTruthAssembler`, register it
+  in `Container.build_pipeline` and add it to the parity test.
+- **New evidence for the LLM:** compute it once in `GroundTruthAssembler` as a
+  typed field; every backend gets it.
+- **New battle-log fact:** add a handler to the matching group in
+  `src/adapters/parsers/showdown_log/handlers/`.
+- **New Chaos storage backend:** implement `ChaosRepositoryLike` (reusing the
+  shared `ChaosTierIndex`) and wire it in `Container.chaos_repository`.
 
 ## Architecture diagram
 
-C4 model, built from source (not generated) — reading
-`src/domain/interfaces.py`, `src/services/container.py`, all three
-`AnalysisPipeline` implementations and every adapter's own docstring, cross-
-checked against `CLAUDE.md` and the ADRs. The two views below are the ones
-that answer "how does Gemini connect to the backend/database/frontend" and
-"how is responsibility separated" most directly; the full five-view walkthrough
-(System Context, Containers, Components, a Dynamic view of the ADR-028
-tool-calling loop, and the stage-by-stage data flow) lives in
+C4 model, built from source (not generated). The full five-view walkthrough
+(System Context, Containers, Components, a Dynamic view of the tool-calling
+loop, and the stage-by-stage data flow) lives in
 [`docs/architecture-blueprint.html`](docs/architecture-blueprint.html).
 
-**Containers — how Gemini connects to the backend, Firestore, and the UI:**
+**Containers — how the LLM provider connects to the backend, Firestore, and the UI:**
 
 ![Container diagram: Streamlit UI, the Python application core, two Node.js subprocesses, and Google Cloud Firestore, all inside one Cloud Run container, plus the external BYOK LLM provider and optional Smogon host](docs/diagrams/fig2-containers.svg)
 
 **Components — the separation of responsibilities (Dependency Inversion in practice):**
 
 ![Component diagram: three interchangeable AnalysisPipeline backends (AdkAnalysisOrchestrator default, LangChainAnalysisOrchestrator, AnalysisService native) all calling one shared deterministic core, with eight adapters below a dependency-inversion boundary, each implementing exactly one Protocol port](docs/diagrams/fig3-components.svg)
-
-Every orchestrator implements the same `AnalysisPipeline` port and receives the
-same injected `GroundTruthAssembler` evidence stage (parity-tested) — switching
-orchestration technology never changes a single damage roll, which is a
-structural guarantee here, not just a claim in prose. Below the dependency-
-inversion boundary, every side effect (parsing, calc, Chaos, Smogon, memory,
-the LLM itself) is a Protocol in `src/domain/interfaces.py`; no service ever
-imports a concrete adapter directly.
 
 ## Contributing, security and license
 
