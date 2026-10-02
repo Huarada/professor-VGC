@@ -15,7 +15,7 @@ from src.adapters.parsers.showdown_log.state import ParseState
 
 _EXPECTED_COMMANDS = {
     # flow
-    "turn", "faint", "-message", "win",
+    "turn", "tier", "faint", "-message", "win",
     # roster
     "player", "poke", "switch", "drag", "detailschange",
     # actions

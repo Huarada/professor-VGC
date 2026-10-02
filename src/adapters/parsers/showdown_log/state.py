@@ -17,6 +17,7 @@ class ParseState:
         self.timeline = Timeline()
         self.field = FieldLedger()
         self.combatants = CombatantLedger(self.roster, self.timeline)
+        self.format_id: str | None = None
 
     @property
     def turn(self) -> int:
@@ -46,9 +47,12 @@ class ParseState:
         """Close the log and freeze everything into the domain aggregate."""
         self.field.close(self.turn)
         self.timeline.finalize_texts()
-        return GameState(
+        state = GameState(
             turn=self.turn,
             sides=self.roster.sides(),
             outcome=self.timeline.outcome(self.roster),
             field=self.field.conditions(self.combatants.final_statuses()),
         )
+        if self.format_id:
+            state = state.model_copy(update={"format_id": self.format_id})
+        return state

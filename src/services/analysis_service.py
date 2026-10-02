@@ -22,7 +22,6 @@ from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
     build_result,
-    parse_replay,
     remember_turn,
 )
 
@@ -50,20 +49,24 @@ class AnalysisService:
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         """Run one full analysis turn and return the UI DTO."""
         history = self._memory.load(request.session_id)
-        game_state = parse_replay(self._parser, request)
+        game_state = self._evidence.prepare(self._parser, request)
         selection = self._selector.select(
             request=request, game_state=game_state, history=history
         )
         evidence = self._evidence.assemble(
             request=request, game_state=game_state, selection=selection, history=history
         )
-        answer = self._explain(request, history, evidence)
+        answer, warnings = self._evidence.explain_within_regulation(
+            lambda correction: self._explain(request, history, evidence, correction),
+            evidence, game_state,
+        )
         remember_turn(self._memory, request, answer)
         return build_result(
             request=request,
             evidence=evidence,
             answer=answer,
             provider=getattr(self._llm, "name", request.provider),
+            regulation_warnings=warnings,
         )
 
     def _explain(
@@ -71,9 +74,11 @@ class AnalysisService:
         request: AnalysisRequest,
         history: Sequence[ChatMessage],
         evidence: AnalysisEvidence,
+        correction: str = "",
     ) -> str:
         user_turn = ChatMessage(
-            role="user", content=build_explanation_input(request.question, evidence)
+            role="user",
+            content=build_explanation_input(request.question, evidence, correction),
         )
         return self._llm.complete(
             system=self._explanation_system,

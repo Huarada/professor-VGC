@@ -10,8 +10,11 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from pydantic import Field, field_validator
+from pydantic import Field, ValidationInfo, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from src.domain.exceptions import ConfigurationError
+from src.domain.regulation import parse_regulation_setting
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -106,6 +109,16 @@ class Settings(BaseSettings):
     # --- Orchestration backend ("adk" | "langchain" | "native") ------- #
     orchestrator: str = "adk"
 
+    # --- Regulation controller (ADR-035) ---------------------------------- #
+    # "auto": use the replay's own regulation (Bo3 shares its Bo1 data).
+    # A regulation code ("mb", "mc", ...) or a full format id PINS every
+    # analysis to that regulation: usage data, Smogon sets/analyses and the
+    # Pokemon the explanation may mention all come from it alone — no
+    # fallback to any other regulation — and a replay from another
+    # regulation is refused. The UI sidebar can override this per analysis.
+    regulation: str = "auto"
+    regulation_format_prefix: str = "gen9championsvgc2026reg"
+
     # --- LLM (bring your own key) -------------------------------------- #
     # Defaults to Gemini as the showcased provider (paired with
     # orchestrator="adk" above and the Firestore-only Chaos backend — a
@@ -129,6 +142,16 @@ class Settings(BaseSettings):
     # Cloud Run logs pin down how much of the overrun is actually the model
     # call itself vs. this cold one-time setup.
     agent_timeout_seconds: float = 240.0
+
+    @field_validator("regulation")
+    @classmethod
+    def _regulation_is_known_shape(cls, value: str, info: ValidationInfo) -> str:
+        prefix = str(info.data.get("regulation_format_prefix") or "gen9championsvgc2026reg")
+        try:
+            parse_regulation_setting(value, prefix)
+        except ConfigurationError as exc:
+            raise ValueError(str(exc)) from exc
+        return value.strip().lower()
 
     @field_validator("gemini_model")
     @classmethod

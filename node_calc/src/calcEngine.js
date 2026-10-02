@@ -263,4 +263,10 @@ function moveInfo(genNum, name) {
   };
 }
 
-module.exports = { calcDamage, compareSpeed, formeResolves, moveInfo };
+// Every species name the engine's dex knows (formes included) — used by the
+// Python side to recognize Pokemon names in free text (regulation guard).
+function speciesNames(genNum) {
+  return Array.from(Generations.get(genNum).species, (s) => s.name);
+}
+
+module.exports = { calcDamage, compareSpeed, formeResolves, moveInfo, speciesNames };

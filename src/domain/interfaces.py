@@ -25,6 +25,7 @@ from src.domain.models import (
     SmogonStrategy,
     SpeedComparison,
 )
+from src.domain.regulation import RegulationRoster
 
 
 @runtime_checkable
@@ -129,6 +130,34 @@ class StrategyKnowledgeProvider(Protocol):
 
         Raises:
             StrategyKnowledgeError: If the source is unavailable.
+        """
+        ...
+
+
+@runtime_checkable
+class RegulationCatalog(Protocol):
+    """Which Pokemon belong to a regulation, from that regulation's own data."""
+
+    def roster(self, format_id: str) -> RegulationRoster:
+        """The regulation's legal species (from its own tiers only — empty when
+        it has no data loaded, never another format's) plus every species the
+        other regulations of the same game list.
+
+        Raises:
+            ChaosDataError: If the underlying dataset is unavailable.
+        """
+        ...
+
+
+@runtime_checkable
+class SpeciesCatalog(Protocol):
+    """Every species name the engine knows, to recognize Pokemon in prose."""
+
+    def species_names(self, gen: int) -> list[str]:
+        """Display names (e.g. ``"Iron Hands"``, ``"Charizard-Mega-Y"``).
+
+        Raises:
+            CalcEngineError: On transport failure or invalid engine output.
         """
         ...
 

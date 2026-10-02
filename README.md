@@ -197,6 +197,23 @@ streamlit run src/ui/app.py
 Paste a Showdown replay URL, its JSON, or the raw battle log, and ask a
 question. Gemini models must be 3.5 or newer (enforced at startup).
 
+## Regulation controller
+
+Pick which regulation an analysis uses — in the sidebar, or with
+`PROFESSORVGC_REGULATION`:
+
+| Value | Behavior |
+|---|---|
+| `auto` (default) | The replay's own regulation (Bo3 uses its Bo1 data); older regulations of the same game may fill gaps. |
+| `mb` / `mc` / a format id | Pinned: usage data, Smogon sets/analyses and the Pokemon the answer may mention come from that regulation **only** — no fallback to any other — and a replay from another regulation is refused. |
+
+In every mode a requested format is never swapped for "the newest" one, the
+agent tools are bound to the analysis's regulation, evidence about other
+Pokemon is filtered to the regulation's legal species, and the answer is
+checked deterministically: a Pokemon from outside the regulation (e.g. one that
+only exists in Reg M-C, in a Reg M-B analysis) triggers one automatic
+correction and, if it persists, a visible warning. See ADR-035.
+
 ## Customizing the UI (optional)
 
 The default theme (light "battle notebook" sky-blue, no external assets)

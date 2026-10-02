@@ -3645,3 +3645,83 @@ run — a point estimate invites over-reading.
 `tests/test_benchmark_tolerance_and_intervals.py`, benchmark `out/` reports, READMEs.
 
 ---
+
+## ADR-035 — Regulation controller: one regulation's data and Pokemon per analysis
+
+**Status:** Accepted
+
+### Context
+Pokemon Champions runs two VGC regulations at once (Reg M-B and Reg M-C, each
+with a Bo3 variant), and their legal Pokemon differ: in the official September
+2026 Smogon data, 31 Pokemon exist only in Reg M-C (Rillaboom, Salamence,
+Baxcalibur, Garchomp-Mega-Z, ...) and 4 only in Reg M-B. A Reg M-C Pokemon must
+never appear as part of a Reg M-B analysis. Auditing the data path found these
+leaks:
+
+1. `ChaosTierIndex.resolve_metagame` replaced an explicitly requested but
+   unloaded format with **the newest** one — a Reg M-B game with no Reg M-B
+   data loaded was analyzed with Reg M-C data.
+2. The agent tools (`chaos_meta_stats`, `smogon_strategy`) passed no format at
+   all, so they always read the newest regulation.
+3. A pasted raw log lost its format (the `|tier|` line was ignored), and a Bo3
+   format id never matched its regulation's data.
+4. Nothing stopped the LLM from naming a Pokemon from another regulation out of
+   its own memory.
+5. The bundled `data/chaos/gen9championsvgc2026regmb-*.json` files contain
+   **singles (BSS)** stats (`info.metagame = gen9championsbssregmb`), served as
+   VGC data with no check.
+
+### Decision
+- **Controller:** `PROFESSORVGC_REGULATION=auto|mb|mc|<format id>` (+ a UI
+  sidebar selector that overrides it per analysis). Domain: `Regulation`
+  (format parsing, Bo3 → Bo1, labels), `RegulationScope` (per-analysis binding
+  shared by the evidence stage and the agent tools), `RegulationRoster`.
+- **Binding before any LLM call:** `GroundTruthAssembler.prepare` parses the
+  replay and binds the scope; a pinned scope raises `RegulationMismatchError`
+  for a replay of another regulation.
+- **Data:** every source is queried with the bound regulation's Bo1 format; a
+  requested format is never swapped for the newest; pinned analyses read Chaos
+  through `StrictRegulationRepository` (no fallback at all); `auto` keeps the
+  older-regulation fallback (never newer). Smogon dex calls were already
+  exact-format only.
+- **Integrity:** both repositories reject a tier whose `info.metagame` names
+  another format (reported in the UI), and the Firestore writer refuses to
+  upload one; the writer also stores a `species_index` per tier.
+- **Legality:** `RegulationRoster` = species with data in the regulation's own
+  tiers + species any regulation of the same game lists; a forme listed
+  elsewhere (a Mega) must be listed here too. Evidence (threats, teammates,
+  improvement suggestions) is filtered by it, the agent tools refuse illegal
+  species, the prompt receives `regulation.legal_species`, and
+  `RegulationGuard` scans the answer against the engine's species dictionary:
+  one automatic correction, then `regulation_warnings` shown to the user.
+- **Parser:** the log reader reads `|tier|` into the format id.
+- **Fix found on the way:** `SmogonCalcAdapter` decoded Node's UTF-8 output with
+  the Windows code page (any accented name killed the reader thread) and then
+  blocked reading the stderr of a live process — now UTF-8, and it kills the
+  process before draining stderr.
+
+### Verification
+15 tests (`tests/test_regulation_controller.py`) cover every leak path. On real
+data (official Sept 2026 VGC tiers for Reg M-B and M-C, real replays, real
+engine): 10 Reg M-B games pinned to M-B → 0 games with a Reg M-C-only Pokemon in
+the evidence; 3 Reg M-C games pinned to M-B → 3 refused; `auto` on a Reg M-C
+game binds Reg M-C; an answer naming Rillaboom and Garchomp-Mega-Z is flagged.
+
+### Consequences
+- The benchmark's earlier `--chaos local` runs (ADR-033/034) used the singles
+  dumps described above; their engine-calibration numbers must be re-measured
+  with real VGC data.
+- A pinned regulation with no data loaded yields no usage data and an explicit
+  "legality not verified" warning, rather than another regulation's data.
+
+### Files touched
+`src/domain/{regulation,interfaces,models,exceptions}.py`,
+`src/adapters/chaos/{chaos_tier_index,chaos_repository,firestore_chaos_repository,chaos_adapter}.py`,
+`src/adapters/llm/evidence_tools.py`, `src/adapters/calc/smogon_calc_adapter.py`,
+`node_calc/{calc_server.js,src/calcEngine.js}`,
+`src/adapters/parsers/showdown_log/{state.py,handlers/flow.py}`,
+`src/services/{ground_truth,regulation_guard,analysis_service,langchain_orchestrator,adk_orchestrator,container}.py`,
+`src/config.py`, `src/ui/{app,results}.py`, `src/adapters/llm/prompts/explanation_system.txt`,
+`scripts/chaos_firestore_writer.py`, tests, docs.
+
+---

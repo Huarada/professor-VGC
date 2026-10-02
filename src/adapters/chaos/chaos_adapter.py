@@ -24,6 +24,7 @@ from typing import Any, Sequence
 from src.adapters.chaos.chaos_repository import ChaosRepository, ChaosRepositoryLike
 from src.domain.exceptions import ConfigurationError
 from src.domain.models import MetaContext, PokemonMetaSummary, StatSpread
+from src.domain.regulation import Regulation, RegulationRoster
 
 _EV_MULTIPLIER = 8
 _STAT_LABELS = ("HP", "Atk", "Def", "SpA", "SpD", "Spe")
@@ -55,6 +56,26 @@ class ChaosAdapter:
         self.metagame = self._repo.default_metagame()
 
     # -- extraction helpers --------------------------------------------- #
+
+    def legal_species(self, format_id: str) -> frozenset[str]:
+        """Species with usage data in ``format_id``'s own tiers (never another format's)."""
+        return self._repo.legal_species(format_id)
+
+    def roster(self, format_id: str) -> RegulationRoster:
+        """Satisfies :class:`~src.domain.interfaces.RegulationCatalog`."""
+        regulation = Regulation.from_format(format_id)
+        known: set[str] = set()
+        if regulation is not None:
+            for metagame in self._repo.metagames():
+                other = Regulation.from_format(metagame)
+                if other is not None and other.family == regulation.family:
+                    known.update(self._repo.legal_species(metagame))
+        return RegulationRoster(legal=self._repo.legal_species(format_id), known=frozenset(known))
+
+    @property
+    def rejected_tiers(self) -> dict[str, str]:
+        """Tiers the repository refused (their data names another format)."""
+        return self._repo.rejected_tiers
 
     @staticmethod
     def _parse_spread(spread_str: str) -> tuple[str, list[int]] | None:

@@ -56,9 +56,18 @@ These are hard invariants. Do not regress them.
 7. **Chaos rating tiers.** Use the **highest** rating cutoff (e.g. `-1760`) as the
    *ideal* suggestion, and also surface the **current** bracket that the match's
    rating falls into (`cutoff <= rating < next cutoff`).
-8. **Regulation fallback.** If a species is missing from the newest regulation,
-   fall back to older regulations of the **same game** (Champions → Champions;
-   base S/V → base S/V), nearest first, up to `PROFESSORVGC_REG_FALLBACK_DEPTH` (3).
+8. **Regulation boundary (ADR-035).** Every analysis is bound to ONE regulation:
+   the one the controller pins (`PROFESSORVGC_REGULATION=mb|mc|<format id>`, or
+   the UI sidebar), or the replay's own in `auto` (Bo3 shares its Bo1 data). All
+   data is queried with that regulation's format only — an explicitly requested
+   format is never swapped for "the newest", the agent tools are bound to it, and
+   a Chaos tier whose `info.metagame` names another format is rejected. Pinned:
+   no fallback to any other regulation and a replay from another regulation is
+   refused (`RegulationMismatchError`) before any LLM call. Auto: older
+   regulations of the same game may fill gaps, up to
+   `PROFESSORVGC_REG_FALLBACK_DEPTH` (3), never a newer one. Pokemon outside the
+   regulation's own usage data are filtered from the evidence, and the answer is
+   checked by `RegulationGuard` (one automatic correction, then a user warning).
 9. **Official Smogon data is preferred for strategy prose.** When enabled,
    `@pkmn/smogon` `analyses` provide natural-language strategy; `stats` drive
    team-synergy suggestions; `sets` drive moveset/item/ability/EV advice. Chaos is
@@ -164,7 +173,9 @@ Read by `src/config.py` (`Settings`, pydantic-settings; `.env` supported).
 | `PROFESSORVGC_DEFAULT_PROVIDER` | `gemini` | `openai` or `gemini` (BYOK). |
 | `PROFESSORVGC_OPENAI_API_KEY` / `PROFESSORVGC_GEMINI_API_KEY` | — | Bring your own key. |
 | `PROFESSORVGC_OPENAI_MODEL` / `PROFESSORVGC_GEMINI_MODEL` | gpt-4o-mini / gemini-3.5-flash | Model ids. Gemini model is validated at Settings CONSTRUCTION time (a `field_validator`, `src/config.py`) — this project requires 3.5+; an older id fails immediately at app startup, not lazily on first Gemini call. `require_modern_gemini_model` (`src/adapters/llm/base.py`, reusing the same parser) re-checks at every point-of-use as defense in depth against an already-running process holding a stale cached `Settings`. |
-| `PROFESSORVGC_REG_FALLBACK_DEPTH` | `3` | Max previous regulations to search. |
+| `PROFESSORVGC_REGULATION` | `auto` | Regulation controller: `auto` (the replay's own), `mb`, `mc`, or a full format id — pinned = that regulation's data and Pokemon only (ADR-035). |
+| `PROFESSORVGC_REGULATION_FORMAT_PREFIX` | `gen9championsvgc2026reg` | Prefix that turns a short code (`mb`) into a format id. |
+| `PROFESSORVGC_REG_FALLBACK_DEPTH` | `3` | Max previous regulations to search (auto mode only; pinned = 0). |
 | `PROFESSORVGC_CHAOS_TOP_N` | `3` | Top-N kept per category. |
 | `PROFESSORVGC_FIRESTORE_PROJECT_ID` / `..._DATABASE_ID` / `..._CHAOS_COLLECTION` / `..._CREDENTIALS_PATH` | — / `(default)` / `chaos_tiers` / — | Firestore is the app's ONLY Chaos data source — no local-file fallback, no config knob to select one (a project requirement, not a preference; see DATA.md). Credentials path empty = Application Default Credentials. |
 | `PROFESSORVGC_USE_SMOGON_DEX` | `false` | Enable official `@pkmn/smogon` analyses/sets/stats. |
@@ -331,6 +342,11 @@ replay JSON/log + question
     `SmogonSuggestionSource` ports in the domain (services/UI no longer import
     adapters); frozen value objects; parser, simulator and UI split into
     cohesive modules (ADR-030).
+14. **feat(regulation):** regulation controller (`auto` / pinned Reg M-B / M-C),
+    no "newest" default for a requested format, regulation-bound agent tools,
+    rejection of Chaos tiers whose data names another format, legal-species
+    roster (`RegulationRoster`) with evidence filtering and an answer guard,
+    format read from the log's `|tier|` line, UTF-8 calc IPC (ADR-035).
 13. **fix(analysis):** per-move battle state — weather wars, status from the
     turn it happened (cures removed), terrain/screens/Helping Hand/Friend
     Guard, revealed/consumed/Tricked items, current HP in KO chances
@@ -370,6 +386,11 @@ cd node_calc && npm run smoke
 - **Projected per-turn damage** uses the revealed set where the log reveals it
   and the most-used Chaos spread otherwise; treat it as a baseline, not the exact
   roll (the prompt already frames it this way).
+- **The local `data/chaos/gen9championsvgc2026regmb-*.json` dumps are singles
+  (BSS) data**: their own `info.metagame` is `gen9championsbssregmb`. The code now
+  rejects them (and any tier whose data names another format); replace them with
+  the real VGC dumps from Smogon (`sync_smogon_chaos_to_firestore.py` reads Smogon
+  directly). Never edit them by hand (§6).
 - **Tailwind / Trick Room** are tracked per turn (a Tailwind set mid-turn counts
   for that whole turn); weather, terrain, screens, status, items and HP are exact
   per move.

@@ -3,13 +3,14 @@
 from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.handlers.base import Handler, HandlerGroup
-from src.adapters.parsers.showdown_log.protocol import split_ref
+from src.adapters.parsers.showdown_log.protocol import split_ref, to_id
 
 
 class FlowHandlers(HandlerGroup):
     def routes(self) -> dict[str, Handler]:
         return {
             "turn": self.on_turn,
+            "tier": self.on_tier,
             "faint": self.on_faint,
             "-message": self.on_message,
             "win": self.on_win,
@@ -22,6 +23,14 @@ class FlowHandlers(HandlerGroup):
         except (IndexError, ValueError):
             pass
         timeline.current_move = None
+
+    def on_tier(self, parts: list[str]) -> None:
+        # "|tier|[Gen 9 Champions] VGC 2026 Reg M-B" — Showdown's format id is
+        # exactly the id of this display name ("gen9championsvgc2026regmb";
+        # "(Bo3)" becomes the "bo3" suffix). Without it a pasted raw log would
+        # lose its regulation entirely.
+        if len(parts) > 2 and parts[2].strip():
+            self.state.format_id = to_id(parts[2])
 
     def on_faint(self, parts: list[str]) -> None:
         if len(parts) <= 2:

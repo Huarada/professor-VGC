@@ -7,18 +7,25 @@ Smogon strategy and (on request) improvement suggestions. It lives here,
 once, so a new piece of evidence is added in one place and the backends can
 never drift apart. Each backend only owns HOW it runs selection and
 explanation; this module owns WHAT ground truth they explain.
+
+It also owns the regulation boundary (ADR-035): the analysis is bound to one
+regulation (pinned by the controller, or the replay's own), every data source
+is queried with that regulation's format only, evidence about other Pokemon is
+filtered to the ones legal in it, and the explanation is checked for Pokemon
+from outside it before it is returned.
 """
 
 from __future__ import annotations
 
 import json
-from typing import Any, Sequence
+from typing import Any, Callable, Sequence
 
 from src.domain.interfaces import (
     CalcEngineAdapter,
     ConversationMemory,
     LogParser,
     MetaStatsProvider,
+    RegulationCatalog,
     SmogonSuggestionSource,
     StrategyKnowledgeProvider,
 )
@@ -29,11 +36,17 @@ from src.domain.models import (
     AnalysisResult,
     ChatMessage,
     GameState,
+    MetaContext,
+    PokemonMetaSummary,
+    RegulationInfo,
     SelectionPlan,
+    SmogonStrategy,
 )
+from src.domain.regulation import RegulationRoster, RegulationScope
 from src.services.battle_context import candidate_species, context_species, outcome_summary
 from src.services.concept_tracking import recurring_concepts
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
+from src.services.regulation_guard import RegulationGuard
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
 
@@ -49,12 +62,56 @@ class GroundTruthAssembler:
         strategy_provider: StrategyKnowledgeProvider,
         default_gen: int = 9,
         suggestion_source: SmogonSuggestionSource | None = None,
+        scope: RegulationScope | None = None,
+        regulation_catalog: RegulationCatalog | None = None,
+        guard: RegulationGuard | None = None,
     ) -> None:
         self._meta = meta_provider
         self._strategy = strategy_provider
         self._suggestion_source = suggestion_source
         self._evaluator = MatchupEvaluator(calc_engine, default_gen)
         self._simulator = TurnReplaySimulator(calc_engine, default_gen)
+        self.scope = scope or RegulationScope()
+        self._catalog = regulation_catalog
+        self._guard = guard or RegulationGuard(None)
+
+    # -- regulation ---------------------------------------------------------- #
+
+    def prepare(self, parser: LogParser, request: AnalysisRequest) -> GameState:
+        """Parse the replay and bind the analysis to its regulation — BEFORE any
+        LLM call, so a replay from another regulation than the pinned one is
+        refused without spending anything.
+
+        Raises:
+            RegulationMismatchError: Pinned regulation and replay disagree.
+        """
+        game_state = parse_replay(parser, request)
+        has_replay = request.replay_json is not None or request.replay_raw_text is not None
+        self.scope.bind(game_state.format_id, has_replay=has_replay)
+        return game_state
+
+    def _data_format(self, game_state: GameState) -> str:
+        """The one format every data source is queried with: the bound
+        regulation's Bo1 format (Bo3 replays share it), else the replay's own."""
+        return self.scope.format_id or game_state.format_id
+
+    def _roster(self) -> RegulationRoster:
+        if self._catalog is None or self.scope.format_id is None:
+            return RegulationRoster()
+        return self._catalog.roster(self.scope.format_id)
+
+    def _regulation_info(self, roster: RegulationRoster) -> RegulationInfo | None:
+        regulation = self.scope.current
+        if regulation is None:
+            return None
+        return RegulationInfo(
+            format_id=regulation.format_id,
+            label=regulation.label,
+            strict=self.scope.strict,
+            legal_species=self._guard.legal_display_names(roster.legal) if not roster.empty else [],
+        )
+
+    # -- evidence ------------------------------------------------------------ #
 
     def assemble(
         self,
@@ -64,11 +121,16 @@ class GroundTruthAssembler:
         selection: SelectionPlan,
         history: Sequence[ChatMessage],
     ) -> AnalysisEvidence:
+        data_format = self._data_format(game_state)
+        roster = self._roster()
         # Metagame/Smogon context covers EVERY Pokemon in play (both sides),
         # not just the selection focus, so the AI can reason about the full game.
         context_mons = context_species(game_state, selection.focus_species)
-        meta_context = self._meta.build_match_context(
-            context_mons, metagame=game_state.format_id, rating=game_state.rating
+        meta_context = _filter_meta(
+            self._meta.build_match_context(
+                context_mons, metagame=data_format, rating=game_state.rating
+            ),
+            roster,
         )
         turn_checks = self._simulator.simulate(game_state, meta_context)
         return AnalysisEvidence(
@@ -77,24 +139,100 @@ class GroundTruthAssembler:
             verdicts=self._evaluator.evaluate(game_state, selection, meta_context),
             turn_checks=turn_checks,
             protect_reads=self._simulator.build_protect_reads(turn_checks, game_state),
-            strategies=collect_strategies(
-                self._strategy, context_mons, metagame=game_state.format_id,
-                question=request.question,
+            strategies=[
+                _filter_strategy(s, roster)
+                for s in collect_strategies(
+                    self._strategy, context_mons, metagame=data_format,
+                    question=request.question,
+                )
+            ],
+            improvement_suggestions=_filter_improvements(
+                self._improvements(request, selection, game_state, data_format), roster
             ),
-            improvement_suggestions=self._improvements(request, selection, game_state),
             recurring_concepts=recurring_concepts(history, request.question),
             battle_result=outcome_summary(game_state),
+            regulation=self._regulation_info(roster),
         )
 
     def _improvements(
-        self, request: AnalysisRequest, selection: SelectionPlan, game_state: GameState
+        self, request: AnalysisRequest, selection: SelectionPlan, game_state: GameState,
+        data_format: str,
     ) -> dict[str, Any]:
         if self._suggestion_source is None or not wants_suggestions(request.question):
             return {}
         species = selection.focus_species or candidate_species(game_state)
-        return build_improvement_context(
-            self._suggestion_source, species[:6], game_state.format_id
-        )
+        return build_improvement_context(self._suggestion_source, species[:6], data_format)
+
+    # -- explanation guard ---------------------------------------------------- #
+
+    def explain_within_regulation(
+        self,
+        explain: Callable[[str], str],
+        evidence: AnalysisEvidence,
+        game_state: GameState,
+    ) -> tuple[str, list[str]]:
+        """Run ``explain(correction_note)``; if the answer names a Pokemon that
+        is not legal in the bound regulation, run it once more with a
+        correction note, and return the final answer plus any warning left.
+        """
+        answer = explain("")
+        roster = self._roster()
+        if evidence.regulation is None:
+            return answer, []
+        if roster.empty:
+            return answer, [
+                f"No usage data for {evidence.regulation.label} is loaded, so Pokemon "
+                "legality could not be verified for this answer."
+            ]
+        in_game = game_state.involved_species()
+        violations = self._guard.violations(answer, roster, in_game)
+        if not violations:
+            return answer, []
+        answer = explain(self._guard.correction_note(violations, evidence.regulation.label))
+        remaining = self._guard.violations(answer, roster, in_game)
+        if not remaining:
+            return answer, []
+        return answer, [
+            f"{name} is not legal in {evidence.regulation.label} (no usage data in this "
+            "regulation) but is mentioned in the answer — treat that part as unreliable."
+            for name in remaining
+        ]
+
+
+def _filter_meta(meta: MetaContext, roster: RegulationRoster) -> MetaContext:
+    """Drop threats/counters that are not legal in the regulation."""
+    if roster.empty:
+        return meta
+
+    def clean(summary: PokemonMetaSummary) -> PokemonMetaSummary:
+        threats = {k: v for k, v in summary.threats_winrate.items() if roster.allows(k)}
+        return summary.model_copy(update={"threats_winrate": threats})
+
+    return meta.model_copy(update={
+        "pokemon_stats": {k: clean(v) for k, v in meta.pokemon_stats.items()},
+        "current_tier_stats": {k: clean(v) for k, v in meta.current_tier_stats.items()},
+    })
+
+
+def _filter_strategy(strategy: SmogonStrategy, roster: RegulationRoster) -> SmogonStrategy:
+    if roster.empty:
+        return strategy
+    return strategy.model_copy(update={
+        "common_teammates": [t for t in strategy.common_teammates if roster.allows(t)],
+    })
+
+
+def _filter_improvements(improvements: dict[str, Any], roster: RegulationRoster) -> dict[str, Any]:
+    if roster.empty:
+        return improvements
+    cleaned: dict[str, Any] = {}
+    for species, entry in improvements.items():
+        entry = dict(entry)
+        teammates = entry.get("teammates_usage")
+        if isinstance(teammates, dict):
+            entry["teammates_usage"] = {k: v for k, v in teammates.items() if roster.allows(k)}
+        cleaned[species] = entry
+    return cleaned
 
 
 def parse_replay(parser: LogParser, request: AnalysisRequest) -> GameState:
@@ -107,7 +245,7 @@ def parse_replay(parser: LogParser, request: AnalysisRequest) -> GameState:
 
 def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
     """Assemble the trusted-context payload for the 2nd AI."""
-    return {
+    context: dict[str, Any] = {
         "battle_result": evidence.battle_result,
         "turn_by_turn_checks": [t.model_dump(mode="json") for t in evidence.turn_checks],
         "protect_reads": [p.model_dump(mode="json") for p in evidence.protect_reads],
@@ -129,17 +267,21 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
         "improvement_suggestions": dict(evidence.improvement_suggestions),
         "selection_rationale": evidence.selection.rationale,
     }
+    if evidence.regulation is not None:
+        context["regulation"] = evidence.regulation.model_dump(mode="json")
+    return context
 
 
-def build_explanation_input(question: str, evidence: AnalysisEvidence) -> str:
+def build_explanation_input(question: str, evidence: AnalysisEvidence, correction: str = "") -> str:
     """Render the human-turn text for the explanation stage (shared wording)."""
     context = build_explanation_context(evidence)
-    return (
+    text = (
         f"User question: {question or '(general analysis)'}\n\n"
         "Trusted context (JSON):\n"
         f"{json.dumps(context, ensure_ascii=False, indent=2)}\n\n"
         "Write the final ProfessorVGC explanation."
     )
+    return f"{text}\n\n{correction}" if correction else text
 
 
 def remember_turn(memory: ConversationMemory, request: AnalysisRequest, answer: str) -> None:
@@ -155,6 +297,7 @@ def build_result(
     answer: str,
     provider: str,
     agent_tool_calls: Sequence[AgentToolInvocation] = (),
+    regulation_warnings: Sequence[str] = (),
 ) -> AnalysisResult:
     """The UI DTO for one completed analysis turn."""
     return AnalysisResult(
@@ -170,4 +313,6 @@ def build_result(
         agent_tool_calls=list(agent_tool_calls),
         battle_result=evidence.battle_result,
         provider=provider,
+        regulation=evidence.regulation,
+        regulation_warnings=list(regulation_warnings),
     )

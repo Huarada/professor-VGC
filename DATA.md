@@ -74,10 +74,18 @@ The match rating is read from the replay JSON (`rating`) automatically.
 
 ### Regulation fallback (new regulations)
 
-Because a brand-new regulation (e.g. Reg M-B) may have little/no data for a
-Pokemon, if a species is missing from the newest regulation the app walks
-**older regulations of the SAME game**, nearest first, up to
-`PROFESSORVGC_REG_FALLBACK_DEPTH` (default 3). It never crosses game families:
+**Regulation boundary first (ADR-035).** Every analysis is bound to ONE
+regulation: the one `PROFESSORVGC_REGULATION` (or the UI sidebar) pins —
+`mb`, `mc`, or a full format id — or, in `auto`, the replay's own (a Bo3
+replay uses its Bo1 regulation's data). A requested format is never replaced
+by "the newest available": with no data for it, the analysis simply has no
+usage data. When pinned, nothing below applies — no fallback to any other
+regulation — and a replay from another regulation is refused.
+
+In `auto` mode only, because a brand-new regulation may have little/no data
+for a Pokemon, if a species is missing the app walks **older regulations of
+the SAME game**, nearest first, up to `PROFESSORVGC_REG_FALLBACK_DEPTH`
+(default 3) — never a newer one. It never crosses game families:
 Champions falls back only to Champions, base Scarlet/Violet VGC only to base VGC.
 Fallback data is tagged in each summary's `source` field (e.g.
 `gen9championsvgc2026regma@1760 (fallback)`).
@@ -86,6 +94,27 @@ Naming decoded: `gen9` + `champions` (franchise, empty for base VGC) + `vgc` +
 `2026` (year) + `reg` + `mb` (regulation) + `-1760` (rating cutoff). Same-game
 grouping uses `gen9champions` vs `gen9` (base), so year/regulation can differ but
 the game family stays fixed.
+
+### Data integrity: a tier's content must match its name
+
+Each Chaos dump declares its real format in `info.metagame`. A tier whose
+declared format differs from its file name / document id is **rejected** by
+both repositories (and the Firestore writer refuses to upload it): it would
+otherwise serve another format's data — e.g. singles stats — under a VGC
+name. **The bundled `data/chaos/gen9championsvgc2026regmb-*.json` files are
+exactly that case** (`info.metagame` = `gen9championsbssregmb`, 97,966
+battles — Battle Stadium Singles, not VGC). Replace them with the official
+VGC dumps (`https://www.smogon.com/stats/<month>/chaos/gen9championsvgc2026regmb-<cutoff>.json`)
+or load Firestore straight from Smogon with
+`scripts/sync_smogon_chaos_to_firestore.py`.
+
+### Legal species per regulation
+
+The Pokemon a regulation allows are the ones with usage data in that
+regulation's own tiers (the writer stores a `species_index` on each Firestore
+tier document so this costs one read). A forme that any regulation of the same
+game lists on its own (a Mega such as `Garchomp-Mega-Z`, Reg M-C only in the
+September 2026 data) must be listed in the analyzed regulation to be allowed.
 
 ## Firestore: the app's ONLY Chaos data source
 
