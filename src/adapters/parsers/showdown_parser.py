@@ -6,7 +6,7 @@ This is the *LIMPEZA PARA FILTRAR POKEMON ENVOLVIDOS (DETERMINISMO)* node in
 the flow diagram: no probabilities, no LLM, just structural extraction.
 
 The battle-log protocol itself is read by
-:mod:`src.adapters.parsers.showdown_log_reader` (rosters, the ordered action
+:mod:`src.adapters.parsers.showdown_log` (rosters, the ordered action
 timeline, and a per-move snapshot of the battle state); this module handles
 the input shapes (replay JSON, raw text, structured team JSON).
 """
@@ -16,7 +16,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from src.adapters.parsers.showdown_log_reader import read_log
+from src.adapters.parsers.showdown_log import read_log
 from src.domain.exceptions import LogParsingError
 from src.domain.models import GameState, PokemonSet, SideState
 
