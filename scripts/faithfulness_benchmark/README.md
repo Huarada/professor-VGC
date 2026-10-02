@@ -61,7 +61,7 @@ few minutes).
 | Save to a specific file / use Gemini instead | `python -m scripts.faithfulness_benchmark.run --provider gemini --out my_run.json` |
 | **Re-score an already-saved run's damage numbers** (MAE/RMSE/MSRE/RMSRE — no new LLM calls) | `python -m scripts.faithfulness_benchmark.damage_error_metrics out/run7_n30.json` |
 | **Bias self-audit: does the judge extract confident vs hedgy phrasing differently?** (12 LLM calls, seconds) | `python -m scripts.faithfulness_benchmark.style_blindness_check` |
-| **Calibrate the engine against real games** (projected vs. observed damage, no LLM, offline) | `python -m scripts.faithfulness_benchmark.replay_corpus --count 40` then `python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos local` |
+| **Calibrate the engine against real games** (projected vs. observed damage, no LLM, offline) | `python -m scripts.faithfulness_benchmark.replay_corpus --count 40`, `python -m scripts.faithfulness_benchmark.chaos_corpus` (official VGC tiers → `data/chaos-cache`), then `python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos data/chaos-cache` |
 | **Score A and B against real games** (claims vs. damage the log shows — LLM calls) | `python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20 [--offset 20] [--relative-tolerance 0.05]` |
 | **Re-score / pool saved runs** at another tolerance, with 95% intervals (no LLM calls; refuses runs that share games) | `python -m scripts.faithfulness_benchmark.rescore_log_grounded out/RUN1.json out/RUN2.json --relative-tolerance 0.05` |
 | **Just the deterministic harness itself** (verifier + percent classifier + Fisher's test — no LLM, no network, <1s) | `pytest tests/test_faithfulness_benchmark_verify.py tests/test_percent_classifier.py tests/test_benchmark_stats.py -q` |
@@ -855,8 +855,18 @@ three anonymized ones are versioned as test fixtures.
 
 ### 6a. Engine calibration — is the ground truth itself right? (no LLM)
 
-`run_engine_calibration.py --chaos local`, 40 games, 569 observed hits,
-`@smogon/calc` 0.12 (`out/engine_calibration_n40.json`). Agreement is judged
+`run_engine_calibration.py --chaos data/chaos-cache`, 40 games, 569 observed
+hits, `@smogon/calc` 0.12, **official September 2026 VGC usage data**
+downloaded with `chaos_corpus.py` (`out/engine_calibration_n40_vgc_official.json`).
+
+> **Data correction (ADR-035).** The first runs of this section used
+> `--chaos local`, whose bundled `data/chaos/gen9championsvgc2026regmb-*.json`
+> files turned out to be singles (BSS) stats under VGC names
+> (`info.metagame = gen9championsbssregmb`); the repository now rejects them.
+> With that data the non-KO rate was 47.9% (42.7–53.2%)
+> (`out/engine_calibration_n40.json`, kept for reference). The numbers below
+> are re-measured with the official VGC data. The 6b runs (LLM claims) still
+> used the singles data for Condition A and are pending a re-run. Agreement is judged
 within a **tolerance band**, not as an exact match: ±2pp for HP display
 rounding plus a relative ±5% on each projected bound, because the real
 Pokémon's EVs/nature differ from the one spread the projection assumes
@@ -864,24 +874,24 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 
 | ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Projected range contains the real damage — **non-KO hits** | **47.9% (42.7–53.2%)**, 162/338 |
-| Projection can reach a real KO | 83.3% (77.4–87.9%), 160/192 |
-| Mean miss outside the raw projected range | 12.7 pp |
+| Projected range contains the real damage — **non-KO hits** | **52.1% (46.8–57.3%)**, 176/338 |
+| Projection can reach a real KO | 84.4% (78.6–88.8%), 162/192 |
+| Mean miss outside the raw projected range | 12.0 pp |
 | Excluded: crit / multi-hit 25 · no projection 14 | — |
 
 The conclusion does not hinge on the band — the same hits re-scored:
 
 | Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
 |---|---|---|
-| 0% (±2pp only) | 39.6% (34.6–44.9%) | 82.8% (76.8–87.5%) |
-| **5%** | **47.9% (42.7–53.2%)** | **83.3% (77.4–87.9%)** |
-| 10% | 60.4% (55.1–65.4%) | 84.4% (78.6–88.8%) |
-| 15% | 66.0% (60.8–70.8%) | 84.9% (79.1–89.3%) |
+| 0% (±2pp only) | 41.4% (36.3–46.7%) | 83.3% (77.4–87.9%) |
+| **5%** | **52.1% (46.8–57.3%)** | **84.4% (78.6–88.8%)** |
+| 10% | 61.2% (56.0–66.3%) | 84.9% (79.1–89.3%) |
+| 15% | 68.3% (63.2–73.1%) | 85.4% (79.7–89.7%) |
 
 **How much do EVs explain?** For every miss, the same calc request was re-run
 at minimum and maximum EV/nature investment on both sides, everything else
-equal (`ev_envelope.py`). **69.6% of misses (63.0–75.4%, 144/207) fall inside
-that envelope** — a different spread alone explains them — while 63 lie
+equal (`ev_envelope.py`). **68.6% of misses (61.7–74.7%, 131/191) fall inside
+that envelope** — a different spread alone explains them — while 60 lie
 outside any EV/nature spread and need something else: type-changing or
 immunity-ignoring abilities that were never revealed (Primarina's Liquid
 Voice, Hisuian Decidueye's Scrappy), offensive items, or species with no

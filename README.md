@@ -39,9 +39,15 @@ the projection assumes. Every rate carries a **95% confidence interval**
 | AI damage claims — **B**: the same LLM given only the raw log | 51.1% (46.0–56.1%), 191/374 |
 | A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
 | Claims about hits that never happened | A: 18 · B: 57 |
-| Engine projection contains the real damage (non-KO hits, no LLM) | **47.9% (42.7–53.2%)**, 162/338 |
-| Engine projection reaches a real KO | 83.3% (77.4–87.9%), 160/192 |
-| Engine misses explained by EV/nature variance alone | 69.6% (63.0–75.4%), 144/207 |
+| Engine projection contains the real damage (non-KO hits, no LLM) | **52.1% (46.8–57.3%)**, 176/338 |
+| Engine projection reaches a real KO | 84.4% (78.6–88.8%), 162/192 |
+| Engine misses explained by EV/nature variance alone | 68.6% (61.7–74.7%), 131/191 |
+
+> **Data note (ADR-035).** The engine rows use the official September 2026 VGC
+> usage data. The AI-claim rows (A vs B) were measured before the bundled
+> `data/chaos` dumps were found to be singles (BSS) stats, so Condition A's
+> assumed spreads came from singles data; those two rows will be re-measured
+> with the official VGC data. With the singles data the engine row was 47.9%.
 
 The conclusion does not hinge on the tolerance chosen — the same claims
 re-scored:
@@ -97,9 +103,10 @@ faithfully; cite the real-game table above for correctness.
 
 ```bash
 python -m scripts.faithfulness_benchmark.replay_corpus --count 40              # public replays -> data/replays/cache (git-ignored)
-python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos local  # engine vs real damage, no LLM, offline
-python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20             # games 1-20 (API calls)
-python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20 --offset 20 # games 21-40
+python -m scripts.faithfulness_benchmark.chaos_corpus                          # official VGC usage tiers -> data/chaos-cache (git-ignored)
+python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos data/chaos-cache  # engine vs real damage, no LLM
+python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos data/chaos-cache --limit 20             # games 1-20 (API calls)
+python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos data/chaos-cache --limit 20 --offset 20 # games 21-40
 python -m scripts.faithfulness_benchmark.rescore_log_grounded out/RUN1.json out/RUN2.json --relative-tolerance 0.05  # pool + any band, no API calls
 ```
 

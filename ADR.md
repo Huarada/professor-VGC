@@ -3725,3 +3725,16 @@ game binds Reg M-C; an answer naming Rillaboom and Garchomp-Mega-Z is flagged.
 `scripts/chaos_firestore_writer.py`, tests, docs.
 
 ---
+
+### ADR-035 follow-up — engine calibration re-measured with official VGC data
+`chaos_corpus.py` downloads the official Smogon tiers (integrity-checked) into
+the git-ignored `data/chaos-cache/`; `--chaos <directory>` points the benchmark
+at them. Same 40 games, ±2pp ±5%: projection contains the real damage for
+**52.1% (95% CI 46.8–57.3%)** of non-KO hits (was 47.9% with the singles
+dumps), KOs reachable 84.4% (78.6–88.8%), 68.6% (61.7–74.7%) of misses explained
+by EV/nature variance, mean miss 12.0pp. The difference is within the
+intervals: the singles data was wrong, but the dominant error source remains
+unrevealed sets. The LLM-claim runs (ADR-034) used the singles data for
+Condition A and are pending a re-run with the official data.
+
+---
