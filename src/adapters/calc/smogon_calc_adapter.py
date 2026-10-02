@@ -18,7 +18,15 @@ from pathlib import Path
 from typing import Any
 
 from src.domain.exceptions import CalcEngineError
-from src.domain.models import CalcRequest, DamageResult, PokemonSet, SpeedComparison
+from src.domain.models import (
+    CalcField,
+    CalcRequest,
+    DamageResult,
+    MoveInfo,
+    PokemonSet,
+    SideField,
+    SpeedComparison,
+)
 
 
 class SmogonCalcAdapter:
@@ -178,18 +186,44 @@ class SmogonCalcAdapter:
             payload["boosts"] = dict(mon.boosts)
         return payload
 
+    @staticmethod
+    def _side_payload(side: SideField) -> dict[str, bool]:
+        return {
+            "isTailwind": side.tailwind,
+            "isReflect": side.reflect,
+            "isLightScreen": side.light_screen,
+            "isAuroraVeil": side.aurora_veil,
+            "isHelpingHand": side.helping_hand,
+            "isFriendGuard": side.friend_guard,
+        }
+
+    @classmethod
+    def _field_payload(cls, field: CalcField) -> dict[str, Any]:
+        """Domain field -> the Node worker's @smogon/calc-shaped field spec."""
+        payload: dict[str, Any] = {
+            "trickRoom": field.trick_room,
+            "attackerSide": cls._side_payload(field.attacker_side),
+            "defenderSide": cls._side_payload(field.defender_side),
+        }
+        if field.weather:
+            payload["weather"] = field.weather
+        if field.terrain:
+            payload["terrain"] = field.terrain
+        return payload
+
     def calculate(self, request: CalcRequest) -> DamageResult:
         """Run a single deterministic damage calculation via the Node engine."""
-        response = self._rpc(
-            {
-                "cmd": "calc",
-                "gen": request.gen or self._gen,
-                "attacker": self._mon_payload(request.attacker),
-                "defender": self._mon_payload(request.defender),
-                "move": request.move,
-                "field": request.field,
-            }
-        )
+        payload: dict[str, Any] = {
+            "cmd": "calc",
+            "gen": request.gen or self._gen,
+            "attacker": self._mon_payload(request.attacker),
+            "defender": self._mon_payload(request.defender),
+            "move": request.move,
+            "field": self._field_payload(request.field),
+        }
+        if request.defender_hp_percent is not None:
+            payload["defenderHpPercent"] = request.defender_hp_percent
+        response = self._rpc(payload)
         data = response.get("result", {})
         try:
             return DamageResult(
@@ -214,7 +248,7 @@ class SmogonCalcAdapter:
                 "gen": request.gen or self._gen,
                 "attacker": self._mon_payload(request.attacker),
                 "defender": self._mon_payload(request.defender),
-                "field": request.field,
+                "field": self._field_payload(request.field),
             }
         )
         data = response.get("result", {})
@@ -253,6 +287,24 @@ class SmogonCalcAdapter:
             conditions=conditions,
         )
 
+    def move_info(self, gen: int, move: str) -> MoveInfo:
+        """Static move data from the engine's own dex (category, spread
+        target, Protect-family, speed control)."""
+        response = self._rpc({"cmd": "moveInfo", "gen": gen, "move": move})
+        data = response.get("result", {})
+        try:
+            return MoveInfo(
+                name=str(data.get("name") or move),
+                known=bool(data.get("known", False)),
+                category=str(data.get("category") or ""),
+                is_spread=bool(data.get("isSpread", False)),
+                is_protect=bool(data.get("isProtect", False)),
+                speed_control=str(data.get("speedControl") or ""),
+                speed_drop_stages=int(data.get("speedDropStages", 0) or 0),
+            )
+        except (TypeError, ValueError) as exc:
+            raise CalcEngineError(f"Malformed move info: {data!r}") from exc
+
     def forme_resolves(self, gen: int, species: str) -> bool:
         """Whether the installed @smogon/calc's dex has real data for this
         exact forme string (e.g. "Staraptor-Mega") — used to decide whether
@@ -263,11 +315,11 @@ class SmogonCalcAdapter:
     @staticmethod
     def _speed_conditions(request: CalcRequest, trick_room: bool) -> list[str]:
         """Human-readable labels for the modifiers applied to the speed check."""
-        field = request.field or {}
+        field = request.field
         labels: list[str] = []
-        if field.get("attackerTailwind"):
+        if field.attacker_side.tailwind:
             labels.append(f"Tailwind ({request.attacker.species})")
-        if field.get("defenderTailwind"):
+        if field.defender_side.tailwind:
             labels.append(f"Tailwind ({request.defender.species})")
         if request.attacker.status == "par":
             labels.append(f"paralysis ({request.attacker.species})")
@@ -279,4 +331,6 @@ class SmogonCalcAdapter:
             labels.append(f"Choice Scarf ({request.defender.species})")
         if trick_room:
             labels.append("Trick Room")
+        if field.weather:
+            labels.append(f"weather {field.weather}")
         return labels

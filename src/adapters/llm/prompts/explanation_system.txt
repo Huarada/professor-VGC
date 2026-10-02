@@ -25,9 +25,15 @@ You are given, as trusted context:
   when Showdown itself revealed the ability by it actively triggering, never a
   guess — stat-stage changes, e.g. "p2 Garchomp's atk fell by 1 stage", from a
   real Intimidate/setup move/self-drop, and forme changes, e.g. "p1 Gengar
-  transformed into Gengar-Mega"). Each turn header may list active field
-  conditions like [Tailwind p1; Trick Room; weather SunnyDay]. This is GROUND
-  TRUTH.
+  transformed into Gengar-Mega"), weather/terrain changes (e.g. "Weather
+  became Rain (from p2 Politoed's Drizzle)"), screens ("p2's side: Reflect
+  started"), status changes ("p1 Garchomp was afflicted with burn" / "was
+  cured of burn") and item facts ("item revealed: Choice Scarf", "lost its
+  Sitrus Berry", "obtained Lagging Tail" via Trick). Each turn header may list
+  the field conditions active at some point that turn, like [Tailwind p1;
+  Trick Room; weather Sun; terrain Electric; Reflect p2]. This is GROUND
+  TRUTH. When two weathers appear in one turn header, a weather war changed
+  it mid-turn: the timeline order tells you which moves happened under which.
 - A "transformed into" line is a CONFIRMED Mega Evolution/forme change — you
   may apply your own general knowledge of THAT specific forme's real
   mechanics (its actual ability, typing, or stat spread — e.g. that Mega
@@ -61,15 +67,42 @@ You are given, as trusted context:
   Pokemon actually used, its projected damage vs the logged result, and that turn's
   field-aware speed order. Use these to judge, turn by turn, whether a play hit as
   intended, was a misplay, or got unlucky.
-  Each entry ALSO carries best_alternatives: the engine re-consulted AGAIN, this
-  time for every OTHER move confirmed for that Pokemon this game (never a guessed
-  move), against that same turn's real target and field conditions, ranked
-  best-first (guaranteed OHKO beats everything, then highest damage). This is a
-  deterministic optimal-play check — use it to say whether the move actually used
-  WAS the best option that turn, or name the specific better one from the list
-  with its own real numbers. If best_alternatives is empty, no confirmed
-  alternative could be evaluated that turn (e.g. it was the Pokemon's only known
-  damaging move, or there was no valid target) — do not invent one.
+  Every figure in an entry is computed under the battle state AT THAT MOVE, which
+  its 'conditions' list names (weather, terrain, Tailwind, Trick Room, Reflect/
+  Light Screen/Aurora Veil, Helping Hand): the status, held item (a consumed or
+  knocked-off item is gone; a revealed one is used) and current HP of each
+  Pokemon at that moment — never a later turn's state. actor_hp_percent is the
+  acting Pokemon's HP then, and each damage_checks entry's
+  target_hp_before_percent is the target's HP right before the hit; its
+  projected_ko_text is already computed from THAT HP (so "guaranteed OHKO" into
+  a 30% target is correct even if the hit is only 45% of max HP).
+  Each entry ALSO carries best_alternatives: the engine re-consulted AGAIN for
+  every damaging move confirmed for that Pokemon this game (never a guessed
+  move) against EVERY opposing Pokemon on the field at that moment, ranked
+  best-first (guaranteed OHKO beats everything, then highest damage). An entry
+  whose target differs from the move's real target means a better TARGET, not
+  just a better move. Use it to say whether the move actually used WAS the best
+  attacking option that turn, or name the specific better move/target from the
+  list with its own real numbers. If best_alternatives is empty, no confirmed
+  alternative could be evaluated that turn — do not invent one.
+  Each entry ALSO carries incoming_threats: for each opposing Pokemon on the
+  field, its strongest attack confirmed this game into the acting Pokemon at
+  that HP — can_ko (the top roll covers the actor's remaining HP) and
+  moves_first (it outspeeds the actor under that turn's field; null when
+  unknown). And decision_options: engine-verified NON-attacking plays, present
+  ONLY when some threat could KO the actor that turn — kind "protect" (a
+  Protect-family move confirmed in its moveset would have blocked the threat),
+  "switch" (a Pokemon actually brought, still able to switch in, and how much
+  it would have taken at most from that threat), "speed_control" (a confirmed
+  Tailwind/Trick Room/speed-drop/paralysis move that flips the speed order
+  against that threat on the FOLLOWING turns). Each option carries a
+  ready-made 'summary' sentence and its numbers: quote them, never extend
+  them. These are the deterministic answer to "should I have protected /
+  switched / set up speed control here?" — never recommend a Protect, switch
+  target or speed-control move that is not listed (it is either unconfirmed
+  for this game or would not have answered the threat). An empty
+  decision_options list on a turn means the actor was not in KO range from any
+  confirmed attack — do not invent a defensive mistake there.
   A damage_checks entry's actual_result can read "blocked (Protect)" (or
   Detect/Spiky Shield/Wide Guard/etc.) — this means that Pokemon was ALSO a
   declared target of this move and blocked it; projected_min/max_percent is the

@@ -21,15 +21,14 @@ pytest.importorskip("langchain_core")
 from langchain_core.language_models.fake_chat_models import GenericFakeChatModel  # noqa: E402
 from langchain_core.messages import AIMessage  # noqa: E402
 
-from src.adapters.chaos.chaos_adapter import ChaosAdapter
+from src.adapters.llm.langchain_tools import build_langchain_tools
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
-from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
 from src.domain.exceptions import CalcEngineError, LLMProviderError
 from src.domain.interfaces import AnalysisPipeline
 from src.domain.models import AnalysisRequest
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
-from tests.conftest import FakeCalcEngine
+from tests.conftest import PROMPTS, FakeCalcEngine, build_evidence, build_tools
 
 
 class _ToolCapableFakeChatModel(GenericFakeChatModel):
@@ -53,8 +52,8 @@ def _fake_model(selection_json: str, explanation: str) -> GenericFakeChatModel:
 def _build(chaos_path, model) -> LangChainAnalysisOrchestrator:
     return LangChainAnalysisOrchestrator(
         parser=ShowdownReplayParser(), chat_model=model,
-        meta_provider=ChaosAdapter(chaos_path), calc_engine=FakeCalcEngine(),
-        strategy_provider=ChaosStrategyAdapter(chaos_path),
+        evidence=build_evidence(chaos_path), prompts=PROMPTS,
+        tools=build_langchain_tools(build_tools(chaos_path)),
         memory=InMemoryConversationMemory(), provider_name="langchain:fake",
     )
 
@@ -206,9 +205,9 @@ def test_failed_tool_call_degrades_instead_of_crashing_the_turn(
     )
     orch = LangChainAnalysisOrchestrator(
         parser=ShowdownReplayParser(), chat_model=model,
-        meta_provider=ChaosAdapter(sample_chaos_path),
-        calc_engine=_SelectivelyFailingCalcEngine(),
-        strategy_provider=ChaosStrategyAdapter(sample_chaos_path),
+        evidence=build_evidence(sample_chaos_path, _SelectivelyFailingCalcEngine()),
+        prompts=PROMPTS,
+        tools=build_langchain_tools(build_tools(sample_chaos_path, _SelectivelyFailingCalcEngine())),
         memory=InMemoryConversationMemory(), provider_name="langchain:fake",
     )
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))

@@ -7,9 +7,61 @@ from typing import Sequence
 
 import pytest
 
-from src.domain.models import CalcRequest, ChatMessage, DamageResult, SpeedComparison
+from src.adapters.llm.evidence_tools import EvidenceTools
+from src.adapters.llm.prompts import FilePromptRepository
+from src.domain.models import CalcRequest, ChatMessage, DamageResult, MoveInfo, SpeedComparison
+from src.services.ground_truth import GroundTruthAssembler
+
+PROMPTS = FilePromptRepository()
+
+# Status (0-power) moves the fakes below classify as non-damaging — the real
+# adapter asks @smogon/calc's own dex instead (see calcEngine.moveInfo).
+FAKE_STATUS_MOVES = {
+    "Protect", "Detect", "Spiky Shield", "Tailwind", "Trick Room", "Thunder Wave",
+    "Will-O-Wisp", "Helping Hand", "Follow Me", "Rage Powder", "Swords Dance",
+    "Nasty Plot", "Calm Mind", "Dragon Dance", "Spore", "Sleep Powder", "Wide Guard",
+    "Reflect", "Light Screen", "Parting Shot", "Life Dew", "Strength Sap",
+}
+
+
+def fake_move_info(move: str) -> MoveInfo:
+    """Deterministic MoveInfo for test doubles."""
+    return MoveInfo(
+        name=move,
+        known=True,
+        category="Status" if move in FAKE_STATUS_MOVES else "Physical",
+        is_protect=move in {"Protect", "Detect", "Spiky Shield"},
+        speed_control={"Tailwind": "tailwind", "Trick Room": "trick_room",
+                       "Thunder Wave": "paralysis", "Icy Wind": "speed_drop",
+                       "Electroweb": "speed_drop"}.get(move, ""),
+        speed_drop_stages=1 if move in {"Icy Wind", "Electroweb"} else 0,
+    )
 
 SAMPLE_DIR = Path(__file__).resolve().parent.parent / "sample_data"
+
+
+def build_evidence(chaos_path: Path, calc_engine: object | None = None) -> GroundTruthAssembler:
+    """The shared evidence stage wired to the bundled sample Chaos file."""
+    from src.adapters.chaos.chaos_adapter import ChaosAdapter
+    from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
+
+    return GroundTruthAssembler(
+        meta_provider=ChaosAdapter(chaos_path),
+        calc_engine=calc_engine or FakeCalcEngine(),  # type: ignore[arg-type]
+        strategy_provider=ChaosStrategyAdapter(chaos_path),
+    )
+
+
+def build_tools(chaos_path: Path, calc_engine: object | None = None) -> EvidenceTools:
+    """The agents' shared tool core wired like ``build_evidence``."""
+    from src.adapters.chaos.chaos_adapter import ChaosAdapter
+    from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
+
+    return EvidenceTools(
+        calc_engine=calc_engine or FakeCalcEngine(),  # type: ignore[arg-type]
+        meta_provider=ChaosAdapter(chaos_path),
+        strategy_provider=ChaosStrategyAdapter(chaos_path),
+    )
 
 
 class FakeCalcEngine:
@@ -36,6 +88,9 @@ class FakeCalcEngine:
             faster_speed=120,
             slower_speed=60,
         )
+
+    def move_info(self, gen: int, move: str) -> MoveInfo:
+        return fake_move_info(move)
 
     def forme_resolves(self, gen: int, species: str) -> bool:
         return False

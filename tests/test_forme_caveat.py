@@ -32,7 +32,7 @@ from src.domain.models import (
 )
 from src.services.matchup_evaluator import MatchupEvaluator
 from src.services.turn_simulator import TurnReplaySimulator
-from tests.conftest import FakeCalcEngine
+from tests.conftest import fake_move_info, FakeCalcEngine
 
 
 def test_forme_caveat_empty_when_no_forme_change(fake_calc):
@@ -47,6 +47,9 @@ class _ResolvesCalc(FakeCalcEngine):
 
     def __init__(self, resolvable: str) -> None:
         self._resolvable = resolvable
+
+    def move_info(self, gen, move):  # noqa: ANN001, ANN201 - test double
+        return fake_move_info(move)
 
     def forme_resolves(self, gen: int, species: str) -> bool:
         return species == self._resolvable

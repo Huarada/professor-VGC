@@ -9,6 +9,7 @@ only checking the move that was actually used.
 
 from __future__ import annotations
 
+from tests.conftest import fake_move_info
 from src.domain.models import (
     BattleEvent,
     BattleOutcome,
@@ -102,6 +103,9 @@ class _TypeAwareCalcEngine:
             faster=request.attacker.species, slower=request.defender.species,
             faster_speed=120, slower_speed=60,
         )
+
+    def move_info(self, gen, move):  # noqa: ANN001, ANN201 - test double
+        return fake_move_info(move)
 
     def forme_resolves(self, gen: int, species: str) -> bool:
         return False

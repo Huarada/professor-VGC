@@ -1,6 +1,6 @@
 """Helpers that turn a GameState into prompt-ready battle context.
 
-Shared by both orchestration backends so the selection stage sees the same
+Shared by every orchestration backend so the selection stage sees the same
 rosters and the explanation stage sees the same ground-truth ordered timeline.
 """
 
@@ -126,6 +126,8 @@ def _field_labels(game_state: GameState, turn: int) -> list[str]:
             labels.append(f"Tailwind {side.player}")
     if field.trick_room_active(turn):
         labels.append("Trick Room")
-    if field.weather:
-        labels.append(f"weather {field.weather}")
+    labels.extend(f"weather {name}" for name in field.weather_on(turn))
+    labels.extend(f"terrain {name}" for name in field.terrain_on(turn))
+    for side in game_state.sides:
+        labels.extend(f"{name} {side.player}" for name in field.screens_on(side.player, turn))
     return labels

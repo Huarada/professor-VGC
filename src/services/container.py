@@ -9,13 +9,19 @@ from src.adapters.chaos.chaos_adapter import ChaosAdapter
 from src.adapters.chaos.chaos_repository import ChaosRepositoryLike
 from src.adapters.chaos.firestore_chaos_repository import FirestoreChaosRepository
 from src.adapters.llm.adk_provider import build_adk_model
+from src.adapters.llm.adk_tools import build_adk_tools
+from src.adapters.llm.evidence_tools import EvidenceTools
 from src.adapters.llm.gemini_embedding_provider import GeminiEmbeddingProvider
 from src.adapters.llm.gemini_provider import GeminiProvider
 from src.adapters.llm.langchain_provider import build_chat_model
+from src.adapters.llm.langchain_tools import build_langchain_tools
 from src.adapters.llm.openai_embedding_provider import OpenAIEmbeddingProvider
 from src.adapters.llm.openai_provider import OpenAIProvider
+from src.adapters.llm.prompts import FilePromptRepository
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory
+from src.adapters.parsers.replay_viewer_parser import parse_replay_for_viewer
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
+from src.adapters.replay_url_fetcher import fetch_replay_json, normalize_replay_json_url
 from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
 from src.adapters.smogon.smogon_dex_adapter import SmogonDexAdapter
@@ -27,10 +33,13 @@ from src.domain.interfaces import (
     ConversationMemory,
     EmbeddingProvider,
     LLMProvider,
+    PromptRepository,
     StrategyKnowledgeProvider,
 )
+from src.domain.replay_view_models import BattleReplay
 from src.services.adk_orchestrator import AdkAnalysisOrchestrator
 from src.services.analysis_service import AnalysisService
+from src.services.ground_truth import GroundTruthAssembler
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
 from src.services.selection_service import LLMSelectionService
 
@@ -69,6 +78,18 @@ class Container:
     @property
     def settings(self) -> Settings:
         return self._settings
+
+    def _resolve_provider(self, provider: str | None) -> str:
+        """The requested BYOK provider name (default from settings), validated."""
+        name = (provider or self._settings.default_provider).lower()
+        if name not in _PROVIDERS:
+            raise ConfigurationError(
+                f"Unknown provider '{name}'. Available: {sorted(_PROVIDERS)}"
+            )
+        return name
+
+    def prompts(self) -> PromptRepository:
+        return FilePromptRepository()
 
     def memory(self) -> ConversationMemory:
         if self._memory is None:
@@ -136,11 +157,7 @@ class Container:
     def build_embedding_provider(self, provider: str | None = None) -> EmbeddingProvider:
         """Instantiate the requested BYOK provider for embeddings (same key
         as chat completions — see PROFESSORVGC_USE_SEMANTIC_STRATEGY)."""
-        name = (provider or self._settings.default_provider).lower()
-        if name not in _PROVIDERS:
-            raise ConfigurationError(
-                f"Unknown provider '{name}'. Available: {sorted(_PROVIDERS)}"
-            )
+        name = self._resolve_provider(provider)
         if name == "openai":
             return OpenAIEmbeddingProvider(
                 api_key=self._settings.openai_api_key,
@@ -161,7 +178,7 @@ class Container:
         being rebuilt — and its cache wiped — on every `analyze()` call."""
         if not self._settings.use_semantic_strategy:
             return dex
-        name = (provider or self._settings.default_provider).lower()
+        name = self._resolve_provider(provider)
         cached = self._semantic_retrievers.get(name)
         if cached is None:
             cached = SemanticStrategyRetriever(
@@ -185,11 +202,7 @@ class Container:
 
     def build_llm(self, provider: str | None = None) -> LLMProvider:
         """Instantiate the requested BYOK provider (direct SDK, native path)."""
-        name = (provider or self._settings.default_provider).lower()
-        if name not in _PROVIDERS:
-            raise ConfigurationError(
-                f"Unknown provider '{name}'. Available: {sorted(_PROVIDERS)}"
-            )
+        name = self._resolve_provider(provider)
         if name == "openai":
             return OpenAIProvider(
                 api_key=self._settings.openai_api_key, model=self._settings.openai_model
@@ -200,59 +213,69 @@ class Container:
 
     def build_chat_model(self, provider: str | None = None) -> BaseChatModel:
         """Instantiate the requested BYOK provider as a LangChain chat model."""
-        name = (provider or self._settings.default_provider).lower()
-        return build_chat_model(name, self._settings)
+        return build_chat_model(self._resolve_provider(provider), self._settings)
 
     def build_adk_model(self, provider: str | None = None) -> "str | BaseLlm":
         """Instantiate the requested BYOK provider as a Google ADK model."""
-        name = (provider or self._settings.default_provider).lower()
-        return build_adk_model(name, self._settings)
+        return build_adk_model(self._resolve_provider(provider), self._settings)
 
-    def build_native_pipeline(self, provider: str | None = None) -> AnalysisPipeline:
-        """Assemble the hand-rolled :class:`AnalysisService`."""
-        llm = self.build_llm(provider)
-        return AnalysisService(
-            parser=ShowdownReplayParser(),
-            selector=LLMSelectionService(llm, temperature=0.0),
+    def evidence_tools(self, provider: str | None = None) -> EvidenceTools:
+        """The agents' on-demand deterministic tools (one framework-agnostic core)."""
+        return EvidenceTools(
+            calc_engine=self.calc_engine(),
+            meta_provider=self.chaos(),
+            strategy_provider=self.strategy(provider),
+            default_gen=self._settings.calc_gen,
+        )
+
+    def ground_truth(self, provider: str | None = None) -> GroundTruthAssembler:
+        """The deterministic evidence stage shared by every orchestrator."""
+        return GroundTruthAssembler(
             meta_provider=self.chaos(),
             calc_engine=self.calc_engine(),
             strategy_provider=self.strategy(provider),
-            llm=llm,
-            memory=self.memory(),
             default_gen=self._settings.calc_gen,
             suggestion_source=self.smogon_dex(),
+        )
+
+    def build_native_pipeline(self, provider: str | None = None) -> AnalysisPipeline:
+        """Assemble the hand-rolled :class:`AnalysisService`."""
+        name = self._resolve_provider(provider)
+        llm = self.build_llm(name)
+        prompts = self.prompts()
+        return AnalysisService(
+            parser=ShowdownReplayParser(),
+            selector=LLMSelectionService(llm, prompts=prompts, temperature=0.0),
+            evidence=self.ground_truth(name),
+            llm=llm,
+            memory=self.memory(),
+            prompts=prompts,
         )
 
     def build_langchain_pipeline(self, provider: str | None = None) -> AnalysisPipeline:
         """Assemble the LangChain LCEL orchestrator."""
-        name = (provider or self._settings.default_provider).lower()
-        chat_model = self.build_chat_model(name)
+        name = self._resolve_provider(provider)
         return LangChainAnalysisOrchestrator(
             parser=ShowdownReplayParser(),
-            chat_model=chat_model,
-            meta_provider=self.chaos(),
-            calc_engine=self.calc_engine(),
-            strategy_provider=self.strategy(name),
+            chat_model=self.build_chat_model(name),
+            evidence=self.ground_truth(name),
             memory=self.memory(),
-            default_gen=self._settings.calc_gen,
+            prompts=self.prompts(),
+            tools=build_langchain_tools(self.evidence_tools(name)),
             provider_name=f"langchain:{name}",
-            suggestion_source=self.smogon_dex(),
         )
 
     def build_adk_pipeline(self, provider: str | None = None) -> AnalysisPipeline:
         """Assemble the Google ADK orchestrator (default backend)."""
-        name = (provider or self._settings.default_provider).lower()
-        model = self.build_adk_model(name)
+        name = self._resolve_provider(provider)
         return AdkAnalysisOrchestrator(
             parser=ShowdownReplayParser(),
-            model=model,
-            meta_provider=self.chaos(),
-            calc_engine=self.calc_engine(),
-            strategy_provider=self.strategy(name),
+            model=self.build_adk_model(name),
+            evidence=self.ground_truth(name),
             memory=self.memory(),
-            default_gen=self._settings.calc_gen,
+            prompts=self.prompts(),
+            tools=build_adk_tools(self.evidence_tools(name)),
             provider_name=f"adk:{name}",
-            suggestion_source=self.smogon_dex(),
             agent_timeout_seconds=self._settings.agent_timeout_seconds,
         )
 
@@ -270,6 +293,23 @@ class Container:
         if backend == "langchain":
             return self.build_langchain_pipeline(provider)
         return self.build_native_pipeline(provider)
+
+    @staticmethod
+    def resolve_replay_text(text: str) -> str:
+        """The pasted replay content — or, when it is a recognized Showdown
+        replay URL, that replay's JSON fetched from Showdown.
+
+        Raises:
+            ReplayFetchError: The URL was recognized but could not be fetched.
+        """
+        url = normalize_replay_json_url(text) if text else None
+        return fetch_replay_json(url) if url is not None else text
+
+    @staticmethod
+    def parse_replay_for_viewer(text: str) -> BattleReplay:
+        """Turn-by-turn snapshots for the UI's battle panel (a separate,
+        presentation-only parse; see replay_viewer_parser's docstring)."""
+        return parse_replay_for_viewer(text)
 
     def build_analysis_service(self, provider: str | None = None) -> AnalysisPipeline:
         return self.build_native_pipeline(provider)

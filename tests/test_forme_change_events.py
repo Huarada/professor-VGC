@@ -8,6 +8,7 @@ timeline. Now captured as its own "forme_change" BattleEvent.
 
 from __future__ import annotations
 
+from tests.conftest import fake_move_info
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
 from src.domain.models import MetaContext
 from src.services.battle_context import outcome_summary
@@ -82,6 +83,9 @@ class _FakeCalc:
             faster=request.attacker.species, slower=request.defender.species,
             faster_speed=100, slower_speed=50,
         )
+
+    def move_info(self, gen, move):  # noqa: ANN001, ANN201 - test double
+        return fake_move_info(move)
 
     def forme_resolves(self, gen, species):
         return True

@@ -1,17 +1,18 @@
 """Deterministic matchup evaluation — shared across orchestration backends.
 
-Wraps the deterministic damage-calc + speed-tier logic so that BOTH the native
-:class:`~src.services.analysis_service.AnalysisService` and the LangChain
-orchestrator run identical, ground-truth calculations.
+Wraps the deterministic damage-calc + speed-tier logic used by the shared
+evidence stage (:mod:`src.services.ground_truth`), so every orchestration
+backend runs identical, ground-truth calculations.
 """
 
 from __future__ import annotations
 
-from typing import Any, Sequence
+from typing import Sequence
 
 from src.domain.exceptions import CalcEngineError, StrategyKnowledgeError
 from src.domain.interfaces import CalcEngineAdapter, StrategyKnowledgeProvider
 from src.domain.models import (
+    CalcField,
     CalcRequest,
     DamageResult,
     GameState,
@@ -19,9 +20,14 @@ from src.domain.models import (
     MetaContext,
     PokemonSet,
     SelectionPlan,
+    SideField,
     SmogonStrategy,
     SpeedComparison,
 )
+
+SetIndex = dict[tuple[str, str], PokemonSet]
+"""(player, species) -> the best-known set. Side-qualified so a mirror match
+(the same species on both sides) keeps two distinct Pokemon."""
 
 _DEFAULT_MOVE = "Tackle"
 
@@ -33,51 +39,63 @@ class MatchupEvaluator:
         self._calc = calc_engine
         self._gen = default_gen
         self._forme_resolve_cache: dict[tuple[int, str], bool] = {}
+        self._move_damaging_cache: dict[tuple[int, str], bool] = {}
 
-    def index_sets(self, game_state: GameState) -> dict[str, PokemonSet]:
-        """Map species -> best-known set from the battle state."""
-        index: dict[str, PokemonSet] = {}
+    def index_sets(self, game_state: GameState) -> SetIndex:
+        """Map (player, species) -> best-known set from the battle state."""
+        index: SetIndex = {}
         for side in game_state.sides:
             for mon in side.team:
-                index.setdefault(mon.species, mon)
+                index.setdefault((side.player, mon.species), mon)
         return index
 
     def enrich_set(
         self,
         mon: PokemonSet,
         meta: MetaContext,
-        statuses: dict[str, str] | None = None,
+        *,
+        status: str | None = None,
         boosts: dict[str, int] | None = None,
+        item: str | None = None,
     ) -> PokemonSet:
-        """Back-fill hidden ability/item/nature/EVs (Chaos) and observed status
-        (log). The nature/EVs back-fill uses the single most-used competitive
-        spread for this species in the ideal tier (meta.pokemon_stats) instead
-        of leaving the calc to silently default to 0 EVs/neutral nature — a
+        """Back-fill hidden ability/item/nature/EVs (Chaos) and apply the
+        CONFIRMED point-in-time battle facts for the exact moment this calc
+        represents.
+
+        The nature/EVs back-fill uses the single most-used competitive spread
+        for this species in the ideal tier (meta.pokemon_stats) instead of
+        leaving the calc to silently default to 0 EVs/neutral nature — a
         materially more realistic damage projection when the replay itself
         never reveals the real spread, still clearly an assumption (see
         explanation_system.txt's guidance on DamageResult.description).
 
-        ``boosts``, when given, is a CONFIRMED (never Chaos-guessed) stat
-        stage snapshot — e.g. {"atk": -1} from an observed Intimidate — for
-        the exact moment this particular calc represents. Unlike
-        ability/item/nature/EVs, this is never back-filled from Chaos (a
-        stage is a point-in-time battle fact, not a "typical set" property);
-        the caller (TurnReplaySimulator) is the one walking the timeline in
-        order and knows the real value, so this method only ever applies
-        exactly what it's given."""
+        Args:
+            mon: The best-known set (revealed ability/item/moves from the log).
+            meta: Chaos context for the back-fill.
+            status: Non-volatile status AT THIS MOMENT ("" = healthy). Never
+                taken from a later point of the game.
+            boosts: Stat stages AT THIS MOMENT (e.g. {"atk": -1} after an
+                observed Intimidate) — never back-filled from Chaos.
+            item: Item held AT THIS MOMENT when the log determines it: a
+                name, or "" for "confirmed no item" (consumed/knocked off),
+                which also stops the Chaos item back-fill. ``None`` keeps the
+                set's own (revealed original) item, else the Chaos guess.
+        """
         summary = meta.pokemon_stats.get(mon.species)
         data = mon.model_dump()
+        if item is not None:
+            data["item"] = item or None
         if summary is not None:
             if not data.get("ability") and summary.top_abilities:
                 data["ability"] = next(iter(summary.top_abilities))
-            if not data.get("item") and summary.top_items:
+            if item is None and not data.get("item") and summary.top_items:
                 data["item"] = next(iter(summary.top_items))
             if not data.get("nature") and summary.top_spread_nature:
                 data["nature"] = summary.top_spread_nature
             if data.get("evs") is None and summary.top_spread_evs is not None:
                 data["evs"] = summary.top_spread_evs.model_dump()
-        if statuses and not data.get("status") and mon.species in statuses:
-            data["status"] = statuses[mon.species]
+        if status is not None:
+            data["status"] = status or None
         if boosts:
             data["boosts"] = dict(boosts)
         return PokemonSet.model_validate(data)
@@ -122,11 +140,27 @@ class MatchupEvaluator:
                 )
         return " ".join(notes)
 
+    def is_damaging(self, move: str) -> bool:
+        """Whether the engine's own dex classifies ``move`` as an attack
+        (cached; an unreachable engine counts as damaging so the calc itself
+        decides)."""
+        key = (self._gen, move)
+        cached = self._move_damaging_cache.get(key)
+        if cached is None:
+            try:
+                cached = self._calc.move_info(self._gen, move).is_damaging
+            except CalcEngineError:
+                cached = True
+            self._move_damaging_cache[key] = cached
+        return cached
+
     def _best_move_verdict(
-        self, attacker: PokemonSet, defender: PokemonSet, field: dict[str, Any]
+        self, attacker: PokemonSet, defender: PokemonSet, field: CalcField
     ) -> tuple[str, DamageResult] | None:
         best: tuple[str, DamageResult] | None = None
         for move in self._candidate_moves(attacker):
+            if not self.is_damaging(move):
+                continue
             try:
                 result = self._calc.calculate(
                     CalcRequest(
@@ -141,7 +175,7 @@ class MatchupEvaluator:
         return best
 
     def _safe_speed(
-        self, attacker: PokemonSet, defender: PokemonSet, field: dict[str, Any]
+        self, attacker: PokemonSet, defender: PokemonSet, field: CalcField
     ) -> SpeedComparison | None:
         try:
             return self._calc.compare_speed(
@@ -156,44 +190,67 @@ class MatchupEvaluator:
     @staticmethod
     def _field_for(
         game_state: GameState, attacker_player: str | None, defender_player: str | None
-    ) -> dict[str, Any]:
-        """Build the @smogon/calc field spec for a matchup from the log ledger.
+    ) -> CalcField:
+        """Whole-game field for a post-game "who wins this matchup" verdict.
 
-        Tailwind is applied to whichever side actually had it up during the game
-        (post-game speed-tier reasoning); Trick Room and weather likewise.
+        Tailwind is applied to whichever side actually had it up during the
+        game, Trick Room likewise, plus the weather/terrain that was up for
+        most of the game. Point-in-time conditions (screens, Helping Hand,
+        status at a given turn) belong to the per-turn re-checks, not here.
         """
         field = game_state.field
         if field is None:
-            return {}
-        spec: dict[str, Any] = {}
-        if attacker_player and field.had_tailwind(attacker_player):
-            spec["attackerTailwind"] = True
-        if defender_player and field.had_tailwind(defender_player):
-            spec["defenderTailwind"] = True
-        if field.had_trick_room():
-            spec["trickRoom"] = True
-        if field.weather:
-            spec["weather"] = field.weather
-        return spec
+            return CalcField()
+        return CalcField(
+            weather=field.dominant_weather(),
+            terrain=field.dominant_terrain(),
+            trick_room=field.had_trick_room(),
+            attacker_side=SideField(
+                tailwind=bool(attacker_player and field.had_tailwind(attacker_player))
+            ),
+            defender_side=SideField(
+                tailwind=bool(defender_player and field.had_tailwind(defender_player))
+            ),
+        )
+
+    @staticmethod
+    def resolve_players(
+        game_state: GameState, attacker: str, defender: str
+    ) -> tuple[str, str]:
+        """Owning players of a cross-side matchup, mirror-safe: the defender
+        is looked up on the side OPPOSITE the attacker first."""
+        brought = {
+            side.player: set(side.brought() or [mon.species for mon in side.team])
+            for side in game_state.sides
+        }
+        side_of = game_state.side_of()
+        attacker_player = side_of.get(attacker, "")
+        defender_player = next(
+            (p for p, names in brought.items() if p != attacker_player and defender in names),
+            side_of.get(defender, ""),
+        )
+        return attacker_player, defender_player
 
     def evaluate(
         self, game_state: GameState, selection: SelectionPlan, meta: MetaContext
     ) -> list[MatchupVerdict]:
         """Return one deterministic verdict per selected matchup (field-aware)."""
         sets = self.index_sets(game_state)
-        side_of = game_state.side_of()
-        statuses = game_state.field.statuses if game_state.field else {}
+        statuses = game_state.field.final_statuses if game_state.field else {}
         verdicts: list[MatchupVerdict] = []
         for attacker_name, defender_name in selection.matchups:
+            attacker_player, defender_player = self.resolve_players(
+                game_state, attacker_name, defender_name
+            )
             attacker = self.enrich_set(
-                sets.get(attacker_name) or PokemonSet(species=attacker_name), meta, statuses
+                sets.get((attacker_player, attacker_name)) or PokemonSet(species=attacker_name),
+                meta, status=statuses.get(attacker_player, {}).get(attacker_name),
             )
             defender = self.enrich_set(
-                sets.get(defender_name) or PokemonSet(species=defender_name), meta, statuses
+                sets.get((defender_player, defender_name)) or PokemonSet(species=defender_name),
+                meta, status=statuses.get(defender_player, {}).get(defender_name),
             )
-            field = self._field_for(
-                game_state, side_of.get(attacker_name), side_of.get(defender_name)
-            )
+            field = self._field_for(game_state, attacker_player, defender_player)
             best = self._best_move_verdict(attacker, defender, field)
             if best is None:
                 continue
