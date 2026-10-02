@@ -2,7 +2,7 @@
 
     python -m scripts.faithfulness_benchmark.run_log_grounded \
         [--replays data/replays/cache] [--limit 10] [--provider openai] \
-        [--orchestrator native] [--chaos firestore|local] [--out FILE.json]
+        [--orchestrator native] [--chaos firestore|local] [--relative-tolerance 0.05]         [--out FILE.json]
 
 Fixes the circularity of ``run.py``, whose ``damage_range`` verdicts compare a
 claim with the pipeline's own projection (the numbers Condition A was handed).
@@ -15,8 +15,14 @@ Here, for each real public replay:
    (``observed_damage.py``, an independent reader of the raw log) — one
    external truth for both conditions (``log_claims.py``);
 4. Condition A's claims are ALSO checked the old way, and the two verdicts
-   are cross-tabulated (``circularity_matrix``) to show how often "matches
+   are cross-tabulated (``A_projection_vs_log_circularity``) to show how often "matches
    the projection" differed from "matches what happened".
+
+Agreement uses a tolerance band (``tolerance.py``: ±2pp HP rounding plus a
+relative ±5% by default for spread variance); rates come with 95% Wilson
+intervals, the comparison with the odds ratio's 95% interval, and the same
+claims are re-scored at 0/5/10/15% (``log_grounded_scoring.py``; a saved run
+can be re-scored without LLM calls via ``rescore_log_grounded.py``).
 
 The deterministic layer itself is calibrated against the same logs in
 ``run_engine_calibration.py`` (no LLM).
@@ -38,16 +44,13 @@ from scripts.faithfulness_benchmark.aggregate import extract_and_filter
 from scripts.faithfulness_benchmark.bench_container import build_container
 from scripts.faithfulness_benchmark.engine_calibration import calibrate
 from scripts.faithfulness_benchmark.ground_truth import GroundTruth
-from scripts.faithfulness_benchmark.log_claims import (
-    LogClaimVerdict,
-    circularity_matrix,
-    verify_damage_claim_against_log,
-)
+from scripts.faithfulness_benchmark.log_claims import LogClaimVerdict, verify_damage_claim_against_log
+from scripts.faithfulness_benchmark.log_grounded_scoring import summarize
 from scripts.faithfulness_benchmark.naive_baseline import run_naive_baseline
-from scripts.faithfulness_benchmark.observed_damage import extract_observed_hits
+from scripts.faithfulness_benchmark.observed_damage import ObservedHit, extract_observed_hits
 from scripts.faithfulness_benchmark.replay_corpus import DEFAULT_CACHE_DIR, load_replays
 from scripts.faithfulness_benchmark.run import _with_retry
-from scripts.faithfulness_benchmark.stats import fisher_exact_2x2
+from scripts.faithfulness_benchmark.tolerance import ToleranceBand
 from scripts.faithfulness_benchmark.verify import verify_claim
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
 from src.domain.models import AnalysisRequest
@@ -75,10 +78,10 @@ def _tally(verdicts: list[LogClaimVerdict]) -> dict[str, int]:
 
 
 def _run_replay(
-    container: Any, replay_id: str, replay: dict[str, Any], provider: str, orchestrator: str
+    container: Any, replay_id: str, replay: dict[str, Any], provider: str, orchestrator: str,
+    hits: list[ObservedHit], band: ToleranceBand,
 ) -> dict[str, Any]:
     print(f"=== {replay_id} ===")
-    hits = extract_observed_hits(str(replay["log"]))
     game_state = ShowdownReplayParser().parse(replay)
     pipeline = container.build_pipeline(provider=provider, orchestrator=orchestrator)
     analysis = _with_retry(
@@ -100,7 +103,10 @@ def _run_replay(
     result: dict[str, Any] = {
         "replay_id": replay_id,
         "observed_hits": len(hits),
-        "engine_calibration": calibrate(hits, analysis.turn_checks).summary(),
+        "engine_calibration": {
+            k: v for k, v in calibrate(hits, analysis.turn_checks, band).summary().items()
+            if k in ("judged", "correct", "incorrect", "coverage_non_ko_95ci", "consistency_ko_95ci")
+        },
     }
     for label, answer in (("A_grounded", analysis.answer), ("B_naive", naive)):
         claims = [
@@ -109,7 +115,7 @@ def _run_replay(
             )
             if c.claim_type == "damage_range"
         ]
-        log_verdicts = [verify_damage_claim_against_log(c, hits) for c in claims]
+        log_verdicts = [verify_damage_claim_against_log(c, hits, band) for c in claims]
         entry: dict[str, Any] = {
             "answer": answer,
             "damage_claims": _tally(log_verdicts),
@@ -119,31 +125,15 @@ def _run_replay(
             ],
         }
         if label == "A_grounded":
-            entry["circularity"] = circularity_matrix([verify_claim(c, gt) for c in claims], log_verdicts)
+            # The old, projection-based verdict per claim, for the circularity matrix.
+            for stored, claim in zip(entry["claims"], claims):
+                stored["projection_verdict"] = verify_claim(claim, gt).verdict
         result[label] = entry
         print(f"  {label}: {entry['damage_claims']}")
     # Answers and extracted claims often quote the real player names.
     players = [str(p) for p in replay.get("players", [])]
     anonymized: dict[str, Any] = json.loads(anonymize(json.dumps(result, ensure_ascii=False), players))
     return anonymized
-
-
-def _summary(results: list[dict[str, Any]]) -> dict[str, Any]:
-    totals: dict[str, Counter[str]] = {k: Counter() for k in ("A_grounded", "B_naive")}
-    circularity: Counter[str] = Counter()
-    for r in results:
-        for label in totals:
-            totals[label].update(r[label]["damage_claims"])
-        circularity.update(r["A_grounded"]["circularity"])
-    a, b = totals["A_grounded"], totals["B_naive"]
-    fisher = fisher_exact_2x2(a["correct"], a["incorrect"], b["correct"], b["incorrect"])
-    return {
-        "replays": len(results),
-        "A_grounded": dict(a),
-        "B_naive": dict(b),
-        "fisher_exact_on_log_verified_damage_claims": fisher.summary(),
-        "A_projection_vs_log_circularity": dict(sorted(circularity.items())),
-    }
 
 
 def main() -> None:
@@ -153,8 +143,11 @@ def main() -> None:
     parser.add_argument("--provider", default=None, help="openai|gemini (default: config default)")
     parser.add_argument("--orchestrator", default="native", help="native (default) | langchain | adk")
     parser.add_argument("--chaos", default="firestore", help="firestore (default) | local")
+    parser.add_argument("--relative-tolerance", type=float, default=0.05,
+                        help="relative widening of each claimed bound (default 0.05 = 5%%)")
     parser.add_argument("--out", type=Path, default=None)
     args = parser.parse_args()
+    band = ToleranceBand(relative=args.relative_tolerance)
 
     replays = load_replays(args.replays, limit=args.limit)
     if not replays:
@@ -163,15 +156,21 @@ def main() -> None:
     provider = (args.provider or container.settings.default_provider).lower()
     out = args.out or _OUT_DIR / f"log-grounded-{args.orchestrator}-{provider}-{int(time.time())}.json"
     results: list[dict[str, Any]] = []
+    hits_by_replay: dict[str, list[ObservedHit]] = {}
     try:
         for replay_id, replay in replays.items():
-            results.append(_run_replay(container, replay_id, replay, provider, args.orchestrator))
+            hits_by_replay[replay_id] = extract_observed_hits(str(replay["log"]))
+            results.append(_run_replay(
+                container, replay_id, replay, provider, args.orchestrator,
+                hits_by_replay[replay_id], band,
+            ))
             report = {"provider": provider, "orchestrator": args.orchestrator,
-                      "question": QUESTION, "summary": _summary(results), "replays": results}
+                      "question": QUESTION, "summary": summarize(results, hits_by_replay, band),
+                      "replays": results}
             out.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     finally:
         container.shutdown()
-    print(json.dumps(_summary(results), indent=2))
+    print(json.dumps(summarize(results, hits_by_replay, band), indent=2, ensure_ascii=False))
     print(f"saved {out}")
 
 
