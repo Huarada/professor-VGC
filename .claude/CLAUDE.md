@@ -373,9 +373,12 @@ cd node_calc && npm run smoke
 - **Tailwind / Trick Room** are tracked per turn (a Tailwind set mid-turn counts
   for that whole turn); weather, terrain, screens, status, items and HP are exact
   per move.
-- **Projected damage vs. reality** (ADR-033): on 40 real Reg M-B games the
-  projected range contained the real damage for only ~40% of non-KO hits —
-  unrevealed sets differ from the most-used Chaos set. Treat projections as
+- **Projected damage vs. reality** (ADR-033/034): on 40 real Reg M-B games,
+  within ±2pp ±5%, the projected range contained the real damage for 47.9%
+  (95% CI 42.7–53.2%) of non-KO hits; ~70% of misses fit another EV/nature
+  spread, the rest come from unrevealed abilities/items or Chaos gaps.
+  Grounded vs raw-log-only claims: 59.9% vs 51.1%, OR 1.43 (1.06–1.93) —
+  report benchmark results pooled over distinct games, with 95% intervals. Treat projections as
   a baseline; the log's observed damage is what happened. Correctness claims
   about the AI must come from `run_log_grounded.py`, not the projection-based
   `run.py` (circular).

@@ -114,21 +114,26 @@ numbers, never invents them.
 
 ## Benchmark — measured against real games, not asserted
 
-**Correctness (real games, ADR-033).** The battle log is the external truth:
-an independent reader takes the damage each hit really did from the raw
-log, and both the AI's claims and the engine's projections are checked
-against it, on 20–40 recent public Reg M-B replays.
+**Correctness (real games, ADR-033/034).** The battle log is the external
+truth: an independent reader takes the damage each hit really did from the
+raw log, and both the AI's claims and the engine's projections are checked
+against it on 40 recent public Reg M-B replays. Agreement is judged within a
+tolerance band — ±2pp for HP rounding and ±5% because real EVs/natures differ
+from the assumed spread — and every rate carries a 95% confidence interval.
 
-| What is checked against the real log | Result |
+| Checked against the real log (±2pp ±5%) | Rate (95% CI) |
 |---|---|
-| AI damage claims — Condition A (grounded pipeline) | **71.0%** consistent (110/155) |
-| AI damage claims — Condition B (same LLM, raw log only) | 55.5% (96/173) — Fisher odds ratio **1.96**, p = 0.0043 |
-| Claims about hits that never happened | A: 4 · B: 14 |
-| Engine projection contains the real damage (non-KO hits, no LLM) | **39.6%** of 530 judged hits |
+| AI damage claims — Condition A (grounded pipeline) | **59.9% (55.0–64.7%)**, 229/382 |
+| AI damage claims — Condition B (same LLM, raw log only) | 51.1% (46.0–56.1%), 191/374 |
+| A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
+| Claims about hits that never happened | A: 18 · B: 57 |
+| Engine projection contains the real damage (non-KO hits, no LLM) | **47.9% (42.7–53.2%)**, 162/338 |
+| …of the engine's misses, explained by EV/nature variance alone | 69.6% (63.0–75.4%) |
 
-Grounding helps significantly, but projected damage is only as good as the
-assumed sets (most-used Chaos spread/item/ability for anything unrevealed),
-and real sets often differ. Details: "Round 6" in the benchmark README.
+Grounding helps — by about 9 points, significant at every tolerance tested
+(0–15%) — but projected damage is only as good as the assumed sets
+(most-used Chaos spread/item/ability for anything unrevealed), and real sets
+often differ. Details: "Round 6" in the benchmark README.
 
 ### Faithfulness to the evidence (earlier rounds)
 
@@ -152,7 +157,7 @@ nature spreads do genuine, otherwise-unavailable work.
 
 Faithfulness to the evidence holds across LLM vendor and orchestration
 framework alike (odds ratio 15–80x) — but these odds ratios overstate the
-correctness gain; against real games it is about 2x (table above). Full methodology, every round's raw
+correctness gain; against real games it is about 1.4–1.7x (table above). Full methodology, every round's raw
 numbers, and an honesty audit for unintentional bias toward the grounded
 condition: [`scripts/faithfulness_benchmark/README.md`](scripts/faithfulness_benchmark/README.md).
 

@@ -23,16 +23,18 @@ below for the same question asked across LLM vendor: Gemini 3.5-flash on
 every OpenAI-backed combination — a full model × orchestrator comparison
 table is there.
 
-> **Read this first — correctness vs. faithfulness (ADR-033).** The
+> **Read this first — correctness vs. faithfulness (ADR-033/034).** The
 > `damage_range` headline below (A 92.0% vs B 12.6%) checks each claim
 > against the pipeline's **own projected ranges** — the numbers Condition A
 > was handed — on hand-authored fixtures. That measures *faithfulness to the
 > evidence*, not *correctness*, and it judges Condition B against
 > assumptions B never saw. Validated against what **actually happened** in
-> 20 real public games, the grounded pipeline is still significantly better,
-> but by ~2x, not ~80x: **A 71.0% vs B 55.5% (odds ratio 1.96, p=0.0043)**.
-> See ["Round 6: validation against real games"](#round-6-validation-against-real-games-log-grounded)
-> below. Cite that section for any claim about correctness.
+> 40 real public games, within a ±2pp ±5% tolerance band, the grounded
+> pipeline is better but modestly: **A 59.9% (95% CI 55.0–64.7%) vs B 51.1%
+> (46.0–56.1%), odds ratio 1.43 (1.06–1.93), p=0.016**. See
+> ["Round 6: validation against real games"](#round-6-validation-against-real-games-log-grounded)
+> below. Cite that section, with its intervals, for any claim about
+> correctness.
 
 ## Running it
 
@@ -60,7 +62,8 @@ few minutes).
 | **Re-score an already-saved run's damage numbers** (MAE/RMSE/MSRE/RMSRE — no new LLM calls) | `python -m scripts.faithfulness_benchmark.damage_error_metrics out/run7_n30.json` |
 | **Bias self-audit: does the judge extract confident vs hedgy phrasing differently?** (12 LLM calls, seconds) | `python -m scripts.faithfulness_benchmark.style_blindness_check` |
 | **Calibrate the engine against real games** (projected vs. observed damage, no LLM, offline) | `python -m scripts.faithfulness_benchmark.replay_corpus --count 40` then `python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos local` |
-| **Score A and B against real games** (claims vs. damage the log shows — LLM calls) | `python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20` |
+| **Score A and B against real games** (claims vs. damage the log shows — LLM calls) | `python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20 [--offset 20] [--relative-tolerance 0.05]` |
+| **Re-score / pool saved runs** at another tolerance, with 95% intervals (no LLM calls; refuses runs that share games) | `python -m scripts.faithfulness_benchmark.rescore_log_grounded out/RUN1.json out/RUN2.json --relative-tolerance 0.05` |
 | **Just the deterministic harness itself** (verifier + percent classifier + Fisher's test — no LLM, no network, <1s) | `pytest tests/test_faithfulness_benchmark_verify.py tests/test_percent_classifier.py tests/test_benchmark_stats.py -q` |
 | Re-run everything including the Node-IPC regression | `pytest -q` (whole project's suite; this benchmark's own tests are a small part of it) |
 
@@ -852,63 +855,104 @@ three anonymized ones are versioned as test fixtures.
 
 ### 6a. Engine calibration — is the ground truth itself right? (no LLM)
 
-`run_engine_calibration.py --chaos local`, 40 games, 569 observed hits
-(`out/engine_calibration_n40.json`):
+`run_engine_calibration.py --chaos local`, 40 games, 569 observed hits,
+`@smogon/calc` 0.12 (`out/engine_calibration_n40.json`). Agreement is judged
+within a **tolerance band**, not as an exact match: ±2pp for HP display
+rounding plus a relative ±5% on each projected bound, because the real
+Pokémon's EVs/nature differ from the one spread the projection assumes
+(`tolerance.py`). Every rate carries a 95% Wilson interval.
 
-| | |
+| ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Judged hits (crit/multi-hit excluded: 25; no projection: 14) | 530 |
-| Projected range contains the real damage — **non-KO hits** | **39.6%** |
-| Projection can reach a real KO | 82.8% |
-| Mean miss outside the range | 9.6 pp |
-| Median observed / projected-midpoint | 1.22 (under-projection more common) |
+| Projected range contains the real damage — **non-KO hits** | **47.9% (42.7–53.2%)**, 162/338 |
+| Projection can reach a real KO | 83.3% (77.4–87.9%), 160/192 |
+| Mean miss outside the raw projected range | 12.7 pp |
+| Excluded: crit / multi-hit 25 · no projection 14 | — |
 
-The deterministic layer is exact *given its assumptions*, but the
-assumptions — the single most-used Chaos spread, item and ability for every
-unrevealed set — miss real sets most of the time. Misses include
-type-changing or immunity-ignoring abilities that were never revealed
-(Primarina's Liquid Voice, Hisuian Decidueye's Scrappy), offensive items and
-spreads unlike the top Chaos spread, and 10 species with no Chaos coverage.
-Mega formes are not the cause: all 23 seen resolve in the engine. This is the
-number the old benchmark could not see.
+The conclusion does not hinge on the band — the same hits re-scored:
+
+| Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
+|---|---|---|
+| 0% (±2pp only) | 39.6% (34.6–44.9%) | 82.8% (76.8–87.5%) |
+| **5%** | **47.9% (42.7–53.2%)** | **83.3% (77.4–87.9%)** |
+| 10% | 60.4% (55.1–65.4%) | 84.4% (78.6–88.8%) |
+| 15% | 66.0% (60.8–70.8%) | 84.9% (79.1–89.3%) |
+
+**How much do EVs explain?** For every miss, the same calc request was re-run
+at minimum and maximum EV/nature investment on both sides, everything else
+equal (`ev_envelope.py`). **69.6% of misses (63.0–75.4%, 144/207) fall inside
+that envelope** — a different spread alone explains them — while 63 lie
+outside any EV/nature spread and need something else: type-changing or
+immunity-ignoring abilities that were never revealed (Primarina's Liquid
+Voice, Hisuian Decidueye's Scrappy), offensive items, or species with no
+Chaos coverage (10). Mega formes are not the cause: all 23 seen resolve in
+the engine. Upgrading `@smogon/calc` 0.11 → 0.12 changed none of these rates
+by more than 0.5pp.
+
+*Correction:* an earlier version of this section reported a 9.6pp mean miss;
+that figure averaged in the hits that were inside the range (error 0). The
+mean over the misses alone is 12.7pp.
 
 ### 6b. Claims vs. what happened — A vs. B, same external truth
 
-`run_log_grounded.py --provider openai --orchestrator native --chaos local`,
-gpt-4o-mini, 20 games, question asking for the damage of the key attacks
-(`out/log_grounded_n20_openai.json`, player names anonymized):
+`run_log_grounded.py --provider openai --orchestrator native --chaos local
+--relative-tolerance 0.05`, gpt-4o-mini, `@smogon/calc` 0.12, question asking
+for the damage of the key attacks. **40 distinct real games** in two runs of
+20 (`--offset 20` for the second, so no game is counted twice; the pooling
+tool refuses overlapping runs). Reports: `out/log_grounded_n20_openai_band5.json`,
+`out/log_grounded_games21-40_openai_band5.json`, pooled summary
+`out/log_grounded_n40_pooled_band5_summary.json` (player names anonymized).
+A claim agrees when the observed damage falls in the claimed range widened by
+±2pp and ±5%.
 
-| | Condition A (grounded) | Condition B (raw log only) |
+| ±2pp ±5% band | Condition A (grounded) | Condition B (raw log only) |
 |---|---|---|
-| `damage_range` claims consistent with the log | 110 | 96 |
-| Contradicted by the log | 45 | 77 |
-| **Rate** | **71.0%** | **55.5%** |
-| Claims about hits that never happened (`not_in_log`) | 4 | 14 |
+| `damage_range` claims consistent with the log | **59.9% (95% CI 55.0–64.7%)**, 229/382 | 51.1% (46.0–56.1%), 191/374 |
+| Claims about hits that never happened (`not_in_log`) | 18 | 57 |
 
-**Fisher's exact test: odds ratio 1.96, two-sided p=0.0043** — grounding
-still helps significantly, and B invents hits three times as often, but the
-effect is about 2x, not 80x. B is far from the 12.6% the circular metric
-gave it: the raw log already shows every HP change, and a model that reads
-it carefully can report real damage without any calculator.
+**Fisher's exact test: odds ratio 1.43 (95% CI 1.06–1.93), two-sided
+p=0.016.** The same claims at other tolerances:
 
-**How wrong was the old criterion?** Condition A's 159 claims, verdict by
-projection (old) → verdict by log (new):
+| Relative tolerance | A (95% CI) | B (95% CI) | Odds ratio (95% CI) | p |
+|---|---|---|---|---|
+| 0% (±2pp only) | 56.8% (51.8–61.7%) | 49.5% (44.4–54.5%) | 1.34 (1.00–1.81) | 0.049 |
+| **5%** | **59.9% (55.0–64.7%)** | **51.1% (46.0–56.1%)** | **1.43 (1.06–1.93)** | **0.016** |
+| 10% | 63.4% (58.4–68.0%) | 52.9% (47.9–57.9%) | 1.54 (1.14–2.08) | 0.004 |
+| 15% | 67.3% (62.4–71.8%) | 55.3% (50.3–60.3%) | 1.66 (1.22–2.25) | 0.0008 |
+
+**Reading it.** Grounding helps — about 9 percentage points and an odds
+ratio of ~1.4–1.7 at every tolerance — and B invents hits that never
+happened about three times as often. But the effect is modest, nothing like
+the 80x of the circular metric, and **20 games are not enough to show it**:
+each half alone was not significant at ±5% (games 1–20: OR 1.47, 95% CI
+0.95–2.29, p=0.088; games 21–40: OR 1.41, 0.93–2.15, p=0.10), and an
+earlier run on games 1–20 gave OR 1.86 (1.14–3.04). Run-to-run LLM variance
+is large relative to the effect, so report pooled results over distinct
+games with their intervals, never a single run's point estimate. B is far
+from the 12.6% the circular metric gave it: the raw log already shows every
+HP change, and a model that reads it carefully can report real damage
+without a calculator.
+
+**How wrong was the old criterion?** Condition A's claims over the 40 games,
+verdict by projection (old, ±3pp) → verdict by log (new, ±2pp ±5%):
 
 | old \ new | correct | incorrect | not in log |
 |---|---|---|---|
-| **correct** | 72 | **25** | 1 |
-| **incorrect** | **38** | 20 | 3 |
+| **correct** | 155 | **66** | 11 |
+| **incorrect** | **73** | 83 | 7 |
+| unverifiable | 1 | 4 | 0 |
 
-26 of the 98 claims the old method called correct (27%) were wrong or about
-hits that never happened; 38 of the 61 it called incorrect (62%) were in
+77 of the 232 claims the old method called correct (33%) were wrong or about
+hits that never happened; 73 of the 163 it called incorrect (45%) were in
 fact right — typically the model reporting the real damage it read in the
-log instead of the projection. The old criterion agreed with reality on only
-92 of 155 judged claims (59%).
+log instead of the projection. The old criterion agreed with reality on 238
+of 382 judged claims (62%).
 
 **What this changes.** The explanation should present projected damage as a
 baseline under assumed sets and prefer the observed damage for what
 actually happened; the next product step is inferring an opponent's likely
-set from the damage observed (6a's misses are exactly that signal).
+set from the damage observed (6a's misses are exactly that signal — 70% of
+them fit some other EV/nature spread).
 
 ## Extending this
 
