@@ -1,9 +1,9 @@
 # Architecture Decision Records — Determinism & Anti-Hallucination Hardening
 
-> Companion to [CLAUDE.md](CLAUDE.md). CLAUDE.md states the invariants; this
+> Companion to [CLAUDE.md](.claude/CLAUDE.md). CLAUDE.md states the invariants; this
 > file records **why** thirteen specific changes were made, what alternatives were
 > considered, and what trade-offs remain. Written in English per the project's
-> language policy (see CLAUDE.md §0). Session date: 2026-07-24/25.
+> language policy (see the header of `.claude/CLAUDE.md`). Session date: 2026-07-24/25.
 
 ---
 

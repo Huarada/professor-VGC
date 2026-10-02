@@ -47,6 +47,6 @@ scripts/faithfulness_benchmark/out/
 *.bundle
 *.patch
 data/replays/
-CLAUDE.md
+.claude/
 README.md
 DATA.md
