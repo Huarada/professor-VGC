@@ -10,6 +10,7 @@ Run with:  streamlit run src/ui/app.py
 
 from __future__ import annotations
 
+import ipaddress
 import uuid
 from typing import cast
 
@@ -20,6 +21,8 @@ from src.domain.exceptions import (
     ProfessorVGCError,
     RegulationMismatchError,
     ReplayFetchError,
+    UsageLimitExceededError,
+    UsageQuotaError,
 )
 from src.domain.models import AnalysisRequest
 from src.domain.replay_view_models import BattleReplay
@@ -55,6 +58,40 @@ def _session_id() -> str:
     return cast(str, st.session_state["session_id"])
 
 
+def _visitor_id() -> str:
+    """Who the per-visitor usage quota (ADR-036) counts against: the client IP.
+
+    Behind Cloud Run the socket peer is Google's front end, so the address
+    comes from X-Forwarded-For — its right-most public entry, the one the
+    front end appended (entries to its left are client-supplied and could be
+    spoofed). Falls back to the socket peer, then to this browser session.
+    """
+    forwarded = st.context.headers.get("X-Forwarded-For") or ""
+    for hop in reversed([part.strip() for part in forwarded.split(",")]):
+        try:
+            if ipaddress.ip_address(hop).is_global:
+                return hop
+        except ValueError:
+            continue
+    peer = getattr(st.context, "ip_address", None)
+    return peer if isinstance(peer, str) and peer else _session_id()
+
+
+def _quota_caption(container: Container, provider: str) -> str | None:
+    """Sidebar line with the visitor's analyses left today, or None when the
+    provider is unlimited. Read once per session and provider, then kept up
+    to date by each analysis, so widget reruns cost no Firestore reads."""
+    quota = container.usage_quota()
+    limit = quota.limit(provider)
+    if not limit:
+        return None
+    key = f"quota_left_{provider}"
+    if key not in st.session_state:
+        st.session_state[key] = quota.remaining(provider, _visitor_id())
+    left = cast(int, st.session_state[key])
+    return f"{provider}: {left} of {limit} analyses left today (resets 00:00 UTC)."
+
+
 # Substrings the underlying provider SDKs (openai, google-generativeai) use in
 # their own error messages for a billing/quota shortfall vs. a transient rate
 # limit — distinguished here only to point the user at the right fix, never
@@ -84,6 +121,16 @@ def _error_tip(exc: Exception) -> str:
             "Tip: the LLM provider call failed. Check `PROFESSORVGC_OPENAI_API_KEY` / "
             "`PROFESSORVGC_GEMINI_API_KEY` are set and valid, and that the selected "
             "provider in the sidebar matches a key you actually have."
+        )
+    if isinstance(exc, UsageLimitExceededError):
+        return (
+            "Tip: this provider has a daily per-visitor limit on this deployment. "
+            "Switch provider in the sidebar, or come back after 00:00 UTC."
+        )
+    if isinstance(exc, UsageQuotaError):
+        return (
+            "Tip: the usage quota could not be checked, so the analysis was not "
+            "run. Try again in a moment, or switch provider in the sidebar."
         )
     if isinstance(exc, RegulationMismatchError):
         return (
@@ -142,6 +189,15 @@ def main() -> None:
                  "mention come from that regulation only, and a replay from another "
                  "regulation is refused. Auto: the replay's own regulation.",
         )
+        # A placeholder, refilled right after an analysis spends one: the
+        # sidebar renders before the Analyze click is handled below.
+        quota_slot = st.empty()
+        try:
+            caption = _quota_caption(_get_container(), provider)
+        except ProfessorVGCError as exc:
+            caption = f"{provider}: usage quota unavailable ({type(exc).__name__})."
+        if caption:
+            quota_slot.caption(caption)
         st.info(
             f"{icon_md(POKEBALL_ICON)} Set your key via environment variables:\n"
             "`PROFESSORVGC_OPENAI_API_KEY` or `PROFESSORVGC_GEMINI_API_KEY`."
@@ -258,6 +314,13 @@ def main() -> None:
                         provider=provider,
                     )
                     try:
+                        # Spend one analysis of the visitor's daily quota
+                        # first (no-op for an unlimited provider): a refused
+                        # analysis must never reach the paid model.
+                        quota_left = container.usage_quota().consume(provider, _visitor_id())
+                        if quota_left is not None:
+                            st.session_state[f"quota_left_{provider}"] = quota_left
+                            quota_slot.caption(_quota_caption(container, provider) or "")
                         pipeline = container.build_pipeline(provider, orchestrator, regulation)
                         st.session_state["last_result"] = pipeline.analyze(request)
                         st.session_state["last_error"] = None

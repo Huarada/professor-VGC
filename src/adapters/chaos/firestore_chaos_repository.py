@@ -33,9 +33,8 @@ string blob needed).
 
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from src.adapters.chaos.chaos_tier_index import (
     ChaosFileMeta,
@@ -44,15 +43,11 @@ from src.adapters.chaos.chaos_tier_index import (
     parse_tier_id,
 )
 from src.adapters.chaos.species_normalize import normalize_species
-from src.domain.exceptions import ChaosDataError, ConfigurationError
-
-if TYPE_CHECKING:
-    # Type-checking only — kept lazy at runtime (see __init__ below) so this
-    # module remains importable without google-cloud-firestore installed,
-    # matching this project's langchain_provider.py/adk_provider.py pattern:
-    # an optional BYOK-style dependency degrades to ConfigurationError, not
-    # an ImportError at module load time.
-    from google.cloud.firestore import Client
+# Lazy google-cloud-firestore import lives in the shared factory, so this
+# module stays importable without the package (an optional BYOK-style
+# dependency degrades to ConfigurationError, not an ImportError at load time).
+from src.adapters.firestore_client import build_firestore_client as _build_client
+from src.domain.exceptions import ChaosDataError
 
 _SPECIES_SUBCOLLECTION = "species"
 
@@ -248,55 +243,3 @@ class FirestoreChaosRepository:
     def close(self) -> None:
         """Release the underlying gRPC channel."""
         self._client.close()
-
-
-def _build_client(
-    project_id: str,
-    database_id: str,
-    credentials_path: str | None,
-    grpc_ca_bundle_path: str | None = None,
-) -> "Client":
-    try:
-        from google.cloud import firestore
-    except ImportError as exc:  # pragma: no cover - env dependent
-        raise ConfigurationError(
-            "The 'google-cloud-firestore' package is not installed. "
-            "Run: pip install google-cloud-firestore"
-        ) from exc
-    if grpc_ca_bundle_path:
-        # Must be set before the first grpc channel is created in this
-        # process (below) — grpc reads it at channel-creation time, not
-        # per-call. setdefault: never overrides an operator's own explicit
-        # env var if one is already set outside this app. See this
-        # setting's own docstring in config.py for why this exists at all
-        # (grpc has its own TLS stack, independent of pip-system-certs).
-        os.environ.setdefault("GRPC_DEFAULT_SSL_ROOTS_FILE_PATH", grpc_ca_bundle_path)
-    if not project_id:
-        raise ConfigurationError(
-            "A GCP project id is required (PROFESSORVGC_FIRESTORE_PROJECT_ID)"
-        )
-    if credentials_path:
-        try:
-            from google.oauth2.service_account import Credentials
-        except ImportError as exc:  # pragma: no cover - env dependent
-            raise ConfigurationError(
-                "The 'google-auth' package is not installed. Run: pip install google-auth"
-            ) from exc
-        try:
-            # google-auth's own stubs don't type this classmethod's return
-            # (a stub-completeness gap, not a real typing issue — mirrors
-            # the same class of gap noted in gemini_provider.py).
-            credentials = Credentials.from_service_account_file(  # type: ignore[no-untyped-call]
-                credentials_path
-            )
-        except (OSError, ValueError) as exc:
-            raise ConfigurationError(
-                f"Unable to load the Firestore service account key at "
-                f"'{credentials_path}': {exc}"
-            ) from exc
-        return firestore.Client(
-            project=project_id, database=database_id, credentials=credentials
-        )
-    # No explicit key path: fall back to Application Default Credentials
-    # (gcloud auth application-default login, or GOOGLE_APPLICATION_CREDENTIALS).
-    return firestore.Client(project=project_id, database=database_id)

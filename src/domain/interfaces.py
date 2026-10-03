@@ -294,3 +294,22 @@ class AnalysisPipeline(Protocol):
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         """Run one full analysis turn and return the UI DTO."""
         ...
+
+
+@runtime_checkable
+class UsageQuotaStore(Protocol):
+    """Durable, atomic slot counter behind the per-visitor usage quota.
+
+    A bucket (one visitor, one provider, one day) owns ``slots`` numbered
+    slots; claiming one must be atomic across processes, so two concurrent
+    analyses can never both take the last slot.
+    """
+
+    def claim(self, bucket: str, slots: int) -> int | None:
+        """Claim the lowest free slot ``1..slots`` of ``bucket``; return its
+        number, or ``None`` when every slot is already taken."""
+        ...
+
+    def claimed(self, bucket: str, slots: int) -> int:
+        """How many of ``bucket``'s ``slots`` are already taken."""
+        ...

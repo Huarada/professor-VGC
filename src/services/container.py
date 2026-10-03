@@ -8,6 +8,7 @@ from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
 from src.adapters.chaos.chaos_repository import ChaosRepositoryLike, StrictRegulationRepository
 from src.adapters.chaos.firestore_chaos_repository import FirestoreChaosRepository
+from src.adapters.firestore_client import build_firestore_client
 from src.adapters.llm.adk_provider import build_adk_model
 from src.adapters.llm.adk_tools import build_adk_tools
 from src.adapters.llm.evidence_tools import EvidenceTools
@@ -26,6 +27,7 @@ from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
 from src.adapters.smogon.smogon_dex_adapter import SmogonDexAdapter
 from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
+from src.adapters.usage.firestore_usage_quota import FirestoreUsageQuotaStore
 from src.config import Settings, load_settings
 from src.domain.exceptions import ConfigurationError
 from src.domain.interfaces import (
@@ -44,6 +46,7 @@ from src.services.ground_truth import GroundTruthAssembler
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
 from src.services.regulation_guard import RegulationGuard
 from src.services.selection_service import LLMSelectionService
+from src.services.usage_quota import UsageQuotaService
 
 if TYPE_CHECKING:
     # Type-checking only — see langchain_provider.py's own note: every
@@ -76,6 +79,7 @@ class Container:
         # one retriever per provider actually used, each with its own
         # internal per-species chunk cache (see SemanticStrategyRetriever).
         self._semantic_retrievers: dict[str, SemanticStrategyRetriever] = {}
+        self._usage_quota: UsageQuotaService | None = None
 
     @property
     def settings(self) -> Settings:
@@ -353,6 +357,36 @@ class Container:
         if backend == "langchain":
             return self.build_langchain_pipeline(provider, regulation)
         return self.build_native_pipeline(provider, regulation)
+
+    def usage_quota(self) -> UsageQuotaService:
+        """The per-visitor daily quota for paid providers (ADR-036). With no
+        limit configured it is a no-op and never touches Firestore.
+
+        Raises:
+            ConfigurationError: A limit is set without a usage_quota_secret,
+                or the Firestore client cannot be built.
+        """
+        if self._usage_quota is None:
+            limits = {"openai": self._settings.openai_daily_analysis_limit}
+            store: FirestoreUsageQuotaStore | None = None
+            secret = self._settings.usage_quota_secret or ""
+            if any(limits.values()):
+                if not secret:
+                    raise ConfigurationError(
+                        "PROFESSORVGC_USAGE_QUOTA_SECRET is required when a daily "
+                        "analysis limit is set (it keys the visitor HMAC)."
+                    )
+                client = build_firestore_client(
+                    self._settings.firestore_project_id or "",
+                    self._settings.firestore_database_id,
+                    self._settings.firestore_credentials_path,
+                    self._settings.firestore_grpc_ca_bundle_path,
+                )
+                store = FirestoreUsageQuotaStore(
+                    client, collection=self._settings.usage_quota_collection
+                )
+            self._usage_quota = UsageQuotaService(store, limits, secret=secret)
+        return self._usage_quota
 
     def data_warnings(self) -> list[str]:
         """Chaos tiers refused because their data names another format (only

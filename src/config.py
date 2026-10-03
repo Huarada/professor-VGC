@@ -85,6 +85,18 @@ class Settings(BaseSettings):
     # the bundle. Unset = grpc's normal default roots only.
     firestore_grpc_ca_bundle_path: str | None = None
 
+    # --- Per-visitor daily quota for paid providers (ADR-036) ------------ #
+    # The deployed app spends the operator's own keys (no per-user key
+    # field), so OpenAI analyses can be capped per visitor per UTC day.
+    # 0 = unlimited (the local-dev default). One Analyze click = one
+    # analysis. Counted in Firestore (`usage_quota_collection`, same
+    # database as the Chaos data); the visitor (client IP) is stored only as
+    # an HMAC under `usage_quota_secret` — set it on any deployment that
+    # enables a limit.
+    openai_daily_analysis_limit: int = Field(default=0, ge=0)
+    usage_quota_collection: str = "usage_quota"
+    usage_quota_secret: str | None = None
+
     # --- Node / calc engine -------------------------------------------- #
     node_binary: str = "node"
     calc_gen: int = 9

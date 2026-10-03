@@ -65,3 +65,16 @@ class RegulationMismatchError(ProfessorVGCError):
     Raised instead of analyzing it anyway: mixing one regulation's game with
     another regulation's data is exactly the leak the controller prevents.
     """
+
+
+class UsageQuotaError(ProfessorVGCError):
+    """The per-visitor usage quota could not be checked (storage failure).
+
+    The quota protects a paid provider key, so a failed check refuses the
+    analysis rather than letting it through unmetered.
+    """
+
+
+class UsageLimitExceededError(UsageQuotaError):
+    """The visitor already used every analysis the daily quota allows for
+    this provider."""

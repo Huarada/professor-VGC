@@ -35,7 +35,7 @@ def test_chaos_repository_is_cached_and_shared_between_adapters(patch_firestore_
 def test_missing_project_id_raises_configuration_error_with_no_network():
     """No patch_firestore_repo needed: FirestoreChaosRepository's own
     constructor checks project_id BEFORE ever touching the network (see
-    firestore_chaos_repository._build_client) — this is the PRIMARY error
+    src/adapters/firestore_client.py) — this is the PRIMARY error
     case now that there is no local-file fallback to silently degrade to."""
     container = Container(Settings(_env_file=None, firestore_project_id=None))
     with pytest.raises(ConfigurationError):
