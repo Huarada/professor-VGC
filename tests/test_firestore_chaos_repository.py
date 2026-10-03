@@ -228,12 +228,6 @@ def test_resolve_mon_walks_reg_fallback(fake_repo: FirestoreChaosRepository) -> 
     assert "regma" in source
 
 
-def test_metagame_info_reads_the_stored_tier_metadata(fake_repo: FirestoreChaosRepository) -> None:
-    file = fake_repo.ideal_file("gen9championsvgc2026regmb")
-    assert file is not None
-    assert fake_repo.metagame_info(file) == "gen9championsvgc2026regmb"
-
-
 def test_close_delegates_to_the_underlying_client(fake_repo: FirestoreChaosRepository) -> None:
     fake_repo.close()
     assert fake_repo._client.closed  # type: ignore[attr-defined]

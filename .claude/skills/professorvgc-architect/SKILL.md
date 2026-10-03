@@ -150,7 +150,7 @@ Keep it that way; remaining debt is listed in `references/architecture-debt.md`.
 4. **Bound everything.** Max LLM calls / recursion limit, wall-clock timeout
    (`asyncio.wait_for`), and **fail loud** on empty answers or exhausted budgets.
 5. **Translate errors at the boundary.** Any SDK exception becomes
-   `LLMProviderError` / `LLMResponseValidationError`; the UI only knows
+   `LLMProviderError`; the UI only knows
    `ProfessorVGCError`.
 6. **Backend parity.** ADK (default), LangChain and native must produce the
    same deterministic evidence; only the LLM plumbing differs. A feature added

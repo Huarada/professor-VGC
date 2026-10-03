@@ -388,9 +388,6 @@ class Container:
         presentation-only parse; see replay_viewer_parser's docstring)."""
         return parse_replay_for_viewer(text)
 
-    def build_analysis_service(self, provider: str | None = None) -> AnalysisPipeline:
-        return self.build_native_pipeline(provider)
-
     def shutdown(self) -> None:
         """Release long-lived resources (Node subprocesses, Firestore gRPC channel)."""
         if self._calc is not None:

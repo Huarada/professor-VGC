@@ -205,10 +205,6 @@ class FirestoreChaosRepository:
         self._legal_cache[metagame] = frozenset(names)
         return self._legal_cache[metagame]
 
-    def metagame_info(self, file: FirestoreChaosFile) -> str:
-        info = self._tier_info.get(file.doc_id, {}).get("info") or {}
-        return str(info.get("metagame", file.metagame))
-
     def close(self) -> None:
         """Release the underlying gRPC channel."""
         self._client.close()

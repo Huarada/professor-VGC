@@ -33,14 +33,6 @@ class LLMProviderError(ProfessorVGCError):
     """An LLM provider call failed at transport level."""
 
 
-class LLMResponseValidationError(ProfessorVGCError):
-    """An LLM response did not satisfy its expected contract."""
-
-
-class ConversationMemoryError(ProfessorVGCError):
-    """The conversation memory backend failed."""
-
-
 class ReplayFetchError(ProfessorVGCError):
     """A pasted replay URL could not be fetched (network, HTTP error, empty body)
     — retrieval, unlike :class:`LogParsingError`.
