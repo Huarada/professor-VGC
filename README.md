@@ -43,6 +43,10 @@ the projection assumes. Every rate carries a **95% confidence interval**
 | Engine projection reaches a real KO | 84.4% (78.6–88.8%), 162/192 |
 | Engine misses explained by EV/nature variance alone | 68.6% (61.7–74.7%), 131/191 |
 
+> **Re-run pending.** These rows were measured before the parsers read Showdown's
+> colour-suffixed HP fields (`50/100g`); on the 50 cached games that adds 22
+> observed hits (743 -> 765) in 18 games. Expect small changes on the next run.
+
 > **Data note (ADR-035).** The engine rows use the official September 2026 VGC
 > usage data. The AI-claim rows (A vs B) were measured before the bundled
 > `data/chaos` dumps were found to be singles (BSS) stats, so Condition A's

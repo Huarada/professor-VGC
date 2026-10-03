@@ -839,6 +839,10 @@ differently, but that is an expectation, not a measurement.
 
 ## Round 6: validation against real games (log-grounded)
 
+> **Re-run pending.** These rows were measured before the parsers read Showdown's
+> colour-suffixed HP fields (`50/100g`); on the 50 cached games that adds 22
+> observed hits (743 -> 765) in 18 games. Expect small changes on the next run.
+
 Every earlier round has the same blind spot: a `damage_range` claim is
 "correct" when it matches the **pipeline's own projection**. If the
 projection is wrong, a faithful answer is scored correct anyway — the

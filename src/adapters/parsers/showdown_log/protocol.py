@@ -73,7 +73,8 @@ def split_ref(ref: str) -> tuple[str, str, str] | None:
 
 
 def parse_hp(text: str) -> tuple[float | None, str]:
-    """``"45/100 par"`` -> ``(45.0, "par")``; ``"0 fnt"`` -> ``(0.0, "fnt")``."""
+    """``"45/100 par"`` -> ``(45.0, "par")``; ``"0 fnt"`` -> ``(0.0, "fnt")``;
+    ``"50/100g"`` -> ``(50.0, "")`` (Showdown's HP-bar colour suffix)."""
     pieces = text.strip().split()
     if not pieces:
         return None, ""
@@ -84,6 +85,7 @@ def parse_hp(text: str) -> tuple[float | None, str]:
         except ValueError:
             return None, condition
     current, _, maximum = pieces[0].partition("/")
+    maximum = maximum.rstrip("gyr")  # HP-bar colour: green / yellow / red
     try:
         cur, top = float(current), float(maximum)
     except ValueError:

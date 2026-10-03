@@ -44,3 +44,14 @@ def test_a_command_handled_by_two_groups_is_rejected(monkeypatch):
     )
     with pytest.raises(RuntimeError, match="move"):
         dispatch_table(ParseState())
+
+
+def test_hp_with_colour_suffix_is_parsed():
+    """Real replays write some HP fields as ``50/100g`` (bar colour g/y/r);
+    dropping them left the previous HP in place."""
+    from src.adapters.parsers.showdown_log.protocol import parse_hp
+
+    assert parse_hp("50/100g") == (50.0, "")
+    assert parse_hp("20/100y") == (20.0, "")
+    assert parse_hp("5/100r par") == (5.0, "par")
+    assert parse_hp("73/100") == (73.0, "")

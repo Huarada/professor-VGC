@@ -88,6 +88,7 @@ def _hp_percent(field_text: str) -> float | None:
     current, sep, maximum = token.partition("/")
     if not sep:
         return None
+    maximum = maximum.rstrip("gyr")  # "50/100g": Showdown's HP-bar colour suffix
     try:
         return round(float(current) / float(maximum) * 100, 1)
     except (ValueError, ZeroDivisionError):

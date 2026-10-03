@@ -204,3 +204,14 @@ def test_terrain_rooms_and_screens_reach_the_conditions():
     # ...and gone from the next one.
     assert t3.conditions == ["Gravity", "Light Screen p2"]
     assert t4.conditions == []
+
+
+def test_colour_suffixed_hp_updates_the_panel():
+    log = (
+        "|player|p1|Ash|\n|player|p2|Gary|\n"
+        "|switch|p1a: Torterra|Torterra, L50|100/100\n"
+        "|switch|p2a: Golurk|Golurk, L50|100/100\n|turn|1\n"
+        "|move|p2a: Golurk|Earthquake|p1a: Torterra\n"
+        "|-damage|p1a: Torterra|50/100g\n|turn|2\n"
+    )
+    assert parse_replay_for_viewer(log).snapshots[1].pokemon["p1"]["Torterra"].hp_percent == 50.0
