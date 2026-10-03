@@ -27,3 +27,6 @@ firestore-key*.json
 # Real replays downloaded by scripts/faithfulness_benchmark/replay_corpus.py
 data/replays/cache/
 data/chaos-cache/
+# Benchmark reports are generated locally; published ones are archived (see
+# scripts/faithfulness_benchmark/README.md).
+scripts/faithfulness_benchmark/out/
