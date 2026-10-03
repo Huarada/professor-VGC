@@ -1,94 +1,20 @@
-"""LangChain integration: :class:`LangChainLLMProvider` (the ``LLMProvider``
-port over any ``BaseChatModel``) and :func:`build_chat_model` (BYOK factory).
-"""
+"""BYOK factory for the LangChain backend's chat model (:func:`build_chat_model`)."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Sequence
+from typing import TYPE_CHECKING
 
 from pydantic import SecretStr
 
 from src.adapters.llm.base import require_modern_gemini_model
 from src.config import Settings
-from src.domain.exceptions import ConfigurationError, LLMProviderError
-from src.domain.models import ChatMessage
+from src.domain.exceptions import ConfigurationError
 
 if TYPE_CHECKING:
     # langchain_core is imported lazily (ConfigurationError if missing).
     from langchain_core.language_models import BaseChatModel
-    from langchain_core.messages import BaseMessage
-    from langchain_core.runnables import Runnable
 
 _SUPPORTED = ("openai", "gemini")
-
-
-def to_lc_messages(messages: Sequence[ChatMessage]) -> list[BaseMessage]:
-    """Map domain ChatMessages to LangChain message objects."""
-    from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
-
-    mapped: list[BaseMessage] = []
-    for message in messages:
-        if message.role == "assistant":
-            mapped.append(AIMessage(content=message.content))
-        elif message.role == "system":
-            mapped.append(SystemMessage(content=message.content))
-        else:
-            mapped.append(HumanMessage(content=message.content))
-    return mapped
-
-
-def _content_to_text(content: object) -> str:
-    """Coerce a LangChain message content (str or content blocks) to text."""
-    if isinstance(content, str):
-        return content
-    if isinstance(content, list):
-        parts: list[str] = []
-        for block in content:
-            if isinstance(block, str):
-                parts.append(block)
-            elif isinstance(block, dict) and "text" in block:
-                parts.append(str(block["text"]))
-        return "".join(parts)
-    return str(content)
-
-
-class LangChainLLMProvider:
-    """Domain :class:`LLMProvider` backed by a LangChain ``BaseChatModel``."""
-
-    def __init__(self, chat_model: BaseChatModel, name: str = "langchain") -> None:
-        self.name = name
-        self._model = chat_model
-
-    def complete(
-        self,
-        *,
-        system: str,
-        messages: Sequence[ChatMessage],
-        temperature: float = 0.2,
-        json_mode: bool = False,
-    ) -> str:
-        from langchain_core.messages import SystemMessage
-
-        payload = [SystemMessage(content=system), *to_lc_messages(messages)]
-        model: Runnable[Any, Any] = self._model
-        if json_mode:
-            model = self._as_json_model(self._model)
-        try:
-            response = model.invoke(payload)
-        except Exception as exc:  # noqa: BLE001 - many SDK exception types
-            raise LLMProviderError(f"LangChain model call failed: {exc}") from exc
-        text = _content_to_text(getattr(response, "content", response))
-        if not text:
-            raise LLMProviderError("LangChain model returned empty content")
-        return text
-
-    @staticmethod
-    def _as_json_model(model: BaseChatModel) -> Runnable[Any, Any]:
-        """Best-effort: request JSON output where the backend supports it."""
-        try:
-            return model.bind(response_format={"type": "json_object"})
-        except Exception:  # noqa: BLE001 - not all models support binding
-            return model
 
 
 def build_chat_model(provider: str, settings: Settings) -> BaseChatModel:

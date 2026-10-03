@@ -258,11 +258,8 @@ class SelectionStrategy(Protocol):
         game_state: GameState,
         history: Sequence[ChatMessage],
     ) -> SelectionPlan:
-        """Produce a focused :class:`SelectionPlan`.
-
-        Raises:
-            LLMResponseValidationError: If the model output is unusable.
-        """
+        """Produce a focused :class:`SelectionPlan` (falls back to a
+        deterministic plan when the model output is unusable)."""
         ...
 
 

@@ -16,17 +16,6 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-class Stat(str, Enum):
-    """The six canonical Pokemon stats, keyed by Showdown/Smogon short codes."""
-
-    HP = "hp"
-    ATK = "atk"
-    DEF = "def"
-    SPA = "spa"
-    SPD = "spd"
-    SPE = "spe"
-
-
 class Archetype(str, Enum):
     """Common VGC macro-strategies."""
 
@@ -404,12 +393,6 @@ class CalcField(BaseModel):
     trick_room: bool = False
     attacker_side: SideField = Field(default_factory=SideField)
     defender_side: SideField = Field(default_factory=SideField)
-
-    def swapped(self) -> "CalcField":
-        """The same field seen from the defender's side (attacker <-> defender)."""
-        return self.model_copy(
-            update={"attacker_side": self.defender_side, "defender_side": self.attacker_side}
-        )
 
 
 class MoveInfo(BaseModel):

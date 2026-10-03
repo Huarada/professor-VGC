@@ -183,10 +183,6 @@ class ChaosRepository:
                 names.update(normalize_species(k) for k in (self._load(file).get("data") or {}))
         return frozenset(names)
 
-    def metagame_info(self, file: ChaosFile) -> str:
-        info: dict[str, Any] = self._load(file).get("info") or {}
-        return str(info.get("metagame", file.metagame))
-
 
 class StrictRegulationRepository:
     """A repository view with no regulation fallback, for pinned analyses."""
