@@ -134,6 +134,8 @@ professor-VGC/
 │   │   ├── llm/{adk_tools,langchain_tools}.py  # thin per-framework wrappers of evidence_tools
 │   │   ├── llm/prompts/{*.txt,__init__.py}   # prompt artifacts + FilePromptRepository
 │   │   ├── memory/conversation_memory.py
+│   │   ├── usage/firestore_usage_quota.py     # per-visitor daily quota slots (ADR-036)
+│   │   ├── firestore_client.py                # shared Firestore client factory
 │   │   └── node_ipc.py                        # generic Node IPC client
 │   ├── services/
 │   │   ├── ground_truth.py                   # GroundTruthAssembler -> AnalysisEvidence (shared by all backends)
@@ -148,6 +150,7 @@ professor-VGC/
 │   │   ├── battle_context.py                 # rosters/candidates/outcome summary
 │   │   ├── concept_tracking.py               # recurring-topic signal from memory
 │   │   ├── suggestion_service.py             # improvement intent + sets/stats
+│   │   ├── usage_quota.py                    # per-visitor daily provider quota (ADR-036)
 │   │   └── container.py                      # composition root (DI) — the only importer of adapters
 │   ├── ui/app.py                             # Streamlit entry point (+ theme, landing, loading, battle_panel, results, audio, icons)
 │   └── config.py                             # env-driven Settings
@@ -178,6 +181,7 @@ Read by `src/config.py` (`Settings`, pydantic-settings; `.env` supported).
 | `PROFESSORVGC_REG_FALLBACK_DEPTH` | `3` | Max previous regulations to search (auto mode only; pinned = 0). |
 | `PROFESSORVGC_CHAOS_TOP_N` | `3` | Top-N kept per category. |
 | `PROFESSORVGC_FIRESTORE_PROJECT_ID` / `..._DATABASE_ID` / `..._CHAOS_COLLECTION` / `..._CREDENTIALS_PATH` | — / `(default)` / `chaos_tiers` / — | Firestore is the app's ONLY Chaos data source — no local-file fallback, no config knob to select one (a project requirement, not a preference; see DATA.md). Credentials path empty = Application Default Credentials. |
+| `PROFESSORVGC_OPENAI_DAILY_ANALYSIS_LIMIT` / `..._USAGE_QUOTA_SECRET` / `..._USAGE_QUOTA_COLLECTION` | `0` / — / `usage_quota` | Per-visitor (client IP, HMAC'd) OpenAI analyses per UTC day, counted in Firestore; `0` = unlimited. Over the limit the analysis is refused. The secret is required when a limit is set (ADR-036). |
 | `PROFESSORVGC_USE_SMOGON_DEX` | `false` | Enable official `@pkmn/smogon` analyses/sets/stats. |
 | `PROFESSORVGC_SMOGON_DEX_TIMEOUT_SECONDS` | `30` | Timeout for the dex worker. |
 | `PROFESSORVGC_USE_SEMANTIC_STRATEGY` | `false` | Rank Smogon analysis passages against the question via embeddings (needs `USE_SMOGON_DEX=true`); see ADR-027. |
@@ -355,6 +359,10 @@ replay JSON/log + question
     category/Protect/speed-control from the engine (`moveInfo`) instead of a
     hand-kept list; incoming threats + Protect/switch/speed-control options and
     retarget alternatives per move (ADR-031).
+14. **feat(quota):** per-visitor daily OpenAI quota for the public Cloud Run
+    deployment (`UsageQuotaStore` port, `UsageQuotaService`, Firestore slot
+    documents claimed with `create()`; refused over the limit, fail-closed)
+    (ADR-036).
 
 Test count grew alongside these.
 

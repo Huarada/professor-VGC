@@ -3738,3 +3738,52 @@ unrevealed sets. The LLM-claim runs (ADR-034) used the singles data for
 Condition A and are pending a re-run with the official data.
 
 ---
+
+## ADR-036 — Per-visitor daily quota for the OpenAI provider
+
+**Status:** Accepted
+
+### Context
+The Cloud Run deployment is public and has no per-user key field: every
+analysis spends the operator's own provider keys. OpenAI is the expensive
+one, so it needs a hard cap per visitor; Gemini stays uncapped (bounded only
+by Cloud Run's instance ceiling).
+
+### Decision
+- **Rule:** `PROFESSORVGC_OPENAI_DAILY_ANALYSIS_LIMIT` analyses per visitor
+  per UTC day (`0` = unlimited, the local default). One Analyze click = one
+  analysis, however many model calls it makes. Over the limit the analysis is
+  **refused** with `UsageLimitExceededError` before any pipeline is built — no
+  silent fallback to another provider. The sidebar shows the analyses left.
+- **Port + service:** `UsageQuotaStore` (domain) claims numbered slots of a
+  bucket atomically; `UsageQuotaService` (services) owns limits, the UTC day
+  and the bucket key. The Container builds the Firestore store only when a
+  limit is set, so an unlimited setup never touches Firestore.
+- **Storage:** one Firestore document per slot, `usage_quota/{bucket}_{n}`,
+  written with `create()` (fails if it exists). That makes a claim atomic
+  without a transaction — two tabs racing for the last slot cannot both win —
+  and keeps the adapter trivially fakeable. Docs carry `expires_at` for an
+  optional TTL policy.
+- **Visitor:** the client IP — the right-most public `X-Forwarded-For` entry
+  (the one Google's front end appends; entries to its left are
+  client-supplied), else the socket peer, else the browser session. Stored
+  only as an HMAC-SHA256 under `PROFESSORVGC_USAGE_QUOTA_SECRET` (required
+  when a limit is set), never in clear.
+- **Fail closed:** a Firestore error while checking the quota refuses the
+  OpenAI analysis (`UsageQuotaError`) instead of letting it through unmetered.
+- `build_firestore_client` moved to `src/adapters/firestore_client.py`,
+  shared by the Chaos repository and the quota store.
+
+### Consequences
+- Visitors behind one NAT share a quota; a visitor who changes network gets a
+  new one. Good enough to cap spend on a demo, not an authentication system.
+- Each OpenAI analysis costs up to `limit` document writes; the sidebar reads
+  the count once per session and provider.
+
+### Files touched
+`src/domain/{exceptions,interfaces}.py`, `src/services/{usage_quota,container}.py`,
+`src/adapters/firestore_client.py`, `src/adapters/usage/firestore_usage_quota.py`,
+`src/adapters/chaos/firestore_chaos_repository.py`, `src/config.py`,
+`src/ui/app.py`, `tests/test_usage_quota.py`, `tests/test_ui_smoke.py`, docs.
+
+---
