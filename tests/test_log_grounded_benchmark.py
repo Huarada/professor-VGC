@@ -182,3 +182,17 @@ def test_circularity_matrix_counts_projection_vs_log_disagreements():
     projection = [ClaimVerdict(claim=c, verdict="correct") for c in claims]
     log = [verify_damage_claim_against_log(c, extract_observed_hits(_LOG)) for c in claims]
     assert circularity_matrix(projection, log) == {"correct -> incorrect": 2}
+
+
+def test_observed_damage_reads_colour_suffixed_hp():
+    """Real logs write some HP fields as ``50/100g``; those hits used to be dropped."""
+    from scripts.faithfulness_benchmark.observed_damage import extract_observed_hits
+
+    log = (
+        "|switch|p1a: Torterra|Torterra, L50|100/100\n"
+        "|switch|p2a: Golurk|Golurk, L50|100/100\n|turn|1\n"
+        "|move|p2a: Golurk|Earthquake|p1a: Torterra\n"
+        "|-damage|p1a: Torterra|50/100g\n|turn|2\n"
+    )
+    (hit,) = extract_observed_hits(log)
+    assert (hit.hp_before, hit.hp_after) == (100.0, 50.0)
