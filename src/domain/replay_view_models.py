@@ -1,13 +1,5 @@
-"""Domain models for the Showdown-like battle replay panel (UI-only).
-
-Deliberately independent of ``src/domain/models.py`` (GameState/BattleOutcome/
-AnalysisResult) — the LLM analysis pipeline's models. This file exists so the
-UI's turn-by-turn visualization can never regress, depend on, or be regressed
-by the LLM pipeline's own parsing/domain logic. See
-``src/adapters/parsers/replay_viewer_parser.py`` for the (also independent)
-parser that produces these, and ADR-014 in ADR.md for why this isolation was
-a deliberate, hard requirement rather than an extension of the existing
-parser/models.
+"""UI-only models for the battle replay panel, independent of the analysis
+models (ADR-014); produced by ``replay_viewer_parser``.
 """
 
 from __future__ import annotations
@@ -33,14 +25,7 @@ class ReplayPokemonState(BaseModel):
 
 
 class ReplayTurnSnapshot(BaseModel):
-    """Full visual battle state at the END of one turn.
-
-    ``turn=0`` is "leads" — the state after both sides send out their
-    initial Pokemon, before turn 1's actions resolve. Everything the
-    Showdown-like panel needs to render this point in the replay lives here;
-    the UI never has to cross-reference another module's data for a given
-    turn.
-    """
+    """Full visual state at the END of a turn (``turn=0`` = leads)."""
 
     turn: int
     active: dict[str, list[str]] = Field(default_factory=dict)
@@ -60,12 +45,7 @@ class ReplayTurnSnapshot(BaseModel):
 
 
 class BattleReplay(BaseModel):
-    """Everything the Showdown-like panel needs, self-contained.
-
-    Produced by ``parse_replay_for_viewer`` from the same raw replay input
-    the user pastes for the LLM analysis, but via a completely separate
-    parsing pass — see module docstring.
-    """
+    """Everything the panel needs, from a separate parse of the same input."""
 
     player_names: dict[str, str] = Field(default_factory=dict)  # player -> display name
     avatars: dict[str, str] = Field(default_factory=dict)  # player -> Showdown avatar id

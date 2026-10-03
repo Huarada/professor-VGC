@@ -82,9 +82,8 @@ class CalcEngineAdapter(Protocol):
         ...
 
     def move_info(self, gen: int, move: str) -> MoveInfo:
-        """Static data for one move from the engine's own dex (category,
-        spread target, Protect-family, speed control) — the single source
-        for "is this a damaging move?", never a hand-kept list.
+        """Static move data from the engine's dex (category, spread target,
+        Protect-family, speed control) — never a hand-kept list.
 
         Raises:
             CalcEngineError: On transport failure or invalid engine output.
@@ -92,9 +91,8 @@ class CalcEngineAdapter(Protocol):
         ...
 
     def forme_resolves(self, gen: int, species: str) -> bool:
-        """Whether the engine's dex has real stat data for this exact forme
-        string (e.g. a Mega Evolution) — vs. it being unresolvable, in which
-        case a caller falls back to base stats.
+        """Whether the engine has stats for this exact forme (e.g. a Mega);
+        if not, callers fall back to base stats.
 
         Raises:
             CalcEngineError: On transport failure or invalid engine output.
@@ -118,15 +116,8 @@ class StrategyKnowledgeProvider(Protocol):
         Args:
             species: The Pokemon species to look up.
             metagame: Format id, for regulation-fallback resolution.
-            question: The user's actual question, if any. Implementations
-                that hold multiple candidate passages of prose (e.g. a
-                semantic retriever over official Smogon analyses) may use
-                this to select the most relevant ones instead of a fixed
-                default; implementations with no such choice to make (e.g.
-                Chaos-derived strategy, which has no free-text passages)
-                simply ignore it. Never changes the STRUCTURED fields
-                (common_sets/archetypes) — only ever narrows which prose
-                becomes `overview`.
+            question: The user's question, if any. May only narrow which
+                prose becomes ``overview``; never changes structured fields.
 
         Raises:
             StrategyKnowledgeError: If the source is unavailable.
@@ -206,14 +197,7 @@ class PromptRepository(Protocol):
 
 @runtime_checkable
 class EmbeddingProvider(Protocol):
-    """Bring-your-own-key text embeddings.
-
-    Used only by :class:`~src.adapters.smogon.semantic_strategy_retriever.
-    SemanticStrategyRetriever` to rank candidate passages of official Smogon
-    analysis prose against the user's actual question — a narrow, optional
-    enhancement layered on top of the deterministic/probabilistic core, not
-    a dependency of it.
-    """
+    """Bring-your-own-key text embeddings (only for semantic Smogon retrieval)."""
 
     def embed(self, texts: Sequence[str]) -> list[list[float]]:
         """Return one embedding vector per input text, same order.
@@ -284,12 +268,7 @@ class SelectionStrategy(Protocol):
 
 @runtime_checkable
 class AnalysisPipeline(Protocol):
-    """End-to-end analysis orchestration port.
-
-    The native :class:`AnalysisService`, the LangChain orchestrator and the
-    Google ADK orchestrator implement this. The presentation layer depends only on this abstraction,
-    so the orchestration technology can be swapped from configuration alone.
-    """
+    """End-to-end analysis port (native, LangChain and ADK implement it)."""
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         """Run one full analysis turn and return the UI DTO."""
@@ -298,16 +277,11 @@ class AnalysisPipeline(Protocol):
 
 @runtime_checkable
 class UsageQuotaStore(Protocol):
-    """Durable, atomic slot counter behind the per-visitor usage quota.
-
-    A bucket (one visitor, one provider, one day) owns ``slots`` numbered
-    slots; claiming one must be atomic across processes, so two concurrent
-    analyses can never both take the last slot.
-    """
+    """Atomic slot counter behind the usage quota; a bucket is one visitor,
+    provider and day."""
 
     def claim(self, bucket: str, slots: int) -> int | None:
-        """Claim the lowest free slot ``1..slots`` of ``bucket``; return its
-        number, or ``None`` when every slot is already taken."""
+        """Atomically claim the lowest free slot ``1..slots``; ``None`` if full."""
         ...
 
     def claimed(self, bucket: str, slots: int) -> int:

@@ -1,9 +1,5 @@
-"""Application configuration.
-
-All secrets and tunables are read from the environment (``.env`` supported).
-Nothing here imports business logic — configuration is infrastructure and is
-injected into the composition root (``src/services/container.py``).
-"""
+"""Application settings, read from the environment (``.env`` supported) and
+injected into the composition root (``src/services/container.py``)."""
 
 from __future__ import annotations
 
@@ -18,22 +14,14 @@ from src.domain.regulation import parse_regulation_setting
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-# This project's own requirement (not a Google-imposed floor): only Gemini
-# 3.5 and newer may ever be configured — a project rule, enforced here
-# as an actual guarantee rather than just a default value someone could
-# still override with an older id. Checked at Settings CONSTRUCTION time
-# (below) — the earliest possible point, before the app even finishes
-# starting up — and AGAIN at every point a Gemini client actually gets
-# built (src/adapters/llm/base.py's require_modern_gemini_model, which
-# reuses this same parser) as defense in depth for an already-running
-# process whose cached Settings predate a later config change.
+# Project rule: Gemini 3.5+ only. Checked when Settings is built and again
+# when a Gemini client is built (llm/base.py), for long-running processes.
 _GEMINI_MODEL_RE = re.compile(r"^gemini-(\d+)(?:\.(\d+))?")
 MIN_GEMINI_VERSION = (3, 5)
 
 
 def parse_gemini_version(model: str) -> tuple[int, int] | None:
-    """Parse the leading "gemini-X[.Y]" version out of a model id string.
-    Returns ``None`` when the string doesn't match that shape at all."""
+    """The ``(major, minor)`` of a ``gemini-X[.Y]`` model id, else ``None``."""
     match = _GEMINI_MODEL_RE.match((model or "").strip().lower())
     if match is None:
         return None
@@ -55,44 +43,17 @@ class Settings(BaseSettings):
     reg_fallback_depth: int = 3
     node_calc_dir: Path = Field(default=_PROJECT_ROOT / "node_calc")
 
-    # --- Chaos data: Google Cloud Firestore, unconditionally ------------ #
-    # The running app has exactly ONE Chaos data source — Firestore — with
-    # no local-file fallback and no config knob to select one: see
-    # Container.chaos_repository(), which always builds a
-    # FirestoreChaosRepository. This is a deliberate project
-    # requirement (the app must genuinely depend on Firestore, not merely
-    # default to it), not just a preference. Populate it with
-    # scripts/migrate_chaos_to_firestore.py (from a local Chaos dump) and/or
-    # scripts/sync_smogon_chaos_to_firestore.py (live from Smogon) — both
-    # remain local-file-aware as OFFLINE DATA-LOADING TOOLS, which is a
-    # different concern entirely from what the running app itself reads
-    # to answer a question. See DATA.md.
+    # --- Chaos data: Firestore is the only source (DATA.md) -------------- #
     firestore_project_id: str | None = None
     firestore_database_id: str = "(default)"
     firestore_chaos_collection: str = "chaos_tiers"
-    # Path to a service account JSON key. Unset = Application Default
-    # Credentials (gcloud auth application-default login, or
-    # GOOGLE_APPLICATION_CREDENTIALS already set in the environment).
+    # Service account key; unset = Application Default Credentials.
     firestore_credentials_path: str | None = None
-    # Optional: a CA bundle (PEM) gRPC should trust, IN ADDITION TO its own
-    # built-in roots — needed only on a machine where something TLS-
-    # intercepts outbound HTTPS with a locally-installed root cert (a
-    # security suite's "web shield"/"SSL scanning" feature, a corporate
-    # proxy, ...), which grpc's own bundled roots.pem has no way to know
-    # about (unlike Python's `ssl` module, which `pip-system-certs` already
-    # patches to read the OS trust store — grpc uses its own TLS stack).
-    # See DATA.md's Firestore section for how to detect this and generate
-    # the bundle. Unset = grpc's normal default roots only.
+    # Extra CA roots for gRPC on TLS-intercepting networks (DATA.md).
     firestore_grpc_ca_bundle_path: str | None = None
 
     # --- Per-visitor daily quota for paid providers (ADR-036) ------------ #
-    # The deployed app spends the operator's own keys (no per-user key
-    # field), so OpenAI analyses can be capped per visitor per UTC day.
-    # 0 = unlimited (the local-dev default). One Analyze click = one
-    # analysis. Counted in Firestore (`usage_quota_collection`, same
-    # database as the Chaos data); the visitor (client IP) is stored only as
-    # an HMAC under `usage_quota_secret` — set it on any deployment that
-    # enables a limit.
+    # 0 = unlimited. A limit requires the secret that keys the visitor HMAC.
     openai_daily_analysis_limit: int = Field(default=0, ge=0)
     usage_quota_collection: str = "usage_quota"
     usage_quota_secret: str | None = None
@@ -102,17 +63,11 @@ class Settings(BaseSettings):
     calc_gen: int = 9
     calc_timeout_seconds: float = 20.0
 
-    # --- Official Smogon data via @pkmn/smogon (needs network at runtime) --- #
+    # --- Official Smogon data via @pkmn/smogon (needs network) ----------- #
     use_smogon_dex: bool = False
     smogon_dex_timeout_seconds: float = 30.0
 
-    # --- Semantic retrieval over official Smogon analysis prose ---------- #
-    # Ranks passages of Smogon's own analysis text (per format, per set)
-    # against the user's actual question instead of always using the first
-    # available format's overview verbatim. Requires use_smogon_dex=true
-    # (nothing to retrieve over otherwise) and network access for embeddings
-    # (uses whichever provider/key is already configured — no separate
-    # credential). See ADR-027.
+    # --- Semantic retrieval over Smogon prose (needs use_smogon_dex; ADR-027)
     use_semantic_strategy: bool = False
     openai_embedding_model: str = "text-embedding-3-small"
     gemini_embedding_model: str = "models/text-embedding-004"
@@ -121,38 +76,20 @@ class Settings(BaseSettings):
     # --- Orchestration backend ("adk" | "langchain" | "native") ------- #
     orchestrator: str = "adk"
 
-    # --- Regulation controller (ADR-035) ---------------------------------- #
-    # "auto": use the replay's own regulation (Bo3 shares its Bo1 data).
-    # A regulation code ("mb", "mc", ...) or a full format id PINS every
-    # analysis to that regulation: usage data, Smogon sets/analyses and the
-    # Pokemon the explanation may mention all come from it alone — no
-    # fallback to any other regulation — and a replay from another
-    # regulation is refused. The UI sidebar can override this per analysis.
+    # --- Regulation controller (ADR-035) ------------------------------- #
+    # "auto" follows the replay; a code ("mb", "mc") or format id pins it.
     regulation: str = "auto"
     regulation_format_prefix: str = "gen9championsvgc2026reg"
 
     # --- LLM (bring your own key) -------------------------------------- #
-    # Defaults to Gemini as the showcased provider (paired with
-    # orchestrator="adk" above and the Firestore-only Chaos backend — a
-    # full Google-stack demo path); "openai" remains fully supported, just
-    # no longer the default.
     default_provider: str = "gemini"
     openai_api_key: str | None = None
     openai_model: str = "gpt-4o-mini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.5-flash"
     llm_temperature: float = 0.2
-    # Wall-clock ceiling per ADK agent turn (src/services/adk_orchestrator.py's
-    # _run_agent_bounded) — was a hardcoded 180s; made configurable after a
-    # live finding: a brand-new Streamlit session's FIRST request on Cloud
-    # Run pays real, one-time cold costs a local dev process never pays
-    # (spinning up this session's own Node calc/dex subprocesses from
-    # scratch, a fresh Firestore gRPC channel, a fresh ADK/genai client) on
-    # top of whatever the model call itself takes — 180s that's comfortable
-    # locally can be too tight for a session's first call specifically on
-    # Cloud Run. Raised default reflects that; override lower again once
-    # Cloud Run logs pin down how much of the overrun is actually the model
-    # call itself vs. this cold one-time setup.
+    # Per ADK agent turn; a Cloud Run session's first call also pays cold
+    # starts (Node workers, gRPC channel, model client).
     agent_timeout_seconds: float = 240.0
 
     @field_validator("regulation")
@@ -168,11 +105,7 @@ class Settings(BaseSettings):
     @field_validator("gemini_model")
     @classmethod
     def _require_modern_gemini_model(cls, value: str) -> str:
-        """Fail at Settings CONSTRUCTION time — app startup — for any
-        Gemini model below MIN_GEMINI_VERSION, regardless of which
-        provider happens to be selected right now. See this module's own
-        top-of-file comment for why this is checked here AND again at
-        point-of-use."""
+        """Refuse a Gemini model below ``MIN_GEMINI_VERSION`` at startup."""
         version = parse_gemini_version(value)
         if version is None or version < MIN_GEMINI_VERSION:
             min_str = ".".join(str(part) for part in MIN_GEMINI_VERSION)

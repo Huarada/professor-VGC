@@ -1,21 +1,8 @@
-"""Cross-turn VGC concept recurrence — "you asked about X before".
+"""Cross-turn topic recurrence ("you asked about X before").
 
-Deliberately the LIGHTEST possible implementation of "adapt to what the user
-has already asked about": a fixed, deterministic keyword vocabulary (same
-shape/precedent as ``suggestion_service.wants_suggestions``), applied to the
-CURRENT question and every past user question already sitting in
-``history`` (loaded every turn by every orchestration backend regardless).
-No new persistence, no new LLM call, no change to ``ConversationMemory`` —
-recurrence is simply re-derived from the conversation history that already
-exists, each turn.
-
-Scope, stated honestly: this detects TOPIC recurrence ("this came up
-before"), not a graded judgment that the user was wrong or confused last
-time — the keyword match has no way to know that, and the explanation
-prompt is instructed accordingly (never claim a specific past mistake, only
-that the topic recurs). This still delivers the visible "adapts to what you
-asked before" behavior a coach product benefits from, without inventing a
-correctness claim the deterministic signal can't actually support.
+A fixed keyword vocabulary over the current question and past questions in
+``history`` — no new storage or LLM call. It detects that a topic recurs,
+not that the user was wrong, and the prompt is told so.
 """
 
 from __future__ import annotations
@@ -24,10 +11,7 @@ from typing import Sequence
 
 from src.domain.models import ChatMessage
 
-# Bilingual (EN/PT-BR), same flat-substring convention as
-# suggestion_service._INTENT_KEYWORDS. Concept labels are the exact strings
-# surfaced back to the user (via the prompt), so they're written as short,
-# natural phrases rather than snake_case ids.
+# EN/PT-BR substrings; labels are shown to the user, so they are phrases.
 _CONCEPT_KEYWORDS: dict[str, tuple[str, ...]] = {
     "Trick Room": (
         "trick room", "trickroom", "quarto bizarro",
@@ -64,10 +48,7 @@ _CONCEPT_KEYWORDS: dict[str, tuple[str, ...]] = {
 
 
 def detect_concepts(text: str) -> list[str]:
-    """Deterministic keyword match against the fixed vocabulary above —
-    same shape as ``suggestion_service.wants_suggestions``. Returns concept
-    labels in the vocabulary's own fixed order (never random), so repeated
-    calls on the same text always agree."""
+    """Concept labels in ``text``, in the vocabulary's fixed order."""
     t = (text or "").lower()
     return [concept for concept, keywords in _CONCEPT_KEYWORDS.items() if any(kw in t for kw in keywords)]
 
@@ -75,16 +56,8 @@ def detect_concepts(text: str) -> list[str]:
 def recurring_concepts(
     history: Sequence[ChatMessage], current_question: str
 ) -> list[dict[str, str]]:
-    """For each concept the CURRENT question touches, find the EARLIEST
-    past user question (from ``history``, already loaded every turn) that
-    touched the same concept. Empty when nothing recurs — the overwhelming
-    majority of single-question turns and first-ever turns alike.
-
-    Deliberately re-derived from ``history`` on every call rather than
-    persisted separately: ``ConversationMemory.load()`` already returns the
-    full session history every turn, so there is nothing new to store, and
-    every orchestration backend already has ``history`` in hand before it
-    ever calls this.
+    """For each concept in the current question, the earliest past question that
+    touched it (usually none). Re-derived from ``history`` every call.
     """
     current = detect_concepts(current_question)
     if not current:

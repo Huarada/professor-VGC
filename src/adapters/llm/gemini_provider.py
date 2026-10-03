@@ -26,11 +26,7 @@ class GeminiProvider:
                 "The 'google-generativeai' package is not installed. "
                 "Run: pip install google-generativeai"
             ) from exc
-        # google-generativeai's own py.typed stubs don't explicitly re-export
-        # these two names from the package __init__, even though both are
-        # real, documented, stable public API (verified live against the
-        # actual SDK) — a stub-completeness gap in that library, not a bug
-        # here.
+        # The SDK's stubs don't re-export these public names.
         genai.configure(api_key=api_key)  # type: ignore[attr-defined]
         self._genai = genai
 

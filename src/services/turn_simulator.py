@@ -1,14 +1,9 @@
 """Turn-by-turn deterministic verification (the per-turn feedback loop).
 
-For EVERY move actually used in the battle, re-consult the deterministic engine
-under the battle state AT THAT MOVE (see :class:`~src.services.battle_moment.
-MoveMoment`): projected damage for the move that was used against the real
-target(s) at their real HP, better confirmed moves into every opposing target,
-the field-aware speed order, the incoming KO threats and the Protect / switch /
-speed-control options (see :mod:`src.services.decision_review`). This produces
-a :class:`~src.domain.models.TurnCheck` per action so the explanation AI
-validates each turn against ground truth instead of the whole game being
-summarized once.
+For every move used, re-consult the engine under the battle state at that
+move (``MoveMoment``): projected vs. actual damage, better confirmed moves
+into every target, speed order, incoming KO threats and Protect / switch /
+speed-control options. One ``TurnCheck`` per action.
 """
 
 from __future__ import annotations
@@ -45,9 +40,7 @@ def _parse_percent(text: str) -> float | None:
 
 
 class _MemoizedCalc:
-    """Caches engine answers for one simulation: the same matchup under the
-    same field recurs constantly across a game's per-move re-checks (threats,
-    alternatives, switch-ins), and every call is a Node IPC round-trip."""
+    """Caches engine answers for one simulation (each call is a Node IPC trip)."""
 
     def __init__(self, engine: CalcEngineAdapter) -> None:
         self._engine = engine
@@ -113,12 +106,8 @@ class TurnReplaySimulator:
         sets = evaluator.index_sets(game_state)
         checks: list[TurnCheck] = []
 
-        # Running per-Pokemon stat-stage ledger, keyed by (player, species),
-        # mutated in strict chronological order as the ordered events stream
-        # by: a switch resets it, "boost" events accumulate it — matching the
-        # in-game rule that stages reset the moment a Pokemon leaves the
-        # field. Every calc for a "move" event reads it as it stands at that
-        # point (an Intimidate earlier this same turn is already applied).
+        # Stat stages per (player, species), replayed in event order: a switch
+        # resets them, boosts accumulate, each move reads the current value.
         boosts: BoostLedger = {}
 
         for event in game_state.outcome.events:
@@ -168,12 +157,9 @@ class TurnReplaySimulator:
 
     @staticmethod
     def _apply_boost_event(ledger: BoostLedger, event: BattleEvent) -> None:
-        """Applies one kind="boost" BattleEvent (effects = [stat, signed
-        delta as str]) to the running ledger in place, clamped to the real
-        -6..+6 stage range and dropped back out of the dict entirely at
-        exactly 0 (an explicit {} / no-key state, same as "never boosted",
-        rather than an explicit {"atk": 0} that would still read as a
-        confirmed-but-neutral entry)."""
+        """Apply one boost event (effects = [stat, signed delta]) to the ledger,
+        clamped to -6..+6; a stage back at 0 is removed.
+        """
         if len(event.effects) != 2:
             return
         stat, delta_str = event.effects
@@ -193,9 +179,7 @@ class TurnReplaySimulator:
     def _damage_checks(
         self, moment: MoveMoment, calc: _MemoizedCalc, targets: list[Combatant]
     ) -> list[TurnDamageCheck]:
-        # Includes Pokemon that BLOCKED this move with Protect/Detect/etc: the
-        # projected damage there is the deterministic "what a wrong read would
-        # have cost" figure a risk/reward analysis of the turn needs.
+        # Also Pokemon that protected: what a wrong read would have cost.
         actual = self._actual_results(moment.event)
         checks: list[TurnDamageCheck] = []
         for target in targets:
@@ -224,9 +208,9 @@ class TurnReplaySimulator:
     def _best_alternatives(
         self, moment: MoveMoment, calc: _MemoizedCalc, evaluator: MatchupEvaluator
     ) -> list[OptimalMoveOption]:
-        """Re-consult the engine for EVERY damaging move confirmed for this
-        Pokemon this game against EVERY opposing Pokemon on the field at this
-        move, so both a better move and a better target are surfaced."""
+        """Every confirmed damaging move into every opposing active Pokemon, so a
+        better move and a better target both surface.
+        """
         candidates: list[OptimalMoveOption] = []
         opponents = moment.opponents()
         for move in dict.fromkeys(moment.attacker.moves):
@@ -264,12 +248,9 @@ class TurnReplaySimulator:
 
     @staticmethod
     def _actual_results(event: BattleEvent) -> dict[Combatant, tuple[str, float | None]]:
-        """Maps target -> (the human-readable actual_result text, the SAME
-        fact again as a plain float — remaining HP percent, 0.0 on a faint,
-        None for a Protect block, where no HP changed). One source produces
-        both, so the text and the number can never drift apart (ADR-029).
-        Side-qualified from the parser's structured hits when present;
-        species-only (player ``""``) for events built without them."""
+        """target -> (actual_result text, HP left as a number; None if protected),
+        from one source so they cannot drift (ADR-029).
+        """
         mapping: dict[Combatant, tuple[str, float | None]] = {}
         if event.hits:
             for hit in event.hits:
@@ -302,15 +283,10 @@ class TurnReplaySimulator:
     def build_protect_reads(
         self, checks: list[TurnCheck], game_state: GameState
     ) -> list[ProtectRead]:
-        """Classify every Protect-family block found in ``checks``.
+        """Classify every Protect-family block in ``checks``.
 
-        Runs AFTER :meth:`simulate` (needs the full turn list to check
-        whether a teammate fainted the SAME turn, which lives in a different
-        TurnCheck than the block itself). Purely a derived read over data
-        `simulate` already computed — no new engine calls. The blocker's
-        side comes from the damage check itself (side-qualified by the
-        parser), falling back to "the side opposite the attacker" for checks
-        built without it.
+        Runs after :meth:`simulate` (a teammate's same-turn faint lives in another
+        TurnCheck); derived data only, no engine calls.
         """
         side_of = game_state.side_of()
         brought_by_player = {
@@ -360,9 +336,7 @@ class TurnReplaySimulator:
         brought_by_player: dict[str, set[str]],
         side_of: dict[str, str],
     ) -> str:
-        """Player that actually brought ``blocker``, disambiguating a mirror
-        match toward the side OPPOSITE the attacker — a Protect block is
-        virtually always against an opposing move."""
+        """Player who brought ``blocker``; in a mirror, the side opposite the attacker."""
         for player, names in brought_by_player.items():
             if player != attacker_player and blocker in names:
                 return player

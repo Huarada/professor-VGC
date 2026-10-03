@@ -44,17 +44,8 @@ class NodeIpcClient:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                # Node's stdout is UTF-8 regardless of platform. `text=True`
-                # alone decodes with `locale.getpreferredencoding()`, which on
-                # Windows defaults to a codepage (e.g. cp1252) that cannot
-                # represent every UTF-8 codepoint — a calc description
-                # containing one (an accented species/move name, an "×", …)
-                # crashes the reader thread with UnicodeDecodeError, silently
-                # losing that one response (any per-item caller already
-                # catches CalcEngineError and skips it, so the pipeline
-                # degrades rather than crashing, but the response is lost for
-                # no reason). Force the encoding Node actually uses instead of
-                # trusting the OS locale.
+                # Node writes UTF-8; the Windows locale code page would crash the reader
+                # thread on non-ASCII text.
                 encoding="utf-8",
                 errors="replace",
                 bufsize=1,

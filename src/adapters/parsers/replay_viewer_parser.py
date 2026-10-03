@@ -1,18 +1,8 @@
-"""Standalone Showdown replay parser for the UI's battle-replay panel ONLY.
+"""Standalone replay parser for the UI's battle panel only (ADR-014).
 
-Deliberately independent of ``src/adapters/parsers/showdown_parser.py`` (the
-LLM pipeline's parser) — no shared class, no imported helpers, no shared
-mutable state. This means a small amount of low-level parsing (ref-splitting,
-HP-field parsing) is intentionally duplicated between the two files. That is
-a deliberate trade-off, not an oversight: this module exists so the visual
-battle panel can be built, changed, and even get things wrong without ANY
-risk of regressing the already-hardened LLM analysis pipeline (ADR-006
-through ADR-013), and vice versa. See ADR-014 in ADR.md.
-
-Produces a :class:`~src.domain.replay_view_models.BattleReplay` — a turn-by-
-turn HP/status/active-roster/field-condition ledger that does not exist
-anywhere else in this codebase (the LLM pipeline never needed one: it reasons
-from the ordered action timeline, not from a per-turn HP snapshot).
+Intentionally independent of the analysis parser (some low-level parsing is
+duplicated) so the panel can change without risking the analysis, and vice
+versa. Produces a per-turn HP/status/field ``BattleReplay``.
 """
 
 from __future__ import annotations
@@ -83,12 +73,8 @@ def _parse_hp_field(raw: str) -> tuple[float, bool]:
 
 
 def parse_replay_for_viewer(replay: dict[str, Any] | str) -> BattleReplay:
-    """Parse structured replay JSON or raw log text into a BattleReplay.
-
-    Mirrors the LLM parser's input normalization (JSON string -> dict -> log
-    text) but is otherwise a completely separate implementation. Returns an
-    empty ``BattleReplay`` (no snapshots) rather than raising when the input
-    has no usable log — callers render nothing in that case, never an error.
+    """Parse replay JSON or raw log text into a BattleReplay; an input without a
+    usable log yields an empty one instead of raising.
     """
     if isinstance(replay, str):
         text = replay.strip()
@@ -110,12 +96,7 @@ def parse_replay_for_viewer(replay: dict[str, Any] | str) -> BattleReplay:
 def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive line-walk, mirrors the LLM parser's own shape
     player_names: dict[str, str] = {}
     slot_species: dict[str, str] = {}  # "p1a" -> species (identity stable across forme changes)
-    # Every per-Pokemon tracker below is keyed by (player, species) — NOT a
-    # bare species string — so a mirror match (both sides bringing the same
-    # species, an ordinary VGC occurrence) never collides two Pokemon's HP/
-    # forme/status into one entry. This is the same bug class ADR-008 fixed
-    # for the LLM pipeline's GameState.side_of(); this module is independent
-    # of that fix, so it needs its own, from scratch.
+    # Trackers are keyed by (player, species) so a mirror match never collides.
     hp_percent: dict[tuple[str, str], float] = {}
     formes: dict[tuple[str, str], str] = {}
     statuses: dict[tuple[str, str], str] = {}
@@ -133,11 +114,8 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
     trick_room: list[list[int]] = []
     tr_open: int | None = None
     weather = ""
-    # Terrain, rooms (Gravity/Magic Room/Wonder Room) and screens (Reflect/
-    # Light Screen/Aurora Veil). ``field_now`` holds the labels active right
-    # now; ``field_this_turn`` every label active at some point of the current
-    # turn — so, like Tailwind/Trick Room above, an effect that expires in a
-    # turn's residual phase still shows on the turn it applied to.
+    # Terrain, rooms and screens: ``field_now`` = active now; ``field_this_turn``
+    # = active at any point of the turn (so a residual-phase expiry still shows).
     terrain = ""  # label of the active terrain, e.g. "terrain Electric"
     field_now: set[str] = set()
     field_this_turn: set[str] = set()
@@ -160,12 +138,8 @@ def _parse_log_text(text: str) -> BattleReplay:  # noqa: C901 - one cohesive lin
         field_this_turn.add(label)
 
     def snapshot() -> None:
-        # Copy EVERY per-Pokemon/field tracker at this exact moment — formes,
-        # statuses, boosts and weather only ever change forward over the
-        # course of parsing, so looking them up lazily from the final,
-        # fully-parsed state (instead of a turn-scoped copy) would
-        # retroactively show a turn-12 Mega Evolution, status condition, stat
-        # boost, or weather change on the turn-1 snapshot too.
+        # Copy every tracker now: state only moves forward, so reading the final
+        # state would leak later changes into earlier snapshots.
         raw_snapshots.append(
             (
                 turn,

@@ -43,14 +43,8 @@ class RosterHandlers(HandlerGroup):
         player, slot, nick = split
         species, level = split_details(parts[3])
         roster, combatants, timeline = self.state.roster, self.state.combatants, self.state.timeline
-        # Showdown's "nick" (the ref before the colon) is the STABLE identity
-        # for this battle slot; "details" is just the CURRENT appearance and
-        # changes after a Mega Evolution / in-battle forme change. If this
-        # Pokemon was already registered under its nick (e.g. it mega evolved,
-        # switched out, and is now switching back in as "<Species>-Mega"),
-        # reuse that same entry instead of registering a fresh one — otherwise
-        # the new entry starts with an empty moveset and later gets treated as
-        # a different Pokemon than the one whose moves were already recorded.
+        # The nick is the stable identity; details change after a forme change. A
+        # Mega switching back in reuses its entry (and its recorded moves).
         key = nick if nick in roster.players.get(player, {}) else species
         roster.register(player, key, level)
         roster.record_forme(player, key, species)
@@ -72,11 +66,8 @@ class RosterHandlers(HandlerGroup):
         )
 
     def on_detailschange(self, parts: list[str]) -> None:
-        # Mega Evolution / other in-battle forme change (e.g. Zygarde,
-        # Mimikyu-Busted). The identity doesn't change — only the appearance —
-        # but it is recorded so calcs can use the real forme's stats, and it is
-        # a visible timeline event: it can be the single most strategically
-        # important fact in the game (e.g. Mega Gengar gaining Shadow Tag).
+        # Forme change (Mega, Mimikyu-Busted): same identity, new stats, and a
+        # visible timeline event (e.g. Mega Gengar gaining Shadow Tag).
         if len(parts) <= 3:
             return
         key = self.state.roster.resolve(parts[2])

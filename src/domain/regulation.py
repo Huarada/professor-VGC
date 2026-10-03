@@ -1,14 +1,8 @@
 """Regulations: which format's data an analysis may use.
 
-A VGC regulation (Champions Reg M-B, Reg M-C, ...) defines which Pokemon are
-legal. Usage data, official Smogon sets and the Pokemon the explanation may
-talk about must all come from the SAME regulation as the game being analyzed:
-a Pokemon that only exists in Reg M-C must never show up as part of Reg M-B.
-
-This module is pure domain logic (no I/O): parsing a Showdown format id into
-its regulation, normalizing the Bo3 variant onto its Bo1 regulation, and the
-per-analysis :class:`RegulationScope` that the evidence stage and the agent
-tools share.
+Usage data, Smogon sets and the Pokemon the explanation names must come from
+the game's own regulation. Pure domain logic: format-id parsing, Bo3 -> Bo1,
+and the per-analysis :class:`RegulationScope`.
 """
 
 from __future__ import annotations
@@ -36,11 +30,9 @@ def normalize_species(name: str) -> str:
 class RegulationRoster(BaseModel):
     """Which Pokemon a regulation allows, from usage data.
 
-    ``legal``: every species (normalized) with data in this regulation's own
-    tiers. ``known``: every species any regulation of the same game lists —
-    so a forme that some regulation lists on its own (a Mega such as
-    ``Garchomp-Mega-Z``) must be listed in THIS regulation to be allowed,
-    instead of being waved through as its legal base species.
+    ``legal``: species with data in this regulation's own tiers. ``known``:
+    species any regulation of the same game lists, so a forme listed elsewhere
+    (a Mega) must be listed here too.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -54,10 +46,9 @@ class RegulationRoster(BaseModel):
         return not self.legal
 
     def allows(self, name: str) -> bool:
-        """Whether ``name`` is legal here. Battle-only formes the data never
-        lists on their own (``Palafin-Hero``) resolve to their base species;
-        anything listed elsewhere but not here (``Garchomp-Mega-Z`` in a
-        regulation without it), or unknown to every regulation, is not."""
+        """Whether ``name`` is legal here; unlisted battle formes (``Palafin-Hero``)
+        resolve to their base species.
+        """
         normalized = normalize_species(name)
         if normalized in self.legal:
             return True
@@ -133,13 +124,9 @@ def parse_regulation_setting(value: str, format_prefix: str) -> Regulation | Non
 
 
 class RegulationScope:
-    """The regulation ONE analysis is bound to, shared by everything that reads
-    data for it (evidence stage, agent tools).
-
-    ``pinned`` comes from the regulation controller; ``None`` means "auto":
-    follow the replay's own format. Pinned scopes are STRICT — no data from
-    any other regulation, not even an older fallback — and refuse a replay
-    from another regulation.
+    """The regulation one analysis is bound to, shared by the evidence stage and
+    the agent tools. ``pinned`` = strict (no other regulation's data; another
+    regulation's replay is refused); ``None`` = follow the replay.
     """
 
     def __init__(self, pinned: Regulation | None = None) -> None:

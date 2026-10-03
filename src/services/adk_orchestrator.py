@@ -1,46 +1,14 @@
-"""Google ADK (Agent Development Kit) orchestration backend.
+"""Google ADK orchestration backend (the default ``AnalysisPipeline``).
 
-Implements the same :class:`~src.domain.interfaces.AnalysisPipeline` port as
-:class:`~src.services.analysis_service.AnalysisService` (native) and
-:class:`~src.services.langchain_orchestrator.LangChainAnalysisOrchestrator`
-(LangChain), so it is a fully interchangeable third
-``PROFESSORVGC_ORCHESTRATOR`` value (``adk`` — the default). Same shape as
-the LangChain backend: a plain, tool-less ``LlmAgent`` for selection (1st
-AI), a tool-calling ``LlmAgent`` for explanation (2nd AI) wired to the exact
-same deterministic ports (the injected ``tools`` are the shared
-``EvidenceTools`` core, also used by the LangChain backend), and the same
-shared :class:`~src.services.ground_truth.GroundTruthAssembler` evidence
-stage — so a result from this backend is exactly as trustworthy as any
-other, and switching orchestration technology never changes a single damage
-roll.
+A schema-constrained, tool-less agent for selection (1st AI) and a bounded
+tool-calling agent for explanation (2nd AI), over the shared
+``GroundTruthAssembler`` and ``EvidenceTools`` — so switching backend never
+changes a damage roll.
 
-Two deliberate simplifications relative to full ADK idiom, both documented
-here rather than left implicit:
-
-- **No native ADK session-history replay.** ADK's ``Session``/``Event``
-  mechanism is built to carry a conversation's history internally across
-  ``Runner.run_async`` calls sharing one ``session_id`` — but this project
-  already has its own cross-backend memory abstraction
-  (:class:`~src.domain.interfaces.ConversationMemory`, loaded/appended by
-  every backend identically) and every OTHER backend (native, LangChain)
-  surfaces prior turns by rendering them into the prompt text rather than
-  relying on a framework's own session store. Matching that shape here
-  (:func:`_render_history`) keeps memory behavior identical across all
-  three backends and avoids depending on exactly how ADK's session/event
-  replay interacts with an agent that wasn't the one that produced the
-  earlier turns. Each ``analyze()`` call therefore uses a brand-new,
-  disposable ADK session (a fresh UUID) purely as the plumbing ADK's
-  ``Runner`` requires to execute at all.
-- **Selection JSON via ``output_schema``, not a downstream parser.** Unlike
-  the LangChain backend (``JsonOutputParser``) or the native one (a
-  provider-level ``json_mode`` flag), ADK's ``LlmAgent`` can constrain its
-  OWN final output to a schema (ADK docs: "supports using ``output_schema``
-  and ``tools`` together... enforcing structure only on the final output").
-  The result is still routed through the exact same
-  ``src.services.selection_logic`` parse/sanitize pipeline every other
-  backend uses (so a same-shaped fallback still applies if a given
-  model/backend combination doesn't honor it), just with a stronger
-  starting guarantee.
+- History is rendered into the prompt (:func:`_render_history`), like the
+  other backends; each turn runs on a fresh, disposable ADK session.
+- Selection uses ``output_schema``, then the same ``selection_logic``
+  parse/sanitize as every backend.
 """
 
 from __future__ import annotations
@@ -77,10 +45,7 @@ from src.services.selection_logic import (
 )
 
 if TYPE_CHECKING:
-    # Type-checking only — kept lazy at runtime (see the local imports in
-    # __init__/_run_agent below) so this module stays importable without
-    # google-adk installed, matching langchain_orchestrator.py's own pattern
-    # for langchain_core.
+    # google-adk is imported lazily so this module loads without it.
     from google.adk.models import BaseLlm
 
 _APP_NAME = "professorvgc"
@@ -119,15 +84,10 @@ def _final_text(event: Any) -> str:
 
 
 def _extract_tool_invocations(events: Sequence[Any]) -> list[AgentToolInvocation]:
-    """Pull every on-demand tool call the explanation agent made this turn out
-    of its ADK event trace, so the UI can flag it (mirrors ADR-028's LangChain
-    equivalent, ``langchain_orchestrator._extract_tool_invocations``).
+    """The tool calls in an ADK event trace, for the UI (ADR-028).
 
-    Matches each function response back to its request by
-    ``FunctionCall.id``/``FunctionResponse.id`` when the model backend sets
-    them; falls back to pairing the oldest still-unmatched call of the same
-    tool name otherwise (defensive — LangChain's ``tool_call_id`` is always
-    present, ADK's ``id`` is documented as optional)."""
+    Responses pair with calls by id, else (ids are optional in ADK) with the
+    oldest unmatched call of the same tool."""
     calls_by_id: dict[str, dict[str, Any]] = {}
     unmatched: list[dict[str, Any]] = []
     for event in events:
@@ -152,9 +112,7 @@ def _extract_tool_invocations(events: Sequence[Any]) -> list[AgentToolInvocation
                 request = {"tool": response.name or "unknown", "arguments": {}}
 
             payload: dict[str, Any] = dict(response.response or {})
-            # Some ADK/LiteLLM paths wrap a plain-dict tool return as
-            # {"result": {...}} — unwrap one level so `ok`/`error` are read
-            # from the actual tool payload either way.
+            # Some ADK/LiteLLM paths wrap the tool's dict as {"result": {...}}.
             if set(payload.keys()) == {"result"} and isinstance(payload["result"], dict):
                 payload = payload["result"]
             ok = bool(payload.get("ok", True))
@@ -202,31 +160,11 @@ class AdkAnalysisOrchestrator:
         self._memory = memory
         self._provider_name = provider_name
         self._max_matchups = max_matchups
-        # Mirrors LangChainAnalysisOrchestrator's `agent_max_steps`: a
-        # generous but finite bound on the explanation agent's own
-        # think/call-tool/think loop (see RunConfig.max_llm_calls), never
-        # applied to the selection stage in spirit (it has no tools to loop
-        # on) even though the same RunConfig is reused there for simplicity.
-        # Raised from 10 to 20 (2026-08-29) after a live failure: a
-        # genuinely complex, open-ended question (explaining a multi-turn
-        # Trick Room comeback) exhausted a budget of 10 mid-loop — see
-        # _run_agent's own comment for what that used to do (silently
-        # return an empty answer, no error at all) before that was also
-        # fixed to fail loud instead.
+        # Bound on the explanation agent's tool loop (RunConfig.max_llm_calls);
+        # complex multi-turn questions needed more than 10.
         self._agent_max_llm_calls = agent_max_llm_calls
-        # Observed live (2026-08-28, faithfulness benchmark against Gemini
-        # 3.5-flash): one agent turn stalled 30+ minutes with no exception
-        # ever raised — not a retriable error (adk_provider.py's own
-        # retry_options bound already handles those), but a long
-        # think/call-tool/think loop that just never returned. Unbounded,
-        # that turns into a Streamlit request stuck until Cloud Run's own
-        # (much longer, and less informative to the user) request timeout
-        # kills the connection. `_run_agent_bounded` wraps every ADK turn in
-        # `asyncio.wait_for` so a stuck turn surfaces as a clear, typed
-        # error within this budget instead — see that method's own
-        # docstring for why true coroutine cancellation is used here rather
-        # than the thread-based, best-effort approach the benchmark script
-        # (scripts/faithfulness_benchmark/run.py) had to fall back on.
+        # Wall-clock bound per turn: agent loops have stalled for 30+ min
+        # without raising.
         self._agent_timeout_seconds = agent_timeout_seconds
 
         self._session_service = InMemorySessionService()
@@ -262,9 +200,8 @@ class AdkAnalysisOrchestrator:
         )
 
     async def _run_agent(self, runner: Any, message_text: str) -> tuple[str, list[Any]]:
-        """Run one ADK agent turn to completion on a fresh, disposable
-        session (see module docstring) and return its final text plus the
-        full event trace (for tool-call extraction)."""
+        """Run one agent turn on a fresh session; return the final text and
+        the event trace."""
         from google.adk.agents.run_config import RunConfig
         from google.genai import types
 
@@ -289,18 +226,8 @@ class AdkAnalysisOrchestrator:
                 if text:
                     final_text = text
         if not final_text:
-            # Live bug (2026-08-29): a genuinely complex question (a
-            # multi-turn Trick Room comeback explanation) exhausted
-            # `run_config.max_llm_calls` mid tool-calling loop, so
-            # `run_async` simply stopped yielding events — no exception,
-            # no timeout (each individual LLM call was fast; it was the
-            # CUMULATIVE call count that ran out) — and this returned an
-            # empty string with no error at all. The UI rendered a blank
-            # answer with no indication anything had gone wrong. The
-            # LangChain backend already fails LOUD in the equivalent case
-            # (LangGraph's own recursion_limit raises GraphRecursionError,
-            # caught by analyze()'s except clause) — this makes the ADK
-            # backend match that instead of the silent-empty-string path.
+            # An exhausted max_llm_calls just stops the event stream; fail
+            # loud instead of returning a blank answer.
             raise LLMProviderError(
                 f"The agent turn ended without producing a final answer after "
                 f"{len(events)} events (run_config.max_llm_calls="
@@ -312,24 +239,11 @@ class AdkAnalysisOrchestrator:
         return final_text, events
 
     def _run_agent_bounded(self, runner: Any, message_text: str) -> tuple[str, list[Any]]:
-        """Synchronous entry point for one ADK agent turn, with a
-        wall-clock ceiling (see ``__init__``'s ``agent_timeout_seconds``
-        comment for why this exists).
+        """One agent turn with a wall-clock ceiling.
 
-        ``asyncio.wait_for`` — not a thread/executor with a timeout — on
-        purpose: it cancels the underlying coroutine for real (a
-        ``CancelledError`` is thrown into it at its current await point,
-        which the ADK/genai async HTTP client propagates into actually
-        aborting the in-flight request) rather than abandoning a thread
-        that keeps running and consuming quota in the background. That
-        matters here specifically because, unlike the benchmark script's
-        own timeout (which had to isolate each attempt in its own
-        throwaway ``Container``/subprocess to make an abandoned thread
-        safe), every call here shares this orchestrator's long-lived
-        ``Runner``/``InMemorySessionService`` — a leaked thread could still
-        be mutating that shared state after this method returns.
-        ``asyncio.run`` gives ``wait_for`` a fresh event loop per call,
-        matching every other call site in this class.
+        ``asyncio.wait_for`` really cancels the coroutine (aborting the HTTP
+        request); a timed-out thread would keep running against the shared
+        Runner/session service.
         """
         try:
             return asyncio.run(
@@ -382,13 +296,8 @@ class AdkAnalysisOrchestrator:
         message_text = _render_history(history) + build_explanation_input(
             request.question, evidence, correction
         )
-        # Same rationale as ADR-011 (LangChain backend): the agent talks to
-        # the raw ADK/model SDK directly, so a provider failure (rate limit,
-        # exhausted quota, auth, network) is wrapped here into the typed
-        # error the presentation layer already knows how to render, instead
-        # of reaching the UI as a raw SDK exception. A bad/failed TOOL call
-        # inside the loop does NOT reach here — evidence_tools.py degrades
-        # those to {"ok": False, "error": ...} instead of raising.
+        # Wrap raw SDK failures in the typed error the UI renders (ADR-011);
+        # tool failures never get here (they return {"ok": False}).
         try:
             answer, events = self._run_agent_bounded(self._explanation_runner, message_text)
         except LLMProviderError:

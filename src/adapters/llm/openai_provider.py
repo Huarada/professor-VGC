@@ -46,11 +46,7 @@ class OpenAIProvider:
         if json_mode:
             kwargs["response_format"] = {"type": "json_object"}
         try:
-            # The SDK's `create` overloads are keyed on a literal `stream=`
-            # value it can't resolve from a dynamically-built **kwargs dict
-            # (response_format is only added conditionally above) — the
-            # explicit ChatCompletion annotation below is what actually
-            # restores real typing for everything after this call.
+            # The `create` overloads can't resolve **kwargs; the annotation restores typing.
             response: ChatCompletion = self._client.chat.completions.create(**kwargs)  # type: ignore[call-overload]
         except Exception as exc:  # noqa: BLE001 - SDK raises many concrete types
             raise LLMProviderError(f"OpenAI request failed: {exc}") from exc

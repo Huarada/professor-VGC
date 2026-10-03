@@ -1,28 +1,8 @@
-"""Google ADK (Agent Development Kit) integration for the LLM boundary.
+"""Google ADK model factory (:func:`build_adk_model`) for the ADK backend.
 
-Mirrors ``src/adapters/llm/langchain_provider.py``'s role for this backend:
-a single BYOK factory, :func:`build_adk_model`, that returns whatever object
-``google.adk.agents.Agent(model=...)`` expects. ADK itself must never leak
-into domain or services signatures — only ``src/services/adk_orchestrator.py``
-(the composition root's ADK backend) imports from here.
-
-Two independent model paths, one per supported provider (mirrors the exact
-BYOK shape ``langchain_provider.build_chat_model`` already uses for
-openai/gemini):
-
-- **gemini** — ADK's native path: a plain model-id string. ``google-genai``
-  (the SDK ADK's own Gemini support is built on) is already a core
-  ``google-adk`` dependency, so no extra package is needed. ADK reads the
-  API key from the ``GOOGLE_API_KEY`` environment variable for this path —
-  there is no per-call/per-Agent key parameter in the public API — so BYOK
-  is honored the same way :class:`~src.adapters.llm.gemini_provider.
-  GeminiProvider` already does it (``genai.configure(api_key=...)`` is
-  likewise a process-global call): this module sets that env var right
-  before constructing the model, once per :func:`build_adk_model` call.
-- **openai** — ADK has no native OpenAI model class; its own documented
-  answer for every non-Gemini vendor is the ``LiteLlm`` wrapper (a thin
-  adapter over the separately-installed ``litellm`` package). Same
-  env-var-BYOK shape as the Gemini path, using ``OPENAI_API_KEY``.
+- gemini: ADK's native Gemini model; the key goes in ``GOOGLE_API_KEY``
+  (ADK has no per-agent key parameter).
+- openai: ADK's documented ``LiteLlm`` wrapper; key in ``OPENAI_API_KEY``.
 """
 
 from __future__ import annotations
@@ -35,10 +15,7 @@ from src.config import Settings
 from src.domain.exceptions import ConfigurationError
 
 if TYPE_CHECKING:
-    # Type-checking only — every runtime use stays a local, lazy import
-    # (below) so this module remains importable without google-adk/litellm
-    # installed, matching langchain_provider.py's own degrade-to-
-    # ConfigurationError pattern instead of an ImportError at module load.
+    # google-adk / litellm are imported lazily (ConfigurationError if missing).
     from google.adk.models import BaseLlm
 
 _SUPPORTED = ("openai", "gemini")
@@ -58,17 +35,8 @@ def build_adk_model(provider: str, settings: Settings) -> "str | BaseLlm":
             )
         require_modern_gemini_model(settings.gemini_model)
         os.environ["GOOGLE_API_KEY"] = settings.gemini_api_key
-        # A bare model-id string works too (ADK wraps it in a default
-        # `Gemini` instance), but that default retries a transient 503
-        # ("high demand") internally for minutes before ever raising —
-        # observed live: single calls stuck retrying well past 10 minutes,
-        # long enough to make a Streamlit request feel hung and to make the
-        # benchmark's own fixture-level retry/checkpoint (run.py's
-        # `_with_retry`) pointless, since control never returns to it.
-        # Bounding it here means a real outage surfaces as a clear,
-        # reasonably prompt `LLMProviderError` instead — the caller's own
-        # retry logic (this codebase's or the benchmark's) is a better
-        # place for the longer backoff than a stuck SDK call.
+        # Explicit Gemini model with bounded retries: ADK's default retries a 503 for
+        # minutes, which looks like a hang.
         from google.adk.models import Gemini
         from google.genai import types as genai_types
 

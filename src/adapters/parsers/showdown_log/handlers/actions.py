@@ -115,10 +115,8 @@ class ActionHandlers(HandlerGroup):
         if reason.lower().startswith("item:"):
             self.state.combatants.reveal_item(key, reason.split(":", 1)[1].strip())
             return
-        # A Pokemon blocked THIS move with a Protect-family move. The blocker
-        # never gets a "-damage" line (so it would otherwise silently vanish
-        # from the event), which is exactly the causal link a risk/reward read
-        # of the turn needs: "this move WAS aimed at them, and they read it."
+        # A Protect-family block: the blocker gets no -damage line, so record that
+        # the move was aimed at it.
         timeline = self.state.timeline
         move = timeline.current_move
         if move is None or not reason.lower().startswith("move:"):
