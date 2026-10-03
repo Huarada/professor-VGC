@@ -36,6 +36,10 @@ table is there.
 > below. Cite that section, with its intervals, for any claim about
 > correctness.
 
+> **Report files.** Runs write to `out/` (git-ignored). The reports cited
+> below (`out/*.json`, `out/*_log.txt`) are archived, unchanged, at
+> [7d3d527/scripts/faithfulness_benchmark/out](https://github.com/Huarada/professor-VGC/tree/7d3d527276ed373460a7f96164dcdc7456bb6ee2/scripts/faithfulness_benchmark/out).
+
 ## Running it
 
 One-time setup:
