@@ -254,7 +254,10 @@ def main() -> None:
                         provider=provider,
                     )
                     try:
-                        # Spend quota first: a refused analysis must never reach the paid model.
+                        # Free refusals first (unreadable replay, wrong regulation), then
+                        # the quota: a bad input never costs an analysis, and a refused
+                        # analysis never reaches the paid model.
+                        container.validate_request(request, regulation)
                         quota_left = container.usage_quota().consume(provider, _visitor_id())
                         if quota_left is not None:
                             st.session_state[f"quota_left_{provider}"] = quota_left

@@ -37,11 +37,12 @@ from src.domain.interfaces import (
     PromptRepository,
     StrategyKnowledgeProvider,
 )
+from src.domain.models import AnalysisRequest
 from src.domain.regulation import Regulation, RegulationScope, parse_regulation_setting
 from src.domain.replay_view_models import BattleReplay
 from src.services.adk_orchestrator import AdkAnalysisOrchestrator
 from src.services.analysis_service import AnalysisService
-from src.services.ground_truth import GroundTruthAssembler
+from src.services.ground_truth import GroundTruthAssembler, parse_replay
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
 from src.services.regulation_guard import RegulationGuard
 from src.services.selection_service import LLMSelectionService
@@ -380,6 +381,21 @@ class Container:
         """
         url = normalize_replay_json_url(text) if text else None
         return fetch_replay_json(url) if url is not None else text
+
+    def validate_request(self, request: AnalysisRequest, regulation: str | None = None) -> None:
+        """Every refusal that costs nothing, up front: the replay must be
+        readable and belong to the pinned regulation. Run before the usage
+        quota is spent, so an unusable input never costs an analysis.
+
+        Raises:
+            LogParsingError: The replay cannot be read.
+            RegulationMismatchError: Pinned regulation and replay disagree.
+        """
+        game_state = parse_replay(ShowdownReplayParser(), request)
+        has_replay = request.replay_json is not None or request.replay_raw_text is not None
+        RegulationScope(self.regulation(regulation)).bind(
+            game_state.format_id, has_replay=has_replay
+        )
 
     @staticmethod
     def parse_replay_for_viewer(text: str) -> BattleReplay:
