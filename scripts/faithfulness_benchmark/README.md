@@ -63,10 +63,10 @@ few minutes).
 | Quick smoke test (1–2 fixtures, seconds not minutes) | `python -m scripts.faithfulness_benchmark.run --limit 2` |
 | Only the original 10 trap-category fixtures (skip the 20 damage-dense ones) | `python -m scripts.faithfulness_benchmark.run --trap-fixtures-only` |
 | Save to a specific file / use Gemini instead | `python -m scripts.faithfulness_benchmark.run --provider gemini --out my_run.json` |
-| **Re-score an already-saved run's damage numbers** (MAE/RMSE/MSRE/RMSRE — no new LLM calls) | `python -m scripts.faithfulness_benchmark.damage_error_metrics out/run7_n30.json` |
+| **Re-score an already-saved run's damage numbers** (MAE/RMSE/MSRE/RMSRE — no new LLM calls) | `python -m scripts.faithfulness_benchmark.damage_error_metrics out/run7_n30.json` (a saved report; see the archive link above) |
 | **Bias self-audit: does the judge extract confident vs hedgy phrasing differently?** (12 LLM calls, seconds) | `python -m scripts.faithfulness_benchmark.style_blindness_check` |
 | **Calibrate the engine against real games** (projected vs. observed damage, no LLM, offline) | `python -m scripts.faithfulness_benchmark.replay_corpus --count 40`, `python -m scripts.faithfulness_benchmark.chaos_corpus` (official VGC tiers → `data/chaos-cache`), then `python -m scripts.faithfulness_benchmark.run_engine_calibration --chaos data/chaos-cache` |
-| **Score A and B against real games** (claims vs. damage the log shows — LLM calls) | `python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos local --limit 20 [--offset 20] [--relative-tolerance 0.05]` |
+| **Score A and B against real games** (claims vs. damage the log shows — LLM calls) | `python -m scripts.faithfulness_benchmark.run_log_grounded --provider openai --chaos data/chaos-cache --limit 20 [--offset 20] [--relative-tolerance 0.05]` |
 | **Re-score / pool saved runs** at another tolerance, with 95% intervals (no LLM calls; refuses runs that share games) | `python -m scripts.faithfulness_benchmark.rescore_log_grounded out/RUN1.json out/RUN2.json --relative-tolerance 0.05` |
 | **Just the deterministic harness itself** (verifier + percent classifier + Fisher's test — no LLM, no network, <1s) | `pytest tests/test_faithfulness_benchmark_verify.py tests/test_percent_classifier.py tests/test_benchmark_stats.py -q` |
 | Re-run everything including the Node-IPC regression | `pytest -q` (whole project's suite; this benchmark's own tests are a small part of it) |

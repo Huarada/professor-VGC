@@ -113,6 +113,22 @@ python -m scripts.faithfulness_benchmark.rescore_log_grounded out/RUN1.json out/
 `--relative-tolerance` sets the band (default 0.05); `rescore_log_grounded`
 refuses to pool runs that share a game.
 
+Faithfulness runs on the hand-authored fixtures (A vs. B against the
+pipeline's own evidence; LLM calls):
+
+```bash
+python -m scripts.faithfulness_benchmark.run --limit 2                          # smoke test, 2 fixtures
+python -m scripts.faithfulness_benchmark.run                                    # all 30 fixtures + Fisher's exact test
+python -m scripts.faithfulness_benchmark.run --orchestrator adk --provider gemini
+python -m scripts.faithfulness_benchmark.run_orchestrator_comparison            # adk vs langchain vs native
+python -m scripts.faithfulness_benchmark.style_blindness_check                  # judge bias self-audit
+python -m scripts.faithfulness_benchmark.damage_error_metrics out/RUN.json      # MAE/RMSE of a saved run, no API calls
+pytest tests/test_faithfulness_benchmark_verify.py tests/test_percent_classifier.py tests/test_benchmark_stats.py -q  # harness only, offline
+```
+
+Reports go to `scripts/faithfulness_benchmark/out/` (git-ignored). Every
+command and option: [scripts/faithfulness_benchmark/README.md](scripts/faithfulness_benchmark/README.md#running-it).
+
 ## Pipeline
 
 ```
