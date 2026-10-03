@@ -1,13 +1,9 @@
-"""Tests for the standalone replay-viewer parser (UI battle panel only).
-
-Deliberately exercises this module in isolation — it must never import or
-call into ShowdownReplayParser (the LLM pipeline's parser), so these tests
-don't touch that module or GameState/AnalysisResult at all.
-"""
+"""Tests for the battle panel's turn-by-turn view (``parse_replay_for_viewer``),
+built from the same log parse as the analysis (ADR-037)."""
 
 from __future__ import annotations
 
-from src.adapters.parsers.replay_viewer_parser import parse_replay_for_viewer
+from src.adapters.parsers.showdown_parser import parse_replay_for_viewer
 from src.domain.replay_view_models import BattleReplay
 
 _LOG = (
@@ -62,14 +58,12 @@ def test_turn_1_mega_evolution_and_residual_life_orb_damage():
     assert t1.pokemon["p1"]["Charizard"].hp_percent == 100.0
     # Move-attributed damage.
     assert t1.pokemon["p1"]["Whimsicott"].hp_percent == 40.0
-    # Garchomp: 100 -> 60 (Overheat) -> 40 (Life Orb residual, a [from] line
-    # the LLM parser deliberately skips for move-attribution but this ledger
-    # must still track for HP display).
+    # Garchomp: 100 -> 60 (Overheat) -> 40 (Life Orb residual, not move damage).
     assert t1.pokemon["p2"]["Garchomp"].hp_percent == 40.0
     assert "Tailwind p1" in t1.conditions
-    assert "weather SunnyDay" in t1.conditions
-    assert "p1 Charizard used Overheat" in t1.log
-    assert "p2 Garchomp used Earthquake" in t1.log
+    assert "weather Sun" in t1.conditions  # in-game name, as in the analysis
+    assert any(line.startswith("p1 Charizard used Overheat") for line in t1.log)
+    assert "p2 Garchomp used Earthquake — Whimsicott->40%" in t1.log
 
 
 def test_turn_2_heal_faint_and_tailwind_window_inclusive_of_end_turn():
@@ -84,7 +78,8 @@ def test_turn_2_heal_faint_and_tailwind_window_inclusive_of_end_turn():
     assert t2.pokemon["p2"]["Garchomp"].hp_percent == 40.0
     # Tailwind ends ON turn 2 — it was still active during turn 2 itself.
     assert "Tailwind p1" in t2.conditions
-    assert "Whimsicott (p1) fainted." in t2.log
+    # The KO is on the move's own line (the analysis timeline's rendering).
+    assert "p2 Ceruledge used Shadow Sneak — Whimsicott fainted" in t2.log
 
 
 def test_winner_resolved_to_player():

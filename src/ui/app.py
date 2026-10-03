@@ -236,7 +236,7 @@ def main() -> None:
                     st.session_state["last_result"] = None
                     st.session_state["last_error"] = fetch_error
                 else:
-                    # Separate, best-effort parse for the visual panel; never affects the analysis.
+                    # Best-effort panel view; a failure here never affects the analysis.
                     replay = BattleReplay()
                     if resolved_text:
                         try:

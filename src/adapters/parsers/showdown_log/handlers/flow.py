@@ -17,6 +17,7 @@ class FlowHandlers(HandlerGroup):
         }
 
     def on_turn(self, parts: list[str]) -> None:
+        self.state.capture_frame()  # the turn that just ended
         timeline = self.state.timeline
         try:
             timeline.turn = int(parts[2])

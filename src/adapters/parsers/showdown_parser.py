@@ -8,7 +8,8 @@ the flow diagram: no probabilities, no LLM, just structural extraction.
 The battle-log protocol itself is read by
 :mod:`src.adapters.parsers.showdown_log` (rosters, the ordered action
 timeline, and a per-move snapshot of the battle state); this module handles
-the input shapes (replay JSON, raw text, structured team JSON).
+the input shapes (replay JSON, raw text, structured team JSON), for the
+analysis and for the battle panel alike.
 """
 
 from __future__ import annotations
@@ -16,9 +17,28 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from src.adapters.parsers.showdown_log import read_log
+from src.adapters.parsers.showdown_log import read_log, read_replay
 from src.domain.exceptions import LogParsingError
 from src.domain.models import GameState, PokemonSet, SideState
+from src.domain.replay_view_models import BattleReplay
+
+
+def parse_replay_for_viewer(replay: dict[str, Any] | str) -> BattleReplay:
+    """The battle panel's turn-by-turn view of replay JSON or raw log text;
+    empty (never raising) when the input has no usable log."""
+    if isinstance(replay, str):
+        text = replay.strip()
+        if not text.startswith("{"):
+            return read_replay(text)
+        try:
+            replay = json.loads(text)
+        except json.JSONDecodeError:
+            return BattleReplay()
+    if isinstance(replay, dict):
+        log = replay.get("log")
+        if isinstance(log, str) and log.strip():
+            return read_replay(log)
+    return BattleReplay()
 
 
 class ShowdownReplayParser:

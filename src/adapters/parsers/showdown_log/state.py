@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.combatants import CombatantLedger
 from src.adapters.parsers.showdown_log.field_ledger import FieldLedger
+from src.adapters.parsers.showdown_log.replay_frames import TurnFrame
 from src.adapters.parsers.showdown_log.roster import Roster
 from src.adapters.parsers.showdown_log.timeline import Timeline
 from src.domain.models import BattleSnapshot, GameState, MonState
@@ -18,6 +19,7 @@ class ParseState:
         self.field = FieldLedger()
         self.combatants = CombatantLedger(self.roster, self.timeline)
         self.format_id: str | None = None
+        self.frames: list[TurnFrame] = []  # one per turn boundary, for the battle panel
 
     @property
     def turn(self) -> int:
@@ -42,6 +44,10 @@ class ParseState:
             fainted={p: list(names) for p, names in ledger.fainted.items()},
             mons=mons,
         )
+
+    def capture_frame(self) -> None:
+        """Record every Pokemon's state at the end of the current turn."""
+        self.frames.append(TurnFrame.capture(self.turn, self.roster, self.combatants))
 
     def game_state(self) -> GameState:
         """Close the log and freeze everything into the domain aggregate."""

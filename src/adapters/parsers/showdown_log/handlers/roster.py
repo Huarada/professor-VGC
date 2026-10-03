@@ -28,11 +28,14 @@ class RosterHandlers(HandlerGroup):
             roster.players.setdefault(parts[2], {})
             if len(parts) > 3 and parts[3].strip():
                 roster.player_names[parts[2]] = parts[3].strip()
+            if len(parts) > 4 and parts[4].strip():
+                roster.avatars[parts[2]] = parts[4].strip()
 
     def on_poke(self, parts: list[str]) -> None:
         if len(parts) > 3:
             species, level = split_details(parts[3])
             self.state.roster.register(parts[2], species, level)
+            self.state.roster.preview.setdefault(parts[2], []).append(species)
 
     def on_switch(self, parts: list[str]) -> None:
         if len(parts) <= 3:
@@ -50,7 +53,7 @@ class RosterHandlers(HandlerGroup):
         roster.record_forme(player, key, species)
         roster.mark_brought(player, key)
         roster.slot_species[player + slot] = key
-        combatants.enter(player + slot, (player, key))
+        combatants.enter(player + slot, (player, key), species)
         if len(parts) > 4:
             hp, condition = parse_hp(parts[4])
             if hp is not None:
@@ -75,6 +78,7 @@ class RosterHandlers(HandlerGroup):
             return
         species, _level = split_details(parts[3])
         self.state.roster.record_forme(key[0], key[1], species)
+        self.state.combatants.set_forme(key, species)
         self.state.timeline.emit(
             "forme_change", key, f"{key[0]} {key[1]} transformed into {species}.", [species]
         )

@@ -20,8 +20,7 @@ from src.adapters.llm.openai_embedding_provider import OpenAIEmbeddingProvider
 from src.adapters.llm.openai_provider import OpenAIProvider
 from src.adapters.llm.prompts import FilePromptRepository
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory
-from src.adapters.parsers.replay_viewer_parser import parse_replay_for_viewer
-from src.adapters.parsers.showdown_parser import ShowdownReplayParser
+from src.adapters.parsers.showdown_parser import ShowdownReplayParser, parse_replay_for_viewer
 from src.adapters.replay_url_fetcher import fetch_replay_json, normalize_replay_json_url
 from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
@@ -384,8 +383,7 @@ class Container:
 
     @staticmethod
     def parse_replay_for_viewer(text: str) -> BattleReplay:
-        """Turn-by-turn snapshots for the UI's battle panel (a separate,
-        presentation-only parse; see replay_viewer_parser's docstring)."""
+        """Turn-by-turn view for the UI's battle panel (same log parser, ADR-037)."""
         return parse_replay_for_viewer(text)
 
     def shutdown(self) -> None:
