@@ -1,10 +1,4 @@
-"""Google Gemini embedding provider adapter (bring-your-own-key).
-
-Used only by :class:`~src.adapters.smogon.semantic_strategy_retriever.
-SemanticStrategyRetriever` to rank Smogon analysis passages against the
-user's question — reuses the same Gemini key the user already provided for
-chat completions (``PROFESSORVGC_GEMINI_API_KEY``), no separate credential.
-"""
+"""Gemini embeddings (BYOK) for semantic Smogon retrieval; reuses the chat key."""
 
 from __future__ import annotations
 

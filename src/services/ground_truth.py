@@ -1,18 +1,11 @@
-"""The deterministic evidence stage shared by every orchestration backend.
+"""The deterministic evidence stage shared by every backend.
 
-Every :class:`~src.domain.interfaces.AnalysisPipeline` (native, LangChain,
-Google ADK) runs the exact same middle: metagame context for every in-play
-Pokemon, field-aware matchup verdicts, the per-turn re-checks, Protect reads,
-Smogon strategy and (on request) improvement suggestions. It lives here,
-once, so a new piece of evidence is added in one place and the backends can
-never drift apart. Each backend only owns HOW it runs selection and
-explanation; this module owns WHAT ground truth they explain.
-
-It also owns the regulation boundary (ADR-035): the analysis is bound to one
-regulation (pinned by the controller, or the replay's own), every data source
-is queried with that regulation's format only, evidence about other Pokemon is
-filtered to the ones legal in it, and the explanation is checked for Pokemon
-from outside it before it is returned.
+Builds the ground truth once: metagame context for every in-play Pokemon,
+field-aware verdicts, per-turn re-checks, Protect reads, Smogon strategy and
+(on request) improvement suggestions. Backends own only how they select and
+explain. Also the regulation boundary (ADR-035): one regulation per
+analysis, data queried with its format only, evidence filtered to its legal
+Pokemon, and the answer checked before it is returned.
 """
 
 from __future__ import annotations
@@ -78,9 +71,8 @@ class GroundTruthAssembler:
     # -- regulation ---------------------------------------------------------- #
 
     def prepare(self, parser: LogParser, request: AnalysisRequest) -> GameState:
-        """Parse the replay and bind the analysis to its regulation — BEFORE any
-        LLM call, so a replay from another regulation than the pinned one is
-        refused without spending anything.
+        """Parse the replay and bind its regulation before any LLM call, so a
+        mismatching replay costs nothing.
 
         Raises:
             RegulationMismatchError: Pinned regulation and replay disagree.
@@ -171,9 +163,8 @@ class GroundTruthAssembler:
         evidence: AnalysisEvidence,
         game_state: GameState,
     ) -> tuple[str, list[str]]:
-        """Run ``explain(correction_note)``; if the answer names a Pokemon that
-        is not legal in the bound regulation, run it once more with a
-        correction note, and return the final answer plus any warning left.
+        """Run ``explain``; if the answer names an illegal Pokemon, retry once with a
+        correction note. Returns the answer and any remaining warnings.
         """
         answer = explain("")
         roster = self._roster()
@@ -251,18 +242,11 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
         "protect_reads": [p.model_dump(mode="json") for p in evidence.protect_reads],
         "meta_context": evidence.meta_context.model_dump(mode="json"),
         "deterministic_verdicts": [v.model_dump(mode="json") for v in evidence.verdicts],
-        # retrieval_note is deliberately excluded here: it's provenance
-        # metadata for the UI's own "Strategies" debug expander (which
-        # dumps SmogonStrategy in full via result.strategies), not
-        # something the LLM should ever narrate about — the explanation
-        # must read as expert analysis, not describe its own plumbing.
+        # retrieval_note is UI provenance only; the answer must not narrate plumbing.
         "strategies": [
             s.model_dump(mode="json", exclude={"retrieval_note"}) for s in evidence.strategies
         ],
-        # [] the overwhelming majority of turns (first-ever question, or a
-        # question that doesn't repeat an earlier topic) — see
-        # concept_tracking.py's own docstring for exactly what this is and
-        # isn't a claim of.
+        # Usually [] (see concept_tracking.py).
         "recurring_concepts": list(evidence.recurring_concepts),
         "improvement_suggestions": dict(evidence.improvement_suggestions),
         "selection_rationale": evidence.selection.rationale,

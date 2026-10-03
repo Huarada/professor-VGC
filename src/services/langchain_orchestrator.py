@@ -1,29 +1,11 @@
-"""LangChain orchestration backend.
-
-Implements the same :class:`~src.domain.interfaces.AnalysisPipeline` port as the
-native :class:`~src.services.analysis_service.AnalysisService`, but expresses the
-LLM stages as **LCEL** (LangChain Expression Language) runnables:
+"""LangChain orchestration backend (LCEL).
 
     selection_chain   = build_messages | chat_model | JsonOutputParser
-    explanation_agent = create_agent(chat_model, damage_calc/chaos_meta_stats/
-                         smogon_strategy tools, system_prompt)   -- see ADR-028
+    explanation_agent = create_agent(chat_model, evidence tools)  # ADR-028
 
-The deterministic middle (Chaos context + damage/speed calc + Smogon strategy)
-is the shared :class:`~src.services.ground_truth.GroundTruthAssembler`, so every
-backend yields identical ground-truth numbers. The explanation stage is a bounded tool-calling
-agent (ADR-028): it always receives the full precomputed ground truth exactly
-like before, but may additionally reach back into the SAME deterministic ports
-mid-answer for a question that precomputed context doesn't cover (a
-hypothetical item, a different rating tier, ...). This capability is scoped to
-this backend only — the native :class:`AnalysisService` has no agent loop.
-
-The prompt-braces problem (the system prompts contain literal ``{ }`` JSON
-examples) is avoided by composing messages as concrete objects inside a
-``RunnableLambda`` instead of routing them through a templating parser.
-Messages are passed as OpenAI-style ``{"role", "content"}`` dicts, which every
-LangChain chat model and ``create_agent`` accept natively — so this service
-needs no import from the LangChain adapter package. The agent's tools are
-built by the composition root and injected (``tools``).
+Ground truth comes from the shared ``GroundTruthAssembler``. Messages are
+built as role/content dicts inside a ``RunnableLambda`` because the prompts
+contain literal ``{ }`` that a template parser would break on.
 """
 
 from __future__ import annotations
@@ -56,9 +38,7 @@ from src.services.selection_logic import (
 )
 
 if TYPE_CHECKING:
-    # Type-checking only — kept lazy at runtime (see the local imports below)
-    # so this module stays importable without langchain_core installed,
-    # matching src.adapters.llm.langchain_provider's same pattern.
+    # langchain_core is imported lazily so this module loads without it.
     from langchain_core.language_models import BaseChatModel
     from langchain_core.runnables import Runnable
 
@@ -66,9 +46,9 @@ _LcMessage = dict[str, str]
 
 
 class LangChainAnalysisOrchestrator:
-    """AnalysisPipeline implemented with LangChain: a plain LCEL chain for
-    selection (1st AI), a bounded tool-calling agent for explanation (2nd AI,
-    see ADR-028)."""
+    """AnalysisPipeline with an LCEL selection chain and a bounded tool-calling
+    explanation agent (ADR-028).
+    """
 
     def __init__(
         self,
@@ -88,15 +68,8 @@ class LangChainAnalysisOrchestrator:
         self._memory = memory
         self._provider_name = provider_name
         self._max_matchups = max_matchups
-        # LangGraph "steps" (one model turn or one tool turn each) the
-        # explanation agent may take before its own run is cut off — not a
-        # count of tool calls directly, but generous enough for a handful of
-        # them (see ADR-028). Never applies to the selection stage, which
-        # stays a single plain completion. Raised from 10 to 20 (2026-08-29)
-        # alongside the ADK backend's equivalent bump — see
-        # adk_orchestrator.py's own comment: a live, genuinely complex
-        # question (a multi-turn Trick Room comeback explanation) needed
-        # more budget than 10 to actually reach an answer.
+        # LangGraph steps for the explanation agent (ADR-028); complex questions
+        # needed more than 10.
         self._agent_max_steps = agent_max_steps
 
         self._selection_system = prompts.get("selection_system")
@@ -119,13 +92,9 @@ class LangChainAnalysisOrchestrator:
     def _build_explanation_agent(
         chat_model: BaseChatModel, tools: list[Any], system_prompt: str
     ) -> Any:
-        """Build the explanation stage as a bounded tool-calling agent
-        (ADR-028) instead of a bare chat-model completion: the model may
-        call damage_calc/chaos_meta_stats/smogon_strategy mid-answer for a
-        question the precomputed evidence doesn't already cover. Every tool
-        wraps the exact same deterministic ports the evidence stage uses
-        (see evidence_tools.py) — never a second, competing source of
-        truth, only a second, on-demand way to reach the same one."""
+        """The explanation agent: may call the evidence tools (same deterministic
+        ports as the evidence stage) for what the precomputed context lacks.
+        """
         from langchain.agents import create_agent
 
         return create_agent(model=chat_model, tools=tools, system_prompt=system_prompt)
@@ -169,14 +138,8 @@ class LangChainAnalysisOrchestrator:
         evidence: AnalysisEvidence,
         correction: str,
     ) -> tuple[str, list[AgentToolInvocation]]:
-        # The agent talks to the raw LangChain chat model directly (not
-        # through OpenAIProvider/GeminiProvider, which already wrap SDK
-        # errors) — this is the one place a provider failure (rate limit,
-        # exhausted quota, auth, network) would otherwise reach the UI as a
-        # raw, unhandled SDK exception instead of the ProfessorVGCError the
-        # presentation layer already knows how to render. A bad/failed tool
-        # call inside the loop does NOT reach here — evidence_tools.py
-        # degrades those to {"ok": False, "error": ...} instead of raising.
+        # Wrap raw SDK failures in the typed error the UI renders; tool failures
+        # never get here (they return {"ok": False}).
         messages = [
             *_as_lc_messages(history),
             {"role": "user", "content": build_explanation_input(request.question, evidence, correction)},
@@ -228,14 +191,7 @@ def _as_lc_messages(history: Sequence[ChatMessage]) -> list[_LcMessage]:
 
 
 def _extract_tool_invocations(messages: Sequence[Any]) -> list[AgentToolInvocation]:
-    """Pull every on-demand tool call the explanation agent made this turn out
-    of its LangGraph message trace, so the UI can flag it (ADR-028). Matches
-    each ToolMessage back to the AIMessage.tool_calls entry that requested it
-    (by tool_call_id) and reads the {"ok": ..., ...}/{"ok": False, "error":...}
-    shape every tool in evidence_tools.py returns. Returns an empty list for
-    the (overwhelmingly common) case where the agent never called a tool —
-    which is also what the native AnalysisService always produces, since it
-    has no agent loop at all."""
+    """The tool calls in the agent's message trace, paired by tool_call_id (ADR-028)."""
     from langchain_core.messages import AIMessage, ToolMessage
 
     requests_by_id: dict[str, dict[str, Any]] = {}

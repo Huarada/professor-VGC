@@ -1,13 +1,5 @@
-"""LangChain integration for the LLM boundary.
-
-Two responsibilities, both confined to the adapters layer (LangChain must never
-leak into domain or services signatures):
-
-1. :class:`LangChainLLMProvider` — implements the domain
-   :class:`~src.domain.interfaces.LLMProvider` Protocol on top of ANY LangChain
-   ``BaseChatModel``.
-2. :func:`build_chat_model` — a BYOK factory that instantiates the concrete
-   LangChain chat model (OpenAI / Gemini) from :class:`~src.config.Settings`.
+"""LangChain integration: :class:`LangChainLLMProvider` (the ``LLMProvider``
+port over any ``BaseChatModel``) and :func:`build_chat_model` (BYOK factory).
 """
 
 from __future__ import annotations
@@ -22,12 +14,7 @@ from src.domain.exceptions import ConfigurationError, LLMProviderError
 from src.domain.models import ChatMessage
 
 if TYPE_CHECKING:
-    # Type-checking only — every runtime use stays a local, lazy import
-    # (below) so this module remains importable even where langchain_core
-    # isn't installed, despite it being a normal top-level dependency in
-    # pyproject.toml/requirements.txt: this adapter is meant to degrade
-    # gracefully (ConfigurationError, not an ImportError at module import
-    # time) the same way the OpenAI/Gemini adapters already do.
+    # langchain_core is imported lazily (ConfigurationError if missing).
     from langchain_core.language_models import BaseChatModel
     from langchain_core.messages import BaseMessage
     from langchain_core.runnables import Runnable

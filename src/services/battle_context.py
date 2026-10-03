@@ -30,12 +30,7 @@ def candidate_species(game_state: GameState) -> list[str]:
 
 
 def context_species(game_state: GameState, focus: list[str] | None = None) -> list[str]:
-    """Every species to describe in the metagame context.
-
-    Covers ALL Pokemon that were in play (brought by both sides), not just the
-    leads or the selection focus, so the AI sees Chaos/Smogon data for the whole
-    game. Any extra focus species are appended for completeness.
-    """
+    """Every species in play (both sides), plus any extra focus species."""
     seen: dict[str, None] = {}
     for name in candidate_species(game_state):
         seen.setdefault(name, None)
@@ -45,11 +40,8 @@ def context_species(game_state: GameState, focus: list[str] | None = None) -> li
 
 
 def outcome_summary(game_state: GameState) -> str:
-    """Human-readable, strictly-ordered ground-truth result for prompts.
-
-    Renders the exact action timeline so the AI never has to guess turn order
-    or causality. A Pokemon with no "used <move>" line before it faints simply
-    did not get to act.
+    """The strictly ordered ground-truth timeline for prompts; a Pokemon with no
+    "used <move>" line before fainting did not act.
     """
     outcome = game_state.outcome
     if outcome is None:
@@ -79,15 +71,8 @@ def outcome_summary(game_state: GameState) -> str:
         lines.append("Score — " + score + ".")
     lines.append(f"Total turns: {outcome.turns}.")
 
-    # Explicit roster per side, stated ONCE, up front — the single
-    # authoritative anchor for "who is on which side". Reported: without
-    # this, the explanation model had to infer side membership purely by
-    # tracking each timeline event's own inline p1/p2 prefix across a long
-    # game, and got it wrong in synthesis (crediting a losing side's own
-    # Pokemon to the winning side). Every event line below still carries
-    # its own prefix too (defense in depth), but this line means getting
-    # it right no longer depends on the model tracking it consistently
-    # across the whole timeline on its own.
+    # Rosters stated once up front, so the model never infers sides from the
+    # per-event prefixes (it once credited a losing side's Pokemon to the winner).
     side_rosters = rosters(game_state)
     for side in game_state.sides:
         roster = side_rosters.get(side.player, [])

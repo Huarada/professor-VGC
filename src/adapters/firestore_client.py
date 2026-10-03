@@ -1,9 +1,5 @@
-"""Firestore client factory shared by every Firestore-backed adapter
-(the Chaos repository and the usage-quota store).
-
-``google-cloud-firestore`` is imported lazily, so importing this module never
-requires it: a missing package surfaces as :class:`ConfigurationError` only
-when a client is actually built.
+"""Firestore client factory shared by every Firestore adapter; the package is
+imported lazily (ConfigurationError if missing).
 """
 
 from __future__ import annotations
@@ -31,12 +27,7 @@ def build_firestore_client(
             "Run: pip install google-cloud-firestore"
         ) from exc
     if grpc_ca_bundle_path:
-        # Must be set before the first grpc channel is created in this
-        # process (below) — grpc reads it at channel-creation time, not
-        # per-call. setdefault: never overrides an operator's own explicit
-        # env var if one is already set outside this app. See this
-        # setting's own docstring in config.py for why this exists at all
-        # (grpc has its own TLS stack, independent of pip-system-certs).
+        # Must be set before the first gRPC channel; never overrides an operator's value.
         os.environ.setdefault("GRPC_DEFAULT_SSL_ROOTS_FILE_PATH", grpc_ca_bundle_path)
     if not project_id:
         raise ConfigurationError(

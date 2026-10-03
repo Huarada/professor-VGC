@@ -1,15 +1,11 @@
-"""Domain models — hard contracts for every boundary in the pipeline.
+"""Domain models: the Pydantic v2 contracts at every pipeline boundary.
 
-These Pydantic v2 models are the single source of truth for the shapes that
-flow through the system:
+    raw replay JSON  ->  GameState       (parser)
+    GameState        ->  MetaContext     (Chaos)
+    CalcRequest      ->  DamageResult    (calc engine)
+    everything       ->  AnalysisResult  (service output / UI DTO)
 
-    raw replay JSON  ->  GameState            (parser adapter output)
-    GameState        ->  MetaContext          (chaos adapter output)
-    matchup request  ->  DamageResult         (calc engine output)
-    everything       ->  AnalysisResult       (service output / UI DTO)
-
-No behaviour lives here beyond validation and light normalization. Business
-rules live in services; infrastructure lives in adapters.
+Validation and light normalization only; rules live in services.
 """
 
 from __future__ import annotations
@@ -32,7 +28,7 @@ class Stat(str, Enum):
 
 
 class Archetype(str, Enum):
-    """Common VGC macro-strategies referenced by the ADR."""
+    """Common VGC macro-strategies."""
 
     SWEEPER = "sweeper"
     SAFE_SWAPPER = "safe_swapper"
@@ -44,7 +40,7 @@ class Archetype(str, Enum):
 
 
 class StatSpread(BaseModel):
-    """An EV or IV spread expressed as real in-game values (0-252 for EVs)."""
+    """An EV or IV spread in real in-game values (0-252 for EVs)."""
 
     model_config = ConfigDict(frozen=True, populate_by_name=True)
 
@@ -68,12 +64,8 @@ class StatSpread(BaseModel):
 
 
 class PokemonSet(BaseModel):
-    """A concrete, (partially) known set for a single Pokemon in a battle.
-
-    Fields may be ``None`` when the information is hidden (incomplete-
-    information game). Missing fields are later back-filled with the most
-    likely values coming from the Chaos metagame snapshot.
-    """
+    """A (partially) known set; hidden fields are ``None`` and later
+    back-filled from the most likely Chaos values."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -88,18 +80,11 @@ class PokemonSet(BaseModel):
     evs: StatSpread | None = None
     ivs: StatSpread | None = None
     battle_formes: list[str] = Field(default_factory=list)
-    """Other appearances (``details``) observed for this same identity mid-game,
-    e.g. a Mega Evolution ("Raichu-Mega-Y") or another in-battle forme change.
-    All damage/speed calcs still use ``species`` (the base identity, so move
-    history stays attached across the change) — this only records that a change
-    happened, so callers can flag when the calc's stats may not reflect it."""
+    """Formes seen mid-game (e.g. a Mega). Calcs still use ``species``; this
+    only lets callers flag that stats may not reflect the change."""
     boosts: dict[str, int] = Field(default_factory=dict)
-    """Stat stage modifiers (-6..+6) ACTIVE AT THE MOMENT this particular
-    PokemonSet snapshot represents — e.g. -1 atk from an observed Intimidate.
-    Not a fixed attribute of the Pokemon like ability/item: a fresh,
-    boost-adjusted copy is built per turn by TurnReplaySimulator (stages
-    reset to empty every time the real Pokemon switches out, exactly as in
-    the actual game), never mutated on the shared indexed set."""
+    """Stat stages (-6..+6) at the moment this copy represents; built fresh
+    per turn, reset on switch-out, never mutated on the shared set."""
 
     @field_validator("species")
     @classmethod
@@ -133,13 +118,8 @@ class KOEvent(BaseModel):
 
 
 class TargetHit(BaseModel):
-    """What one move did to ONE target, with the target's owning side.
-
-    ``targets``/``results`` on :class:`BattleEvent` are species-only strings
-    (kept for the human-readable timeline); this is the structured,
-    side-qualified form the deterministic re-checks read, so a mirror match
-    (the same species on both sides) never confuses whose Pokemon was hit.
-    """
+    """What one move did to one target, side-qualified so a mirror match
+    (same species on both sides) is never ambiguous."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -159,18 +139,14 @@ class MonState(BaseModel):
     hp_percent: float | None = None
     status: str = ""  # "par" | "brn" | "psn" | "tox" | "slp" | "frz" | "" (healthy)
     item: str | None = None
-    """``None`` = not determined yet at this point of the log (the original
-    item may still be revealed later); ``""`` = confirmed no item (consumed,
-    knocked off, ...); otherwise the item held right now."""
+    """``None`` = not known yet; ``""`` = confirmed no item; else the item held."""
 
 
 class BattleSnapshot(BaseModel):
     """The battle state at the exact moment one move was used.
 
-    Stamped on every move event by the parser (the only component that reads
-    the raw log), so every per-move re-check uses the weather/terrain/screens,
-    HP, status and items IN EFFECT AT THAT MOMENT — never the end-of-game
-    value applied retroactively to earlier turns.
+    Stamped on every move event by the parser, so per-move re-checks use the
+    field, HP, status and items in effect then — never end-of-game values.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -201,23 +177,16 @@ BattleEventKind = Literal[
 
 
 class BattleEvent(BaseModel):
-    """One ordered event from the battle log (a move, switch or faint).
+    """One ordered event from the battle log.
 
-    Capturing the exact ordered ACTIONS — not just faints — is what stops the
-    explanation AI from inventing causality (e.g. claiming a Pokemon attacked
-    when it actually fainted before acting).
-
-    Field/state changes (weather, terrain, screens, status, items) are ordered
-    events too, so every per-turn re-check can replay the exact state at the
-    moment each move was used — e.g. a weather war that flips sun to rain in
-    the middle of a turn, or a burn that only exists from turn 6 onward.
-    Their ``effects`` payload is:
+    The ordered actions stop the explanation from inventing causality (a
+    Pokemon that fainted before acting did not act). State events carry
+    ``effects``:
 
     - ``weather``/``terrain``: ``[name]`` (``""`` when it ended);
     - ``side_start``/``side_end``: ``[condition]`` for ``actor_player``'s side;
     - ``status``/``cure``: ``[status]`` for ``actor``;
-    - ``item``: ``[item, change]`` where change is ``"revealed"``,
-      ``"acquired"`` (Trick/Switcheroo) or ``"lost"`` (consumed/removed).
+    - ``item``: ``[item, change]``, change = ``"revealed"``/``"acquired"``/``"lost"``.
     """
 
     turn: int
@@ -228,32 +197,20 @@ class BattleEvent(BaseModel):
     move: str = ""
     targets: list[str] = Field(default_factory=list)
     hits: list[TargetHit] = Field(default_factory=list)
-    """Structured, side-qualified per-target outcome (see :class:`TargetHit`).
-    Empty for events built without a log (tests, structured JSON input); the
-    re-checks then fall back to ``targets`` + side resolution."""
+    """Side-qualified per-target outcome; empty without a log (then
+    ``targets`` + side resolution are used)."""
     state: BattleSnapshot | None = None
-    """Battle state at the moment of this move (move events parsed from a log
-    only; ``None`` otherwise)."""
+    """Battle state at this move (log-parsed move events only)."""
     effects: list[str] = Field(default_factory=list)  # spread / super effective / ...
     results: list[str] = Field(default_factory=list)  # e.g. "Torkoal->43%", "Pyroar fainted"
     blocked: list[str] = Field(default_factory=list)
-    """Species that blocked THIS move with a Protect-family move (Protect,
-    Detect, Spiky Shield, Wide Guard, ...). Kept separate from ``targets`` (so
-    existing "first real target" logic elsewhere is unaffected) — this is what
-    lets a risk/reward read of the turn be grounded in the real declared
-    target of a blocked spread move, not just inferred from a nearby Protect
-    line."""
+    """Species that blocked this move with a Protect-family move (kept apart
+    from ``targets``)."""
     text: str = ""  # deterministic human-readable rendering
 
 
 class BattleOutcome(BaseModel):
-    """Deterministic result and timeline extracted from the battle log.
-
-    This is what lets the explanation AI reason about what *actually happened*
-    (the ordered actions, who won, which Pokemon fainted and when) instead of
-    only reasoning about isolated damage rolls. Populated only when a battle
-    log is available.
-    """
+    """Result and ordered timeline from the battle log (log input only)."""
 
     winner_player: str | None = None  # "p1" | "p2"
     winner_name: str | None = None
@@ -263,21 +220,13 @@ class BattleOutcome(BaseModel):
     highlights: list[str] = Field(default_factory=list)  # human-readable faint list
     forfeited_player: str | None = None  # "p1" | "p2" — set when THIS player quit early
     forfeited_name: str | None = None
-    """When non-None, the game did NOT end by a team being fully defeated in
-    play — the named player forfeited/disconnected. The explanation AI must
-    know this: it must not narrate the win as "earned" through further
-    strategy beyond what the timeline actually shows, and must not imply the
-    forfeiting side's remaining (unfainted, un-brought) Pokemon lost a fight
-    they never had."""
+    """Set when the game ended by forfeit, not by a team being defeated — the
+    explanation must not narrate fights that never happened."""
 
 
 class FieldWindow(BaseModel):
-    """One named field condition and the inclusive turn window it covered.
-
-    Two windows may share a turn: a weather war (e.g. Charizard-Mega-Y's sun
-    replaced by Politoed's rain mid-turn) ends one window and opens the next
-    on the same turn.
-    """
+    """One field condition and its inclusive turn window. Two windows may
+    share a turn (e.g. sun replaced by rain mid-turn)."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -293,17 +242,10 @@ class FieldWindow(BaseModel):
 
 
 class FieldConditions(BaseModel):
-    """Per-turn summary of the field, extracted from the battle log.
+    """Turn-level field summary (inclusive windows) for timeline notes and
+    whole-game verdicts; per-move checks use ``BattleSnapshot`` instead.
 
-    Turn windows are inclusive. This is the TURN-level view used for timeline
-    annotations and the whole-game matchup verdicts; the per-move re-checks
-    replay the ordered state events on ``BattleOutcome.events`` instead, so a
-    change in the middle of a turn is applied exactly where it happened.
-
-    Weather/terrain names are the in-game names (``Sun``, ``Rain``, ``Sand``,
-    ``Snow``, ``Hail``, ``Harsh Sunshine``, ``Heavy Rain``, ``Strong Winds``;
-    ``Electric``, ``Grassy``, ``Psychic``, ``Misty``), never Showdown protocol
-    ids — the parser translates them.
+    Names are in-game (``Sun``, ``Rain``, ``Electric``, ...), never protocol ids.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -315,9 +257,7 @@ class FieldConditions(BaseModel):
     screens: dict[str, list[FieldWindow]] = Field(default_factory=dict)
     """player -> Reflect / Light Screen / Aurora Veil windows on that side."""
     final_statuses: dict[str, dict[str, str]] = Field(default_factory=dict)
-    """player -> species -> non-volatile status still active when the game
-    ended (cures applied). Only the whole-game verdicts read this; the
-    per-turn re-checks use the status in effect at each move instead."""
+    """player -> species -> status still active at the end (whole-game verdicts only)."""
 
     @staticmethod
     def _in_windows(windows: list[list[int]], turn: int) -> bool:
@@ -363,12 +303,7 @@ class FieldConditions(BaseModel):
 
 
 class GameState(BaseModel):
-    """Structured, deterministic snapshot extracted from a Showdown replay.
-
-    This is the output of the *cleaning/filtering (determinism)* stage in the
-    flow diagram: raw unstructured replay JSON becomes a typed object listing
-    exactly which Pokemon are involved plus, when a log is present, the result.
-    """
+    """Typed snapshot of a replay: the Pokemon involved and, with a log, the result."""
 
     format_id: str = "gen9vgc2025"
     turn: int = 0
@@ -388,14 +323,10 @@ class GameState(BaseModel):
         return list(seen.keys())
 
     def side_of(self) -> dict[str, str]:
-        """Map each species ACTUALLY BROUGHT into the game to its owning player.
+        """Species actually brought -> owning player.
 
-        Deliberately excludes team-preview-only Pokemon (listed in ``|poke|``
-        lines but never switched in): they never played, so they must never be
-        offered as a deterministic-calc matchup or narrated as if they acted.
-        Falls back to the full team only for a side that never switched anyone
-        in (e.g. a still-in-progress or malformed log), mirroring
-        :func:`~src.services.battle_context.rosters`.
+        Team-preview-only Pokemon never played, so they are excluded; a side
+        that never switched anyone in falls back to its full team.
         """
         owner: dict[str, str] = {}
         for side in self.sides:
@@ -420,11 +351,7 @@ class PokemonMetaSummary(BaseModel):
     top_spreads: list[str] = Field(default_factory=list)  # human-readable, for the LLM prompt
     top_spread_nature: str | None = None
     top_spread_evs: StatSpread | None = None
-    """Structured form of top_spreads[0] (the single most-used nature/EV
-    spread in this tier) — machine-readable so MatchupEvaluator.enrich_set
-    can back-fill a calc request's nature/EVs when the replay never revealed
-    them, instead of silently defaulting to 0 EVs/neutral nature. None when
-    no spread data exists for this species."""
+    """``top_spreads[0]`` as data, to back-fill unrevealed nature/EVs in calcs."""
     threats_winrate: dict[str, float] = Field(default_factory=dict)
     source: str = ""  # which reg/rating-tier produced this (may be a fallback)
 
@@ -433,13 +360,8 @@ class PokemonMetaSummary(BaseModel):
 
 
 class MetaContext(BaseModel):
-    """Consolidated, compact metagame context injected into LLM prompts.
-
-    ``pokemon_stats`` holds the IDEAL (highest rating tier, with reg fallback)
-    stats that drive suggestions. ``current_tier_stats`` holds the stats for the
-    rating bracket the analyzed match falls into, so the AI can contrast the
-    aspirational meta with what actually happens at the player's ladder tier.
-    """
+    """Metagame context for the prompts: ``pokemon_stats`` = ideal (highest)
+    tier, ``current_tier_stats`` = the match's own rating bracket."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -473,8 +395,7 @@ class SideField(BaseModel):
 
 
 class CalcField(BaseModel):
-    """Typed field state for one calc, in domain vocabulary (the calc adapter
-    translates it to the engine's own option names)."""
+    """Field state for one calc, in domain vocabulary (the adapter maps it)."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -509,8 +430,7 @@ class MoveInfo(BaseModel):
 
     @property
     def is_damaging(self) -> bool:
-        """Unknown moves count as damaging so the engine itself gets to judge
-        (and reject) them, rather than being silently skipped here."""
+        """Unknown moves count as damaging, so the engine judges them."""
         return self.category != "Status" or not self.known
 
 
@@ -525,8 +445,7 @@ class CalcRequest(BaseModel):
     move: str
     field: CalcField = Field(default_factory=CalcField)
     defender_hp_percent: float | None = None
-    """Defender's CURRENT HP percent, so KO chances reflect damage already
-    taken (None = full HP)."""
+    """Defender's current HP percent for KO chances (None = full HP)."""
 
     @field_validator("move")
     @classmethod
@@ -553,12 +472,8 @@ class DamageResult(BaseModel):
 
 
 class SpeedComparison(BaseModel):
-    """Deterministic speed-tier comparison between two Pokemon.
-
-    ``faster`` is the Pokemon that MOVES FIRST under the given field conditions
-    (Tailwind, paralysis, Choice Scarf, Trick Room). ``conditions`` lists the
-    modifiers that were applied so the explanation AI can cite them.
-    """
+    """Who MOVES FIRST under the field (Tailwind, paralysis, Scarf, Trick
+    Room); ``conditions`` lists the modifiers applied."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -582,9 +497,8 @@ class MatchupVerdict(BaseModel):
     best_damage: DamageResult
     speed: SpeedComparison | None = None
     stat_caveat: str = ""
-    """Non-empty when the attacker/defender was observed with an in-battle
-    forme change (e.g. Mega Evolution) the calc engine has no stats for, so
-    this verdict was computed with the base form instead — see the text."""
+    """Set when a forme change (e.g. Mega) had no engine stats, so base
+    stats were used."""
 
 
 class SmogonStrategy(BaseModel):
@@ -597,12 +511,8 @@ class SmogonStrategy(BaseModel):
     common_sets: list[str] = Field(default_factory=list)
     common_teammates: list[str] = Field(default_factory=list)
     archetypes: list[Archetype] = Field(default_factory=list)
-    # Which passage(s) `overview` actually came from, and why — e.g. "semantic
-    # retrieval: 2/7 chunks across 3 formats" vs "" (the plain default: first
-    # available format, no ranking). Purely informational (surfaced in the
-    # "Strategies" debug expander in the UI), never read by the LLM prompt —
-    # keeps the retrieval mechanism honest/inspectable without it becoming
-    # another thing the explanation could hallucinate about.
+    # Where `overview` came from (shown in the UI's debug expander, never
+    # sent to the LLM).
     retrieval_note: str = ""
 
 
@@ -634,33 +544,20 @@ class TurnDamageCheck(BaseModel):
     target: str
     target_player: str = ""
     target_hp_before_percent: float | None = None
-    """Target's HP right before the hit; ``projected_ko_text`` is computed
-    from this HP, not from full HP (None = unknown, full HP assumed)."""
+    """Target's HP before the hit; ``projected_ko_text`` uses it (None = full)."""
     projected_min_percent: float = 0.0
     projected_max_percent: float = 0.0
     projected_ko_text: str = ""
     actual_result: str = ""  # what the log recorded, e.g. "->43%" or "fainted"
     actual_hp_remaining_percent: float | None = None
-    """The same fact as ``actual_result``, as a plain number instead of an
-    embedded string — HOW MUCH HP THE TARGET HAD LEFT after this hit (0.0 on
-    a faint). This is deliberately NOT the same quantity as
-    ``projected_min/max_percent`` (which is damage DEALT this hit): giving
-    the explanation model a clean, separately-labeled number for each
-    removes any need for it to derive one from the other inline in prose,
-    which is where a live faithfulness benchmark found it sometimes
-    conflates the two (see ADR-029). ``None`` when this target only appears
-    here because it blocked the move with Protect — no HP changed for them.
-    """
+    """HP LEFT after the hit (0.0 on a faint) — not damage dealt, so the model
+    never has to derive one from the other (ADR-029). None if it protected."""
     description: str = ""  # e.g. "0 SpA Raichu Zap Cannon vs. 0 HP/0 SpD Basculegion: ..."
 
 
 class OptimalMoveOption(BaseModel):
-    """One candidate move's projected outcome, for ranking the optimal play.
-
-    Computed only from moves CONFIRMED for that Pokemon this game (never a
-    guess/placeholder), against the turn's real target, under that turn's real
-    field conditions.
-    """
+    """One candidate move's projected outcome, from moves confirmed this game,
+    against that turn's real target and field."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -688,8 +585,7 @@ class ThreatCheck(BaseModel):
     can_ko: bool = False
     """The top roll covers the actor's remaining HP (a same-turn KO is possible)."""
     moves_first: bool | None = None
-    """Whether this threat moves before the actor under that turn's field
-    (None when the speed check was unavailable)."""
+    """Whether this threat moves before the actor (None = speed unknown)."""
 
 
 class DecisionKind(str, Enum):
@@ -701,12 +597,8 @@ class DecisionKind(str, Enum):
 
 
 class DecisionOption(BaseModel):
-    """One deterministic, engine-verified alternative to the play that was made.
-
-    Only built from moves CONFIRMED for that Pokemon this game and from
-    Pokemon actually brought, and only when an incoming threat could KO the
-    actor that turn — never a guess and never noise for a safe turn.
-    """
+    """An engine-verified alternative play, built only from confirmed moves
+    and brought Pokemon, and only when a threat could KO the actor."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -720,22 +612,13 @@ class DecisionOption(BaseModel):
 
 
 class TurnCheck(BaseModel):
-    """Per-turn ground-truth verification of one action against the engine.
+    """Per-move ground-truth verification against the engine, under the
+    field state at that move (the turn-by-turn feedback loop).
 
-    For every move actually used in the battle, the deterministic engine is
-    re-consulted under the field state AT THAT MOVE (weather, terrain,
-    screens, Helping Hand, status, items, HP): projected damage for the move
-    that was used, the field-aware speed order, and the conditions applied.
-    This is the turn-by-turn feedback loop (not a single whole-game pass).
-
-    ``best_alternatives`` closes the loop further: the engine is re-consulted
-    for EVERY damaging move confirmed for that Pokemon this game against EVERY
-    opposing Pokemon on the field at that moment (so a better target is
-    surfaced, not only a better move into the same target). The top 4 (ranked
-    OHKO-first, then by damage) are kept. ``incoming_threats`` and
-    ``decision_options`` cover the non-attacking side of the decision:
-    whether the actor was in KO range, and whether Protect, a switch or speed
-    control (each confirmed for this game) would have answered that threat.
+    ``best_alternatives``: top 4 confirmed damaging moves into every opposing
+    active Pokemon (OHKO first, then damage). ``incoming_threats`` and
+    ``decision_options``: was the actor in KO range, and would Protect, a
+    switch or speed control have answered it.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -754,22 +637,13 @@ class TurnCheck(BaseModel):
     speed: "SpeedComparison | None" = None
     note: str = ""
     stat_caveat: str = ""
-    """Non-empty when the actor/target was observed with an in-battle forme
-    change (e.g. Mega Evolution) the calc engine has no stats for, so this
-    turn's numbers were computed with the base form instead — see the text."""
+    """Set when a forme change (e.g. Mega) had no engine stats, so base
+    stats were used."""
 
 
 class ProtectRead(BaseModel):
-    """Deterministic classification of one Protect-family block.
-
-    Computed once by :meth:`~src.services.turn_simulator.TurnReplaySimulator.
-    build_protect_reads` from data already present in ``turn_by_turn_checks``,
-    so the explanation AI narrates a precomputed conclusion (spread vs.
-    genuine single-target read, whether the block was actually under lethal
-    pressure, whether it was misallocated relative to a teammate lost the
-    same turn) instead of deriving that game-theory judgment itself from raw
-    numbers, which is where predictive analyses used to go shallow or wrong.
-    """
+    """Deterministic classification of one Protect-family block, so the
+    explanation narrates a precomputed judgment instead of deriving it."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -780,43 +654,25 @@ class ProtectRead(BaseModel):
     attacker_player: str
     move: str
     is_spread_move: bool
-    """True when the blocked move also hit (or could hit) another target the
-    same turn — that "protect-resistant" coverage means committing to the
-    move never required a correct read, so it is NOT a prediction."""
+    """The move also hit another target, so it needed no read."""
     value_denied: TurnDamageCheck
-    """The blocked target's own damage_checks entry — the exact stake the
-    block avoided."""
+    """The blocked target's damage check — the stake the block avoided."""
     other_targets_hit: list[TurnDamageCheck] = Field(default_factory=list)
-    """The SAME move's damage_checks entries for targets that were NOT
-    blocked this turn (empty for a single-target move)."""
+    """The same move's checks for targets that were not blocked."""
     is_genuine_read: bool
-    """NOT is_spread_move. A single-target move that got blocked fully
-    whiffs if the read is wrong — this is the one worth calling a "read"."""
+    """A blocked single-target move: the only case worth calling a "read"."""
     was_immediate_ko_threat: bool
-    """True when value_denied's projected_ko_text shows a same-turn OHKO
-    chance (contains "OHKO"), as opposed to a multi-hit KO text like
-    "guaranteed 2HKO" which is not a threat THIS turn."""
+    """``value_denied`` shows a same-turn OHKO chance (not a 2HKO)."""
     misallocated: bool
-    """True when the blocker was NOT under immediate KO threat this turn
-    while a teammate on the same side fainted the same turn — protecting the
-    wrong Pokemon, not a good decision even if the game was later won."""
+    """The blocker was safe while a teammate fainted the same turn."""
     teammate_fainted: str = ""
     """Species that fainted this same turn on the blocker's side, if any."""
 
 
 class AgentToolInvocation(BaseModel):
-    """One on-demand deterministic lookup the explanation agent made mid-turn.
-
-    Populated only by the LangChain backend's agentic follow-up path (see
-    ADR-028): the explanation stage there is a bounded tool-calling agent
-    (``langchain.agents.create_agent``) wrapping the SAME deterministic ports
-    (``CalcEngineAdapter``/``MetaStatsProvider``/``StrategyKnowledgeProvider``)
-    used everywhere else, so a result is exactly as trustworthy as any other
-    calc/Chaos/Smogon lookup in this pipeline — it is simply requested by the
-    model, on demand, for a question the precomputed context didn't already
-    cover (e.g. a hypothetical item/moveset), rather than precomputed. The
-    native ``AnalysisService`` has no agent loop and never populates this.
-    """
+    """One on-demand deterministic lookup an explanation agent made (agent
+    backends only; ADR-028). Same ports as everywhere else, so equally
+    trustworthy."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -824,8 +680,7 @@ class AgentToolInvocation(BaseModel):
     """Tool name: ``damage_calc`` / ``chaos_meta_stats`` / ``smogon_strategy``."""
     arguments: dict[str, Any] = Field(default_factory=dict)
     ok: bool = True
-    """Whether the underlying deterministic call succeeded (mirrors the same
-    ``{ok:false,error}`` degrade convention used at the Node IPC boundary)."""
+    """Whether the call succeeded (the ``{ok:false,error}`` convention)."""
     summary: str = ""
     """Short, UI-facing preview of the result or error — not the full payload."""
 
@@ -840,16 +695,13 @@ class RegulationInfo(BaseModel):
     strict: bool
     """Pinned by the regulation controller: no data from any other regulation."""
     legal_species: list[str] = Field(default_factory=list)
-    """Display names of the Pokemon with usage data in this regulation's own
-    tiers — the only Pokemon the explanation may present as part of it.
-    Empty when no data for this regulation is loaded (legality unverified)."""
+    """Pokemon with usage data in this regulation's own tiers; empty when no
+    data is loaded (legality unverified)."""
 
 
 class AnalysisEvidence(BaseModel):
-    """Everything the deterministic + probabilistic stages produced for one
-    analysis turn — the single ground-truth bundle every orchestration
-    backend hands to its explanation stage. Built once by the shared
-    ``GroundTruthAssembler`` so the backends can never drift apart."""
+    """The ground-truth bundle every backend hands to its explanation stage,
+    built once by ``GroundTruthAssembler`` so backends cannot drift apart."""
 
     model_config = ConfigDict(frozen=True)
 
@@ -866,7 +718,7 @@ class AnalysisEvidence(BaseModel):
 
 
 class AnalysisResult(BaseModel):
-    """Final DTO rendered by the UI (the green *Resposta OUTPUT* node)."""
+    """Final DTO rendered by the UI."""
 
     session_id: str
     question: str
@@ -882,8 +734,7 @@ class AnalysisResult(BaseModel):
     provider: str = "openai"
     regulation: RegulationInfo | None = None
     regulation_warnings: list[str] = Field(default_factory=list)
-    """Deterministic regulation-guard findings shown to the user (e.g. a
-    Pokemon the answer mentions that is not legal in this regulation)."""
+    """Regulation-guard findings shown to the user (e.g. an illegal Pokemon)."""
 
 
 class ChatMessage(BaseModel):

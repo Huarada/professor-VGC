@@ -1,15 +1,9 @@
-"""The battle as it stood at the instant one move was used.
+"""The battle as it stood when one move was used.
 
-Every per-move re-check (damage of the move used, better moves/targets,
-incoming threats, Protect/switch/speed-control options) reads the battle
-through one :class:`MoveMoment`, so they all agree on the same facts: the
-weather, terrain, screens, Helping Hand, HP, status, held item and stat
-stages AT THAT MOVE — taken from the parser's per-move
-:class:`~src.domain.models.BattleSnapshot`, never from the end of the game.
-
-Events built without a snapshot (structured JSON input, unit tests) fall back
-to the turn-level :class:`~src.domain.models.FieldConditions` windows and to
-``side_of()`` for target ownership, which is the best that input allows.
+Every per-move re-check reads it through one :class:`MoveMoment`, so they
+agree on field, HP, status, item and stat stages at that move (from the
+parser's ``BattleSnapshot``). Without a snapshot (structured input, tests)
+it falls back to the turn-level ``FieldConditions`` and ``side_of()``.
 """
 
 from __future__ import annotations

@@ -1,19 +1,9 @@
-"""Chaos statistics adapter (probabilistic metagame feed).
+"""Chaos usage-stats adapter (the probabilistic metagame feed).
 
-Builds the compact metagame context from Smogon *Chaos* usage stats, sourced
-through a :class:`~src.adapters.chaos.chaos_repository.ChaosRepository` so it can:
-
-* use the IDEAL rating tier (highest cutoff, e.g. ``-1760``) as the aspirational
-  suggestion, while also surfacing the CURRENT ladder-tier bracket for the match;
-* fall back to older regulations of the same game when a species is missing from
-  the newest regulation.
-
-Implements :class:`~src.domain.interfaces.MetaStatsProvider`. Only Chaos on-disk
-details live in the repository/adapter; the rest of the system consumes the
-typed :class:`~src.domain.models.MetaContext`.
-
-Chaos stores EVs divided by 8, e.g. ``"Bold:32/0/32/2/0/0"``; multiplying each
-component by 8 recovers real 0-252 EVs.
+Builds a ``MetaContext`` from a Chaos repository: the ideal (highest cutoff)
+tier for suggestions, the match's own rating bracket, and same-game
+regulation fallback for missing species. Chaos stores EVs divided by 8
+(``"Bold:32/0/32/2/0/0"``).
 """
 
 from __future__ import annotations
@@ -32,9 +22,8 @@ _STAT_FIELDS = ("hp", "atk", "def", "spa", "spd", "spe")
 
 
 class ChaosAdapter:
-    """MetaStatsProvider over a directory (or single file) of Chaos data, or
-    over any other ``ChaosRepositoryLike`` source (e.g. Firestore — see
-    ``firestore_chaos_repository.py``) passed in as ``repository``.
+    """MetaStatsProvider over local Chaos files or any ``ChaosRepositoryLike``
+    (e.g. Firestore).
     """
 
     def __init__(
@@ -79,9 +68,7 @@ class ChaosAdapter:
 
     @staticmethod
     def _parse_spread(spread_str: str) -> tuple[str, list[int]] | None:
-        """Chaos stores EVs divided by 8, e.g. "Bold:32/0/32/2/0/0" — split
-        into (nature, real 0-252 EV values) or None if the string is
-        malformed (defensive: Chaos dumps are external data, not guaranteed)."""
+        """``"Bold:32/0/32/2/0/0"`` -> (nature, real 0-252 EVs); None if malformed."""
         try:
             nature, evs = spread_str.split(":")
             values = [int(component) * _EV_MULTIPLIER for component in evs.split("/")]
@@ -113,28 +100,9 @@ class ChaosAdapter:
 
     @staticmethod
     def _category_weight(mapping: dict[str, Any]) -> float:
-        """The correct percentage denominator for one Chaos category
-        (Abilities/Items/Spreads/Moves/...): the SUM of that category's own
-        values — NOT "Raw count".
-
-        Confirmed directly against a real, live Smogon dump (not assumed):
-        `Abilities`/`Items`/`Spreads`/`Tera Types`/`Happiness` for a given
-        species all sum to the SAME weighted-battle-count value, while `Raw
-        count` is a DIFFERENT, unrelated unweighted figure — e.g. real July
-        2026 Incineroar data: `Raw count=1,064,474` vs.
-        `sum(Abilities)=3,198.8`; dividing Intimidate's own weight (3,186.1,
-        ~99.6% of that sum, matching its real near-universal usage) by "Raw
-        count" instead gives an absurd ~0.3%. `Moves`/`Teammates` each sum
-        to their OWN different total too (more move slots / teammates than
-        1 per battle) — this must be called separately per category, never
-        shared across them, and never assumed equal to "Raw count".
-
-        This project's own bundled `sample_data/*.json` happened to set
-        `Raw count` EQUAL to `sum(Abilities)` (a hand-authored fixture, not
-        a real scrape) — the one reason this was never caught by the
-        existing test suite; see `tests/test_chaos_adapter.py`'s dedicated
-        regression test for a fixture where they genuinely differ, added
-        alongside this fix.
+        """A category's percentage denominator: the SUM of its own values, never
+        "Raw count" (an unrelated, unweighted figure in real dumps). Moves and
+        Teammates each have their own total, so compute it per category.
         """
         total = sum(
             float(value) for value in mapping.values() if isinstance(value, (int, float))
@@ -213,11 +181,7 @@ class ChaosAdapter:
         current_stats: dict[str, PokemonMetaSummary] = {}
         if current_file is not None and (
             ideal_file is None
-            # Compare logical identity (metagame, cutoff), not a storage
-            # handle like a local Path — the latter doesn't exist at all on
-            # a Firestore-backed tier (FirestoreChaosFile.doc_id instead),
-            # and comparing the tier's own coordinates is what "is this
-            # actually a different tier" means regardless of backend.
+            # Compare tier coordinates, not a storage handle (Path vs. Firestore doc id).
             or (current_file.metagame, current_file.cutoff)
             != (ideal_file.metagame, ideal_file.cutoff)
         ):

@@ -1,24 +1,8 @@
-"""Chaos file repository — rating tiers and regulation-fallback resolution.
+"""Local-file Chaos repository (``<metagame>-<cutoff>.json`` files).
 
-Smogon publishes one Chaos file per (metagame, rating cutoff). File names look
-like ``gen9championsvgc2026regmb-1760.json`` where the trailing number is the
-rating cutoff. This repository indexes a directory of such files and resolves,
-for a given match:
-
-* the IDEAL tier   — the highest rating cutoff available for the metagame
-  (best-players' sets/strategies, used as the aspirational suggestion);
-* the CURRENT tier — the bracket the match's rating falls into
-  (cutoff <= rating < next cutoff);
-* a REGULATION-FALLBACK chain — when a species is absent from the current
-  regulation, older regulations of the SAME game (same franchise, e.g.
-  Champions stays in Champions) are tried, nearest first, up to a depth limit.
-
-Only file discovery and selection live here; per-Pokemon extraction stays in the
-adapters that consume this repository. Tier selection itself (ideal/current/
-regulation-fallback) is storage-agnostic and lives in ``chaos_tier_index.py``,
-shared verbatim with ``FirestoreChaosRepository`` — this file's own
-responsibility is narrowed to "where do the JSON bytes come from" (the local
-filesystem), which is the only thing genuinely specific to this backend.
+Tier selection (ideal tier, current rating bracket, same-game regulation
+fallback) is the shared ``ChaosTierIndex``; this module only finds and
+reads the files.
 """
 
 from __future__ import annotations
@@ -47,14 +31,8 @@ class ChaosFile(ChaosFileMeta):
 
 @runtime_checkable
 class ChaosRepositoryLike(Protocol):
-    """The narrow subset of ``ChaosRepository`` that ``ChaosAdapter`` and
-    ``ChaosStrategyAdapter`` actually depend on — satisfied structurally by
-    both ``ChaosRepository`` (local files) and ``FirestoreChaosRepository``
-    (see that module), so either can be injected into those adapters without
-    either adapter's own code changing at all. A new storage backend (a
-    database, a different bucket layout, ...) only ever needs to satisfy
-    this shape, per the same Dependency Inversion pattern this project
-    already applies to ``CalcEngineAdapter``/``StrategyKnowledgeProvider``.
+    """What ``ChaosAdapter`` / ``ChaosStrategyAdapter`` need; satisfied
+    structurally by the local and Firestore repositories.
     """
 
     def metagames(self) -> set[str]: ...
@@ -157,11 +135,8 @@ class ChaosRepository:
     # -- data access ----------------------------------------------------- #
 
     def mon_data(self, file: ChaosFile, species: str) -> dict[str, Any] | None:
-        """Return the raw per-Pokemon block, resolving forme/spelling.
-
-        Tries the exact name, then a normalized match, then progressively drops
-        trailing forme segments (``Raichu-Mega-Y`` -> ``Raichu-Mega`` ->
-        ``Raichu``) so mega/regional/paradox spellings resolve to the base entry.
+        """A Pokemon's raw block: exact name, then normalized, then dropping trailing
+        forme segments (``Raichu-Mega-Y`` -> ``Raichu-Mega`` -> ``Raichu``).
         """
         data: dict[str, dict[str, Any]] = self._load(file).get("data") or {}
         if species in data:
@@ -214,9 +189,7 @@ class ChaosRepository:
 
 
 class StrictRegulationRepository:
-    """A view of a ``ChaosRepositoryLike`` that never leaves the requested
-    regulation: no regulation fallback (not even to older regulations).
-    Used when the regulation controller pins an analysis to one regulation."""
+    """A repository view with no regulation fallback, for pinned analyses."""
 
     def __init__(self, inner: ChaosRepositoryLike) -> None:
         self._inner = inner

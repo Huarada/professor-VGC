@@ -10,11 +10,7 @@ from src.ui.icons import POKEBALL_ICON, icon_html
 
 
 def hero_header_html() -> str:
-    """The page's top identity bar — logo, name, and a pulsing "AI ready"
-    status dot, ported from the Figma design's sticky nav (kept as a normal
-    flow block here rather than `position: sticky`, since a truly sticky
-    child of Streamlit's own scroll container is unreliable across
-    versions)."""
+    """Top identity bar: logo, name and an "AI ready" dot (normal flow, not sticky)."""
     return f"""
 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;
             gap:10px;padding:2px 2px 16px;border-bottom:1px solid rgba(37,99,168,.14);
@@ -34,23 +30,11 @@ def hero_header_html() -> str:
 """
 
 
-# ---------------------------------------------------------------------------
-# Idle-state marketing content — hero copy, tag pills, feature cards, and the
-# decorative background texture — ported from the Figma design's landing
-# copy (the `phase === 'idle'` section of its App.tsx). Rendered only while
-# there's no analysis yet (see main()): once a replay has been analyzed,
-# this decorative block would just push the real Answer/battle panel further
-# down the page for no benefit, so it's hidden exactly like the prototype's
-# own idle-only feature-card grid.
-# ---------------------------------------------------------------------------
+# Idle-state landing content (hero, pills, feature cards, background), from
+# the Figma design; shown only before the first analysis.
 
-# A handful of real formulas/constants from this project's own deterministic
-# core (STAB, EVs capped at 508, Tailwind doubling Speed for 4 turns, the
-# 85–100% damage roll) — same decorative role as the Figma prototype's
-# "Pokemon equations" but accurate to what ProfessorVGC actually computes,
-# not invented flavor text. Scattered at fixed, deterministic positions (not
-# `random.random()`, which would jitter on every Streamlit rerun) at very
-# low opacity, behind all real content.
+# Real formulas from the deterministic core as faint decoration, at fixed
+# positions (random ones would jitter on every rerun).
 _AMBIENT_EQUATIONS = [
     "DMG = ((2*Level/5+2)*Power*ATK/DEF)/50+2",
     "STAB * TYPE_EFF * RAND[0.85, 1.00]",
@@ -65,9 +49,7 @@ _AMBIENT_EQUATIONS = [
 ]
 
 
-# (left%, top%, rotation deg, font-size px) — hand-placed, not random, so the
-# layout is stable across reruns and doesn't collide with the centered
-# content column.
+# (left%, top%, rotation deg, font-size px), hand-placed.
 _AMBIENT_POSITIONS = [
     (3, 8, -4, 11), (88, 6, 3, 11), (2, 32, 2, 10), (90, 28, -3, 10),
     (4, 58, -2, 11), (89, 55, 4, 10), (3, 82, 3, 11), (87, 80, -2, 10),
@@ -76,15 +58,9 @@ _AMBIENT_POSITIONS = [
 
 
 def ambient_background_html() -> str:
-    """A fixed, full-page, click-through layer of faint scattered
-    equations, standing in for the Figma prototype's animated canvas
-    (particles + a typewriter effect) — see ADR-026 for why the canvas
-    itself (real JS, `requestAnimationFrame`) wasn't ported: script tags
-    injected via st.markdown's HTML aren't reliably executed by Streamlit's
-    frontend. This keeps the same "lab notebook" texture without depending
-    on that. `pointer-events:none` and `z-index:0` so it never blocks a
-    click and always paints behind the real page content that follows it
-    in the DOM."""
+    """Fixed, click-through layer of faint equations behind the page (a static
+    stand-in for the prototype's canvas; Streamlit won't run injected scripts).
+    """
     spans = "".join(
         f'<span style="position:absolute;left:{left}%;top:{top}%;'
         f"transform:rotate({rot}deg);font-family:var(--pvgc-font-mono);"
@@ -103,9 +79,7 @@ _TAG_PILLS = [("VGC Doubles", "var(--pvgc-green)"), ("Showdown Replay", "var(--p
 
 
 def hero_section_html() -> str:
-    """The centered hero copy — icon, headline, subtitle, tag pills —
-    ported from the Figma design's always-visible hero `<section>` (as
-    opposed to its idle-only feature-card grid, see feature_cards_html)."""
+    """The centered hero: icon, headline, subtitle and tag pills."""
     tags = "".join(
         f'<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;'
         f"border-radius:999px;background:{color}14;border:1px solid {color}40;"
@@ -179,9 +153,7 @@ def _feature_icon_pikachu(size: int = 48) -> str:
 </svg>"""
 
 
-# (icon builder, accent color token, title, description) — the three
-# descriptions are accurate to this project's real deterministic/probabilistic
-# pipeline (CLAUDE.md's own §1-2), not the prototype's generic mock copy.
+# (icon builder, accent color token, title, description).
 _FEATURE_CARDS = [
     (_feature_icon_garchomp, "var(--pvgc-blue)", "Real Damage Calculations",
      "Damage and speed recalculated turn-by-turn using Smogon's actual "
@@ -217,11 +189,7 @@ def feature_cards_html() -> str:
 
 
 def grass_row_html(count: int = 20) -> str:
-    """A row of small decorative grass blades under the input card, ported
-    from the Figma design's GrassRow — its per-blade jitter was client-side
-    Math.random(); reproduced here with a locally-seeded Random so the
-    layout is stable across Streamlit reruns instead of jittering on every
-    widget interaction."""
+    """Decorative grass row, jittered with a seeded Random so reruns are stable."""
     rng = random.Random(42)
     blades = []
     for i in range(count):
@@ -240,9 +208,7 @@ def grass_row_html(count: int = 20) -> str:
 
 
 def footer_html() -> str:
-    """A minimal footer, ported from the Figma design — the same fan-tool
-    disclaimer this project already carries elsewhere, in the new
-    typography."""
+    """A minimal footer with the fan-tool disclaimer."""
     return f"""
 <div style="margin-top:40px;padding:18px 2px 4px;border-top:1px solid rgba(37,99,168,.12);
             display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">

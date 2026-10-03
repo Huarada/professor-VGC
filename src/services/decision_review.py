@@ -1,18 +1,10 @@
-"""Deterministic review of the NON-attacking side of a VGC decision.
+"""Deterministic review of the non-attacking side of a decision.
 
-"Which move hits hardest" is only half of a turn. The other half is whether
-the Pokemon was in KO range at all and, if so, whether Protect, a switch or
-speed control would have answered that threat. This module answers those
-questions with the calc engine — never with the LLM — and only from facts
-confirmed this game:
-
-- threats come from opposing Pokemon ON THE FIELD at that move, using moves
-  they were seen using this game, at the actor's real HP;
-- Protect / speed-control options only use moves the actor was seen using;
-- switch options only use Pokemon actually brought and still able to switch.
-
-Options are produced only when some threat could KO the actor that turn, so
-a safe turn never gets "you should have protected" noise.
+Was the Pokemon in KO range, and would Protect, a switch or speed control
+have answered it? Computed with the engine from confirmed facts only:
+threats from opposing Pokemon on the field with moves seen this game;
+Protect/speed control from the actor's seen moves; switches from brought
+Pokemon still able to come in. Options appear only when a KO was possible.
 """
 
 from __future__ import annotations

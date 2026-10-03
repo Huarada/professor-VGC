@@ -1,8 +1,5 @@
-"""Deterministic matchup evaluation — shared across orchestration backends.
-
-Wraps the deterministic damage-calc + speed-tier logic used by the shared
-evidence stage (:mod:`src.services.ground_truth`), so every orchestration
-backend runs identical, ground-truth calculations.
+"""Deterministic damage + speed matchup evaluation, shared by every backend
+through the evidence stage.
 """
 
 from __future__ import annotations
@@ -58,28 +55,19 @@ class MatchupEvaluator:
         boosts: dict[str, int] | None = None,
         item: str | None = None,
     ) -> PokemonSet:
-        """Back-fill hidden ability/item/nature/EVs (Chaos) and apply the
-        CONFIRMED point-in-time battle facts for the exact moment this calc
-        represents.
+        """Back-fill hidden ability/item/nature/EVs from Chaos, then apply the
+        confirmed battle facts at this calc's moment.
 
-        The nature/EVs back-fill uses the single most-used competitive spread
-        for this species in the ideal tier (meta.pokemon_stats) instead of
-        leaving the calc to silently default to 0 EVs/neutral nature — a
-        materially more realistic damage projection when the replay itself
-        never reveals the real spread, still clearly an assumption (see
-        explanation_system.txt's guidance on DamageResult.description).
+        Unrevealed nature/EVs use the tier's most-used spread (an assumption the
+        description states), not 0 EVs.
 
         Args:
             mon: The best-known set (revealed ability/item/moves from the log).
             meta: Chaos context for the back-fill.
-            status: Non-volatile status AT THIS MOMENT ("" = healthy). Never
-                taken from a later point of the game.
-            boosts: Stat stages AT THIS MOMENT (e.g. {"atk": -1} after an
-                observed Intimidate) — never back-filled from Chaos.
-            item: Item held AT THIS MOMENT when the log determines it: a
-                name, or "" for "confirmed no item" (consumed/knocked off),
-                which also stops the Chaos item back-fill. ``None`` keeps the
-                set's own (revealed original) item, else the Chaos guess.
+            status: Non-volatile status at this moment ("" = healthy).
+            boosts: Stat stages at this moment (never back-filled).
+            item: Item at this moment: a name, "" for confirmed none (also stops
+                the Chaos guess), or None to keep the set's item / Chaos guess.
         """
         summary = meta.pokemon_stats.get(mon.species)
         data = mon.model_dump()
@@ -105,9 +93,7 @@ class MatchupEvaluator:
         return list(mon.moves)
 
     def _resolves(self, species: str) -> bool:
-        """Cached check: does the installed calc engine have real stat data
-        for this exact forme string? (one tiny IPC round-trip per distinct
-        forme per evaluator lifetime, not per turn/verdict)."""
+        """Cached: does the engine have stats for this exact forme?"""
         key = (self._gen, species)
         cached = self._forme_resolve_cache.get(key)
         if cached is None:
@@ -119,12 +105,8 @@ class MatchupEvaluator:
         return cached
 
     def forme_caveat(self, attacker: PokemonSet, defender: PokemonSet | None = None) -> str:
-        """Explain when a calc fell back to a Pokemon's BASE stats despite it
-        being observed in a different in-battle forme (e.g. Mega Evolution)
-        this game — this only happens when the installed calc engine's dex
-        genuinely has no data for that exact forme (checked live, not
-        assumed); when it does, the calc already used the real forme's
-        stats and no caveat is needed.
+        """A note when a forme seen this game (e.g. a Mega) had no engine stats, so
+        the calc used base stats; empty otherwise.
         """
         notes: list[str] = []
         pairs = ((attacker, "attacker"),) if defender is None else (
@@ -141,9 +123,9 @@ class MatchupEvaluator:
         return " ".join(notes)
 
     def is_damaging(self, move: str) -> bool:
-        """Whether the engine's own dex classifies ``move`` as an attack
-        (cached; an unreachable engine counts as damaging so the calc itself
-        decides)."""
+        """Whether the engine classifies ``move`` as an attack (cached; unreachable
+        engine = damaging, so the calc decides).
+        """
         key = (self._gen, move)
         cached = self._move_damaging_cache.get(key)
         if cached is None:
@@ -191,12 +173,9 @@ class MatchupEvaluator:
     def _field_for(
         game_state: GameState, attacker_player: str | None, defender_player: str | None
     ) -> CalcField:
-        """Whole-game field for a post-game "who wins this matchup" verdict.
-
-        Tailwind is applied to whichever side actually had it up during the
-        game, Trick Room likewise, plus the weather/terrain that was up for
-        most of the game. Point-in-time conditions (screens, Helping Hand,
-        status at a given turn) belong to the per-turn re-checks, not here.
+        """Whole-game field for a post-game verdict: Tailwind/Trick Room where they
+        were used, plus the dominant weather/terrain. Per-move conditions belong
+        to the per-turn re-checks.
         """
         field = game_state.field
         if field is None:
@@ -274,11 +253,8 @@ def collect_strategies(
     metagame: str | None = None,
     question: str | None = None,
 ) -> list[SmogonStrategy]:
-    """Gather Smogon strategy knowledge, skipping unavailable species.
-
-    `question` (the user's actual question, when known) is passed through so
-    a semantic-retrieval-capable provider can pick the most relevant Smogon
-    analysis passages for it — see `StrategyKnowledgeProvider.get_strategy`.
+    """Smogon strategy for each species (unavailable ones skipped); ``question``
+    lets a semantic provider pick the most relevant passages.
     """
     strategies: list[SmogonStrategy] = []
     for name in species:

@@ -1,14 +1,5 @@
-"""Storage-agnostic Chaos tier index — rating-cutoff selection and
-regulation-fallback resolution, shared by every ``ChaosRepository`` backend
-(local files, Firestore, or any future source).
-
-Extracted from what was originally file-discovery logic embedded directly in
-``ChaosRepository`` so a non-file-backed repository (see
-``firestore_chaos_repository.py``) does not have to duplicate the tier
-(ideal/current-bracket) selection and regulation-fallback rules — both
-backends parse the SAME ``<metagame>-<ratingCutoff>`` identifier shape
-(a local filename with ``.json`` stripped, or a Firestore tier document id)
-into the same coordinates and hand them to this one class.
+"""Storage-agnostic Chaos tier selection, shared by the local and Firestore
+repositories (both parse the same ``<metagame>-<cutoff>`` ids).
 """
 
 from __future__ import annotations
@@ -54,13 +45,9 @@ class ChaosFileMeta:
 
 
 def info_mismatch(tier_metagame: str, info: dict[str, object] | None) -> str | None:
-    """Why a tier's own ``info.metagame`` disqualifies it, or None if it matches.
-
-    A tier is identified by its file name / document id, but its content
-    declares its real format in ``info.metagame``. A mismatch (e.g. a
-    ``gen9championsvgc2026regmb`` tier whose data is actually
-    ``gen9championsbssregmb`` singles stats) means the data belongs to another
-    format and must never be served under this name."""
+    """Why a tier's ``info.metagame`` disqualifies it (e.g. singles BSS data under
+    a VGC name), or None if it matches.
+    """
     declared = str((info or {}).get("metagame") or "").strip().lower()
     if declared and declared != tier_metagame.lower():
         return f"contains {declared!r} data, not {tier_metagame!r}"
@@ -68,12 +55,10 @@ def info_mismatch(tier_metagame: str, info: dict[str, object] | None) -> str | N
 
 
 def parse_tier_id(tier_id: str) -> ChaosFileMeta | None:
-    """Parse a ``<metagame>`` or ``<metagame>-<cutoff>`` identifier into its
-    coordinates. Returns a tier-0, standalone-metagame ``ChaosFileMeta`` for
-    a metagame name that doesn't match the ``genN[franchise]vgcYYYYregX``
-    shape (still usable, just never a regulation-fallback candidate for
-    anything else), and ``None`` only when the id has no metagame segment
-    at all (should not happen for a real tier id)."""
+    """``<metagame>[-<cutoff>]`` -> coordinates. A name outside the
+    ``genN[franchise]vgcYYYYregX`` shape is a standalone tier (no fallback);
+    ``None`` only without a metagame segment.
+    """
     m = _ID_RE.match(tier_id)
     if not m:
         return None
@@ -96,14 +81,9 @@ _T = TypeVar("_T", bound=ChaosFileMeta)
 
 
 class ChaosTierIndex(Generic[_T]):
-    """Pure in-memory tier selection over an already-discovered list of
-    tier descriptors: ideal tier (highest cutoff), current-rating bracket,
-    and regulation fallback (same game family, nearest-first, depth-limited).
-
-    Generic over the concrete tier-descriptor type (``_T``, bound to
-    ``ChaosFileMeta``) so each backend can attach its own storage handle
-    (a local ``Path`` for ``ChaosRepository``, a Firestore document id for
-    ``FirestoreChaosRepository``) while sharing this exact selection logic.
+    """In-memory tier selection: ideal tier (highest cutoff), current rating
+    bracket and regulation fallback (same game, nearest first, depth-limited).
+    Generic over the descriptor so each backend keeps its own storage handle.
     """
 
     def __init__(self, files: Sequence[_T], reg_fallback_depth: int = 3) -> None:
@@ -119,14 +99,9 @@ class ChaosTierIndex(Generic[_T]):
         return bool(metagame) and metagame in self.metagames()
 
     def resolve_metagame(self, metagame: str | None) -> str:
-        """The metagame to read: the one asked for, verbatim — even when no
-        tier of it is loaded (lookups then simply find nothing) — and the
-        newest available one only when NONE was asked for.
-
-        An explicitly requested format is never swapped for another: doing so
-        used to hand e.g. a Reg M-B game the Reg M-C data whenever Reg M-B
-        wasn't loaded — the cross-regulation leak this rule prevents.
-        Missing data beats wrong data."""
+        """The metagame asked for, verbatim (even if not loaded); the newest only
+        when none was asked. Never swapped: missing data beats wrong data.
+        """
         if metagame:
             return metagame
         return self.default_metagame()

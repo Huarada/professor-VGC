@@ -1,8 +1,5 @@
-"""Domain-specific exception hierarchy.
-
-Every layer raises typed exceptions deriving from :class:`ProfessorVGCError`,
-so the presentation layer can catch one base type while still being able to
-discriminate failures (parsing vs. calc engine vs. LLM) when needed.
+"""Domain exceptions: every layer raises a :class:`ProfessorVGCError` subclass,
+so the UI can catch one base type and still tell failures apart.
 """
 
 from __future__ import annotations
@@ -25,11 +22,7 @@ class ChaosDataError(ProfessorVGCError):
 
 
 class CalcEngineError(ProfessorVGCError):
-    """The deterministic damage-calc engine failed.
-
-    Wraps transport-level (IPC/subprocess) failures as well as invalid
-    payloads returned by the Node ``@smogon/calc`` subsystem.
-    """
+    """The damage-calc engine failed (IPC transport or invalid payload)."""
 
 
 class StrategyKnowledgeError(ProfessorVGCError):
@@ -49,30 +42,19 @@ class ConversationMemoryError(ProfessorVGCError):
 
 
 class ReplayFetchError(ProfessorVGCError):
-    """Fetching a replay from a pasted Showdown replay URL failed.
-
-    Deliberately distinct from :class:`LogParsingError`: this is a
-    RETRIEVAL failure (network, timeout, HTTP 404/5xx, empty body) — the
-    replay content was never obtained at all, as opposed to content that
-    was obtained but couldn't be parsed.
+    """A pasted replay URL could not be fetched (network, HTTP error, empty body)
+    — retrieval, unlike :class:`LogParsingError`.
     """
 
 
 class RegulationMismatchError(ProfessorVGCError):
-    """The replay belongs to a different regulation than the one the analysis
-    is pinned to (e.g. a Reg M-C game while the controller says Reg M-B).
-
-    Raised instead of analyzing it anyway: mixing one regulation's game with
-    another regulation's data is exactly the leak the controller prevents.
+    """The replay belongs to a different regulation than the pinned one; refused
+    rather than mixing regulations' data.
     """
 
 
 class UsageQuotaError(ProfessorVGCError):
-    """The per-visitor usage quota could not be checked (storage failure).
-
-    The quota protects a paid provider key, so a failed check refuses the
-    analysis rather than letting it through unmetered.
-    """
+    """The usage quota could not be checked; the analysis is refused (fail closed)."""
 
 
 class UsageLimitExceededError(UsageQuotaError):

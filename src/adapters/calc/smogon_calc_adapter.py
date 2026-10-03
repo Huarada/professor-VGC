@@ -1,12 +1,6 @@
-"""Smogon damage-calc adapter (deterministic layer, Node IPC).
-
-Encapsulates the polyglot boundary between the Python core and the Node.js
-``@smogon/calc`` subsystem. The Node side is a thin request/response worker
-(``node_calc/calc_server.js``) that reads one JSON request per line on stdin
-and writes one JSON response per line on stdout.
-
-If the calc backend is ever replaced (Rust, C++, remote service), only this
-adapter changes — no domain or service code touches Node/JS details.
+"""Damage-calc adapter over Node IPC to ``@smogon/calc`` (one JSON line in,
+one out; ``node_calc/calc_server.js``). Replacing the engine touches only
+this module.
 """
 
 from __future__ import annotations
@@ -30,11 +24,8 @@ from src.domain.models import (
 
 
 class SmogonCalcAdapter:
-    """Concrete :class:`~src.domain.interfaces.CalcEngineAdapter` over Node IPC.
-
-    A single long-lived Node subprocess is reused across calls. Access is
-    serialized with a lock, because the stdin/stdout protocol is strictly
-    request/response and not safe for concurrent interleaving.
+    """``CalcEngineAdapter`` over one long-lived Node subprocess; calls are
+    serialized with a lock (the protocol is strictly request/response).
     """
 
     def __init__(
@@ -68,9 +59,8 @@ class SmogonCalcAdapter:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 text=True,
-                # Node writes UTF-8; without this, Windows decodes with the
-                # locale code page (cp1252) and any non-ASCII species/desc
-                # (Flabebe's accent, Nidoran's symbol) kills the reader thread.
+                # Node writes UTF-8; Windows would otherwise decode with cp1252 and crash
+                # the reader thread on any non-ASCII name.
                 encoding="utf-8",
                 errors="replace",
                 bufsize=1,
@@ -169,12 +159,8 @@ class SmogonCalcAdapter:
     def _mon_payload(mon: PokemonSet) -> dict[str, Any]:
         payload: dict[str, Any] = {"species": mon.species, "level": mon.level}
         if mon.battle_formes:
-            # The parser deliberately keeps `species` as the stable roster
-            # identity even after a Mega Evolution / in-battle forme change
-            # (see showdown_parser.record_forme) — the last OBSERVED
-            # appearance is sent separately so the Node engine can use its
-            # real stats when its installed dex recognizes it, falling back
-            # to `species` itself otherwise (see calcEngine.buildPokemon).
+            # `species` stays the roster identity after a forme change; the last seen
+            # forme is sent too so the engine uses its stats when it knows them.
             payload["battleForme"] = mon.battle_formes[-1]
         if mon.ability:
             payload["ability"] = mon.ability
@@ -327,9 +313,7 @@ class SmogonCalcAdapter:
         return list(cached)
 
     def forme_resolves(self, gen: int, species: str) -> bool:
-        """Whether the installed @smogon/calc's dex has real data for this
-        exact forme string (e.g. "Staraptor-Mega") — used to decide whether
-        a stat-approximation caveat is still warranted for it."""
+        """Whether the engine's dex has stats for this exact forme (e.g. a Mega)."""
         response = self._rpc({"cmd": "formeResolves", "gen": gen, "species": species})
         return bool(response.get("result", {}).get("resolves", False))
 

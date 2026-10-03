@@ -1,38 +1,11 @@
-"""Semantic retrieval over official Smogon analysis prose.
+"""Semantic retrieval over official Smogon analysis prose (ADR-027).
 
-Wraps a :class:`~src.adapters.smogon.smogon_dex_adapter.SmogonDexAdapter`
-(the only strategy source with real free-text prose to choose between —
-Chaos-derived strategy has none) to fix a real gap in its default
-`get_strategy()`: that method always reads analysis `[0]` ("newest/most
-relevant format first", a fixed heuristic) and dumps its whole
-`overview`+`comments` into the prompt, ignoring every OTHER format Smogon
-has published for the species, and ignoring each individual set's own
-`description` entirely — real text the underlying `@pkmn/smogon` `analyses()`
-call already returns (see ``node_calc/src/smogonDex.js``'s ``mapAnalysis``),
-just never read.
-
-This adapter instead chunks ALL of that text (one chunk per format's
-overview+comments, one chunk per set's own description), embeds every chunk
-plus the user's actual question, and keeps only the passages closest to it
-by cosine similarity — so a question about, say, Trick Room matchups surfaces
-the passage that actually discusses that, from whichever format/set wrote it,
-instead of always the first format's general overview.
-
-Deliberately NOT a vector-database integration: the corpus here is a handful
-of short paragraphs per species, not a large document store, so an in-memory
-list plus a pure-Python cosine similarity (no numpy/faiss/pinecone/chroma
-dependency) is the right-sized implementation — pulling in a vector database
-for a dataset this small would be solving a scale problem this project
-doesn't have. See ADR-027.
-
-Never touches the STRUCTURED fields (`common_sets`/`archetypes`): those are
-aggregated from every available format's sets regardless of the question —
-arguably an improvement over the wrapped adapter's own default (which only
-scans analysis [0]'s sets) — while only the free-text `overview` becomes
-question-relevant. Degrades to the wrapped adapter's plain, dependency-free
-`get_strategy()` whenever there's no question to rank against, or whenever
-the embedding call itself fails for any reason (missing key, network, quota)
-— an optional enhancement must never be a new way for the pipeline to break.
+Wraps ``SmogonDexAdapter``, which only reads analysis [0]. This chunks every
+format's overview and every set's description, embeds them with the
+question, and keeps the closest passages by cosine similarity. In-memory
+(a few paragraphs per species need no vector database). Structured fields
+are aggregated from all formats regardless of the question. Without a
+question, or on any embedding failure, it falls back to the wrapped adapter.
 """
 
 from __future__ import annotations
@@ -92,10 +65,7 @@ class SemanticStrategyRetriever:
         self._embeddings = embeddings
         self._top_k = max(1, int(top_k))
         self._top_n = max(1, int(top_n))
-        # Keyed by "species|metagame" — persists for this retriever's
-        # lifetime (the container caches ONE instance per session; see
-        # Container.strategy()), so a multi-question conversation about the
-        # same Pokemon embeds its Smogon text only once, not once per turn.
+        # "species|metagame" -> chunks; lives as long as the per-session retriever.
         self._cache: dict[str, _SpeciesIndex] = {}
 
     def get_strategy(
@@ -108,10 +78,7 @@ class SemanticStrategyRetriever:
         try:
             return self._semantic_strategy(species, metagame, question)
         except (StrategyKnowledgeError, LLMProviderError, ConfigurationError):
-            # Embedding path unavailable for any reason (no key, network,
-            # rate limit, no textual passages to index) — fall back to the
-            # wrapped adapter's own dependency-free behavior rather than
-            # letting an optional enhancement break the pipeline.
+            # Any embedding failure falls back to the wrapped adapter's plain behavior.
             return self._dex.get_strategy(species, metagame=metagame, question=question)
 
     # -- internals -------------------------------------------------------- #
@@ -179,9 +146,7 @@ class SemanticStrategyRetriever:
     def _aggregate_sets(
         self, analyses: list[dict[str, Any]]
     ) -> tuple[list[str], list[str], list[str]]:
-        """Common-sets/moves/abilities from EVERY available format's sets —
-        broader than the wrapped adapter's own default (which only scans
-        analysis [0])."""
+        """Common sets/moves/abilities from every format's sets, not just [0]."""
         common_sets: list[str] = []
         moves: list[str] = []
         abilities: list[str] = []

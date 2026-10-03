@@ -49,10 +49,7 @@ from src.services.selection_service import LLMSelectionService
 from src.services.usage_quota import UsageQuotaService
 
 if TYPE_CHECKING:
-    # Type-checking only — see langchain_provider.py's own note: every
-    # runtime path to langchain_core/google-adk stays lazy, so this
-    # composition root remains importable (and the native orchestration path
-    # fully usable) without either installed.
+    # langchain_core / google-adk stay lazy: the native path works without them.
     from google.adk.models import BaseLlm
     from langchain_core.language_models import BaseChatModel
 
@@ -68,16 +65,9 @@ class Container:
         self._memory: ConversationMemory | None = None
         self._calc: SmogonCalcAdapter | None = None
         self._dex: SmogonDexAdapter | None = None
-        # Shared between chaos() and _chaos_strategy() — both need a
-        # ChaosRepositoryLike, and building it twice would mean the
-        # Firestore backend doubling every read for no reason (the local
-        # backend already avoided this by being cheap to re-glob; Firestore
-        # is not "free" the same way, so this cache matters more there).
+        # One repository shared by chaos() and _chaos_strategy(), so reads aren't doubled.
         self._chaos_repo: FirestoreChaosRepository | None = None
-        # Keyed by provider name ("openai"/"gemini") — a session may switch
-        # provider mid-conversation via the sidebar, so this caches at most
-        # one retriever per provider actually used, each with its own
-        # internal per-species chunk cache (see SemanticStrategyRetriever).
+        # One retriever per provider used, keeping its per-species embedding cache.
         self._semantic_retrievers: dict[str, SemanticStrategyRetriever] = {}
         self._usage_quota: UsageQuotaService | None = None
 
@@ -113,22 +103,8 @@ class Container:
         return self._calc
 
     def chaos_repository(self) -> ChaosRepositoryLike:
-        """The Chaos data source — Google Cloud Firestore, unconditionally.
-
-        No local-file fallback and no config knob to select one: this
-        project's own requirement is that the running app
-        genuinely, always queries Firestore for this data, not merely
-        defaults to it with an escape hatch. See config.py's own comment
-        on this. Built once and cached — this is what makes
-        chaos()/_chaos_strategy() sharing one instance actually save reads,
-        not just avoid a redundant object.
-
-        A local Chaos dump is still very much part of this project (see
-        scripts/migrate_chaos_to_firestore.py and
-        scripts/sync_smogon_chaos_to_firestore.py) — as the OFFLINE TOOLING
-        that populates Firestore in the first place, a different concern
-        entirely from what the running app itself reads to answer a
-        question.
+        """The Chaos data source: Firestore, always (no local fallback; DATA.md).
+        Built once and shared by the Chaos adapters.
         """
         if self._chaos_repo is None:
             self._chaos_repo = FirestoreChaosRepository(
@@ -202,11 +178,9 @@ class Container:
     def _semantic_dex(
         self, provider: str | None, dex: SmogonDexAdapter
     ) -> StrategyKnowledgeProvider:
-        """Wraps `dex` with question-aware semantic retrieval (ADR-027) when
-        enabled; returns `dex` itself unchanged otherwise. Cached per
-        provider name so a session's per-species chunk/embedding cache
-        (inside SemanticStrategyRetriever) survives across turns instead of
-        being rebuilt — and its cache wiped — on every `analyze()` call."""
+        """``dex`` wrapped with semantic retrieval when enabled (ADR-027), cached per
+        provider so its embedding cache survives across turns.
+        """
         if not self._settings.use_semantic_strategy:
             return dex
         name = self._resolve_provider(provider)
@@ -223,9 +197,9 @@ class Container:
     def strategy(
         self, provider: str | None = None, *, strict: bool = False
     ) -> StrategyKnowledgeProvider:
-        """Composite (official Smogon analyses -> Chaos fallback) or Chaos
-        only. `provider` selects which BYOK key powers semantic retrieval
-        (see PROFESSORVGC_USE_SEMANTIC_STRATEGY); irrelevant when that's off."""
+        """Official Smogon analyses with Chaos fallback, or Chaos only; ``provider``
+        picks the key for semantic retrieval.
+        """
         chaos = self._chaos_strategy(strict=strict)
         dex = self.smogon_dex()
         if dex is not None:
@@ -359,8 +333,7 @@ class Container:
         return self.build_native_pipeline(provider, regulation)
 
     def usage_quota(self) -> UsageQuotaService:
-        """The per-visitor daily quota for paid providers (ADR-036). With no
-        limit configured it is a no-op and never touches Firestore.
+        """The per-visitor daily quota (ADR-036); a no-op without a limit.
 
         Raises:
             ConfigurationError: A limit is set without a usage_quota_secret,
@@ -401,8 +374,7 @@ class Container:
 
     @staticmethod
     def resolve_replay_text(text: str) -> str:
-        """The pasted replay content — or, when it is a recognized Showdown
-        replay URL, that replay's JSON fetched from Showdown.
+        """The pasted text, or the replay JSON when it is a Showdown replay URL.
 
         Raises:
             ReplayFetchError: The URL was recognized but could not be fetched.

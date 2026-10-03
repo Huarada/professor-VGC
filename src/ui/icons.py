@@ -5,15 +5,8 @@ from __future__ import annotations
 from urllib.parse import quote
 
 
-# The site-wide icon set: no emoji anywhere on the page. Two self-contained,
-# hand-drawn SVG glyphs (inline data URIs, zero network dependency — the
-# same reliability principle behind the sprite HEAD-check above) stand in
-# for every emoji the page used to carry. A colored pokéball marks branding/
-# neutral chrome (page icon, title, plain info notes); a minimalist Pikachu
-# face marks a "noteworthy" moment — a caveat/warning, or the play that was
-# actually taken. Explicit width/height on the <svg> root means both render
-# small out of the box even through plain Markdown image syntax (no HTML
-# needed), since `st.info`/`st.warning` bodies are Markdown-only.
+# Site-wide icons, no emoji: inline SVG data URIs. A pokéball for branding and
+# notes; a Pikachu face for noteworthy moments (warnings, the play taken).
 POKEBALL_ICON = "data:image/svg+xml," + quote(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="18" height="18">'
     '<circle cx="32" cy="32" r="29" fill="#fff" stroke="#222" stroke-width="3"/>'
@@ -48,28 +41,9 @@ def icon_md(uri: str) -> str:
 
 
 def icon_html(uri: str, size: int = 18) -> str:
-    """A sized icon, for spots already using unsafe_allow_html=True (title
-    bar, battle-panel banners, inline captions built as HTML strings).
-
-    Reported: the hero pokeball stayed pinned to a small icon size no
-    matter what `size` was passed. Root cause, found by inspecting
-    Streamlit's own frontend bundle (StreamlitMarkdown.*.js): every `img`
-    rendered inside a markdown container gets a built-in `max-height: 1em`
-    rule (meant for genuinely inline icons/emoji within a line of text).
-    A first attempt fought this with an explicit `!important` `max-height`
-    on the `<img>` itself — that should win on paper (inline style is
-    higher-priority author origin than an external/emotion-injected rule
-    at equal `!important` weight) but still rendered small in the real
-    app, confirmed after a full process restart and hard browser refresh
-    ruled out a stale-cache explanation. Rather than keep fighting a CSS
-    war against a rule this file doesn't control the exact specificity
-    of, this renders as a `<span>` with a CSS `background-image` instead
-    of an `<img>` element — Streamlit's rule is scoped to the `img` tag
-    selector by construction, so a `<span>` simply never matches it,
-    regardless of how that cascade war would have resolved. `icon_md`'s
-    small inline warning/info icons go through Streamlit's native
-    Markdown image syntax (a real `<img>`) instead of this function and
-    are unaffected — that ~1em cap is correct, wanted behavior there."""
+    """A sized icon for HTML contexts. A <span> with a background image, not an
+    <img>: Streamlit caps every markdown <img> at ``max-height: 1em``.
+    """
     return (
         f'<span role="img" aria-label="" style="display:inline-block;'
         f"width:{size}px;height:{size}px;flex-shrink:0;vertical-align:middle;"

@@ -1,26 +1,13 @@
-"""Framework-agnostic read-only tools over the deterministic domain ports.
+"""Read-only tools over the deterministic ports, for the explanation agents.
 
-The explanation agents (Google ADK and LangChain) may call these mid-answer
-for a question the precomputed context doesn't already cover (a hypothetical
-item, a different species, ...). This module is the ONE implementation of
-the three tools; ``adk_tools.py`` and ``langchain_tools.py`` only adapt it to
-their framework's tool format.
+The one implementation; ``adk_tools.py`` / ``langchain_tools.py`` only adapt
+it. Every tool:
 
-Conventions every tool follows:
-
-- Returns a plain ``dict`` — ``{"ok": True, ...fields}`` or
-  ``{"ok": False, "error": str}`` — and never lets a domain exception reach
-  the agent loop. This mirrors the Node IPC boundary's degrade convention, so
-  ``AgentToolInvocation.ok`` has one uniform signal across backends.
-- No parameter has a default value: the Gemini function-calling schema
-  rejects declarations with defaults ("Default value is not supported in
-  function declaration schema for Google AI"). Optional strings are plain
-  required ``str`` arguments where ``""`` means "unset".
-- Google-style docstrings: ADK builds the tool description from them.
-- Regulation-bound (ADR-035): every lookup uses the format of the regulation
-  the current analysis is bound to (the shared ``RegulationScope``), never
-  "the newest" one, and a Pokemon that is not legal in that regulation is
-  refused with an explicit error instead of being looked up elsewhere.
+- returns ``{"ok": True, ...}`` or ``{"ok": False, "error": str}``, never raises;
+- has no default parameter values (Gemini's function schema rejects them;
+  ``""`` means unset);
+- has a Google-style docstring (ADK builds the tool description from it);
+- is bound to the analysis' regulation (ADR-035) and refuses illegal species.
 """
 
 from __future__ import annotations

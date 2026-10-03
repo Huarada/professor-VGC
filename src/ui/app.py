@@ -1,12 +1,5 @@
-"""Streamlit presentation layer — pure view.
-
-Collects input, calls a use case (a pipeline built by the Container), and
-renders the returned DTO. Zero business logic, zero calc, zero prompt
-engineering here. Rendering lives in sibling modules: theme, landing,
-loading, battle_panel, results, audio, icons.
-
-Run with:  streamlit run src/ui/app.py
-"""
+"""Streamlit UI — pure view: collects input, calls a Container use case and
+renders the DTO. Run with ``streamlit run src/ui/app.py``."""
 
 from __future__ import annotations
 
@@ -46,9 +39,7 @@ from src.ui.theme import inject_global_styles
 def _get_container() -> Container:
     if "container" not in st.session_state:
         st.session_state["container"] = Container()
-    # st.session_state's own __getitem__ is untyped (Any) by design (it's a
-    # dynamic dict-like store) — cast() documents what we know we put in,
-    # rather than letting Any silently propagate into every caller.
+    # st.session_state is untyped; cast() records what was stored.
     return cast(Container, st.session_state["container"])
 
 
@@ -59,13 +50,9 @@ def _session_id() -> str:
 
 
 def _visitor_id() -> str:
-    """Who the per-visitor usage quota (ADR-036) counts against: the client IP.
-
-    Behind Cloud Run the socket peer is Google's front end, so the address
-    comes from X-Forwarded-For — its right-most public entry, the one the
-    front end appended (entries to its left are client-supplied and could be
-    spoofed). Falls back to the socket peer, then to this browser session.
-    """
+    """The client IP the usage quota counts against (ADR-036): the right-most
+    public X-Forwarded-For entry (left ones are spoofable), else the socket
+    peer, else this browser session."""
     forwarded = st.context.headers.get("X-Forwarded-For") or ""
     for hop in reversed([part.strip() for part in forwarded.split(",")]):
         try:
@@ -78,9 +65,8 @@ def _visitor_id() -> str:
 
 
 def _quota_caption(container: Container, provider: str) -> str | None:
-    """Sidebar line with the visitor's analyses left today, or None when the
-    provider is unlimited. Read once per session and provider, then kept up
-    to date by each analysis, so widget reruns cost no Firestore reads."""
+    """Analyses left today (None = unlimited); read once per session, then
+    updated by each analysis, so reruns cost no Firestore reads."""
     quota = container.usage_quota()
     limit = quota.limit(provider)
     if not limit:
@@ -92,10 +78,7 @@ def _quota_caption(container: Container, provider: str) -> str | None:
     return f"{provider}: {left} of {limit} analyses left today (resets 00:00 UTC)."
 
 
-# Substrings the underlying provider SDKs (openai, google-generativeai) use in
-# their own error messages for a billing/quota shortfall vs. a transient rate
-# limit — distinguished here only to point the user at the right fix, never
-# to change control flow (the exception is already fatal for this request).
+# Provider SDK error substrings, only to pick the right tip.
 _QUOTA_HINTS = ("insufficient_quota", "credit_balance_exhausted", "no credits", "billing")
 _RATE_LIMIT_HINTS = ("rate limit", "429", "resource_exhausted", "quota")
 
@@ -158,12 +141,7 @@ def main() -> None:
     st.markdown(hero_header_html(), unsafe_allow_html=True)
     st.caption("Deterministic damage-calc + Chaos metagame stats + LLM explainability.")
 
-    # The marketing hero copy/tag pills and feature-card grid (see
-    # hero_section_html/feature_cards_html) only make sense before there's
-    # a real analysis to show — matching the Figma design's own
-    # `phase === 'idle'`-gated sections. Once a replay has been analyzed,
-    # showing them again would just push the real Answer/battle panel
-    # further down the page on every rerun for no benefit.
+    # Landing sections only before the first analysis.
     is_idle = "last_replay" not in st.session_state and "last_result" not in st.session_state
     if is_idle:
         st.markdown(hero_section_html(), unsafe_allow_html=True)
@@ -176,8 +154,7 @@ def main() -> None:
             help="Google ADK agents (default), LangChain LCEL chains, or the "
                  "hand-rolled native pipeline.",
         )
-        # Regulation controller (ADR-035): pin the analysis to one regulation's
-        # data and legal Pokemon, or follow the replay's own regulation.
+        # Regulation controller (ADR-035): pin a regulation or follow the replay's.
         choices = _get_container().regulation_choices()
         configured = _get_container().settings.regulation
         regulation = st.selectbox(
@@ -203,14 +180,7 @@ def main() -> None:
             "`PROFESSORVGC_OPENAI_API_KEY` or `PROFESSORVGC_GEMINI_API_KEY`."
         )
         if st.button("Reset conversation"):
-            # Also clears the battle panel's own state (last_replay/
-            # last_result/last_error/turn_index) — st.session_state persists
-            # across a code-reload rerun (that's its job), so a stale object
-            # from before a schema change (e.g. an older ReplayPokemonState
-            # missing a newly-added field like `boosts`) can otherwise
-            # survive a `git pull` + hot-reload and crash on next render.
-            # This button is the in-app recovery for that; a full restart of
-            # `streamlit run` plus a fresh browser tab clears it too.
+            # Also drops panel state that could be stale after a schema change + hot reload.
             for key in (
                 "session_id", "container", "last_replay", "last_result",
                 "last_error", "turn_index",
@@ -218,8 +188,7 @@ def main() -> None:
                 st.session_state.pop(key, None)
             st.rerun()
 
-        # Optional background music — see src/ui/assets/audio/README.md.
-        # Renders nothing at all when the folder is empty (the default).
+        # Optional background music (renders nothing when the folder is empty).
         render_background_music()
 
     container = _get_container()
@@ -249,32 +218,12 @@ def main() -> None:
         if not replay_text.strip() and not question.strip():
             st.warning("Provide a replay and/or a question.")
         else:
-            # Big centered spinner, shown for the ENTIRE window below (parse
-            # + LLM pipeline + sprite pre-warm), via st.empty() so it can be
-            # cleared as one call right before the results render — not
-            # st.spinner()'s small inline text, which only ever covered the
-            # pipeline.analyze() call and left the (often slower, on a first
-            # view of new species — see the pre-warm note below) battle-panel
-            # rendering that follows with no "still working" indicator of its
-            # own. Reported: the stepper/battle panel visibly became ready
-            # before the Answer text did, which read as the app being done
-            # when it wasn't — this closes that gap from both ends: nothing
-            # in the results area renders until this whole block finishes
-            # (unchanged), and now nothing NEW network-bound happens after
-            # the overlay clears either.
+            # Full-screen overlay for the whole parse + pipeline + sprite pre-warm, so
+            # nothing in the results renders before the answer is ready.
             loading = st.empty()
             loading.markdown(loading_overlay_html(), unsafe_allow_html=True)
             try:
-                # If the pasted text is a recognized Showdown replay URL
-                # (play.pokemonshowdown.com/battle-<id> or
-                # replay.pokemonshowdown.com/<id>[.json] — the two shapes a
-                # user would actually copy/paste), fetch its JSON now, still
-                # inside the loading overlay's window, and use THAT as the
-                # replay content for everything below instead of the raw
-                # pasted URL text (which would just fail to parse as a
-                # replay). Anything that isn't a recognized URL — pasted
-                # JSON or raw log text — passes through unchanged; this
-                # never misidentifies replay content itself as a URL.
+                # A pasted Showdown replay URL is replaced by its fetched JSON.
                 resolved_text = replay_text.strip()
                 fetch_error: ReplayFetchError | None = None
                 try:
@@ -287,13 +236,7 @@ def main() -> None:
                     st.session_state["last_result"] = None
                     st.session_state["last_error"] = fetch_error
                 else:
-                    # Parsed independently of, and BEFORE, the LLM pipeline
-                    # call below — a second, unrelated parse of the same
-                    # resolved text, purely for the visual panel (see
-                    # replay_viewer_parser's module docstring for why these
-                    # are kept fully decoupled rather than sharing one
-                    # parse). A parse failure here must never affect the
-                    # LLM call.
+                    # Separate, best-effort parse for the visual panel; never affects the analysis.
                     replay = BattleReplay()
                     if resolved_text:
                         try:
@@ -301,9 +244,6 @@ def main() -> None:
                         except Exception:  # noqa: BLE001 - this panel is best-effort only
                             replay = BattleReplay()
                     st.session_state["last_replay"] = replay
-                    # Reset the stepper to the first turn (Leads) for a
-                    # freshly analyzed battle, rather than leaving it
-                    # wherever it was left on a previous, unrelated replay.
                     turn_index = 0
                     st.session_state["turn_index"] = turn_index
 
@@ -314,9 +254,7 @@ def main() -> None:
                         provider=provider,
                     )
                     try:
-                        # Spend one analysis of the visitor's daily quota
-                        # first (no-op for an unlimited provider): a refused
-                        # analysis must never reach the paid model.
+                        # Spend quota first: a refused analysis must never reach the paid model.
                         quota_left = container.usage_quota().consume(provider, _visitor_id())
                         if quota_left is not None:
                             st.session_state[f"quota_left_{provider}"] = quota_left
@@ -328,29 +266,14 @@ def main() -> None:
                         st.session_state["last_result"] = None
                         st.session_state["last_error"] = exc
 
-                    # Pre-warm the sprite-reachability cache (st.cache_data,
-                    # keyed by URL — see ADR-015's follow-up) for exactly the
-                    # turn that's about to render, while the overlay is
-                    # still up. Without this, a replay with species never
-                    # seen before in this server process would do its
-                    # first-ever sprite HEAD checks AFTER the overlay
-                    # clears, in the render block below — invisible latency
-                    # with no spinner covering it, which is the concrete
-                    # mechanism behind the reported stagger. The result is
-                    # discarded; this call exists only for its caching side
-                    # effect, so the real render moments later hits 100%
-                    # cache and paints effectively instantly.
+                    # Pre-warm the sprite cache for the first rendered turn while the overlay is up.
                     if replay.snapshots:
                         battle_stage_html(replay, replay.snapshots[turn_index])
             finally:
                 loading.empty()
 
-    # Rendered from session_state, OUTSIDE the button's own click branch —
-    # Streamlit reruns the whole script on every widget interaction (e.g. the
-    # battle panel's own stepper buttons/slider below), and `st.button(...)`
-    # only evaluates True on the exact run it was clicked. Tying this render
-    # to that branch would make the entire result area (including the panel
-    # the stepper itself belongs to) vanish the moment the stepper was used.
+    # Rendered outside the click branch: widgets rerun the script and st.button is
+    # True only on the click's own run.
     if "last_replay" in st.session_state or "last_result" in st.session_state:
         left, main_col = st.columns([1, 2])
         with left:
@@ -364,9 +287,6 @@ def main() -> None:
             error = st.session_state.get("last_error")
             result = st.session_state.get("last_result")
             if error is not None:
-                # Show the specific failure category plus the detailed message
-                # so the user can tell a bad replay from a missing key or a
-                # calc issue.
                 st.error(f"Analysis failed — {type(error).__name__}: {error}")
                 st.caption(_error_tip(error))
                 return
@@ -375,10 +295,7 @@ def main() -> None:
             for warning in container.data_warnings():
                 st.warning(warning)
 
-            # Which in-game turn the stepper is currently on — used below to
-            # highlight the matching slice of the Answer, and the matching
-            # turn-by-turn/protect-read entries, so the slider visually ties
-            # the narrative to the battle state it's showing.
+            # Turn shown by the stepper; highlights the matching parts of the answer.
             current_turn = current_turn_number(replay)
 
             render_result(result, current_turn)

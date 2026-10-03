@@ -1,15 +1,6 @@
-"""Official Smogon data adapter via @pkmn/smogon (Node IPC).
-
-Fetches Smogon's OFFICIAL data for the analyzed generation/format:
-
-* ``get_strategy``  -> natural-language *analyses* (overview/comments/sets),
-  strengthening the LLM explanation with real Smogon strategy prose.
-* ``get_stats``     -> usage *statistics* (for team-synergy suggestions).
-* ``get_sets``      -> competitive *sets* (for moveset/item/ability/EV advice).
-
-Requires network access at runtime (Smogon's data host). When unavailable, each
-method raises :class:`StrategyKnowledgeError`; a composite provider then falls
-back to the local Chaos data, so the pipeline degrades gracefully.
+"""Official Smogon data via @pkmn/smogon (Node IPC): ``get_strategy``
+(analyses), ``get_stats`` (usage) and ``get_sets`` (sets). Needs network;
+failures raise ``StrategyKnowledgeError`` so the composite falls back to Chaos.
 """
 
 from __future__ import annotations
@@ -26,11 +17,7 @@ _STAT_LABELS = ("HP", "Atk", "Def", "SpA", "SpD", "Spe")
 
 
 def describe_smogon_set(s: dict[str, Any]) -> str:
-    """One-line rendering of a raw Smogon set dict — shared (not just an
-    internal `SmogonDexAdapter` detail) since
-    :class:`~src.adapters.smogon.semantic_strategy_retriever.
-    SemanticStrategyRetriever` aggregates sets across every available
-    format, not just the one `SmogonDexAdapter.get_strategy` reads."""
+    """One-line rendering of a raw Smogon set (also used by the semantic retriever)."""
 
     def first(x: Any) -> str:
         if isinstance(x, list):
@@ -82,12 +69,9 @@ class SmogonDexAdapter:
     def get_strategy(
         self, species: str, *, metagame: str | None = None, question: str | None = None
     ) -> SmogonStrategy:
-        """Default (non-semantic) strategy: always the first (VGC-preferred)
-        analysis. `question` is accepted (part of the port) but unused here
-        — picking a more relevant passage FOR that question is what
-        :class:`~src.adapters.smogon.semantic_strategy_retriever.
-        SemanticStrategyRetriever` wraps this adapter to add; this method
-        stays its safe, dependency-free default/fallback."""
+        """Plain strategy from the first (VGC-preferred) analysis; ``question`` is
+        unused here (the semantic retriever wraps this to use it).
+        """
         analyses = self._call("analyses", species, metagame)
         if not analyses:
             raise StrategyKnowledgeError(f"No Smogon analyses for {species}")
@@ -119,22 +103,16 @@ class SmogonDexAdapter:
             else f"[Smogon official] sets: {', '.join(s.get('name', '') for s in sets)}",
             common_sets=common_sets,
             common_teammates=[],
-            # Scans both moves AND abilities for archetype signals — a
-            # trapping core (Perish Trap) is just as often built around an
-            # ABILITY (Shadow Tag, Arena Trap, Magnet Pull) as around
-            # Perish Song itself; a move-only scan misses it entirely.
+            # Abilities too: trapping cores often rest on Shadow Tag / Arena Trap.
             archetypes=infer_archetypes(moves, abilities),
         )
 
     def get_analyses_raw(
         self, species: str, *, metagame: str | None = None
     ) -> list[dict[str, Any]]:
-        """Every available Smogon-official analysis for this species,
-        unfiltered (all formats, each with its own `overview`/`comments`
-        and per-set `description`) — the raw material for
-        :class:`~src.adapters.smogon.semantic_strategy_retriever.
-        SemanticStrategyRetriever`. `get_strategy` above only ever reads
-        entry [0] of this same list; this exposes the rest."""
+        """Every Smogon analysis for the species, all formats (the semantic
+        retriever's raw material).
+        """
         analyses = self._call("analyses", species, metagame)
         return analyses or []
 

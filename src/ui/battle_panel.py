@@ -1,9 +1,7 @@
 """Showdown-like battle replay panel.
 
-Deliberately independent of the LLM pipeline: it consumes a BattleReplay
-from the standalone replay-viewer parser (obtained through the Container),
-never the AnalysisResult DTO. A bug here cannot affect the LLM answer, and
-vice versa.
+Fed by the standalone replay-viewer parser, never the AnalysisResult, so a
+bug here cannot affect the answer and vice versa.
 """
 
 from __future__ import annotations
@@ -24,24 +22,15 @@ from src.ui.theme import LAB_BACKGROUND_CSS_DEFAULT, background_css
 _DEFAULT_AVATAR = "https://play.pokemonshowdown.com/sprites/trainers/red.png"
 
 
-# Real weather/field-condition icons from Showdown's own client (verified
-# live against play.pokemonshowdown.com/fx/, filenames confirmed against the
-# actual CSS at github.com/smogon/pokemon-showdown-client — battle.css's
-# ".weather" background rules) — used instead of a generic emoji so the same
-# situation gets the game's own asset. Trick Room is internally modeled as a
-# "weather" by Showdown for this exact purpose (it shares this icon).
-# Tailwind has no dedicated background icon in the real client either (it's
-# shown there as plain text, not a graphic) — the badge for it stays icon-less
-# below for the same reason, not as an oversight.
+# Showdown client fx icons for field conditions (Trick Room shares the
+# weather mechanism; Tailwind has no icon in the real client either).
 _WEATHER_ICON_FILES = {
     "sunnyday": "weather-sunnyday.jpg", "desolateland": "weather-sunnyday.jpg",
     "raindance": "weather-raindance.jpg", "primordialsea": "weather-raindance.jpg",
     "sandstorm": "weather-sandstorm.png",
     "hail": "weather-hail.png", "snow": "weather-hail.png", "snowscape": "weather-hail.png",
     "deltastream": "weather-strongwind.png",
-    # In-game names used by the analysis pipeline's own condition labels
-    # ("weather Sun", "terrain Electric"); the Showdown ids above come from
-    # the replay viewer's labels.
+    # In-game names used by the analysis pipeline's condition labels.
     "sun": "weather-sunnyday.jpg", "harshsunshine": "weather-sunnyday.jpg",
     "rain": "weather-raindance.jpg", "heavyrain": "weather-raindance.jpg",
     "sand": "weather-sandstorm.png", "strongwinds": "weather-strongwind.png",
@@ -56,10 +45,7 @@ _WEATHER_ICON_FILES = {
 }
 
 
-# A tiny inline pokéball, the LAST fallback tier for any sprite/avatar image
-# — so a missing sprite (confirmed live: several of this project's own
-# Champions-format custom Megas have no sprite at any tested URL — see
-# ADR-014) never renders as a broken-image icon.
+# Inline pokéball: last fallback, so a missing sprite never shows broken.
 PLACEHOLDER_SPRITE = "data:image/svg+xml," + quote(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
     '<circle cx="32" cy="32" r="29" fill="#eee" stroke="#333" stroke-width="3"/>'
@@ -69,14 +55,8 @@ PLACEHOLDER_SPRITE = "data:image/svg+xml," + quote(
 )
 
 
-# Front (opponent, top of the stage) / back (own side, bottom) sprite folders,
-# tried in this order. Verified live: Showdown's sprite IDs are idiosyncratic
-# per-species — a Mega/regional-forme suffix keeps ONE hyphen before the
-# (concatenated) suffix ("Charizard-Mega-Y" -> "charizard-megay"), but a
-# species whose real name itself contains a hyphen drops it entirely
-# ("Porygon-Z" -> "porygonz", "Kommo-o" -> "kommoo") — there is no way to
-# tell these apart from the string alone without the game's own species
-# table, so both candidate IDs are tried at every tier.
+# Sprite folders, in order. Showdown ids are irregular ("Charizard-Mega-Y" ->
+# "charizard-megay" but "Porygon-Z" -> "porygonz"), so both forms are tried.
 _FRONT_SPRITE_TIERS = [("ani", "gif"), ("gen5", "png")]
 
 
@@ -125,41 +105,15 @@ def _avatar_urls(avatar: str) -> list[str]:
 
 @st.cache_data(show_spinner=False, ttl=3600)
 def http_head_ok(url: str, timeout: float = 2.0) -> bool:
-    """The actual HEAD check, cached via st.cache_data — NOT a bare
-    module-level dict (that was the bug, see below). Raises on any
-    network-level failure instead of swallowing it to a bool: st.cache_data
-    only memoizes a *return*, never an exception, so a timeout/DNS/TLS
-    failure is simply retried next call instead of being permanently
-    memoized as a false negative — the same "only cache a definitive HTTP
-    response" guarantee as before, now for free from the cache primitive
-    itself rather than hand-rolled."""
+    """HEAD check cached with st.cache_data (survives reruns); network errors
+    raise, so they are retried rather than cached as misses.
+    """
     resp = requests.head(url, timeout=timeout, allow_redirects=True)
     return resp.status_code == 200
 
 
 def _url_is_reachable(url: str, timeout: float = 2.0) -> bool:
-    """Server-side, cached check of whether a sprite/avatar URL actually
-    resolves. Reported: Kommo-o and a custom Mega Delphox intermittently
-    showed as a broken image even though the correct URL was present later
-    in the client-side onerror fallback list — relying purely on the
-    browser retrying a sequence of failed image loads proved unreliable in
-    some deployments. This resolves it once, server-side, so the emitted
-    <img src> is already the verified-correct one whenever possible — the
-    onerror cascade in _cascade_img_html stays only as a defensive
-    fallback, not the primary resolution mechanism.
-
-    Reported regression: turn-stepping became noticeably slow after this
-    was first added. Root cause was the cache itself — it was a plain
-    module-level dict, but Streamlit re-executes the ENTIRE script top to
-    bottom on every rerun (every stepper click is a rerun), which
-    re-executes `_URL_REACHABLE_CACHE: dict = {}` too, silently wiping it
-    every single time. The cache was never actually surviving between
-    clicks — every turn-step was re-running live network HEAD requests for
-    every sprite on screen. Fixed by moving the cached check into
-    `http_head_ok` above, decorated with `st.cache_data`, Streamlit's own
-    primitive for state that must survive reruns (and, as a bonus, survives
-    across sessions on the same server process too, so this cost is now
-    paid once per URL ever, not once per URL per rerun)."""
+    """Whether a sprite/avatar URL resolves, checked server-side and cached."""
     try:
         return http_head_ok(url, timeout)
     except requests.RequestException:
@@ -167,9 +121,7 @@ def _url_is_reachable(url: str, timeout: float = 2.0) -> bool:
 
 
 def _resolve_primary(urls: list[str]) -> list[str]:
-    """Move the first server-verified-reachable URL in `urls` to the front,
-    stopping at the first success (never verifies the whole list — most
-    Pokemon resolve on the very first candidate, one HEAD request)."""
+    """Move the first reachable URL to the front, stopping at the first hit."""
     for i, u in enumerate(urls):
         if u.startswith("data:") or _url_is_reachable(u):
             return [u] + urls[:i] + urls[i + 1 :]
@@ -177,14 +129,8 @@ def _resolve_primary(urls: list[str]) -> list[str]:
 
 
 def _cascade_img_html(urls: list[str], alt: str, style: str) -> str:
-    """An <img> whose primary src is server-verified (see _resolve_primary),
-    with a client-side onerror cascade through the remaining candidates as a
-    defensive fallback, ending at the pokéball placeholder — so a missing
-    sprite/avatar at any tier never shows a broken-image icon. Fallback URLs
-    travel as a JSON array in a data attribute; every URL here is either our
-    own percent-encoded data: URI or a plain https:// sprite path, neither of
-    which can contain a raw quote character, so no further escaping of the
-    JSON itself is needed beyond the single-quoted HTML attribute wrapper.
+    """An <img> with a server-verified src and a client-side onerror cascade
+    through the other candidates, ending at the pokéball placeholder.
     """
     seen: list[str] = []
     for u in _resolve_primary(urls):
@@ -206,8 +152,7 @@ def _cascade_img_html(urls: list[str], alt: str, style: str) -> str:
 
 
 def _condition_icon_url(condition: str) -> str | None:
-    """The real Showdown fx icon for this field-condition label, if one
-    exists (see _WEATHER_ICON_FILES above for which do and don't)."""
+    """The Showdown fx icon for a field-condition label, if one exists."""
     if condition in ("Trick Room", "Gravity", "Magic Room", "Wonder Room"):
         name = condition.lower().replace(" ", "")
     elif condition.startswith("weather "):
@@ -270,8 +215,7 @@ def _boost_badges_html(boosts: dict[str, int]) -> str:
 
 
 def hp_box_html(state: ReplayPokemonState) -> str:
-    """Showdown's own HP-bar UI: name + level, a colored bar, HP%, status
-    and stat-stage badges — the compact info box shown above each sprite."""
+    """Showdown-style info box: name, level, HP bar, status and stat stages."""
     pct = 0.0 if state.fainted else max(0.0, min(100.0, state.hp_percent))
     bar_color = "#888" if state.fainted else _hp_color(pct)
     name = html.escape(state.species)
@@ -325,10 +269,7 @@ def _team_icon_html(species: str, *, alive: bool, active: bool) -> str:
 
 
 def _side_header_html(replay: BattleReplay, snapshot: ReplayTurnSnapshot, player: str, align: str) -> str:
-    """Name + avatar + team-icon tray for one side, as a normal-flow block
-    (NOT absolutely positioned — see battle_stage_html for why: a corner
-    overlay collides with the sprite rows the moment the panel is narrower
-    than Showdown's own wide desktop layout, which this column always is)."""
+    """Name, avatar and team-icon tray for one side, in normal flow."""
     name = html.escape(replay.player_names.get(player, player))
     avatar_img = _cascade_img_html(
         _avatar_urls(replay.avatars.get(player, "")), name,
@@ -378,15 +319,9 @@ def _mon_slot_html(snapshot: ReplayTurnSnapshot, player: str, species: str, *, b
 
 
 def battle_stage_html(replay: BattleReplay, snapshot: ReplayTurnSnapshot) -> str:
-    """The field scene: background, both sides' avatars/team icons, and
-    their active Pokemon (opponent front sprites up top, own side back
-    sprites at the bottom). Everything is normal document flow (a column of
-    stacked rows with `gap`), NOT absolutely positioned over a fixed
-    aspect-ratio box — this panel lives in a narrow column (roughly a third
-    of the page), not Showdown's own wide desktop layout, so a fixed 16:9
-    shape with overlaid corners left no room for two rows of sprites and
-    overlapped everything. Flow layout instead grows to whatever height the
-    content actually needs, at any column width."""
+    """The field scene: avatars, team icons and active Pokemon (opponent on top).
+    Normal-flow rows, not absolute positioning, so it fits a narrow column.
+    """
     players = sorted(snapshot.active) or sorted(replay.player_names) or ["p1", "p2"]
     p1 = players[0]
     p2 = players[1] if len(players) > 1 else players[0]
@@ -431,11 +366,7 @@ def _step_turn(delta: int, max_idx: int) -> None:
 
 
 def current_turn_number(replay: BattleReplay) -> int:
-    """Maps the stepper's turn_index (an array index into replay.snapshots)
-    to the actual in-game turn number that snapshot represents (0 for
-    "Leads") — the number the LLM's answer and the turn-by-turn/protect-read
-    checks are both keyed by, used to highlight whichever of their entries
-    matches the turn currently selected on the slider."""
+    """The in-game turn (0 = Leads) of the stepper's selected snapshot."""
     if not replay.snapshots:
         return 0
     idx = cast(int, st.session_state.get("turn_index", 0))
@@ -443,10 +374,7 @@ def current_turn_number(replay: BattleReplay) -> int:
     return replay.snapshots[idx].turn
 
 
-# Matches a turn breakdown ONLY at the start of a line — "**Turn 3**:",
-# "3. **Turn 3**:", plain "Turn 3:" — never a mid-sentence, incidental
-# aside like "...capitalized on the play from Turn 3..." inside a closing
-# summary paragraph, which would wrongly get treated as a new segment.
+# A turn header at the start of a line only ("**Turn 3**:", "3. **Turn 3**:").
 _TURN_HEADER_RE = re.compile(
     r"^(?:\d+\.\s*)?(?:\*\*)?Turn\s+(?P<turn>\d+)\b[:.]?(?:\*\*)?[:.]?",
     re.IGNORECASE | re.MULTILINE,
@@ -454,15 +382,10 @@ _TURN_HEADER_RE = re.compile(
 
 
 def highlight_answer_by_turn(answer_md: str, turn: int) -> str:
-    """Wraps the paragraph/list item narrating the given turn in
-    Streamlit's own `:orange-background[...]` markdown directive, so
-    moving the stepper visually ties the LLM's narrative to the turn it's
-    about (deliberately not a raw HTML <mark> tag: CommonMark treats a tag
-    placed at a line's start as an HTML block, which would stop the
-    enclosed **bold**/list markdown from being parsed at all — Streamlit's
-    directive has no such edge case and needs no unsafe_allow_html). If the
-    answer never breaks itself down by turn — a normal, common case for
-    many questions — no match is found and the text renders unchanged."""
+    """Highlight the paragraph narrating ``turn`` with Streamlit's
+    ``:orange-background[...]`` directive (a raw <mark> would break markdown);
+    unchanged when the answer has no per-turn breakdown.
+    """
     matches = list(_TURN_HEADER_RE.finditer(answer_md))
     if not matches:
         return answer_md
@@ -475,9 +398,7 @@ def highlight_answer_by_turn(answer_md: str, turn: int) -> str:
         if int(m.group("turn")) == turn:
             stripped = segment.rstrip("\n")
             trailer = segment[len(stripped):]
-            # The directive can't cleanly span a paragraph break, so if this
-            # turn's write-up has more than one paragraph, highlight just
-            # the first — a harmless degradation, not a rendering break.
+            # The directive cannot span paragraphs: highlight only the first.
             para_end = stripped.find("\n\n")
             head, tail = (stripped, "") if para_end == -1 else (stripped[:para_end], stripped[para_end:])
             segment = f":orange-background[{head}]" + tail + trailer
@@ -491,8 +412,7 @@ def render_battle_panel(replay: BattleReplay) -> None:
     max_idx = len(replay.snapshots) - 1
     if "turn_index" not in st.session_state:
         st.session_state["turn_index"] = 0  # default: first turn (Leads)
-    # Clamp defensively — a new replay may have fewer turns than whatever
-    # was selected while viewing a previous one.
+    # Clamp: a new replay may have fewer turns than the previous selection.
     st.session_state["turn_index"] = max(0, min(max_idx, st.session_state["turn_index"]))
 
     col_prev, col_slider, col_next = st.columns([1, 6, 1])
@@ -529,9 +449,7 @@ def render_battle_panel(replay: BattleReplay) -> None:
     )
 
     if st.session_state["turn_index"] == max_idx:
-        # No emoji here either: the real client has no "forfeit flag"/"trophy"
-        # graphic (a forfeit is just a plain log line there) — a winner IS
-        # shown with their own avatar, so that's what stands in for a trophy.
+        # No forfeit/trophy emoji: the winner's avatar stands in, like the real client.
         if replay.forfeited_player:
             name = html.escape(
                 replay.player_names.get(replay.forfeited_player, replay.forfeited_player)

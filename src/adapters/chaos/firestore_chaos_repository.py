@@ -1,34 +1,12 @@
-"""Firestore-backed Chaos repository — same contract as ``ChaosRepository``,
-sourced from Google Cloud Firestore instead of local ``data/chaos/*.json``
-files.
+"""Firestore-backed Chaos repository (same contract as ``ChaosRepository``).
 
-Storage layout (populated by ``scripts/migrate_chaos_to_firestore.py``):
+    chaos_tiers/{tier_id}                       # e.g. gen9championsvgc2026regmb-1760
+        info, species_index
+        species/{normalized_species_id}         # the species' Chaos JSON, verbatim
 
-    chaos_tiers/{tier_id}                          # e.g. "gen9championsvgc2026regmb-1760"
-        info: <the file's original "info" object>  # metagame, cutoff, battle count, ...
-        chaos_tiers/{tier_id}/species/{normalized_species_id}
-            <the species' original Chaos JSON object, verbatim>  # Abilities/Items/
-            original_name: <species>                             # Moves/Spreads/Teammates/
-                                                                    # Checks and Counters/Raw count
-
-``tier_id`` is exactly a local filename with ``.json`` stripped (e.g.
-``gen9championsvgc2026regmb-1760``) — the SAME string shape
-``chaos_tier_index.parse_tier_id`` already parses, so tier/regulation
-selection is 100% shared code with the local-file backend
-(``ChaosTierIndex``), not a second implementation.
-
-Cost shape (why this layout, not "one document per file"): a whole Chaos
-tier file is 2.5-4.5MB with 250-300+ species — one Firestore document per
-FILE would routinely blow past the 1MiB document size limit, and would mean
-every ``build_match_context`` call re-downloads every species in a tier even
-though a real battle only ever needs the handful actually in play. Storing
-one document PER SPECIES, keyed by its own normalized name, means a lookup
-is a single direct document read by id (no listing/scanning a collection to
-find it) — the cheapest possible shape under Firestore's per-document-read
-billing model. The species doc's field content is the ORIGINAL Chaos JSON
-object unchanged, satisfying "unstructured JSON as today" while still living
-in Firestore's native document/map representation (no re-serialization to a
-string blob needed).
+``tier_id`` is the local file name without ``.json``, so tier selection is
+the shared ``ChaosTierIndex``. One document per species (a tier file is
+2.5-4.5MB, past Firestore's 1MiB limit) makes each lookup one direct read.
 """
 
 from __future__ import annotations
@@ -43,9 +21,7 @@ from src.adapters.chaos.chaos_tier_index import (
     parse_tier_id,
 )
 from src.adapters.chaos.species_normalize import normalize_species
-# Lazy google-cloud-firestore import lives in the shared factory, so this
-# module stays importable without the package (an optional BYOK-style
-# dependency degrades to ConfigurationError, not an ImportError at load time).
+# The shared factory imports google-cloud-firestore lazily.
 from src.adapters.firestore_client import build_firestore_client as _build_client
 from src.domain.exceptions import ChaosDataError
 
@@ -60,9 +36,7 @@ class FirestoreChaosFile(ChaosFileMeta):
 
 
 class FirestoreChaosRepository:
-    """``ChaosRepositoryLike`` sourced from Firestore (see
-    ``chaos_repository.ChaosRepositoryLike`` for the exact contract this
-    satisfies structurally — no shared base class needed)."""
+    """``ChaosRepositoryLike`` sourced from Firestore."""
 
     def __init__(
         self,
@@ -75,10 +49,7 @@ class FirestoreChaosRepository:
         reg_fallback_depth: int = 3,
         client: Any | None = None,
     ) -> None:
-        # `client` is a test seam (an already-built/fake Firestore client),
-        # the same shape as AdkAnalysisOrchestrator's `model` param or
-        # LangChainAnalysisOrchestrator's `chat_model` param — production
-        # code never passes it, always going through `_build_client` below.
+        # `client` is a test seam; production always builds one.
         self._client = client if client is not None else _build_client(
             project_id, database_id, credentials_path, grpc_ca_bundle_path
         )
@@ -123,9 +94,8 @@ class FirestoreChaosRepository:
         self._index: ChaosTierIndex[FirestoreChaosFile] = ChaosTierIndex(
             self._files, reg_fallback_depth=reg_fallback_depth
         )
-        # (tier_doc_id, normalized species candidate) -> species doc fields,
-        # or None for a confirmed miss. One real Firestore read per NEW key;
-        # every repeat lookup within this process's lifetime is free.
+        # (tier doc id, normalized species) -> fields, or None for a miss; one
+        # Firestore read per new key.
         self._species_cache: dict[tuple[str, str], dict[str, Any] | None] = {}
 
     # -- selection (delegates to the shared, storage-agnostic index) ----- #
@@ -175,9 +145,9 @@ class FirestoreChaosRepository:
         return data
 
     def mon_data(self, file: FirestoreChaosFile, species: str) -> dict[str, Any] | None:
-        """Same forme/spelling resolution as ``ChaosRepository.mon_data``,
-        but each candidate is a single direct document read by its
-        normalized id — never a full-collection scan."""
+        """Same forme/spelling resolution as ``ChaosRepository.mon_data``; each
+        candidate is one direct document read.
+        """
         parts = species.split("-")
         for cut in range(len(parts), 0, -1):
             candidate = "-".join(parts[:cut])
@@ -207,10 +177,9 @@ class FirestoreChaosRepository:
         return dict(self._rejected)
 
     def legal_species(self, metagame: str) -> frozenset[str]:
-        """Normalized names of every species with data in any tier of
-        ``metagame``. Uses the tier document's species_index when the writer
-        stored one (read already at listing), else lists the tier's species
-        document ids once (cached for this process)."""
+        """Normalized species with data in any tier of ``metagame``: from the tier's
+        species_index when present, else by listing its species once (cached).
+        """
         if metagame in self._legal_cache:
             return self._legal_cache[metagame]
         names: set[str] = set()

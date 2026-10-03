@@ -49,12 +49,8 @@ class ConditionHandlers(HandlerGroup):
     # -- abilities / stat stages ------------------------------------------- #
 
     def on_ability(self, parts: list[str]) -> None:
-        # An ability that actively TRIGGERED (Intimidate, Trace, Download, ...)
-        # — Showdown only announces observable activations. Recorded as a
-        # timeline event AND on the roster entry so later calcs use the real,
-        # CONFIRMED ability instead of a Chaos-guessed one. First reveal wins:
-        # a later "-ability" for the same mon (e.g. Trace copying something)
-        # is a temporary ability and must not overwrite the original.
+        # A triggered ability (Intimidate, Trace, ...): a timeline event and the
+        # confirmed ability for later calcs. First reveal wins (Trace is temporary).
         if len(parts) <= 3:
             return
         key = self.state.roster.resolve(parts[2])
