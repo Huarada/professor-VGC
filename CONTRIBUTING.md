@@ -59,6 +59,7 @@ Node smoke/unit tests, and `mypy --strict`.
 - **Never edit `data/chaos/*.json`** — those are raw Smogon dumps; fix the
   code that reads them instead.
 - **English** for code, comments, prompts and docs.
+- **Lean comments:** state the *why* in ≤2 lines; history belongs in the commit or an ADR. CI's `lint` job (ruff + vulture) rejects unused imports, variables and dead code.
 - **Architectural decisions** get an ADR entry in `ADR.md`.
 
 ## Security

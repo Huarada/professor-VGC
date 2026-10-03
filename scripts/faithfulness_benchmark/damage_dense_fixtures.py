@@ -155,7 +155,6 @@ _SPECS: list[tuple[str, tuple[str, str], tuple[str, str], list[list[tuple[str, s
 def _make_fixture(spec: tuple) -> Fixture:
     fixture_id, p1, p2, turns = spec
     replay = _build_damage_log(p1, p2, turns)
-    all_moves = {ex[1] for turn in turns for ex in turn}
     return Fixture(
         id=fixture_id,
         tags=["damage_dense"],

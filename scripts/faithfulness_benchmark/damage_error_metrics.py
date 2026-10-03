@@ -40,7 +40,6 @@ from statistics import mean
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
-from src.domain.models import MetaContext
 from src.services.container import Container
 from src.services.matchup_evaluator import MatchupEvaluator
 from src.services.selection_logic import fallback_plan

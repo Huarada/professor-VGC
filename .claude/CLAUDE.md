@@ -281,6 +281,19 @@ replay JSON/log + question
   `src/adapters/llm/prompts/*.txt` (never hardcoded in logic).
 - **Tests:** every feature has pytest coverage using fakes (no network/keys/Node
   required). Run `pytest -q` before committing. Keep the suite green.
+- **Clean code — keep it lean (debuggability first):**
+  - A comment states a non-obvious *why* in at most 2 lines. No incident
+    stories ("reported", "confirmed live", "was X, now Y"): those go in the
+    commit message or an ADR, and the comment cites it (`ADR-0NN`).
+  - Docstrings: a one-line summary; `Args`/`Returns`/`Raises` only when not
+    obvious from the signature. Don't restate the code.
+  - **Docstrings the model reads are behavior, not docs:** `EvidenceTools`
+    methods, `adk_tools.py` / `langchain_tools.py`, and Pydantic models used as
+    `output_schema` / `args_schema`. Change them only on purpose.
+  - Small functions with one job; no dead code (delete it, git keeps it).
+  - CI's `lint` job runs `ruff check --select F` (unused imports/variables,
+    undefined names) and `vulture src vulture_whitelist.py --min-confidence 80`.
+    Whitelist a false positive with a one-line reason; never silence real dead code.
 
 ---
 
