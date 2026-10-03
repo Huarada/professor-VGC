@@ -22,22 +22,26 @@ from src.domain.exceptions import LogParsingError
 from src.domain.models import GameState, PokemonSet, SideState
 from src.domain.replay_view_models import BattleReplay
 
+# What a truncated or hand-edited replay makes the readers raise (a pydantic
+# ValidationError is a ValueError). Untrusted input: reported, never a crash.
+_MALFORMED = (ValueError, TypeError, KeyError, IndexError, AttributeError)
+
 
 def parse_replay_for_viewer(replay: dict[str, Any] | str) -> BattleReplay:
     """The battle panel's turn-by-turn view of replay JSON or raw log text;
     empty (never raising) when the input has no usable log."""
-    if isinstance(replay, str):
-        text = replay.strip()
-        if not text.startswith("{"):
-            return read_replay(text)
-        try:
+    try:
+        if isinstance(replay, str):
+            text = replay.strip()
+            if not text.startswith("{"):
+                return read_replay(text)
             replay = json.loads(text)
-        except json.JSONDecodeError:
-            return BattleReplay()
-    if isinstance(replay, dict):
-        log = replay.get("log")
-        if isinstance(log, str) and log.strip():
-            return read_replay(log)
+        if isinstance(replay, dict):
+            log = replay.get("log")
+            if isinstance(log, str) and log.strip():
+                return read_replay(log)
+    except _MALFORMED:  # includes json.JSONDecodeError
+        pass
     return BattleReplay()
 
 
@@ -45,7 +49,23 @@ class ShowdownReplayParser:
     """Concrete :class:`~src.domain.interfaces.LogParser` for Showdown."""
 
     def parse(self, replay: dict[str, Any] | str) -> GameState:
-        """Parse structured JSON or raw log text into a GameState."""
+        """Parse structured JSON or raw log text into a GameState.
+
+        Raises:
+            LogParsingError: The input is not a usable replay, whatever its shape.
+        """
+        try:
+            return self._parse(replay)
+        except LogParsingError:
+            raise
+        except _MALFORMED as exc:
+            raise LogParsingError(
+                "The replay could not be read: it looks truncated or malformed "
+                f"({type(exc).__name__}). Paste the complete replay JSON downloaded "
+                "from Showdown, or the whole battle log (the lines starting with '|')."
+            ) from exc
+
+    def _parse(self, replay: dict[str, Any] | str) -> GameState:
         if isinstance(replay, str):
             text = replay.strip()
             if text.startswith("{"):
@@ -60,7 +80,7 @@ class ShowdownReplayParser:
                         "text (the lines starting with '|'), or a structured team "
                         "JSON with a \"sides\" array."
                     ) from exc
-                return self.parse(decoded)
+                return self._parse(decoded)
             return read_log(text)
         if isinstance(replay, dict):
             if isinstance(replay.get("log"), str) and replay["log"].strip():
@@ -92,7 +112,7 @@ class ShowdownReplayParser:
                 format_id=format_id, turn=turn, sides=sides,
                 rating=self._coerce_rating(payload.get("rating")),
             )
-        except (TypeError, ValueError, KeyError) as exc:
+        except _MALFORMED as exc:
             raise LogParsingError(
                 "Malformed replay payload: the JSON was read but its structure is "
                 f"not what the parser expects ({type(exc).__name__}: {exc}). Each "
