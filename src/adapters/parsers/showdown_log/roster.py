@@ -40,6 +40,8 @@ class Roster:
     def __init__(self) -> None:
         self.players: dict[str, dict[str, MonDraft]] = {}
         self.player_names: dict[str, str] = {}
+        self.avatars: dict[str, str] = {}
+        self.preview: dict[str, list[str]] = {}  # team preview, in order
         self.brought: dict[str, list[str]] = {}
         self.slot_species: dict[str, str] = {}  # "p1a" -> roster key
 

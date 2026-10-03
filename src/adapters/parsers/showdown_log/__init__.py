@@ -14,11 +14,12 @@ Modules, by responsibility:
 - ``field_ledger`` — Tailwind, Trick Room, weather, terrain, screens;
 - ``state`` — the aggregate of the above plus the per-move snapshot;
 - ``handlers`` — one group of protocol-command handlers per concern;
+- ``replay_frames`` — per-turn frames -> the battle panel's ``BattleReplay``;
 - ``reader`` — line splitting and dispatch.
 """
 
 from __future__ import annotations
 
-from src.adapters.parsers.showdown_log.reader import read_log
+from src.adapters.parsers.showdown_log.reader import read_log, read_replay
 
-__all__ = ["read_log"]
+__all__ = ["read_log", "read_replay"]

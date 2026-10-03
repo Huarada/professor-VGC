@@ -33,6 +33,8 @@ class FieldLedger:
         self._terrain_open: _OpenWindow | None = None
         self.screen_windows: dict[str, list[FieldWindow]] = {}
         self._screens_open: dict[str, dict[str, int]] = {}
+        self.room_windows: list[FieldWindow] = []  # Gravity / Magic Room / Wonder Room
+        self._rooms_open: dict[str, int] = {}
 
     # -- current state ------------------------------------------------------ #
 
@@ -75,6 +77,15 @@ class FieldLedger:
         self.screen_windows.setdefault(player, []).append(
             FieldWindow(name=screen, start_turn=start, end_turn=turn)
         )
+
+    # -- rooms (Gravity, Magic Room, Wonder Room) --------------------------- #
+
+    def start_room(self, room: str, turn: int) -> None:
+        self._rooms_open.setdefault(room, turn)
+
+    def end_room(self, room: str, turn: int) -> None:
+        start = self._rooms_open.pop(room, turn)
+        self.room_windows.append(FieldWindow(name=room, start_turn=start, end_turn=turn))
 
     # -- weather / terrain ------------------------------------------------- #
 
@@ -124,6 +135,8 @@ class FieldLedger:
                 )
             )
         self.end_terrain(turn)
+        for room in list(self._rooms_open):
+            self.end_room(room, turn)
         for player, open_ in self._screens_open.items():
             for name, start in open_.items():
                 self.screen_windows.setdefault(player, []).append(

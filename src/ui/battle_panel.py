@@ -1,7 +1,7 @@
 """Showdown-like battle replay panel.
 
-Fed by the standalone replay-viewer parser, never the AnalysisResult, so a
-bug here cannot affect the answer and vice versa.
+Renders a ``BattleReplay`` (the log parser's per-turn view, ADR-037), never
+the AnalysisResult.
 """
 
 from __future__ import annotations

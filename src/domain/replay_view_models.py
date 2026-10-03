@@ -1,5 +1,5 @@
-"""UI-only models for the battle replay panel, independent of the analysis
-models (ADR-014); produced by ``replay_viewer_parser``.
+"""UI-only models for the battle replay panel, built by the log parser's
+per-turn frames (ADR-037).
 """
 
 from __future__ import annotations

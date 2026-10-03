@@ -37,6 +37,7 @@ TERRAIN = {
     "psychicterrain": "Psychic", "mistyterrain": "Misty",
 }
 SCREENS = {"reflect": "Reflect", "lightscreen": "Light Screen", "auroraveil": "Aurora Veil"}
+ROOMS = {"gravity": "Gravity", "magicroom": "Magic Room", "wonderroom": "Wonder Room"}
 STATUS_NAMES = {
     "par": "paralysis", "brn": "burn", "psn": "poison", "tox": "bad poison",
     "slp": "sleep", "frz": "freeze",

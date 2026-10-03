@@ -25,11 +25,29 @@ class CombatantLedger:
         self.revealed: set[tuple[str, str, str]] = set()
         self.on_field: dict[str, Key] = {}  # "p1a" -> key
         self.fainted: dict[str, list[str]] = {}
+        self.boosts: dict[Key, dict[str, int]] = {}
+        self.forme: dict[Key, str] = {}  # current appearance when not the key itself
 
     # -- field presence ----------------------------------------------------- #
 
-    def enter(self, slot_ref: str, key: Key) -> None:
+    def enter(self, slot_ref: str, key: Key, appearance: str) -> None:
         self.on_field[slot_ref] = key
+        self.boosts[key] = {}  # stat stages never survive a switch
+        self.set_forme(key, appearance)
+
+    def set_forme(self, key: Key, appearance: str) -> None:
+        if appearance == key[1]:
+            self.forme.pop(key, None)
+        else:
+            self.forme[key] = appearance
+
+    def boost(self, key: Key, stat: str, delta: int) -> None:
+        stages = self.boosts.setdefault(key, {})
+        stage = max(-6, min(6, stages.get(stat, 0) + delta))
+        if stage:
+            stages[stat] = stage
+        else:
+            stages.pop(stat, None)
 
     def faint(self, slot_ref: str, key: Key) -> None:
         self.hp[key] = 0.0

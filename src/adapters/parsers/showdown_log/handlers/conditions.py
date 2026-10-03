@@ -81,6 +81,7 @@ class ConditionHandlers(HandlerGroup):
             return
         self.state.roster.register(*key)
         stat = parts[3].strip()
+        self.state.combatants.boost(key, stat, delta)
         stages = abs(delta)
         direction = "rose" if delta > 0 else "fell"
         self.state.timeline.emit(

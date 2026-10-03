@@ -121,9 +121,9 @@ professor-VGC/
 │   ├── domain/{models,interfaces,exceptions,replay_view_models}.py
 │   ├── adapters/
 │   │   ├── parsers/showdown_parser.py        # input shapes (replay JSON / raw log / team JSON)
-│   │   ├── parsers/showdown_log/             # log protocol -> GameState (package: protocol, roster, timeline,
-│   │   │                                     #   combatants, field_ledger, state, handlers/, reader)
-│   │   ├── parsers/replay_viewer_parser.py   # separate, UI-only parse for the battle panel
+│   │   ├── parsers/showdown_log/             # the ONE log parser: GameState + the panel's BattleReplay
+│   │   │                                     #   (protocol, roster, timeline, combatants, field_ledger,
+│   │   │                                     #   state, replay_frames, handlers/, reader)
 │   │   ├── replay_url_fetcher.py             # Showdown replay URL -> replay JSON
 │   │   ├── calc/smogon_calc_adapter.py       # Python side of @smogon/calc IPC (CalcField -> engine field)
 │   │   ├── chaos/{chaos_repository,chaos_adapter,chaos_tier_index,firestore_chaos_repository,species_normalize}.py

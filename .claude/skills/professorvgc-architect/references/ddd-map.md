@@ -16,7 +16,7 @@ belongs** and **what shape it should have**.
 | **Strategy Knowledge** | Narrative strategy, archetypes, teammates; optional semantic retrieval | `SmogonStrategy`, `Archetype` | `adapters/smogon/*` | `@pkmn/smogon` (Node), Chaos fallback, embeddings |
 | **Coaching** (core domain) | Decide what the question is about, verify every turn, explain | `AnalysisRequest`, `SelectionPlan`, `MatchupVerdict`, `TurnCheck`, `TurnDamageCheck`, `OptimalMoveOption`, `ProtectRead`, `AgentToolInvocation`, `AnalysisResult` | `services/*` | LLM providers (ADK / LangChain / native SDKs) |
 | **Conversation** | Per-session history, recurring concepts | `ChatMessage` | `adapters/memory/`, `services/concept_tracking.py` | in-memory store |
-| **Replay Viewer** | Showdown-like visual battle panel | `BattleReplay`, `ReplayTurnSnapshot`, `ReplayPokemonState` | `adapters/parsers/replay_viewer_parser.py`, `domain/replay_view_models.py` | same replay log |
+| **Replay Viewer** | Showdown-like visual battle panel | `BattleReplay`, `ReplayTurnSnapshot`, `ReplayPokemonState` | `adapters/parsers/showdown_log/replay_frames.py`, `domain/replay_view_models.py` | same parse as the analysis (ADR-037) |
 
 **Core domain** = Coaching (that is the product's differentiator).
 Battle Reconstruction and Damage & Speed are **supporting** domains whose

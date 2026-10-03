@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.handlers.base import Handler, HandlerGroup
 from src.adapters.parsers.showdown_log.protocol import (
+    ROOMS,
     SCREENS,
     TERRAIN,
     WEATHER,
@@ -61,6 +62,9 @@ class FieldHandlers(HandlerGroup):
         if to_id(condition) == "trickroom":
             self.state.field.start_trick_room(self.state.turn)
             return
+        if to_id(condition) in ROOMS:
+            self.state.field.start_room(ROOMS[to_id(condition)], self.state.turn)
+            return
         terrain = TERRAIN.get(to_id(condition))
         if terrain is None:
             return
@@ -75,6 +79,9 @@ class FieldHandlers(HandlerGroup):
         condition = parts[2].replace("move:", "").strip()
         if to_id(condition) == "trickroom":
             self.state.field.end_trick_room(self.state.turn)
+            return
+        if to_id(condition) in ROOMS:
+            self.state.field.end_room(ROOMS[to_id(condition)], self.state.turn)
             return
         terrain = TERRAIN.get(to_id(condition))
         if terrain is None or self.state.field.terrain != terrain:

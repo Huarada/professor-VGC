@@ -3787,3 +3787,40 @@ by Cloud Run's instance ceiling).
 `src/ui/app.py`, `tests/test_usage_quota.py`, `tests/test_ui_smoke.py`, docs.
 
 ---
+
+## ADR-037 — One battle-log parser for the analysis and the battle panel
+
+**Status:** Accepted (supersedes ADR-014)
+
+### Context
+ADR-014 kept a second, standalone parser (`replay_viewer_parser.py`, 395
+lines) for the battle panel, so the panel could never regress the analysis.
+It duplicated almost everything the analysis parser already tracks (HP,
+status, formes, field, winner) and drifted: on 50 real replays it reset HP to
+100% whenever Showdown wrote a colour-suffixed HP (`50/100g`), and it showed
+protocol weather ids (`SunnyDay`) where the analysis uses in-game names.
+
+### Decision
+- `showdown_log` is the only parser. It also tracks what only the panel used
+  (avatars, team-preview order, current forme, stat stages, Gravity/Magic
+  Room/Wonder Room) and records a `TurnFrame` at every `|turn|` boundary.
+- `read_replay(text)` builds the panel's `BattleReplay` from those frames and
+  the field windows the parser already closes; `parse_replay_for_viewer`
+  (input shapes) lives in `showdown_parser.py`. The panel models are unchanged.
+- The panel is still fed by its own call and never by `AnalysisResult`, so a
+  panel failure still cannot affect an answer.
+
+### Verification
+Old vs. new output on 50 cached real replays: identical rosters, avatars,
+teams, winners, active slots, statuses, formes and stat stages. Remaining
+differences, all intended: weather by in-game name; move lines carry the
+analysis timeline's effects/results (a KO is on the move's line); a weather
+that expired during a turn still shows on that turn; and 17 frames where the
+old parser had reset HP to 100% on a colour-suffixed HP field.
+
+### Consequences
+One place to fix protocol bugs for both views (the colour-suffixed HP is
+fixed next, for both). A bug in the shared parser can now reach the panel
+and the analysis alike — covered by both test suites.
+
+---
