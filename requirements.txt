@@ -25,7 +25,7 @@ google-cloud-firestore>=2.16,<3
 # Dev / test
 pytest>=8.0
 mypy>=1.9
-ruff>=0.6
+ruff>=0.16.10
 vulture>=2.11
 
 # Benchmark tooling (scripts/faithfulness_benchmark — not shipped in src/)
