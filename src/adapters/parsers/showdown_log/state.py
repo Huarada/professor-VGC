@@ -40,6 +40,9 @@ class ParseState:
             weather=self.field.weather,
             terrain=self.field.terrain,
             screens=self.field.screens(),
+            tailwind=self.field.tailwind_now(),
+            trick_room=self.field.trick_room_now,
+            rooms=self.field.rooms_now(),
             active=ledger.active(),
             fainted={p: list(names) for p, names in ledger.fainted.items()},
             mons=mons,
@@ -57,7 +60,7 @@ class ParseState:
             turn=self.turn,
             sides=self.roster.sides(),
             outcome=self.timeline.outcome(self.roster),
-            field=self.field.conditions(self.combatants.final_statuses()),
+            field=self.field.conditions(),
         )
         if self.format_id:
             state = state.model_copy(update={"format_id": self.format_id})

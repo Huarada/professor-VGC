@@ -85,8 +85,9 @@ def _render_verdicts(result: AnalysisResult) -> None:
     with st.expander(f"Deterministic verdicts — spotlight matchups ({len(result.verdicts)})"):
         st.caption(
             "Supplementary hand-picked matchups (not necessarily ones that "
-            "occurred) — see 'Turn-by-turn checks' below for the exhaustive, "
-            "ordered ground truth covering every real action of the game."
+            "occurred) on a neutral field: no weather, terrain, screens, "
+            "Tailwind, Trick Room or status, full HP. See 'Turn-by-turn checks' "
+            "below for every real action under the conditions of its turn."
         )
         if not result.verdicts:
             st.caption("(none selected for this question)")

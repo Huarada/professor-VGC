@@ -3824,3 +3824,56 @@ fixed next, for both). A bug in the shared parser can now reach the panel
 and the analysis alike — covered by both test suites.
 
 ---
+
+## ADR-038 — Field conditions: neutral whole-game verdicts, per-move Tailwind/Trick Room, rooms
+
+**Status:** Accepted
+
+### Context
+An end-to-end check (real parser -> `TurnReplaySimulator` -> real `@smogon/calc`)
+on a game with a weather war, a terrain replacement, expiries, a mid-turn
+Tailwind and Gravity found that the per-move damage calcs already used the
+weather and terrain of each move's own moment, but:
+
+1. **Whole-game verdicts** (`MatchupEvaluator`) ran every matchup under the
+   weather/terrain that lasted longest, Tailwind/Trick Room if they were ever
+   set, and each Pokemon's status at the END of the game. Two Pokemon that
+   only met in rain were judged in sun; a burn from the last turn halved a
+   physical verdict for the whole game.
+2. **Tailwind / Trick Room** came from turn windows, not from the move's
+   snapshot: a move used before a mid-turn Tailwind was calculated (speed
+   included) as if it were up.
+3. The **timeline header** sent to the LLM listed every weather/terrain that
+   touched a turn (`weather Sun; weather Rain`), reading as two at once, and
+   did not mark an expiry.
+4. **Gravity, Magic Room and Wonder Room** were tracked for the battle panel
+   only; a Ground move into a Flying type under Gravity was projected at 0%.
+5. **Protosynthesis / Quark Drive** never activated: `@smogon/calc` ignores
+   them unless `boostedStat` is set (no such Pokemon is in the Reg M-B/M-C
+   data today).
+
+### Decision
+- A whole-game verdict is a **neutral baseline**: empty `CalcField`, no status,
+  no stages, full HP (held items still count). No single moment's state can
+  represent a whole game; the real conditions of every move are in the
+  per-move re-checks. The prompt and the UI say so. `FieldConditions` loses the
+  helpers that only served the old behavior (`dominant_*`, `had_*`,
+  `final_statuses`).
+- `BattleSnapshot` carries `tailwind`, `trick_room` and `rooms`; `MoveMoment`
+  reads them (turn windows remain the fallback without a snapshot).
+- `CalcField` gains `gravity`, `magic_room`, `wonder_room`, sent to the
+  engine's `Field`.
+- The Node engine sets `boostedStat: 'auto'` for Protosynthesis/Quark Drive, so
+  `@smogon/calc` checks Sun / Electric Terrain / Booster Energy itself.
+- `FieldWindow.open_at_end` tells "still up when the log stopped" from an
+  expiry; the header reads `weather Sun → Rain` and `(ended this turn)`.
+
+### Consequences
+Verdict numbers change wherever a game had weather, terrain, Tailwind, Trick
+Room or a lasting status: they now describe the matchup on a clean field. The
+engine-calibration benchmark compares per-move projections, which already used
+each move's weather/terrain; Tailwind/Trick Room do not change damage, so its
+numbers are unaffected except for games with Gravity, rooms or paradox
+abilities.
+
+---

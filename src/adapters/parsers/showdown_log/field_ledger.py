@@ -49,6 +49,18 @@ class FieldLedger:
     def screens(self) -> dict[str, list[str]]:
         return {p: list(open_) for p, open_ in self._screens_open.items() if open_}
 
+    def tailwind_now(self) -> list[str]:
+        """Players whose Tailwind is up right now."""
+        return sorted(self._tailwind_open)
+
+    @property
+    def trick_room_now(self) -> bool:
+        return self._trick_room_open is not None
+
+    def rooms_now(self) -> list[str]:
+        """Gravity / Magic Room / Wonder Room up right now."""
+        return sorted(self._rooms_open)
+
     # -- Tailwind / Trick Room ------------------------------------------- #
 
     def start_tailwind(self, player: str, turn: int) -> None:
@@ -122,30 +134,34 @@ class FieldLedger:
     # -- result ------------------------------------------------------------ #
 
     def close(self, turn: int) -> None:
-        """Close every window still open when the log ends."""
+        """Close every window still open when the log ends (``open_at_end``:
+        the last turn is where the log stopped, not where the condition expired)."""
         for player, start in self._tailwind_open.items():
             self.tailwind.setdefault(player, []).append([start, turn])
         if self._trick_room_open is not None:
             self.trick_room.append([self._trick_room_open, turn])
         if self._weather_open is not None:
-            self.weather_windows.append(
-                FieldWindow(
-                    name=self._weather_open.name, start_turn=self._weather_open.start,
-                    end_turn=turn,
-                )
-            )
-        self.end_terrain(turn)
-        for room in list(self._rooms_open):
-            self.end_room(room, turn)
+            self.weather_windows.append(_still_open(self._weather_open, turn))
+            self._weather_open = None
+        if self._terrain_open is not None:
+            self.terrain_windows.append(_still_open(self._terrain_open, turn))
+            self._terrain_open = None
+        for room, start in self._rooms_open.items():
+            self.room_windows.append(_still_open(_OpenWindow(room, start), turn))
+        self._rooms_open.clear()
         for player, open_ in self._screens_open.items():
             for name, start in open_.items():
                 self.screen_windows.setdefault(player, []).append(
-                    FieldWindow(name=name, start_turn=start, end_turn=turn)
+                    _still_open(_OpenWindow(name, start), turn)
                 )
 
-    def conditions(self, final_statuses: dict[str, dict[str, str]]) -> FieldConditions:
+    def conditions(self) -> FieldConditions:
         return FieldConditions(
             tailwind=self.tailwind, trick_room=self.trick_room,
             weather=self.weather_windows, terrain=self.terrain_windows,
-            screens=self.screen_windows, final_statuses=final_statuses,
+            screens=self.screen_windows,
         )
+
+
+def _still_open(window: _OpenWindow, turn: int) -> FieldWindow:
+    return FieldWindow(name=window.name, start_turn=window.start, end_turn=turn, open_at_end=True)

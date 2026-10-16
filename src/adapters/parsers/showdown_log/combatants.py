@@ -110,11 +110,3 @@ class CombatantLedger:
             mon.item = item  # it was the original item all along
         self.held[key] = ""
         self._timeline.emit("item", key, f"{key[0]} {key[1]} lost its {item}.", [item, "lost"])
-
-    # -- result ------------------------------------------------------------ #
-
-    def final_statuses(self) -> dict[str, dict[str, str]]:
-        result: dict[str, dict[str, str]] = {}
-        for (player, key), status in self.status.items():
-            result.setdefault(player, {})[key] = status
-        return result

@@ -145,7 +145,7 @@ GameState
 SelectionPlan (focus species + matchups)
    │  GroundTruthAssembler                ← shared by every backend
    ├─▶ MetaStatsProvider (Chaos)            likely sets, threats (all in-play Pokémon)
-   ├─▶ MatchupEvaluator (@smogon/calc)      field-aware damage + speed verdicts
+   ├─▶ MatchupEvaluator (@smogon/calc)      damage + speed verdicts on a neutral field
    ├─▶ TurnReplaySimulator                  per move: projected vs logged damage, speed,
    │                                        alternatives into every target, KO threats,
    │                                        Protect / switch / speed-control options

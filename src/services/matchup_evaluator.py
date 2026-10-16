@@ -17,7 +17,6 @@ from src.domain.models import (
     MetaContext,
     PokemonSet,
     SelectionPlan,
-    SideField,
     SmogonStrategy,
     SpeedComparison,
 )
@@ -170,29 +169,6 @@ class MatchupEvaluator:
             return None
 
     @staticmethod
-    def _field_for(
-        game_state: GameState, attacker_player: str | None, defender_player: str | None
-    ) -> CalcField:
-        """Whole-game field for a post-game verdict: Tailwind/Trick Room where they
-        were used, plus the dominant weather/terrain. Per-move conditions belong
-        to the per-turn re-checks.
-        """
-        field = game_state.field
-        if field is None:
-            return CalcField()
-        return CalcField(
-            weather=field.dominant_weather(),
-            terrain=field.dominant_terrain(),
-            trick_room=field.had_trick_room(),
-            attacker_side=SideField(
-                tailwind=bool(attacker_player and field.had_tailwind(attacker_player))
-            ),
-            defender_side=SideField(
-                tailwind=bool(defender_player and field.had_tailwind(defender_player))
-            ),
-        )
-
-    @staticmethod
     def resolve_players(
         game_state: GameState, attacker: str, defender: str
     ) -> tuple[str, str]:
@@ -213,9 +189,17 @@ class MatchupEvaluator:
     def evaluate(
         self, game_state: GameState, selection: SelectionPlan, meta: MetaContext
     ) -> list[MatchupVerdict]:
-        """Return one deterministic verdict per selected matchup (field-aware)."""
+        """One verdict per selected matchup, on a NEUTRAL baseline.
+
+        A verdict covers the whole game, so no single moment's state applies to
+        it: no weather, terrain, screens, Tailwind or Trick Room, no status,
+        full HP. Taking them from one part of the game (the longest weather,
+        any Tailwind ever set, the status at the end) put the matchup under
+        conditions the two Pokemon may never have faced together. The state at
+        each real move is in the per-move re-checks (turn_simulator).
+        """
         sets = self.index_sets(game_state)
-        statuses = game_state.field.final_statuses if game_state.field else {}
+        field = CalcField()
         verdicts: list[MatchupVerdict] = []
         for attacker_name, defender_name in selection.matchups:
             attacker_player, defender_player = self.resolve_players(
@@ -223,13 +207,12 @@ class MatchupEvaluator:
             )
             attacker = self.enrich_set(
                 sets.get((attacker_player, attacker_name)) or PokemonSet(species=attacker_name),
-                meta, status=statuses.get(attacker_player, {}).get(attacker_name),
+                meta,
             )
             defender = self.enrich_set(
                 sets.get((defender_player, defender_name)) or PokemonSet(species=defender_name),
-                meta, status=statuses.get(defender_player, {}).get(defender_name),
+                meta,
             )
-            field = self._field_for(game_state, attacker_player, defender_player)
             best = self._best_move_verdict(attacker, defender, field)
             if best is None:
                 continue

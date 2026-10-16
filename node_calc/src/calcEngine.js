@@ -49,6 +49,7 @@ const SIDE_FLAGS = [
   'isTailwind', 'isReflect', 'isLightScreen', 'isAuroraVeil', 'isHelpingHand', 'isFriendGuard',
 ];
 const SPREAD_TARGETS = new Set(['allAdjacent', 'allAdjacentFoes']);
+const QP_ABILITIES = new Set(['protosynthesis', 'quarkdrive']);
 
 // @smogon/calc's species lookup only matches the lowercased/stripped `id`
 // form (e.g. "charizardmegay"), not display names like "Charizard-Mega-Y" —
@@ -79,6 +80,8 @@ function buildField(fieldSpec) {
     weather: WEATHER[toID(spec.weather)] || undefined,
     terrain: TERRAIN[toID(spec.terrain)] || undefined,
     isGravity: !!spec.gravity,
+    isMagicRoom: !!spec.magicRoom,
+    isWonderRoom: !!spec.wonderRoom,
     attackerSide: buildSide(spec.attackerSide),
     defenderSide: buildSide(spec.defenderSide),
   });
@@ -104,6 +107,10 @@ function buildPokemon(gen, spec) {
   // both effects. The caller (Python's TurnReplaySimulator) is the one that
   // knows the real, point-in-time value; this is a pure pass-through.
   if (spec.boosts) options.boosts = spec.boosts;
+  // @smogon/calc only applies Protosynthesis / Quark Drive when boostedStat is
+  // set: 'auto' lets it check Sun / Electric Terrain / Booster Energy itself and
+  // pick the highest stat, exactly as the game does. Unset, they never activate.
+  if (QP_ABILITIES.has(toID(spec.ability))) options.boostedStat = 'auto';
   // The parser deliberately keeps a Mega-Evolved (or otherwise in-battle
   // forme-changed) Pokemon's stable roster identity in `species` and records
   // the observed appearance separately (battleForme) — so the roster/moveset

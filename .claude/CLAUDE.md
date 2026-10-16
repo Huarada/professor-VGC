@@ -40,8 +40,13 @@ These are hard invariants. Do not regress them.
    Tricked) and current HP are taken from the log **as they were when that move
    was used** (the parser stamps a `BattleSnapshot` on every move event) and
    passed to the engine. A later turn's state is never applied to an earlier
-   turn. Speed verdicts report *who moves first* (Trick Room inverts) and list
-   the conditions.
+   turn — nor a later move's state to an earlier move of the same turn (Tailwind
+   or Trick Room set mid-turn applies from that move on). Gravity, Magic Room and
+   Wonder Room reach the engine too. Speed results report *who moves first*
+   (Trick Room inverts) and list the conditions. The whole-game spotlight
+   verdicts (`MatchupEvaluator`) are a **neutral baseline** instead — no weather,
+   terrain, screens, Tailwind, Trick Room, stages or status, full HP — because no
+   single moment's state applies to a whole game (ADR-038).
 4. **Per-turn verification (feedback loop).** For every move actually used, the
    engine is re-consulted **turn by turn** under that move's battle state —
    projected damage vs. the logged result (KO text from the target's real HP),
@@ -143,7 +148,7 @@ professor-VGC/
 │   │   ├── langchain_orchestrator.py         # LCEL pipeline
 │   │   ├── adk_orchestrator.py               # Google ADK pipeline (default)
 │   │   ├── selection_service.py + selection_logic.py   # 1st AI + cross-side guard
-│   │   ├── matchup_evaluator.py              # deterministic verdicts (field-aware, mirror-safe set index)
+│   │   ├── matchup_evaluator.py              # deterministic verdicts (neutral field, mirror-safe set index)
 │   │   ├── turn_simulator.py                 # per-move ground-truth verification + Protect reads
 │   │   ├── battle_moment.py                  # MoveMoment: battle state at one move (field, HP, status, items)
 │   │   ├── decision_review.py                # incoming threats + Protect/switch/speed-control options
@@ -226,7 +231,7 @@ replay JSON/log + question
   → SelectionStrategy.select   (1st AI, memory-aware, cross-side matchups only)
   → GroundTruthAssembler       (shared by every backend; builds AnalysisEvidence):
       → MetaStatsProvider          (Chaos tiers + reg fallback; covers ALL in-play mons)
-      → MatchupEvaluator           (field-aware damage + speed verdicts)
+      → MatchupEvaluator           (damage + speed verdicts on a neutral baseline)
       → TurnReplaySimulator        (per move, at that move's battle state: projected-vs-actual,
                                     speed, alternatives into every target, KO threats,
                                     Protect/switch/speed-control options, Protect reads)
@@ -376,6 +381,12 @@ replay JSON/log + question
     deployment (`UsageQuotaStore` port, `UsageQuotaService`, Firestore slot
     documents claimed with `create()`; refused over the limit, fail-closed)
     (ADR-036).
+15. **fix(field):** whole-game verdicts on a neutral baseline (they used the
+    longest weather/terrain, any Tailwind/Trick Room ever set and the end-of-game
+    status); Tailwind/Trick Room per move, not per turn; Gravity/Magic Room/
+    Wonder Room sent to the engine; Protosynthesis/Quark Drive activated
+    (`boostedStat: 'auto'`); timeline headers show a replaced weather/terrain as
+    `Sun → Rain` and mark an expiry (ADR-038).
 
 Test count grew alongside these.
 
