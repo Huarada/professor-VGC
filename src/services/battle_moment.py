@@ -18,6 +18,7 @@ from src.domain.models import (
     PokemonSet,
     SideField,
 )
+from src.domain.names import to_id
 from src.services.matchup_evaluator import MatchupEvaluator, SetIndex
 
 Combatant = tuple[str, str]  # (player, species)
@@ -171,7 +172,8 @@ class MoveMoment:
 
     def _friend_guard(self, defender: Combatant) -> bool:
         ally = self.ally(defender)
-        return ally is not None and (self.combatant(ally).ability or "") == "Friend Guard"
+        # By id: a Chaos back-filled ability is "friendguard", a revealed one "Friend Guard".
+        return ally is not None and to_id(self.combatant(ally).ability) == "friendguard"
 
     def field(self, attacker: Combatant, defender: Combatant) -> CalcField:
         """Calc field for ``attacker`` hitting ``defender`` at this move."""

@@ -252,6 +252,10 @@ replay JSON/log + question
 - An unrevealed spread is backed off the most-used Chaos spread (never invented);
   a Mega/forme uses its real stats when the engine knows it, otherwise the verdict
   carries a `stat_caveat`. The `description` string states the exact spread used.
+- Usage data names abilities/items/natures by **id** (`lifeorb`), logs by display
+  name (`Life Orb`): the Node engine resolves both through the dex, and Python
+  compares them with `src/domain/names.to_id`, never as raw strings. A Mega /
+  Primal always uses its own ability (ADR-039).
 - Defensive advice (Protect / switch / speed control) is precomputed in
   `decision_options` from confirmed moves and brought Pokémon only; the prompt
   forbids recommending one that is not listed.
@@ -387,6 +391,11 @@ replay JSON/log + question
     Wonder Room sent to the engine; Protosynthesis/Quark Drive activated
     (`boostedStat: 'auto'`); timeline headers show a replaced weather/terrain as
     `Sun → Rain` and mark an expiry (ADR-038).
+16. **fix(calc):** abilities/items/natures back-filled from usage data (ids such
+    as `lifeorb`, `scrappy`) were silently ignored by `@smogon/calc`; resolved
+    through the dex now, Megas use their own ability, Friend Guard / Choice Scarf
+    compared by id. Engine calibration 53.2% -> 55.5% non-KO, 86.5% -> 90.6% KO
+    (paired McNemar p = 0.020) (ADR-039).
 
 Test count grew alongside these.
 

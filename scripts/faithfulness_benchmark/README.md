@@ -863,9 +863,29 @@ three anonymized ones are versioned as test fixtures.
 
 ### 6a. Engine calibration — is the ground truth itself right? (no LLM)
 
-`run_engine_calibration.py --chaos data/chaos-cache`, 40 games, 569 observed
-hits, `@smogon/calc` 0.12, **official September 2026 VGC usage data**
-downloaded with `chaos_corpus.py` (`out/engine_calibration_n40_vgc_official.json`).
+`run_engine_calibration.py --chaos data/chaos-cache --limit 40`, 40 games,
+588 observed hits, `@smogon/calc` 0.12, **official September 2026 VGC usage
+data** downloaded with `chaos_corpus.py`.
+
+> **Fix (ADR-039): back-filled abilities and items now reach the engine.**
+> Smogon's usage data names abilities, items and natures by id (`lifeorb`,
+> `scrappy`); `@smogon/calc` only matches display names and silently ignored
+> the rest, so every unrevealed ability/item the projection assumed from usage
+> data was dropped. Same 40 games, same 549 judged hits, before -> after:
+>
+> | ±2pp ±5% | Before | After |
+> |---|---|---|
+> | Non-KO hits within band | 53.2% (48.0–58.3%), 190/357 | **55.5% (50.3–60.5%), 198/357** |
+> | KOs reachable | 86.5% (80.9–90.6%), 166/192 | **90.6% (85.7–94.0%), 174/192** |
+> | Misses outside any EV/nature spread | 56 | **32** |
+>
+> Paired over the same hits: 29 misses fixed, 13 new — exact McNemar
+> p = 0.020. The 13 new misses are hits where usage data's most common item
+> was not the one this Pokemon held (e.g. Kingambit's Chople Berry halving a
+> Low Kick that, in the log, was not resisted); before the fix they matched
+> only because the item was being dropped. The "before" column already
+> includes the colour-suffixed HP fix (#49), hence 588 hits rather than the
+> 569 of the earlier runs.
 
 > **Data correction (ADR-035).** The first runs of this section used
 > `--chaos local`, whose bundled `data/chaos/gen9championsvgc2026regmb-*.json`
@@ -882,28 +902,31 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 
 | ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Projected range contains the real damage — **non-KO hits** | **52.1% (46.8–57.3%)**, 176/338 |
-| Projection can reach a real KO | 84.4% (78.6–88.8%), 162/192 |
-| Mean miss outside the raw projected range | 12.0 pp |
+| Projected range contains the real damage — **non-KO hits** | **55.5% (50.3–60.5%)**, 198/357 |
+| Projection can reach a real KO | 90.6% (85.7–94.0%), 174/192 |
+| Mean miss outside the raw projected range | 11.5 pp |
 | Excluded: crit / multi-hit 25 · no projection 14 | — |
 
 The conclusion does not hinge on the band — the same hits re-scored:
 
 | Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
 |---|---|---|
-| 0% (±2pp only) | 41.4% (36.3–46.7%) | 83.3% (77.4–87.9%) |
-| **5%** | **52.1% (46.8–57.3%)** | **84.4% (78.6–88.8%)** |
-| 10% | 61.2% (56.0–66.3%) | 84.9% (79.1–89.3%) |
-| 15% | 68.3% (63.2–73.1%) | 85.4% (79.7–89.7%) |
+| 0% (±2pp only) | 45.1% (40.0–50.3%) | 89.6% (84.5–93.2%) |
+| **5%** | **55.5% (50.3–60.5%)** | **90.6% (85.7–94.0%)** |
+| 10% | 65.5% (60.5–70.3%) | 91.1% (86.3–94.4%) |
+| 15% | 71.7% (66.8–76.1%) | 91.7% (86.9–94.8%) |
 
 **How much do EVs explain?** For every miss, the same calc request was re-run
 at minimum and maximum EV/nature investment on both sides, everything else
-equal (`ev_envelope.py`). **68.6% of misses (61.7–74.7%, 131/191) fall inside
-that envelope** — a different spread alone explains them — while 60 lie
-outside any EV/nature spread and need something else: type-changing or
-immunity-ignoring abilities that were never revealed (Primarina's Liquid
-Voice, Hisuian Decidueye's Scrappy), offensive items, or species with no
-Chaos coverage (10). Mega formes are not the cause: all 23 seen resolve in
+equal (`ev_envelope.py`). **81.8% of misses (75.5–86.8%, 144/176) fall inside
+that envelope** — a different spread alone explains them — while 32 lie
+outside any EV/nature spread and need something else: an item or ability
+other than usage data's most common one, or species with no Chaos coverage.
+Before ADR-039 this was 56: most of the difference were type-changing or
+immunity-ignoring abilities (Primarina's Liquid Voice, Hisuian Decidueye's
+Scrappy) and offensive items that usage data DID supply but the engine
+silently dropped — an earlier version of this paragraph blamed them on the
+abilities never being revealed. Mega formes are not the cause: all 23 seen resolve in
 the engine. Upgrading `@smogon/calc` 0.11 → 0.12 changed none of these rates
 by more than 0.5pp.
 
