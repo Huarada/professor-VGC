@@ -31,7 +31,7 @@ function handle(request) {
       return {
         ok: true,
         result: calcDamage(
-          request.gen || 9,
+          request.gen ?? 9,
           request.attacker,
           request.defender,
           request.move,
@@ -44,17 +44,17 @@ function handle(request) {
     case 'speed':
       return {
         ok: true,
-        result: compareSpeed(request.gen || 9, request.attacker, request.defender, request.field),
+        result: compareSpeed(request.gen ?? 9, request.attacker, request.defender, request.field),
       };
     case 'formeResolves':
       return {
         ok: true,
-        result: { resolves: formeResolves(request.gen || 9, request.species) },
+        result: { resolves: formeResolves(request.gen ?? 9, request.species) },
       };
     case 'speciesNames':
-      return { ok: true, result: { names: speciesNames(request.gen || 9) } };
+      return { ok: true, result: { names: speciesNames(request.gen ?? 9) } };
     case 'moveInfo':
-      return { ok: true, result: moveInfo(request.gen || 9, request.move) };
+      return { ok: true, result: moveInfo(request.gen ?? 9, request.move) };
     default:
       return { ok: false, error: `Unknown cmd: ${cmd}` };
   }

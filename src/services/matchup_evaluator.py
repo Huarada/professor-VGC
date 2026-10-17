@@ -20,6 +20,7 @@ from src.domain.models import (
     SmogonStrategy,
     SpeedComparison,
 )
+from src.domain.regulation import calc_generation
 
 SetIndex = dict[tuple[str, str], PokemonSet]
 """(player, species) -> the best-known set. Side-qualified so a mirror match
@@ -197,6 +198,11 @@ class MatchupEvaluator:
         )
         return attacker_player, defender_player
 
+    def for_format(self, format_id: str | None) -> MatchupEvaluator:
+        """This evaluator under the damage rules ``format_id`` is played by."""
+        gen = calc_generation(format_id, self._gen)
+        return self if gen == self._gen else MatchupEvaluator(self._calc, gen)
+
     def evaluate(
         self, game_state: GameState, selection: SelectionPlan, meta: MetaContext
     ) -> list[MatchupVerdict]:
@@ -209,6 +215,9 @@ class MatchupEvaluator:
         conditions the two Pokemon may never have faced together. The state at
         each real move is in the per-move re-checks (turn_simulator).
         """
+        rules = self.for_format(game_state.format_id)
+        if rules is not self:  # Champions has its own damage rules
+            return rules.evaluate(game_state, selection, meta)
         sets = self.index_sets(game_state)
         field = CalcField()
         verdicts: list[MatchupVerdict] = []

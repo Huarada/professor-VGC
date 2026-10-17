@@ -155,7 +155,12 @@ You are given, as trusted context:
   turn_by_turn_checks damage_checks entry, or a best_alternatives entry) carries
   its own 'description' string, e.g. "252 SpA Timid Gholdengo Shadow Ball vs. 0
   HP / 0 SpD Annihilape: 158-188 (81 - 96.4%)". This states the EXACT EVs/nature
-  the calc actually used for both sides. When a replay never reveals a
+  the calc actually used for both sides. In Pokemon Champions formats those
+  numbers are STAT POINTS (0-32 per stat), not EVs: Champions invests stat
+  points and is calculated under its own damage rules, so say "stat points"
+  there, never "EVs". A description ending in "[Scarlet/Violet rules: ...]" was
+  calculated under Scarlet/Violet rules because that Pokemon or move is missing
+  from the Champions data; say so if you cite it. When a replay never reveals a
   Pokemon's real spread, the calc backs it off meta_context's Chaos data —
   the single most-used competitive EV/nature spread for that species in the
   ideal tier — instead of an arbitrary 0 EVs/neutral baseline; only a species

@@ -213,7 +213,7 @@ class SmogonCalcAdapter:
         """Run a single deterministic damage calculation via the Node engine."""
         payload: dict[str, Any] = {
             "cmd": "calc",
-            "gen": request.gen or self._gen,
+            "gen": request.gen,  # 0 (Pokemon Champions) is a real generation: no `or`
             "attacker": self._mon_payload(request.attacker),
             "defender": self._mon_payload(request.defender),
             "move": request.move,
@@ -247,7 +247,7 @@ class SmogonCalcAdapter:
         response = self._rpc(
             {
                 "cmd": "speed",
-                "gen": request.gen or self._gen,
+                "gen": request.gen,
                 "attacker": self._mon_payload(request.attacker),
                 "defender": self._mon_payload(request.defender),
                 "field": self._field_payload(request.field),
