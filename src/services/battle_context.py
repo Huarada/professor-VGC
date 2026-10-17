@@ -30,10 +30,15 @@ def candidate_species(game_state: GameState) -> list[str]:
 
 
 def context_species(game_state: GameState, focus: list[str] | None = None) -> list[str]:
-    """Every species in play (both sides), plus any extra focus species."""
+    """Every species in play (both sides) and every forme seen in battle (usage
+    data lists a Mega under its own name), plus any extra focus species."""
     seen: dict[str, None] = {}
     for name in candidate_species(game_state):
         seen.setdefault(name, None)
+    for side in game_state.sides:
+        for mon in side.team:
+            for forme in mon.battle_formes:
+                seen.setdefault(forme, None)
     for name in focus or []:
         seen.setdefault(name, None)
     return list(seen.keys())

@@ -41,6 +41,9 @@ class ChaosRepositoryLike(Protocol):
     def ideal_file(self, metagame: str) -> Any: ...
     def current_file(self, metagame: str, rating: int | None) -> Any: ...
     def reg_fallback_files(self, metagame: str) -> list[Any]: ...
+    def lookup_chain(
+        self, metagame: str, *, other_regulations: bool = True
+    ) -> list[tuple[Any, str]]: ...
     def mon_data(self, file: Any, species: str) -> dict[str, Any] | None: ...
     def resolve_mon(
         self, metagame: str, species: str
@@ -132,6 +135,11 @@ class ChaosRepository:
     def reg_fallback_files(self, metagame: str) -> list[ChaosFile]:
         return self._index.reg_fallback_files(metagame)
 
+    def lookup_chain(
+        self, metagame: str, *, other_regulations: bool = True
+    ) -> list[tuple[ChaosFile, str]]:
+        return self._index.lookup_chain(metagame, other_regulations=other_regulations)
+
     # -- data access ----------------------------------------------------- #
 
     def mon_data(self, file: ChaosFile, species: str) -> dict[str, Any] | None:
@@ -153,21 +161,12 @@ class ChaosRepository:
     def resolve_mon(
         self, metagame: str, species: str
     ) -> tuple[dict[str, Any], str] | None:
-        """Find a Pokemon's data in the ideal tier, then walk reg fallback.
+        """Find a Pokemon's data along ``lookup_chain`` (ideal tier, lower
+        cutoffs of the same format, older regulations).
 
         Returns ``(mon_data, source_label)`` or ``None`` if not found anywhere.
         """
-        ideal = self.ideal_file(metagame)
-        chain = [ideal] if ideal else []
-        chain += self.reg_fallback_files(metagame)
-        for i, file in enumerate(chain):
-            if file is None:
-                continue
-            data = self.mon_data(file, species)
-            if data:
-                suffix = " (fallback)" if i > 0 else ""
-                return data, f"{file.metagame}@{file.cutoff}{suffix}"
-        return None
+        return resolve_along(self, self.lookup_chain(metagame), species)
 
     @property
     def rejected_tiers(self) -> dict[str, str]:
@@ -182,6 +181,17 @@ class ChaosRepository:
             if file.metagame == metagame:
                 names.update(normalize_species(k) for k in (self._load(file).get("data") or {}))
         return frozenset(names)
+
+
+def resolve_along(
+    repo: ChaosRepositoryLike, chain: list[tuple[Any, str]], species: str
+) -> tuple[dict[str, Any], str] | None:
+    """The first tier in ``chain`` with data for ``species``, and its source label."""
+    for file, suffix in chain:
+        data = repo.mon_data(file, species)
+        if data:
+            return data, f"{file.metagame}@{file.cutoff}{suffix}"
+    return None
 
 
 class StrictRegulationRepository:
@@ -208,15 +218,17 @@ class StrictRegulationRepository:
     def reg_fallback_files(self, metagame: str) -> list[Any]:
         return []
 
+    def lookup_chain(
+        self, metagame: str, *, other_regulations: bool = True
+    ) -> list[tuple[Any, str]]:
+        return self._inner.lookup_chain(metagame, other_regulations=False)
+
     def mon_data(self, file: Any, species: str) -> dict[str, Any] | None:
         return self._inner.mon_data(file, species)
 
     def resolve_mon(self, metagame: str, species: str) -> tuple[dict[str, Any], str] | None:
-        ideal = self._inner.ideal_file(metagame)
-        if ideal is None:
-            return None
-        data = self._inner.mon_data(ideal, species)
-        return (data, f"{ideal.metagame}@{ideal.cutoff}") if data else None
+        """This regulation's tiers only (its lower cutoffs included), never another's."""
+        return resolve_along(self._inner, self.lookup_chain(metagame), species)
 
     def legal_species(self, metagame: str) -> frozenset[str]:
         return self._inner.legal_species(metagame)

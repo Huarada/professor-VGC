@@ -129,6 +129,10 @@ class MonState(BaseModel):
     status: str = ""  # "par" | "brn" | "psn" | "tox" | "slp" | "frz" | "" (healthy)
     item: str | None = None
     """``None`` = not known yet; ``""`` = confirmed no item; else the item held."""
+    forme: str = ""
+    """Appearance right now when it differs from the roster identity (a Mega,
+    Mimikyu-Busted, a Transform target); ``""`` = itself. A forme seen LATER
+    in the game does not apply yet."""
 
 
 class BattleSnapshot(BaseModel):
@@ -414,6 +418,11 @@ class CalcRequest(BaseModel):
     field: CalcField = Field(default_factory=CalcField)
     defender_hp_percent: float | None = None
     """Defender's current HP percent for KO chances (None = full HP)."""
+    attacker_hp_percent: float | None = None
+    """Attacker's current HP percent (None = full HP): Eruption / Water Spout /
+    Dragon Energy power, Flail / Reversal, pinch abilities such as Blaze."""
+    attacker_allies_fainted: int = 0
+    """Fainted Pokemon on the attacker's side: Last Respects power, Supreme Overlord."""
 
     @field_validator("move")
     @classmethod

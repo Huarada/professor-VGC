@@ -65,15 +65,39 @@ class MoveMoment:
             if self._state is not None:
                 mon = self._state.mon(player, species)
                 status, item = mon.status, mon.item
+                # Only the forme it has AT THIS MOVE: not a Mega it evolves into
+                # later, not Mimikyu-Busted while the disguise still holds.
+                base = base.model_copy(
+                    update={"battle_formes": [mon.forme] if mon.forme else []}
+                )
+                base = self._transformed(base, mon.forme)
             cached = self._evaluator.enrich_set(
                 base, self._meta, status=status, item=item, boosts=self._boosts.get(who, {}),
             )
             self._enriched[who] = cached
         return cached
 
+    def _transformed(self, mon: PokemonSet, forme: str) -> PokemonSet:
+        """A Transform target's species also brings its ability (Imposter Ditto
+        copying Mawile has Huge Power); a forme of the same species keeps its own."""
+        if not forme or forme.startswith(f"{mon.species}-"):
+            return mon
+        target = next(
+            (s for (_player, name), s in self._sets.items() if forme in (name, *s.battle_formes)),
+            None,
+        )
+        if target is None:
+            return mon
+        ability = self._evaluator.enrich_set(target, self._meta).ability
+        return mon.model_copy(update={"ability": ability}) if ability else mon
+
     @property
     def attacker(self) -> PokemonSet:
         return self.combatant(self.actor)
+
+    def item_known(self, who: Combatant) -> bool:
+        """Whether the log already showed ``who``'s item (else it is back-filled)."""
+        return self._state is not None and self._state.mon(*who).item is not None
 
     def hp(self, who: Combatant) -> float | None:
         """HP percent of ``who`` right before this move (None = unknown)."""
@@ -208,7 +232,13 @@ class MoveMoment:
             move=move,
             field=self.field(attacker, defender),
             defender_hp_percent=self.hp(defender),
+            attacker_hp_percent=self.hp(attacker),
+            attacker_allies_fainted=self._fainted_count(attacker[0]),
         )
+
+    def _fainted_count(self, player: str) -> int:
+        """Pokemon ``player`` has lost so far (only known from a snapshot)."""
+        return len(self._state.fainted.get(player, [])) if self._state is not None else 0
 
     def conditions(self) -> list[str]:
         """Human-readable field conditions active at this move."""

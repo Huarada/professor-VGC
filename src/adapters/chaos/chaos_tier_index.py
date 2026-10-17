@@ -120,6 +120,19 @@ class ChaosTierIndex(Generic[_T]):
         files = self._files_for(metagame)
         return files[-1] if files else None
 
+    def lookup_chain(
+        self, metagame: str, *, other_regulations: bool = True
+    ) -> list[tuple[_T, str]]:
+        """Where a species' data is looked for, in order, with a source suffix:
+        the ideal tier, then the SAME format's lower cutoffs (a species too rare
+        for the top bracket still has real data there), then, when allowed,
+        older regulations of the same game."""
+        tiers = list(reversed(self._files_for(metagame)))
+        chain = [(f, "" if i == 0 else " (lower tier)") for i, f in enumerate(tiers)]
+        if other_regulations:
+            chain += [(f, " (fallback)") for f in self.reg_fallback_files(metagame)]
+        return chain
+
     def current_file(self, metagame: str, rating: int | None) -> _T | None:
         """The tier bracket a rating falls into (largest cutoff <= rating)."""
         files = self._files_for(metagame)

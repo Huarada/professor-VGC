@@ -396,6 +396,13 @@ replay JSON/log + question
     through the dex now, Megas use their own ability, Friend Guard / Choice Scarf
     compared by id. Engine calibration 53.2% -> 55.5% non-KO, 86.5% -> 90.6% KO
     (paired McNemar p = 0.020) (ADR-039).
+17. **fix(calc):** every calibration miss outside the EV/nature envelope traced:
+    Illusion unmasked before parsing, nickname identity across Mega switch-ins,
+    forme/Transform per move, attacker HP and fainted allies in the request
+    (Eruption, Last Respects, Supreme Overlord), usage data from lower cutoffs
+    and Megas' own entries, resist berries the log contradicts, Disguise, moves
+    the engine cannot project refused; EV envelope pinned to the projection's
+    request. Non-KO 57.7%, KOs 93.9%, unexplained misses 32 -> 2 (ADR-040).
 
 Test count grew alongside these.
 

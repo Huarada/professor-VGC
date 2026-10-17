@@ -887,6 +887,43 @@ data** downloaded with `chaos_corpus.py`.
 > includes the colour-suffixed HP fix (#49), hence 588 hits rather than the
 > 569 of the earlier runs.
 
+> **Fix (ADR-040): the misses no EV/nature spread explained.** After ADR-039,
+> 32 misses still lay outside any spread. First the benchmark itself: the EV
+> envelope was computed on the FIRST request with the same attacker/defender/
+> move/HP, often an alternative calculated at another moment; pinned to the
+> projection's own request, 9 of the 32 turned out to be spread variance.
+> Each of the other 23 had a cause in the pipeline, all fixed:
+>
+> | Cause | Misses |
+> |---|---|
+> | Illusion (Zoroark): the disguise's hits landed on the Pokemon it imitated | 6 |
+> | Usage data not found: species absent from the top bracket (Diggersby's Huge Power), Megas listed under their own name | 5 |
+> | Last Respects always 50 BP (no fainted-ally count reached the engine) | 3 |
+> | Eruption at full power (the attacker's HP never reached the engine) | 3 |
+> | Transform (Imposter Ditto) | 2 |
+> | A back-filled Chople Berry the log shows was never eaten | 2 |
+> | Mimikyu's Disguise (forme applied before it happened) | 1 |
+> | Mirror Coat projected as "0% (immune)" | 1 |
+>
+> | ±2pp ±5%, same 40 games | Master | ADR-039 | ADR-040 |
+> |---|---|---|---|
+> | Non-KO hits within band | 53.2% | 55.5% | **57.7% (52.5–62.7%), 206/357** |
+> | KOs reachable | 86.5% | 90.6% | **93.9% (89.7–96.5%), 185/197** |
+> | Mean miss outside the raw range | 11.4 pp | 11.5 pp | **8.9 pp** |
+> | Misses outside any EV/nature spread | 56 | 32 | **2** |
+>
+> 554 hits are judged now (549 before): hits on an Illusion user match again.
+> Preferring a Mega's own usage entry was ablated: without it the non-KO rate
+> is 55.5%. Two misses remain unexplained: Meganium-Mega's Mega Sol (a Pokemon
+> Champions mechanic; see below) and one Heliolisk Thunderbolt into Hydrapple.
+>
+> **Open: Pokemon Champions mechanics.** `@smogon/calc` 0.12 ships Champions'
+> own damage rules as generation 0 (`mechanics/champions.js`, stat points
+> instead of EVs); this project calculates Champions formats with generation 9
+> (Scarlet/Violet) rules and converts stat points to EVs. Stats agree; damage
+> rules that differ in Champions (e.g. Mega Sol) do not. Switching is the next
+> step.
+
 > **Data correction (ADR-035).** The first runs of this section used
 > `--chaos local`, whose bundled `data/chaos/gen9championsvgc2026regmb-*.json`
 > files turned out to be singles (BSS) stats under VGC names
@@ -902,32 +939,28 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 
 | ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Projected range contains the real damage — **non-KO hits** | **55.5% (50.3–60.5%)**, 198/357 |
-| Projection can reach a real KO | 90.6% (85.7–94.0%), 174/192 |
-| Mean miss outside the raw projected range | 11.5 pp |
-| Excluded: crit / multi-hit 25 · no projection 14 | — |
+| Projected range contains the real damage — **non-KO hits** | **57.7% (52.5–62.7%)**, 206/357 |
+| Projection can reach a real KO | 93.9% (89.7–96.5%), 185/197 |
+| Mean miss outside the raw projected range | 8.9 pp |
+| Excluded: crit / multi-hit 25 · no projection 9 | — |
 
 The conclusion does not hinge on the band — the same hits re-scored:
 
 | Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
 |---|---|---|
-| 0% (±2pp only) | 45.1% (40.0–50.3%) | 89.6% (84.5–93.2%) |
-| **5%** | **55.5% (50.3–60.5%)** | **90.6% (85.7–94.0%)** |
-| 10% | 65.5% (60.5–70.3%) | 91.1% (86.3–94.4%) |
-| 15% | 71.7% (66.8–76.1%) | 91.7% (86.9–94.8%) |
+| 0% (±2pp only) | 47.3% (42.2–52.5%) | 93.4% (89.0–96.1%) |
+| **5%** | **57.7% (52.5–62.7%)** | **93.9% (89.7–96.5%)** |
+| 10% | 68.1% (63.1–72.7%) | 93.9% (89.7–96.5%) |
+| 15% | 75.6% (70.9–79.8%) | 95.4% (91.5–97.6%) |
 
 **How much do EVs explain?** For every miss, the same calc request was re-run
 at minimum and maximum EV/nature investment on both sides, everything else
-equal (`ev_envelope.py`). **81.8% of misses (75.5–86.8%, 144/176) fall inside
-that envelope** — a different spread alone explains them — while 32 lie
-outside any EV/nature spread and need something else: an item or ability
-other than usage data's most common one, or species with no Chaos coverage.
-Before ADR-039 this was 56: most of the difference were type-changing or
-immunity-ignoring abilities (Primarina's Liquid Voice, Hisuian Decidueye's
-Scrappy) and offensive items that usage data DID supply but the engine
-silently dropped — an earlier version of this paragraph blamed them on the
-abilities never being revealed. Mega formes are not the cause: all 23 seen resolve in
-the engine. Upgrading `@smogon/calc` 0.11 → 0.12 changed none of these rates
+equal (`ev_envelope.py`), on exactly the request the projection came from.
+**98.8% of misses (95.6–99.7%, 161/163) fall inside that envelope** — a
+different spread alone explains them — and 2 lie outside any spread (see the
+ADR-040 box above). This was 56 before ADR-039 and 32 before ADR-040: every
+one of those was a pipeline bug (dropped usage-data names, Illusion, missing
+battle state, ...), not an unknowable set. Mega formes resolve in the engine. Upgrading `@smogon/calc` 0.11 → 0.12 changed none of these rates
 by more than 0.5pp.
 
 *Correction:* an earlier version of this section reported a 9.6pp mean miss;

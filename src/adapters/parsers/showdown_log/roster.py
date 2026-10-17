@@ -44,6 +44,7 @@ class Roster:
         self.preview: dict[str, list[str]] = {}  # team preview, in order
         self.brought: dict[str, list[str]] = {}
         self.slot_species: dict[str, str] = {}  # "p1a" -> roster key
+        self.nicks: dict[tuple[str, str], str] = {}  # (player, nickname) -> roster key
 
     def register(self, player: str, key: str, level: int = 50) -> MonDraft:
         bucket = self.players.setdefault(player, {})

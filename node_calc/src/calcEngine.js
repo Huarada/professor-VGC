@@ -62,6 +62,62 @@ const NO_ABILITY = new Set(['', 'none', 'noability']);
 // had (revealed in the log or back-filled from usage data).
 const FIXED_ABILITY_FORME = /-(Mega|Primal)\b/;
 
+// Moves @smogon/calc cannot project, which it reports as "0% (immune)".
+// Reaction moves deal damage from what the user took (Counter, Mirror Coat,
+// ...) or from an HP gap (Endeavor): no honest projection exists, so they are
+// refused and the caller treats them as "not projected". HP-ratio moves halve
+// the target's CURRENT HP, which is exact and computed here.
+const REACTION_MOVES = new Set(['counter', 'mirrorcoat', 'metalburst', 'comeuppance', 'bide', 'endeavor']);
+const HALF_HP_MOVES = new Set(['superfang', 'ruination', 'naturesmadness']);
+
+function typeImmune(gen, attacker, defender, move) {
+  if (['Normal', 'Fighting'].includes(move.type) && attacker.hasAbility('Scrappy', "Mind's Eye")) {
+    return false;
+  }
+  const type = gen.types.get(toID(move.type));
+  return !!type && defender.types.some((t) => type.effectiveness[t] === 0);
+}
+
+function halfHpResult(gen, attacker, defender, move) {
+  const maxHp = defender.maxHP();
+  const immune = typeImmune(gen, attacker, defender, move);
+  const dmg = immune ? 0 : Math.max(1, Math.floor(defender.curHP() / 2));
+  const pct = maxHp ? Math.round((dmg / maxHp) * 1000) / 10 : 0;
+  const head = `${attacker.name} ${move.name} vs. ${defender.name}: ${dmg} (${pct}%) -- `;
+  return {
+    damage: [dmg],
+    minPercent: pct,
+    maxPercent: pct,
+    koChanceText: '',
+    isKoGuaranteed: false,
+    desc: head + (immune
+      ? 'this move has no effect on the target (immune).'
+      : "halves the target's current HP"),
+  };
+}
+
+// Mimikyu's intact Disguise takes the first damaging hit (then it busts and
+// loses 1/8 of its max HP, a separate effect); @smogon/calc does not model it.
+// The caller sends the forme AT that move: "Mimikyu" = disguise still up.
+const MOLD_BREAKERS = ['Mold Breaker', 'Teravolt', 'Turboblaze'];
+
+function disguiseHolds(attacker, defender, move) {
+  return defender.name === 'Mimikyu' && defender.hasAbility('Disguise')
+    && move.category !== 'Status' && !attacker.hasAbility(...MOLD_BREAKERS);
+}
+
+function disguiseResult(attacker, defender, move) {
+  return {
+    damage: [0],
+    minPercent: 0,
+    maxPercent: 0,
+    koChanceText: '',
+    isKoGuaranteed: false,
+    desc: `${attacker.name} ${move.name} vs. ${defender.name}: 0 (0%) -- `
+      + "Disguise absorbs the hit (Mimikyu then loses 1/8 of its max HP).",
+  };
+}
+
 function canonicalName(table, name) {
   const entry = table.get(toID(name));
   return entry ? entry.name : name;
@@ -127,6 +183,8 @@ function buildPokemon(gen, spec) {
   // set: 'auto' lets it check Sun / Electric Terrain / Booster Energy itself and
   // pick the highest stat, exactly as the game does. Unset, they never activate.
   if (QP_ABILITIES.has(toID(spec.ability))) options.boostedStat = 'auto';
+  // Fainted Pokemon on this side: Supreme Overlord's power boost.
+  if (spec.alliesFainted) options.alliesFainted = spec.alliesFainted;
   // The parser deliberately keeps a Mega-Evolved (or otherwise in-battle
   // forme-changed) Pokemon's stable roster identity in `species` and records
   // the observed appearance separately (battleForme) — so the roster/moveset
@@ -152,11 +210,30 @@ function buildPokemon(gen, spec) {
   return new Pokemon(gen, species, { ...options, curHP });
 }
 
-function calcDamage(genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent) {
+function calcDamage(
+  genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
+  attackerHpPercent, attackerAlliesFainted,
+) {
   const gen = Generations.get(genNum);
-  const attacker = buildPokemon(gen, attackerSpec);
+  const fainted = Math.max(0, Math.min(5, attackerAlliesFainted || 0));
+  // The attacker's CURRENT HP drives Eruption / Water Spout / Dragon Energy,
+  // Flail / Reversal and pinch abilities; without it they all assumed full HP.
+  const attacker = buildPokemon(gen, {
+    ...attackerSpec, hpPercent: attackerHpPercent, alliesFainted: fainted,
+  });
   const defender = buildPokemon(gen, { ...defenderSpec, hpPercent: defenderHpPercent });
-  const move = new Move(gen, moveName);
+  // @smogon/calc 0.12 has no Last Respects scaling: 50 power plus 50 per
+  // fainted ally (at most 300). Without it every Last Respects was 50 power.
+  const lastRespectsPower = toID(moveName) === 'lastrespects' ? 50 + 50 * fainted : null;
+  const moveOptions = lastRespectsPower ? { overrides: { basePower: lastRespectsPower } } : {};
+  const move = new Move(gen, moveName, moveOptions);
+  if (REACTION_MOVES.has(toID(moveName))) {
+    throw new Error(
+      `${move.name} is not projected: its damage depends on the damage the user took`,
+    );
+  }
+  if (HALF_HP_MOVES.has(toID(moveName))) return halfHpResult(gen, attacker, defender, move);
+  if (disguiseHolds(attacker, defender, move)) return disguiseResult(attacker, defender, move);
   const field = buildField(fieldSpec);
 
   const result = calculate(gen, attacker, defender, move, field);
@@ -201,6 +278,7 @@ function calcDamage(genNum, attackerSpec, defenderSpec, moveName, fieldSpec, def
     } catch (_e) {
       desc = '';
     }
+    if (lastRespectsPower) desc = desc.replace('Last Respects', `Last Respects (${lastRespectsPower} BP)`);
   }
 
   return {

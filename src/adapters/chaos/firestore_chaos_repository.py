@@ -20,6 +20,7 @@ from src.adapters.chaos.chaos_tier_index import (
     info_mismatch,
     parse_tier_id,
 )
+from src.adapters.chaos.chaos_repository import resolve_along
 from src.adapters.chaos.species_normalize import normalize_species
 # The shared factory imports google-cloud-firestore lazily.
 from src.adapters.firestore_client import build_firestore_client as _build_client
@@ -121,6 +122,11 @@ class FirestoreChaosRepository:
     def reg_fallback_files(self, metagame: str) -> list[FirestoreChaosFile]:
         return self._index.reg_fallback_files(metagame)
 
+    def lookup_chain(
+        self, metagame: str, *, other_regulations: bool = True
+    ) -> list[tuple[FirestoreChaosFile, str]]:
+        return self._index.lookup_chain(metagame, other_regulations=other_regulations)
+
     # -- data access ------------------------------------------------------ #
 
     def _fetch_species_doc(self, tier_doc_id: str, normalized_id: str) -> dict[str, Any] | None:
@@ -159,17 +165,7 @@ class FirestoreChaosRepository:
     def resolve_mon(
         self, metagame: str, species: str
     ) -> tuple[dict[str, Any], str] | None:
-        ideal = self.ideal_file(metagame)
-        chain = [ideal] if ideal else []
-        chain += self.reg_fallback_files(metagame)
-        for i, file in enumerate(chain):
-            if file is None:
-                continue
-            data = self.mon_data(file, species)
-            if data:
-                suffix = " (fallback)" if i > 0 else ""
-                return data, f"{file.metagame}@{file.cutoff}{suffix}"
-        return None
+        return resolve_along(self, self.lookup_chain(metagame), species)
 
     @property
     def rejected_tiers(self) -> dict[str, str]:

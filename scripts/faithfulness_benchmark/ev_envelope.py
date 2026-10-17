@@ -47,12 +47,18 @@ class RecordingCalc:
     def __init__(self, engine: CalcEngineAdapter) -> None:
         self._engine = engine
         self.requests: dict[_RequestKey, CalcRequest] = {}
+        # The same (attacker, defender, move, HP) is also calculated as an
+        # alternative or a threat at other moments (other boosts, field, items);
+        # the result description pins the exact request behind a projection.
+        self._by_description: dict[tuple[_RequestKey, str], CalcRequest] = {}
 
     def calculate(self, request: CalcRequest) -> DamageResult:
         key = (request.attacker.species, request.defender.species, request.move,
                request.defender_hp_percent)
         self.requests.setdefault(key, request)
-        return self._engine.calculate(request)
+        result = self._engine.calculate(request)
+        self._by_description.setdefault((key, result.description), request)
+        return result
 
     def compare_speed(self, request: CalcRequest) -> SpeedComparison:
         return self._engine.compare_speed(request)
@@ -66,8 +72,13 @@ class RecordingCalc:
     def close(self) -> None:
         self._engine.close()
 
-    def request_for(self, hit: ObservedHit) -> CalcRequest | None:
-        return self.requests.get((hit.attacker, hit.defender, hit.move, hit.hp_before))
+    def request_for(self, hit: ObservedHit, description: str | None = None) -> CalcRequest | None:
+        """The request behind ``hit``'s projection: the one whose result had
+        ``description`` when known, else the first one with the same key."""
+        key = (hit.attacker, hit.defender, hit.move, hit.hp_before)
+        if description is not None and (key, description) in self._by_description:
+            return self._by_description[(key, description)]
+        return self.requests.get(key)
 
 
 def _with_spread(mon: PokemonSet, evs: dict[str, int], nature: str) -> PokemonSet:
@@ -99,12 +110,18 @@ def ev_envelope(engine: CalcEngineAdapter, request: CalcRequest) -> tuple[float,
 
 
 def envelopes_for(
-    hits: list[ObservedHit], recorder: RecordingCalc, engine: CalcEngineAdapter
+    hits: list[ObservedHit],
+    recorder: RecordingCalc,
+    engine: CalcEngineAdapter,
+    descriptions: dict[HitKey, str] | None = None,
 ) -> dict[HitKey, tuple[float, float]]:
-    """EV/nature envelope for every clean observed hit whose request was recorded."""
+    """EV/nature envelope for every clean observed hit whose request was recorded.
+
+    ``descriptions`` (from ``projection_descriptions``) pins each hit to the
+    exact request its projection came from."""
     envelopes: dict[HitKey, tuple[float, float]] = {}
     for hit in hits:
-        request = recorder.request_for(hit)
+        request = recorder.request_for(hit, (descriptions or {}).get(hit_key(hit)))
         if request is None or not hit.clean:
             continue
         envelope = ev_envelope(engine, request)
