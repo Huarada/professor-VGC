@@ -198,6 +198,17 @@ def _projection_index(checks: list[TurnCheck]) -> dict[HitKey, tuple[float, floa
     return index
 
 
+def projection_descriptions(checks: list[TurnCheck]) -> dict[HitKey, str]:
+    """The calc description behind each projection (same keys as the index)."""
+    descriptions: dict[HitKey, str] = {}
+    for check in checks:
+        for dmg in check.damage_checks:
+            key = (check.turn, check.actor_player, check.actor, check.move,
+                   dmg.target_player, dmg.target)
+            descriptions.setdefault(key, dmg.description)
+    return descriptions
+
+
 def calibrate(
     hits: list[ObservedHit],
     checks: list[TurnCheck],

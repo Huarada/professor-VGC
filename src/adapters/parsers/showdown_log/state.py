@@ -34,7 +34,7 @@ class ParseState:
                 k = (player, key)
                 mons[BattleSnapshot.key(player, key)] = MonState(
                     hp_percent=ledger.hp.get(k), status=ledger.status.get(k, ""),
-                    item=ledger.held.get(k),
+                    item=ledger.held.get(k), forme=ledger.forme.get(k, ""),
                 )
         return BattleSnapshot(
             weather=self.field.weather,

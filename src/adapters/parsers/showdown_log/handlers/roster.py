@@ -8,6 +8,7 @@ from src.adapters.parsers.showdown_log.protocol import (
     parse_hp,
     split_details,
     split_ref,
+    tag_value,
 )
 from src.domain.models import BattleEvent
 
@@ -20,6 +21,7 @@ class RosterHandlers(HandlerGroup):
             "switch": self.on_switch,
             "drag": self.on_switch,
             "detailschange": self.on_detailschange,
+            "-transform": self.on_transform,
         }
 
     def on_player(self, parts: list[str]) -> None:
@@ -46,9 +48,13 @@ class RosterHandlers(HandlerGroup):
         player, slot, nick = split
         species, level = split_details(parts[3])
         roster, combatants, timeline = self.state.roster, self.state.combatants, self.state.timeline
-        # The nick is the stable identity; details change after a forme change. A
-        # Mega switching back in reuses its entry (and its recorded moves).
-        key = nick if nick in roster.players.get(player, {}) else species
+        # The nickname is the stable identity; details change after a forme
+        # change. A Mega switching back in ("Dragonite-Mega" under a nickname)
+        # reuses its entry, never a new one.
+        key = roster.nicks.get((player, nick)) or (
+            nick if nick in roster.players.get(player, {}) else species
+        )
+        roster.nicks[(player, nick)] = key
         roster.register(player, key, level)
         roster.record_forme(player, key, species)
         roster.mark_brought(player, key)
@@ -61,11 +67,30 @@ class RosterHandlers(HandlerGroup):
             if condition in STATUS_NAMES:
                 combatants.status[(player, key)] = condition
         timeline.current_move = None
+        disguise = tag_value(parts[5:], "illusion")  # set by unmask_illusions
+        shown = f" (disguised as {disguise} by Illusion)" if disguise else ""
         timeline.events.append(
             BattleEvent(
                 turn=timeline.turn, kind="switch", actor=key, actor_player=player, slot=slot,
-                text=f"{player} sent out {species}.",
+                text=f"{player} sent out {species}{shown}.",
             )
+        )
+
+    def on_transform(self, parts: list[str]) -> None:
+        # Transform / Imposter: the user takes the target's species (stats,
+        # types, ability) until it switches out; a new switch-in resets it.
+        if len(parts) <= 3:
+            return
+        key = self.state.roster.resolve(parts[2])
+        target = self.state.roster.resolve(parts[3])
+        if key is None or target is None:
+            return
+        appearance = self.state.combatants.forme.get(target, target[1])
+        self.state.roster.record_forme(key[0], key[1], appearance)
+        self.state.combatants.set_forme(key, appearance)
+        self.state.timeline.emit(
+            "forme_change", key,
+            f"{key[0]} {key[1]} transformed into {target[0]} {appearance}.", [appearance],
         )
 
     def on_detailschange(self, parts: list[str]) -> None:

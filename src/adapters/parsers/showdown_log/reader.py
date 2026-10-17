@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.handlers import dispatch_table
+from src.adapters.parsers.showdown_log.illusion import unmask_illusions
 from src.adapters.parsers.showdown_log.replay_frames import build_battle_replay
 from src.adapters.parsers.showdown_log.state import ParseState
 from src.domain.exceptions import LogParsingError
@@ -18,7 +19,7 @@ def _read(text: str) -> ParseState:
     """
     state = ParseState()
     handlers = dispatch_table(state)
-    for line in text.splitlines():
+    for line in unmask_illusions(text).splitlines():
         if not line.startswith("|"):
             continue
         parts = line.split("|")

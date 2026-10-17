@@ -26,7 +26,11 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root
 
 from scripts.faithfulness_benchmark.bench_container import build_container
-from scripts.faithfulness_benchmark.engine_calibration import CalibrationReport, calibrate
+from scripts.faithfulness_benchmark.engine_calibration import (
+    CalibrationReport,
+    calibrate,
+    projection_descriptions,
+)
 from scripts.faithfulness_benchmark.ev_envelope import RecordingCalc, envelopes_for
 from scripts.faithfulness_benchmark.observed_damage import extract_observed_hits
 from scripts.faithfulness_benchmark.replay_corpus import DEFAULT_CACHE_DIR, load_replays
@@ -79,7 +83,9 @@ def main() -> None:
             recorder = RecordingCalc(engine)
             checks = deterministic_checks(container, replay, recorder)
             hits = extract_observed_hits(str(replay["log"]))
-            envelopes = None if args.no_ev_envelope else envelopes_for(hits, recorder, engine)
+            envelopes = None if args.no_ev_envelope else envelopes_for(
+                hits, recorder, engine, projection_descriptions(checks)
+            )
             report = calibrate(hits, checks, band, envelopes)
             overall.hits.extend(report.hits)
             per_replay[replay_id] = {

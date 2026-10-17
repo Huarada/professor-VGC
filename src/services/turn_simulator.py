@@ -23,6 +23,7 @@ from src.domain.models import (
     TurnCheck,
     TurnDamageCheck,
 )
+from src.domain.names import to_id
 from src.services.battle_moment import BoostLedger, Combatant, MoveMoment
 from src.services.decision_review import DecisionReviewer
 from src.services.matchup_evaluator import MatchupEvaluator
@@ -89,6 +90,37 @@ class _MemoizedCalc:
         self._engine.close()
 
 
+def _items_eaten_per_move(events: list[BattleEvent]) -> dict[int, dict[Combatant, set[str]]]:
+    """move event index -> items (ids) each Pokemon lost before the next move."""
+    eaten: dict[int, dict[Combatant, set[str]]] = {}
+    current: int | None = None
+    for index, event in enumerate(events):
+        if event.kind == "move":
+            current = index
+        elif current is not None and event.kind == "item" and event.effects[1:2] == ["lost"]:
+            who = (event.actor_player, event.actor)
+            eaten.setdefault(current, {}).setdefault(who, set()).add(to_id(event.effects[0]))
+    return eaten
+
+
+def _berry_contradicted(
+    moment: MoveMoment,
+    target: Combatant,
+    request: CalcRequest,
+    dmg: DamageResult,
+    eaten: dict[Combatant, set[str]],
+) -> bool:
+    """A back-filled berry the calc applied (a resist berry halving this hit)
+    that the log shows was NOT eaten: the target never held it."""
+    item = to_id(request.defender.item)
+    return (
+        item.endswith("berry")
+        and not moment.item_known(target)
+        and item in to_id(dmg.description)
+        and item not in eaten.get(target, set())
+    )
+
+
 class TurnReplaySimulator:
     """Re-runs the deterministic engine for each action in the battle timeline."""
 
@@ -110,7 +142,8 @@ class TurnReplaySimulator:
         # resets them, boosts accumulate, each move reads the current value.
         boosts: BoostLedger = {}
 
-        for event in game_state.outcome.events:
+        eaten = _items_eaten_per_move(game_state.outcome.events)
+        for index, event in enumerate(game_state.outcome.events):
             if event.kind == "switch":
                 boosts[(event.actor_player, event.actor)] = {}
             elif event.kind == "boost":
@@ -120,7 +153,9 @@ class TurnReplaySimulator:
                     game_state=game_state, event=event, meta=meta, sets=sets,
                     evaluator=evaluator, boosts=boosts, gen=self._gen,
                 )
-                checks.append(self._check(moment, calc, evaluator, reviewer))
+                checks.append(
+                    self._check(moment, calc, evaluator, reviewer, eaten.get(index, {}))
+                )
         return checks
 
     def _check(
@@ -129,6 +164,7 @@ class TurnReplaySimulator:
         calc: _MemoizedCalc,
         evaluator: MatchupEvaluator,
         reviewer: DecisionReviewer,
+        eaten: dict[Combatant, set[str]],
     ) -> TurnCheck:
         event = moment.event
         damaging = evaluator.is_damaging(event.move)
@@ -143,7 +179,7 @@ class TurnReplaySimulator:
             move=event.move,
             effects=list(event.effects),
             conditions=moment.conditions(),
-            damage_checks=self._damage_checks(moment, calc, targets) if damaging else [],
+            damage_checks=self._damage_checks(moment, calc, targets, eaten) if damaging else [],
             best_alternatives=self._best_alternatives(moment, calc, evaluator),
             incoming_threats=threats,
             decision_options=reviewer.options(moment, threats),
@@ -177,14 +213,22 @@ class TurnReplaySimulator:
     # -- per-move checks ----------------------------------------------------- #
 
     def _damage_checks(
-        self, moment: MoveMoment, calc: _MemoizedCalc, targets: list[Combatant]
+        self,
+        moment: MoveMoment,
+        calc: _MemoizedCalc,
+        targets: list[Combatant],
+        eaten: dict[Combatant, set[str]],
     ) -> list[TurnDamageCheck]:
         # Also Pokemon that protected: what a wrong read would have cost.
         actual = self._actual_results(moment.event)
         checks: list[TurnDamageCheck] = []
         for target in targets:
+            request = moment.request(moment.actor, target, moment.event.move)
             try:
-                dmg = calc.calculate(moment.request(moment.actor, target, moment.event.move))
+                dmg = calc.calculate(request)
+                if _berry_contradicted(moment, target, request, dmg, eaten):
+                    no_berry = request.defender.model_copy(update={"item": None})
+                    dmg = calc.calculate(request.model_copy(update={"defender": no_berry}))
             except CalcEngineError:
                 continue
             actual_text, actual_remaining = actual.get(target) or actual.get(
