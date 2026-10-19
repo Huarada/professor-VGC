@@ -278,3 +278,37 @@ def test_raw_logs_carry_their_regulation_including_bo3():
     assert parser.parse(_log(MB)).format_id == MB
     bo3 = parser.parse("|tier|[Gen 9 Champions] VGC 2026 Reg M-C (Bo3)\n|player|p1|A|\n|poke|p1|Garchomp, L50|")
     assert bo3.format_id == f"{MC}bo3" and Regulation.from_format(bo3.format_id).format_id == MC
+
+
+class _MegaNamesCalc(FakeCalcEngine):
+    def species_names(self, gen: int) -> list[str]:
+        return ["Garchomp", "Garchomp-Mega", "Garchomp-Mega-Z", "Salamence", "Salamence-Mega", "Pidgeot"]
+
+
+def test_guard_recognizes_megas_written_the_way_prose_does():
+    """A Mega named in prose ("Mega Garchomp Z") used to slip past the guard,
+    which only knew the dex spelling ("Garchomp-Mega-Z")."""
+    from src.domain.regulation import RegulationRoster
+
+    guard = RegulationGuard(_MegaNamesCalc())
+    roster = RegulationRoster(
+        legal=frozenset({"garchomp", "garchompmega"}),
+        known=frozenset({"garchomp", "garchompmega", "garchompmegaz", "salamence", "salamencemega"}),
+    )
+    assert guard.mentioned("Mega Garchomp Z outspeeds it.") == ["Garchomp-Mega-Z"]
+    assert guard.violations("Mega Garchomp Z outspeeds it.", roster) == ["Garchomp-Mega-Z"]
+    assert guard.violations("Garchomp-Mega-Z outspeeds it.", roster) == ["Garchomp-Mega-Z"]
+    assert guard.violations("Mega Salamence and Mega Garchomp.", roster) == ["Salamence-Mega"]
+    assert guard.violations("Mega Garchomp is fine.", roster) == []
+
+
+def test_a_species_listed_only_as_its_mega_is_legal(tmp_path: Path):
+    """Usage data lists Pidgeot only as Pidgeot-Mega; the base is legal too."""
+    (tmp_path / f"{MB}-1760.json").write_text(json.dumps({
+        "info": {"metagame": MB, "cutoff": 1760},
+        "data": {"Pidgeot-Mega": _mon({}, {}), "Meowstic-F": _mon({}, {}), "Meowstic-F-Mega": _mon({}, {})},
+    }), encoding="utf-8")
+    roster = ChaosAdapter(repository=ChaosRepository(tmp_path)).roster(MB)
+    assert roster.allows("Pidgeot") and roster.allows("Pidgeot-Mega")
+    assert roster.allows("Meowstic-F")
+    assert not roster.allows("Rillaboom")
