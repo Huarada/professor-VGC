@@ -289,8 +289,12 @@ function damageUnder(
   const flatDamage = damage.flat ? damage.flat(Infinity) : damage;
 
   const maxHp = defender.maxHP();
-  const minDmg = flatDamage.length ? Math.min(...flatDamage) : 0;
-  const maxDmg = flatDamage.length ? Math.max(...flatDamage) : 0;
+  // A multi-hit move (Triple Axel, Population Bomb, Parental Bond) reports one
+  // roll array PER HIT: the damage dealt is the sum over the hits, not the
+  // extremes of the flattened list (which was a single hit's damage).
+  const perHit = damage.length > 0 && damage.every(Array.isArray) ? damage : [flatDamage];
+  const minDmg = flatDamage.length ? perHit.reduce((sum, hit) => sum + Math.min(...hit), 0) : 0;
+  const maxDmg = flatDamage.length ? perHit.reduce((sum, hit) => sum + Math.max(...hit), 0) : 0;
 
   let koChanceText = '';
   let isKoGuaranteed = false;
