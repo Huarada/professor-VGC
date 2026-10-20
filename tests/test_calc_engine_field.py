@@ -155,3 +155,17 @@ def test_protosynthesis_and_quark_drive_activate_on_their_field(real_calc):
         real_calc, hands, "Garchomp", "Close Combat", CalcField(terrain="Electric")
     ) > plain * 1.25
     assert _range(real_calc, hands, "Garchomp", "Close Combat", CalcField(weather="Sun")) == plain
+
+
+def test_multi_hit_damage_is_the_total_over_the_hits(real_calc):
+    """Reported by a stress run: the engine reported ONE hit's damage for a
+    multi-hit move (Population Bomb 10-12% instead of 55-66%), and a Triple Axel
+    read '19-66%' next to 'guaranteed OHKO'."""
+    weavile = PokemonSet(species="Weavile", level=50)
+    garchomp = PokemonSet(species="Garchomp")
+    bomb = real_calc.calculate(CalcRequest(attacker=weavile, defender=garchomp, move="Population Bomb"))
+    assert 50 < bomb.min_percent < bomb.max_percent < 70
+    axel = real_calc.calculate(CalcRequest(attacker=weavile, defender=garchomp, move="Triple Axel"))
+    assert axel.min_percent >= 100 and "OHKO" in axel.ko_chance_text
+    single = real_calc.calculate(CalcRequest(attacker=weavile, defender=garchomp, move="Knock Off"))
+    assert single.max_percent < 60  # one hit stays one hit (Knock Off, neutral)

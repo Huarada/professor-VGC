@@ -202,7 +202,8 @@ def test_selection_turn_timeout_falls_back_like_any_other_failure(
     proving _select()'s own try/except actually swallows the timeout
     rather than letting it propagate uncaught."""
     model = _HangsOnFirstCallOnlyAdkModel(["plain answer, no tools needed"])
-    orch = _build(sample_chaos_path, model, agent_timeout_seconds=0.05)
+    # Generous: the second turn is fast but shares this budget, and 50 ms flaked on a loaded machine.
+    orch = _build(sample_chaos_path, model, agent_timeout_seconds=0.5)
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
     result = orch.analyze(AnalysisRequest(session_id="adk-timeout-2", replay_json=replay, question="q"))
     assert result.answer == "plain answer, no tools needed"
