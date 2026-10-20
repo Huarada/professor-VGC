@@ -6,7 +6,7 @@ import json
 
 import pytest
 
-from src.adapters.parsers.showdown_parser import ShowdownReplayParser
+from src.adapters.parsers.showdown_parser import ShowdownReplayParser, parse_replay_for_viewer
 from src.domain.exceptions import LogParsingError
 
 
@@ -101,3 +101,23 @@ def test_invalid_json_error_is_descriptive():
     with _pytest.raises(LogParsingError) as excinfo:
         ShowdownReplayParser().parse('{"broken": ')
     assert "line" in str(excinfo.value).lower()
+
+
+@pytest.mark.parametrize(
+    "broken",
+    [
+        "|switch|p1a: Flutter Mane|",  # details field cut off
+        "|player|p1|Ash\n|switch|p1a: Garchomp|\n|turn|1",
+        '{"sides":"a"}',
+        '{"sides":[1]}',
+        '{"sides":[{"team":"x"}]}',
+        '{"teams":[1,2]}',
+        '{"teams":"x"}',
+    ],
+)
+def test_malformed_replay_is_a_log_parsing_error(broken):
+    """Reported: a truncated/hand-edited replay escaped as a pydantic
+    ValidationError or an AttributeError and crashed the page."""
+    with pytest.raises(LogParsingError):
+        ShowdownReplayParser().parse(broken)
+    assert parse_replay_for_viewer(broken).snapshots == []  # the panel never raises

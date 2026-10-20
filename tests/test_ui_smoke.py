@@ -22,6 +22,7 @@ from src.adapters.memory.conversation_memory import InMemoryConversationMemory  
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser  # noqa: E402
 from src.config import Settings  # noqa: E402
 from src.domain.interfaces import AnalysisPipeline  # noqa: E402
+from src.domain.models import AnalysisRequest  # noqa: E402
 from src.domain.replay_view_models import BattleReplay  # noqa: E402
 from src.services.analysis_service import AnalysisService  # noqa: E402
 from src.services.container import Container  # noqa: E402
@@ -55,6 +56,9 @@ class _FakeContainer:
 
     def parse_replay_for_viewer(self, text: str) -> BattleReplay:
         return Container.parse_replay_for_viewer(text)
+
+    def validate_request(self, request: AnalysisRequest, regulation: str | None = None) -> None:
+        Container(self.settings).validate_request(request, regulation)
 
     def build_pipeline(
         self, provider: str | None = None, orchestrator: str | None = None,
@@ -129,3 +133,36 @@ def test_openai_quota_counts_down_then_blocks_without_calling_the_model(monkeypa
     assert not at.exception
     assert any("UsageLimitExceededError" in e.value for e in at.error)
     assert container.pipelines_built == 2  # the refused third click never built a pipeline
+
+
+def _analyze_replay_as_openai(at: AppTest, replay_text: str, regulation: str = "auto") -> None:
+    at.sidebar.selectbox[0].select("openai")
+    next(s for s in at.sidebar.selectbox if s.label == "Regulation").select(regulation)
+    at.run()
+    at.text_area[0].input(replay_text)
+    next(b for b in at.button if b.label == "Analyze").click()
+    at.run()
+
+
+def test_refused_replay_does_not_spend_quota(monkeypatch):
+    """Reported: the quota was consumed before the replay was read, so a
+    malformed paste (or a replay of another regulation) cost a daily analysis."""
+    monkeypatch.setattr("src.ui.battle_panel.http_head_ok", lambda url, timeout=2.0: False)
+    container = _FakeContainer(
+        UsageQuotaService(InMemoryQuotaStore(), {"openai": 2}, secret="test")
+    )
+    at = AppTest.from_file(_APP, default_timeout=120)
+    at.session_state["container"] = container
+    at.run()
+
+    _analyze_replay_as_openai(at, "|switch|p1a: Flutter Mane|")
+    assert not at.exception
+    assert any("LogParsingError" in e.value for e in at.error)
+
+    reg_mc_replay = "|tier|[Gen 9 Champions] VGC 2026 Reg M-C\n" + _LOG_ATTACKED
+    _analyze_replay_as_openai(at, reg_mc_replay, "mb")
+    assert not at.exception
+    assert any("RegulationMismatchError" in e.value for e in at.error)
+
+    assert container.pipelines_built == 0
+    assert any("openai: 2 of 2 analyses left today" in c.value for c in at.sidebar.caption)
