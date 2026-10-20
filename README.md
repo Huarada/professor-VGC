@@ -39,18 +39,20 @@ the projection assumes. Every rate carries a **95% confidence interval**
 | AI damage claims — **B**: the same LLM given only the raw log | 51.1% (46.0–56.1%), 191/374 |
 | A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
 | Claims about hits that never happened | A: 18 · B: 57 |
-| Engine projection contains the real damage (non-KO hits, no LLM) | **55.5% (50.3–60.5%)**, 198/357 |
-| Engine projection reaches a real KO | 90.6% (85.7–94.0%), 174/192 |
-| Engine misses explained by EV/nature variance alone | 81.8% (75.5–86.8%), 144/176 |
+| Engine projection contains the real damage (non-KO hits, no LLM) | **57.7% (52.5–62.7%)**, 206/357 |
+| Engine projection reaches a real KO | 93.9% (89.7–96.5%), 185/197 |
+| Engine misses explained by EV/nature variance alone | 98.8% (95.6–99.7%), 161/163 |
 
-> **Engine rows re-measured (ADR-039).** Usage data names abilities and items
-> by id (`lifeorb`, `scrappy`) and the calc engine silently ignored them, so
-> every ability/item back-filled from usage data was missing from every calc.
-> On the same 40 games (588 observed hits, colour-suffixed HP fields now read),
-> the fix took the non-KO rate from 53.2% to 55.5% and KOs from 86.5% to
-> 90.6% — paired over the same hits, 29 misses fixed vs. 13 new ones
-> (exact McNemar p = 0.020). The AI-claim rows (A vs B) predate this fix and
-> the HP-field fix, and are pending a re-run.
+> **Engine rows re-measured (ADR-039, ADR-040).** Same 40 games, 588 observed
+> hits. Usage data names abilities and items by id (`lifeorb`) and the calc
+> engine silently ignored them (ADR-039: non-KO 53.2% -> 55.5%). Then every
+> miss that no EV/nature spread explained (32) was traced to a cause:
+> Illusion, Last Respects / Eruption / Supreme Overlord missing the battle
+> state they scale with, usage data not found for rare species or Megas,
+> Transform, forme timing, a resist berry the log shows was not there, moves
+> the engine cannot project — all fixed (ADR-040: non-KO 57.7%, KOs 93.9%,
+> mean miss 11.4pp -> 8.9pp; 2 unexplained misses left). The AI-claim rows
+> (A vs B) predate these fixes and are pending a re-run.
 
 > **Data note (ADR-035).** The engine rows use the official September 2026 VGC
 > usage data. The AI-claim rows (A vs B) were measured before the bundled

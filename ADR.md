@@ -3924,3 +3924,67 @@ something else. Possible follow-up: rule out a back-filled item the log
 contradicts (a resist berry that did not trigger on a super-effective hit).
 
 ---
+
+## ADR-040 — Every calibration miss outside the EV/nature envelope, traced and fixed
+
+**Status:** Accepted
+
+### Context
+After ADR-039, 32 of the engine-calibration misses lay outside any EV/nature
+spread — something other than investment was wrong. Each was reproduced with
+the exact calc request and the log lines around the hit.
+
+### Findings and decisions
+- **Benchmark:** the EV envelope used the first recorded request with the same
+  attacker/defender/move/HP — often a better-alternative or threat calc made
+  at another moment. It is now pinned to the projection's own request (by its
+  result description). 9 of the 32 were spread variance after all.
+- **Illusion** (Zoroark in 5 of 50 Reg M-B games): `unmask_illusions` rewrites
+  the log before the handlers — a `|replace|` re-attributes everything since
+  that slot's switch-in; the "same" Pokemon entering a second slot while on
+  the field is the side's Illusion user (unless a later `|replace|` settles
+  it). The switch event says "(disguised as X by Illusion)". The benchmark's
+  independent log reader got its own equivalent rule.
+- **Identity:** a nicknamed Pokemon switching back in as a Mega reused its
+  roster entry only when the nickname was a species; nicknames now map to
+  their roster key.
+- **Forme timing:** `MonState.forme` stamps the appearance AT each move; a
+  Mega it evolves into later, or Mimikyu-Busted while the Disguise holds, no
+  longer apply earlier. `-transform` (Imposter) sets the target's species and
+  ability. The engine models an intact Disguise (0 damage unless Mold Breaker).
+- **Battle state the engine scales with:** `CalcRequest.attacker_hp_percent`
+  (Eruption / Water Spout / Dragon Energy, Flail / Reversal, pinch abilities)
+  and `attacker_allies_fainted` (Supreme Overlord; Last Respects' 50 + 50 per
+  fainted ally, which `@smogon/calc` 0.12 does not implement — the power is
+  shown in the description).
+- **Usage data lookup:** a species missing from the top bracket is looked up
+  in the same format's lower cutoffs (labelled "lower tier"; allowed when a
+  regulation is pinned, it is the same regulation), and a Mega's own entry
+  (Champions lists `X-Mega` apart) is preferred for its set. Ablation: without
+  the Mega entry the non-KO rate is 55.5% instead of 57.7%.
+- **Log contradicts a back-filled item:** a resist berry the calc applied must
+  be eaten in the log; if not, the target never held it and the hit is
+  re-projected without it.
+- **Moves the engine cannot project:** Counter / Mirror Coat / Metal Burst /
+  Comeuppance / Bide / Endeavor are refused (no projection) instead of "0%
+  (immune)"; Super Fang / Ruination / Nature's Madness are computed exactly
+  (half the target's current HP, type immunity respected).
+
+### Verification
+Same 40 games, ±2pp ±5%: non-KO 55.5% -> 57.7% (52.5–62.7%), KOs 90.6% ->
+93.9% (89.7–96.5%), mean miss 11.5pp -> 8.9pp, misses outside any EV/nature
+spread 32 -> 2; 554 hits judged (Illusion hits match again). On 90 real games
+(Reg M-B and M-C) the invariant audit — nobody acts after fainting, no Pokemon
+in two slots, at most 6 on a team and 4 brought, the panel shows every faint
+— finds nothing. `tests/test_unexplained_misses.py` pins every cause.
+
+### Consequences and open item
+Projections now follow the Pokemon actually on the field at each move. The
+two misses left are a Pokemon Champions mechanic (Mega Sol) and one
+Heliolisk-into-Hydrapple hit. **Open:** `@smogon/calc` 0.12 implements
+Champions' own damage rules as generation 0 (stat points instead of EVs),
+while this project uses generation 9 rules with stat points converted to EVs.
+Stats agree; Champions-only damage rules do not. Switching mechanics per
+format is the next step.
+
+---

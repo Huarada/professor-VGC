@@ -18,6 +18,11 @@ consumer can filter on them rather than guess:
   of the damage the move would have dealt (overkill is never shown);
 - spectator logs round HP to whole percents, so every reading carries about
   ±1 percentage point of rounding.
+
+Illusion (Zoroark) is resolved here too, independently of the product: a
+``|replace|`` line reveals that the Pokemon in that slot was the Illusion user
+since it switched in, and the "same" Pokemon entering a second slot while
+already on the field is the side's Illusion user from team preview.
 """
 
 from __future__ import annotations
@@ -110,11 +115,34 @@ def _has_from(parts: list[str]) -> bool:
     return any(p.strip().startswith("[from]") for p in parts)
 
 
+_ILLUSION_USERS = ("Zoroark", "Zorua")
+
+
+def _replaced_next(lines: list[str], after: int, slot: str) -> bool:
+    """Whether the next entry into ``slot`` after line ``after`` is a ``|replace|``."""
+    for line in lines[after + 1:]:
+        parts = line.split("|")
+        if len(parts) > 2 and parts[1] in ("switch", "drag", "replace") and parts[2].startswith(f"{slot}:"):
+            return parts[1] == "replace"
+    return False
+
+
+def _reattribute(hits: list[ObservedHit], disguise: _Mon, real: _Mon) -> None:
+    """Hits recorded on/by ``disguise`` were really ``real``'s."""
+    for hit in hits:
+        if (hit.attacker_player, hit.attacker) == (disguise.player, disguise.species):
+            hit.attacker = real.species
+        if (hit.defender_player, hit.defender) == (disguise.player, disguise.species):
+            hit.defender = real.species
+
+
 def extract_observed_hits(log: str) -> list[ObservedHit]:
     """Every direct move hit in ``log``, in order, with the target's HP around it."""
     mons: dict[str, _Mon] = {}  # nick key -> mon (identity = species at first switch-in)
     on_slot: dict[str, _Mon] = {}  # "p1a" -> mon currently there
     hits: list[ObservedHit] = []
+    preview: dict[str, list[str]] = {}  # player -> team preview species
+    entry: dict[str, tuple[int, float]] = {}  # slot -> (hits recorded before, prior HP)
     turn = 0
     pending: _PendingMove | None = None
 
@@ -124,7 +152,8 @@ def extract_observed_hits(log: str) -> list[ObservedHit]:
             hits.extend(pending.hits.values())
         pending = None
 
-    for line in log.splitlines():
+    lines = log.splitlines()
+    for index, line in enumerate(lines):
         parts = line.split("|")
         if len(parts) < 2:
             continue
@@ -132,16 +161,41 @@ def extract_observed_hits(log: str) -> list[ObservedHit]:
         if tag == "turn":
             close()
             turn = int(parts[2]) if len(parts) > 2 and parts[2].strip().isdigit() else turn
-        elif tag in ("switch", "drag", "replace") and len(parts) > 3:
-            close()
+        elif tag == "poke" and len(parts) > 3:
+            preview.setdefault(parts[2], []).append(parts[3].split(",")[0].strip())
+        elif tag == "replace" and len(parts) > 3:
+            # Illusion broke: the slot held this Pokemon since it switched in.
+            slot = _slot(parts[2])
+            disguise = on_slot.get(slot)
             key = _nick_key(parts[2])
+            real = mons.setdefault(key, _Mon(player=key[:2], species=parts[3].split(",")[0].strip()))
+            if disguise is not None and disguise is not real:
+                start, prior_hp = entry.get(slot, (len(hits), disguise.hp))
+                real.hp, disguise.hp = disguise.hp, prior_hp
+                _reattribute(hits[start:], disguise, real)
+                if pending is not None:
+                    _reattribute(list(pending.hits.values()), disguise, real)
+                    pending.hits = {(h.defender_player, h.defender): h for h in pending.hits.values()}
+            on_slot[slot] = real
+        elif tag in ("switch", "drag") and len(parts) > 3:
+            close()
+            slot, key = _slot(parts[2]), _nick_key(parts[2])
             species = parts[3].split(",")[0].strip()
+            other = slot[:2] + ("b" if slot.endswith("a") else "a")
+            illusion = [s for s in preview.get(slot[:2], []) if s.startswith(_ILLUSION_USERS)]
+            # A later |replace| in either slot settles it instead (with the real name).
+            settled_later = _replaced_next(lines, index, slot) or _replaced_next(lines, index, other)
+            if (key in mons and on_slot.get(other) is mons[key] and len(illusion) == 1
+                    and not settled_later):
+                key = f"{slot[:2]}:{illusion[0]}"  # the same Pokemon cannot be in two slots
+                species = illusion[0]
             mon = mons.setdefault(key, _Mon(player=key[:2], species=species))
+            entry[slot] = (len(hits), mon.hp)
             if len(parts) > 4:
                 hp = _hp_percent(parts[4])
                 if hp is not None:
                     mon.hp = hp
-            on_slot[_slot(parts[2])] = mon
+            on_slot[slot] = mon
         elif tag == "move" and len(parts) > 3:
             close()
             attacker = on_slot.get(_slot(parts[2]))

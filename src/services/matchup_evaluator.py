@@ -68,7 +68,18 @@ class MatchupEvaluator:
             item: Item at this moment: a name, "" for confirmed none (also stops
                 the Chaos guess), or None to keep the set's item / Chaos guess.
         """
-        summary = meta.pokemon_stats.get(mon.species)
+        # A forme of its own species (a Mega) has its own usage entry and set; a
+        # Transform target's entry is another Pokemon's set, never back-filled.
+        summary = next(
+            (
+                meta.pokemon_stats[name]
+                for name in reversed(mon.battle_formes)
+                if name.startswith(f"{mon.species}-")
+                and name in meta.pokemon_stats
+                and not meta.pokemon_stats[name].is_empty()
+            ),
+            meta.pokemon_stats.get(mon.species),
+        )
         data = mon.model_dump()
         if item is not None:
             data["item"] = item or None
