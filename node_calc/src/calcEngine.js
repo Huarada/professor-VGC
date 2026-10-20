@@ -245,19 +245,19 @@ function buildPokemon(gen, spec) {
 
 function calcDamage(
   genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
 ) {
   const { gen, note } = rulesFor(genNum, [attackerSpec, defenderSpec], moveName);
   const result = damageUnder(
     gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-    attackerHpPercent, attackerAlliesFainted, hits,
+    attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
   );
   return note ? { ...result, desc: result.desc + note } : result;
 }
 
 function damageUnder(
   gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
 ) {
   const fainted = Math.max(0, Math.min(5, attackerAlliesFainted || 0));
   // The attacker's CURRENT HP drives Eruption / Water Spout / Dragon Energy,
@@ -273,6 +273,9 @@ function damageUnder(
   // The hits the log shows landing (variable multi-hit moves; ignored by the calc
   // for single-hit and fixed-count moves).
   if (hits) moveOptions.hits = hits;
+  // A spread move that hit ONE target (the other protected, fainted or absent)
+  // takes no 0.75x reduction; the calc applies it to every spread move in Doubles.
+  if (spreadHit === false) moveOptions.overrides = { ...moveOptions.overrides, target: 'normal' };
   const move = new Move(gen, moveName, moveOptions);
   if (REACTION_MOVES.has(toID(moveName))) {
     throw new Error(

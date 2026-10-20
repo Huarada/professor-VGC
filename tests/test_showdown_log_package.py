@@ -17,7 +17,7 @@ _EXPECTED_COMMANDS = {
     # flow
     "turn", "tier", "faint", "-message", "win",
     # roster
-    "player", "poke", "switch", "drag", "detailschange", "-transform",
+    "player", "poke", "switch", "drag", "detailschange", "-transform", "swap",
     # actions
     "move", "-damage", "-heal", "-sethp", "-activate", "-singleturn",
     "-supereffective", "-resisted", "-immune", "-crit", "-miss", "-hitcount",

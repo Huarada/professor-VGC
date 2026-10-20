@@ -105,10 +105,27 @@ refused; swapping p1/p2 changes no projection; no log prefix breaks the
 parser, the simulator or the panel; the Node engine recovers on the next call
 after being killed; the replay URL fetcher cannot reach another host.
 
-### Still open from the same run
+### Items 4 and 5 — Spread moves on one target; Ally Switch
 
-- Spread moves aimed at one target still get the two-target 0.75 reduction.
-- Ally Switch (`|swap|`) is not read, which can invert the slot map.
+- **Item 4.** `@smogon/calc` applies the 0.75x spread reduction to every
+  spread move in Doubles; the game applies it only when more than one target
+  is hit, and the log says so with the `[spread]` tag. The move's own request
+  now carries `spread_hit` and the engine drops the reduction when it is
+  false (a later alternative or threat keeps the calc's default). Observed over
+  projected damage of single-target spread hits: median 1.55 -> 1.08 (n = 10,
+  a small sample). Reg M-B calibration: 5 misses fixed, 2 new (p = 0.45); the
+  2 new are hits whose target's ally had fainted (a real single target) and
+  stay inside the EV envelope.
+- **Item 5.** `|swap|` (Ally Switch) was ignored: the slot map stayed inverted
+  and later moves and damage lines landed on the wrong Pokemon. The metamorphic
+  test (rename every nickname) had exposed it, since matching nicknames
+  hid the error. The handler exchanges the two positions in the roster and
+  the field ledger. The nickname-rename test now finds nothing in 90 games.
+- Limit: Illusion unmasking tracks slots from the log as written and does not
+  know about swaps (a Zoroark that Ally-Switches before its disguise breaks).
+
+### Still open
+
 - The 6 Reg M-C misses outside any EV/nature spread are not yet traced.
 
 ---

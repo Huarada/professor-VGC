@@ -225,6 +225,8 @@ class SmogonCalcAdapter:
             payload["attackerHpPercent"] = request.attacker_hp_percent
         if request.hits:
             payload["hits"] = request.hits
+        if request.spread_hit is not None:
+            payload["spreadHit"] = request.spread_hit
         if request.attacker_allies_fainted:
             payload["attackerAlliesFainted"] = request.attacker_allies_fainted
         response = self._rpc(payload)

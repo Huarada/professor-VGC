@@ -423,6 +423,10 @@ class CalcRequest(BaseModel):
     attacker_hp_percent: float | None = None
     """Attacker's current HP percent (None = full HP): Eruption / Water Spout /
     Dragon Energy power, Flail / Reversal, pinch abilities such as Blaze."""
+    spread_hit: bool | None = None
+    """Whether a spread move hit more than one target (the log's ``[spread]`` tag):
+    the 0.75x reduction applies only then. None = the calc's default (it assumes
+    two targets)."""
     hits: int | None = None
     """Hits the move landed when known (Triple Axel, Bullet Seed, Population Bomb
     stop on a miss or roll 2-5); None = the calc's own default."""

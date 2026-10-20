@@ -39,7 +39,8 @@ function handle(request) {
           request.defenderHpPercent,
           request.attackerHpPercent,
           request.attackerAlliesFainted,
-          request.hits
+          request.hits,
+          request.spreadHit
         ),
       };
     case 'speed':
