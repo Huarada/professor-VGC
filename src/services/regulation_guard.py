@@ -18,6 +18,21 @@ from src.domain.interfaces import SpeciesCatalog
 from src.domain.regulation import RegulationRoster, normalize_species
 
 
+_MEGA_FORM = re.compile(r"^(?P<base>.+)-Mega(?:-(?P<letter>[XYZ]))?$")
+
+
+def _mega_aliases(dex: set[str]) -> dict[str, str]:
+    """How prose writes a Mega: ``Garchomp-Mega-Z`` -> ``Mega Garchomp Z``,
+    ``Salamence-Mega`` -> ``Mega Salamence``."""
+    aliases: dict[str, str] = {}
+    for name in dex:
+        match = _MEGA_FORM.match(name)
+        if match:
+            letter = f" {match['letter']}" if match["letter"] else ""
+            aliases[f"Mega {match['base']}{letter}"] = name
+    return aliases
+
+
 class RegulationGuard:
     """Finds species named in free text that a regulation does not allow."""
 
@@ -26,14 +41,18 @@ class RegulationGuard:
         self._gen = gen
         self._pattern: re.Pattern[str] | None = None
         self._names: list[str] = []
+        self._aliases: dict[str, str] = {}  # prose spelling -> dex name
 
     def _species_pattern(self) -> re.Pattern[str] | None:
         if self._pattern is None and self._catalog is not None:
-            self._names = sorted(set(self._catalog.species_names(self._gen)), key=len, reverse=True)
+            dex = set(self._catalog.species_names(self._gen))
+            self._names = sorted(dex, key=len, reverse=True)
+            self._aliases = _mega_aliases(dex)
             if self._names:
                 # Case-sensitive on purpose: prose capitalizes Pokemon names,
                 # which keeps ordinary words ("ditto") from matching.
-                alternation = "|".join(re.escape(n) for n in self._names)
+                spellings = sorted({*self._names, *self._aliases}, key=len, reverse=True)
+                alternation = "|".join(re.escape(n) for n in spellings)
                 self._pattern = re.compile(rf"(?<![\w-])({alternation})(?![\w-])")
         return self._pattern
 
@@ -48,7 +67,8 @@ class RegulationGuard:
         pattern = self._species_pattern()
         if pattern is None:
             return []
-        return list(dict.fromkeys(m.group(1) for m in pattern.finditer(text)))
+        found = (self._aliases.get(m.group(1), m.group(1)) for m in pattern.finditer(text))
+        return list(dict.fromkeys(found))
 
     def violations(
         self, text: str, roster: RegulationRoster, also_allowed: Iterable[str] = ()

@@ -14,7 +14,7 @@ from typing import Any, Sequence
 from src.adapters.chaos.chaos_repository import ChaosRepository, ChaosRepositoryLike
 from src.domain.exceptions import ConfigurationError
 from src.domain.models import MetaContext, PokemonMetaSummary, StatSpread
-from src.domain.regulation import Regulation, RegulationRoster
+from src.domain.regulation import Regulation, RegulationRoster, with_mega_bases
 
 _EV_MULTIPLIER = 8
 _STAT_LABELS = ("HP", "Atk", "Def", "SpA", "SpD", "Spe")
@@ -59,7 +59,8 @@ class ChaosAdapter:
                 other = Regulation.from_format(metagame)
                 if other is not None and other.family == regulation.family:
                     known.update(self._repo.legal_species(metagame))
-        return RegulationRoster(legal=self._repo.legal_species(format_id), known=frozenset(known))
+        legal = with_mega_bases(self._repo.legal_species(format_id))
+        return RegulationRoster(legal=legal, known=frozenset(known))
 
     @property
     def rejected_tiers(self) -> dict[str, str]:

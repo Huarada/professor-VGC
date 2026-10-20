@@ -39,6 +39,15 @@ def normalize_species(name: str) -> str:
     return re.sub(r"[\s\-.'’]", "", name.lower())
 
 
+_MEGA_SUFFIX = re.compile(r"mega[xyz]?$")
+
+
+def with_mega_bases(legal: frozenset[str]) -> frozenset[str]:
+    """``legal`` plus the base species of every legal Mega: a Mega needs its base
+    (usage data lists Pidgeot only as ``Pidgeot-Mega``, yet Pidgeot is legal)."""
+    return legal | {base for name in legal if (base := _MEGA_SUFFIX.sub("", name)) != name}
+
+
 class RegulationRoster(BaseModel):
     """Which Pokemon a regulation allows, from usage data.
 
