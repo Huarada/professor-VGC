@@ -72,7 +72,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install linters
-        run: pip install ruff vulture
+        run: grep -E '^(ruff|vulture)==' requirements.txt | xargs pip install
 
       - name: ruff (pyflakes rules)
         run: ruff check src scripts tests --select F

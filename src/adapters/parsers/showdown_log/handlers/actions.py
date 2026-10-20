@@ -13,6 +13,14 @@ from src.adapters.parsers.showdown_log.protocol import (
 from src.domain.models import BattleEvent
 
 
+def _failed(event: BattleEvent) -> bool:
+    """A move that missed, was blocked or had no effect on every target (one hit
+    that landed anywhere makes it a success)."""
+    landed = any(hit.hp_after is not None for hit in event.hits)
+    signals = {"missed", "immune", "failed"} & set(event.effects)
+    return not landed and bool(signals or any(hit.blocked_by for hit in event.hits))
+
+
 class ActionHandlers(HandlerGroup):
     def routes(self) -> dict[str, Handler]:
         return {
@@ -27,6 +35,7 @@ class ActionHandlers(HandlerGroup):
             "-immune": lambda parts: self.state.timeline.add_effect("immune"),
             "-crit": lambda parts: self.state.timeline.add_effect("crit"),
             "-miss": lambda parts: self.state.timeline.add_effect("missed"),
+            "-fail": lambda parts: self.state.timeline.add_effect("failed"),
             "-hitcount": self.on_hitcount,
         }
 
@@ -60,9 +69,14 @@ class ActionHandlers(HandlerGroup):
             effects.append("spread")
         if (timeline.turn, player, actor) in timeline.helped:
             effects.append("helping hand")
+        previous = next(
+            (e for e in reversed(timeline.events)
+             if e.kind == "move" and (e.actor_player, e.actor) == (player, actor)), None,
+        )
         timeline.current_move = BattleEvent(
             turn=timeline.turn, kind="move", actor=actor, actor_player=player, slot=slot,
             move=move, effects=effects, state=self.state.snapshot(),
+            after_failed_move=previous is not None and _failed(previous),
         )
         timeline.events.append(timeline.current_move)
 

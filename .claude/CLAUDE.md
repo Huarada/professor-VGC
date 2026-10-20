@@ -417,7 +417,9 @@ replay JSON/log + question
     the hits the log shows (`|-hitcount|`); abilities revealed by `[from]
     ability: X` are used; guard recognizes Megas in prose and a legal Mega makes
     its base legal; spread moves that hit one target take no 0.75x; Ally
-    Switch (`|swap|`) read. Method and corrections: ADR.md "Read first" (ADR-042).
+    Switch (`|swap|`) read; Psych Up, Stomping Tantrum / Temper Flare after a
+    failed move, Focus Sash survivals as lower bounds; linters pinned. Method and
+    corrections: ADR.md "Read first" (ADR-042).
 
 Test count grew alongside these.
 

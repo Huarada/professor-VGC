@@ -131,7 +131,7 @@ def test_openai_quota_counts_down_then_blocks_without_calling_the_model(monkeypa
 
     _analyze_as_openai(at)
     assert not at.exception
-    assert any("UsageLimitExceededError" in e.value for e in at.error)
+    assert any("Daily limit reached" in e.value for e in at.error)
     assert container.pipelines_built == 2  # the refused third click never built a pipeline
 
 
@@ -157,12 +157,12 @@ def test_refused_replay_does_not_spend_quota(monkeypatch):
 
     _analyze_replay_as_openai(at, "|switch|p1a: Flutter Mane|")
     assert not at.exception
-    assert any("LogParsingError" in e.value for e in at.error)
+    assert any("could not be read" in e.value for e in at.error)
 
     reg_mc_replay = "|tier|[Gen 9 Champions] VGC 2026 Reg M-C\n" + _LOG_ATTACKED
     _analyze_replay_as_openai(at, reg_mc_replay, "mb")
     assert not at.exception
-    assert any("RegulationMismatchError" in e.value for e in at.error)
+    assert any("pinned to" in e.value for e in at.error)
 
     assert container.pipelines_built == 0
     assert any("openai: 2 of 2 analyses left today" in c.value for c in at.sidebar.caption)

@@ -39,9 +39,9 @@ the projection assumes. Every rate carries a **95% confidence interval**
 | AI damage claims — **B**: the same LLM given only the raw log | 51.1% (46.0–56.1%), 191/374 |
 | A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
 | Claims about hits that never happened | A: 18 · B: 57 |
-| Engine projection contains the real damage (non-KO hits, no LLM) | **58.7% (53.5–63.6%)**, 210/358 |
-| Engine projection reaches a real KO | 94.4% (90.3–96.9%), 187/198 |
-| Engine misses explained by EV/nature variance alone | 100% (97.6–100%), 159/159 |
+| Engine projection contains the real damage (non-KO hits, no LLM) | **59.7% (54.5–64.7%)**, 209/350 |
+| Engine projection reaches a real KO | 94.7% (90.7–97.0%), 195/206 |
+| Engine misses explained by EV/nature variance alone | 100% (97.5–100%), 152/152 |
 
 > **Engine rows re-measured (ADR-039, ADR-040).** Same 40 games, 588 observed
 > hits. Usage data names abilities and items by id (`lifeorb`) and the calc
@@ -55,8 +55,9 @@ the projection assumes. Every rate carries a **95% confidence interval**
 > Champions' own damage rules and stat points (ADR-041), multi-hit moves
 > count the hits the log shows, and abilities the log reveals through
 > `[from] ability:` are used, and a spread move that hit one target takes no
-> 0.75x reduction (ADR-042: non-KO 58.7%, no miss left outside the EV/nature
-> envelope). The AI-claim rows (A vs B) predate these fixes and
+> 0.75x reduction (ADR-042: Reg M-B non-KO 59.7%, Reg M-C 66.8%, no Reg M-B
+> miss left outside the EV/nature envelope; Focus Sash survivals now count as
+> the lethal hits they were). The AI-claim rows (A vs B) predate these fixes and
 > are pending a re-run.
 
 > **Data note (ADR-035).** The engine rows use the official September 2026 VGC

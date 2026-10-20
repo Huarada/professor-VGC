@@ -238,6 +238,7 @@ class MoveMoment:
             # Only the move actually used has a known hit count / target count.
             hits=self.event.hit_count or None if used else None,
             spread_hit="spread" in self.event.effects if used else None,
+            after_failed_move=used and self.event.after_failed_move,
         )
 
     def _fainted_count(self, player: str) -> int:

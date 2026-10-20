@@ -102,7 +102,7 @@ def main() -> None:
     if args.out:
         misses = [
             {"turn": h.hit.turn, "attacker": h.hit.attacker, "move": h.hit.move,
-             "defender": h.hit.defender, "observed": h.hit.damage, "ko": h.hit.fainted,
+             "defender": h.hit.defender, "observed": h.hit.damage, "ko": h.hit.lower_bound,
              "spread": h.hit.spread, "projected": [h.projected_min, h.projected_max],
              "ev_envelope": list(h.ev_envelope) if h.ev_envelope else None,
              "explained_by_ev_nature": h.within_ev_envelope, "reason": h.reason}

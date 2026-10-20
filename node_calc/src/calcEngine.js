@@ -68,6 +68,7 @@ const FIXED_ABILITY_FORME = /-(Mega|Primal)\b/;
 // refused and the caller treats them as "not projected". HP-ratio moves halve
 // the target's CURRENT HP, which is exact and computed here.
 const REACTION_MOVES = new Set(['counter', 'mirrorcoat', 'metalburst', 'comeuppance', 'bide', 'endeavor']);
+const DOUBLES_AFTER_FAILURE = new Set(['stompingtantrum', 'temperflare']);
 const HALF_HP_MOVES = new Set(['superfang', 'ruination', 'naturesmadness']);
 
 function typeImmune(gen, attacker, defender, move) {
@@ -245,19 +246,19 @@ function buildPokemon(gen, spec) {
 
 function calcDamage(
   genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
 ) {
   const { gen, note } = rulesFor(genNum, [attackerSpec, defenderSpec], moveName);
   const result = damageUnder(
     gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-    attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
+    attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
   );
   return note ? { ...result, desc: result.desc + note } : result;
 }
 
 function damageUnder(
   gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
 ) {
   const fainted = Math.max(0, Math.min(5, attackerAlliesFainted || 0));
   // The attacker's CURRENT HP drives Eruption / Water Spout / Dragon Energy,
@@ -275,6 +276,10 @@ function damageUnder(
   if (hits) moveOptions.hits = hits;
   // A spread move that hit ONE target (the other protected, fainted or absent)
   // takes no 0.75x reduction; the calc applies it to every spread move in Doubles.
+  // Stomping Tantrum / Temper Flare double their power after a failed move.
+  if (afterFailedMove && DOUBLES_AFTER_FAILURE.has(toID(moveName))) {
+    moveOptions.overrides = { ...moveOptions.overrides, basePower: new Move(gen, moveName).bp * 2 };
+  }
   if (spreadHit === false) moveOptions.overrides = { ...moveOptions.overrides, target: 'normal' };
   const move = new Move(gen, moveName, moveOptions);
   if (REACTION_MOVES.has(toID(moveName))) {

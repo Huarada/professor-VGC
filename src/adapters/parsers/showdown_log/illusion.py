@@ -19,6 +19,9 @@ gains ``[illusion] <disguise>`` so the timeline can say so.
 from __future__ import annotations
 
 import re
+from typing import TypeVar
+
+_V = TypeVar("_V")
 
 _ILLUSION_USERS = ("Zoroark", "Zorua")
 _ENTRIES = ("switch", "drag", "replace")
@@ -53,6 +56,13 @@ def _unmask(
         lines[i] = _rename(lines[i], slot, disguise, real)
 
 
+def _swap_entries(tracked: dict[str, _V], first: str, second: str) -> None:
+    held = [tracked.pop(first, None), tracked.pop(second, None)]
+    for slot, value in zip((second, first), held):
+        if value is not None:
+            tracked[slot] = value
+
+
 def _next_entry(lines: list[str], after: int, slot: str) -> int:
     """Index of the next switch/drag/replace into ``slot`` (or the log's end)."""
     for i in range(after + 1, len(lines)):
@@ -75,6 +85,12 @@ def unmask_illusions(text: str) -> str:
         tag = p[1]
         if tag == "poke" and len(p) > 3:
             preview.setdefault(p[2], []).append(p[3])
+            continue
+        if tag == "swap" and len(p) > 3 and p[3].strip().isdigit():
+            # Ally Switch: the two positions exchange what they track.
+            first, second = p[2].partition(":")[0], p[2][:2] + "ab"[int(p[3]) % 2]
+            _swap_entries(nick_in, first, second)
+            _swap_entries(entered_at, first, second)
             continue
         ref = _slot_and_nick(p[2])
         if ref is None:

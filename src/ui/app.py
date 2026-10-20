@@ -171,8 +171,8 @@ def main() -> None:
         quota_slot = st.empty()
         try:
             caption = _quota_caption(_get_container(), provider)
-        except ProfessorVGCError as exc:
-            caption = f"{provider}: usage quota unavailable ({type(exc).__name__})."
+        except ProfessorVGCError:
+            caption = f"{provider}: usage quota unavailable."
         if caption:
             quota_slot.caption(caption)
         st.info(
@@ -290,7 +290,7 @@ def main() -> None:
             error = st.session_state.get("last_error")
             result = st.session_state.get("last_result")
             if error is not None:
-                st.error(f"Analysis failed — {type(error).__name__}: {error}")
+                st.error(f"Analysis failed — {error}")
                 st.caption(_error_tip(error))
                 return
             if result is None:
