@@ -24,6 +24,7 @@ from src.domain.models import (
     TurnDamageCheck,
 )
 from src.domain.names import to_id
+from src.domain.regulation import calc_generation
 from src.services.battle_moment import BoostLedger, Combatant, MoveMoment
 from src.services.decision_review import DecisionReviewer
 from src.services.matchup_evaluator import MatchupEvaluator
@@ -133,8 +134,9 @@ class TurnReplaySimulator:
         if game_state.outcome is None:
             return []
         calc = _MemoizedCalc(self._engine)
-        evaluator = MatchupEvaluator(calc, self._gen)
-        reviewer = DecisionReviewer(calc, self._gen)
+        gen = calc_generation(game_state.format_id, self._gen)  # Champions has its own rules
+        evaluator = MatchupEvaluator(calc, gen)
+        reviewer = DecisionReviewer(calc, gen)
         sets = evaluator.index_sets(game_state)
         checks: list[TurnCheck] = []
 
@@ -151,7 +153,7 @@ class TurnReplaySimulator:
             elif event.kind == "move" and event.move:
                 moment = MoveMoment(
                     game_state=game_state, event=event, meta=meta, sets=sets,
-                    evaluator=evaluator, boosts=boosts, gen=self._gen,
+                    evaluator=evaluator, boosts=boosts, gen=gen,
                 )
                 checks.append(
                     self._check(moment, calc, evaluator, reviewer, eaten.get(index, {}))

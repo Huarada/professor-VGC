@@ -118,6 +118,39 @@ function disguiseResult(attacker, defender, move) {
   };
 }
 
+// Pokemon Champions (generation 0 in @smogon/calc) invests STAT POINTS, 0-32
+// per stat, one point = one stat point at level 50. The Python side keeps every
+// spread in the EV scale (usage data's stat points x 8), so convert back here.
+const CHAMPIONS_GEN = 0;
+const SV_GEN = 9;
+const EVS_PER_STAT_POINT = 8;
+const MAX_STAT_POINTS = 32;
+
+// The rules one calc runs under. A Pokemon or move missing from the Champions
+// data (a regulation newer than this @smogon/calc) falls back to Scarlet/Violet
+// rules for that calc, and says so, rather than failing it.
+function rulesFor(genNum, specs, moveName) {
+  if (genNum !== CHAMPIONS_GEN) return { gen: Generations.get(genNum), note: '' };
+  const champions = Generations.get(CHAMPIONS_GEN);
+  const missing = specs
+    .filter((spec) => spec && !champions.species.get(toID(spec.species)))
+    .map((spec) => spec.species);
+  if (moveName && !champions.moves.get(toID(moveName))) missing.push(moveName);
+  if (!missing.length) return { gen: champions, note: '' };
+  return {
+    gen: Generations.get(SV_GEN),
+    note: ` [Scarlet/Violet rules: ${missing.join(', ')} not in the Pokemon Champions data]`,
+  };
+}
+
+function toStatPoints(evs) {
+  const points = {};
+  for (const [stat, value] of Object.entries(evs || {})) {
+    points[stat] = Math.min(MAX_STAT_POINTS, Math.round(value / EVS_PER_STAT_POINT));
+  }
+  return points;
+}
+
 function canonicalName(table, name) {
   const entry = table.get(toID(name));
   return entry ? entry.name : name;
@@ -169,7 +202,7 @@ function buildPokemon(gen, spec) {
   if (!NO_ITEM.has(toID(spec.item))) options.item = canonicalName(gen.items, spec.item);
   if (spec.nature) options.nature = canonicalName(gen.natures, spec.nature);
   if (spec.teraType) options.teraType = spec.teraType;
-  if (spec.evs) options.evs = spec.evs;
+  if (spec.evs) options.evs = gen.num === CHAMPIONS_GEN ? toStatPoints(spec.evs) : spec.evs;
   if (spec.ivs) options.ivs = spec.ivs;
   if (spec.status) options.status = spec.status;
   // Stat stage modifiers (-6..+6) ACTIVE at the exact moment this spec
@@ -214,7 +247,18 @@ function calcDamage(
   genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
   attackerHpPercent, attackerAlliesFainted,
 ) {
-  const gen = Generations.get(genNum);
+  const { gen, note } = rulesFor(genNum, [attackerSpec, defenderSpec], moveName);
+  const result = damageUnder(
+    gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
+    attackerHpPercent, attackerAlliesFainted,
+  );
+  return note ? { ...result, desc: result.desc + note } : result;
+}
+
+function damageUnder(
+  gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
+  attackerHpPercent, attackerAlliesFainted,
+) {
   const fainted = Math.max(0, Math.min(5, attackerAlliesFainted || 0));
   // The attacker's CURRENT HP drives Eruption / Water Spout / Dragon Energy,
   // Flail / Reversal and pinch abilities; without it they all assumed full HP.
@@ -309,7 +353,7 @@ function effectiveSpeed(gen, mon, field, side) {
 }
 
 function compareSpeed(genNum, attackerSpec, defenderSpec, fieldSpec) {
-  const gen = Generations.get(genNum);
+  const { gen } = rulesFor(genNum, [attackerSpec, defenderSpec]);
   const attacker = buildPokemon(gen, attackerSpec);
   const defender = buildPokemon(gen, defenderSpec);
   const spec = fieldSpec || {};
@@ -351,12 +395,13 @@ function speedControlKind(dexMove) {
 // come from @pkmn/dex, which carries the move effects @smogon/calc's trimmed
 // data doesn't expose.
 function moveInfo(genNum, name) {
-  const gen = Generations.get(genNum);
+  const { gen } = rulesFor(genNum, [], name);
   if (!gen.moves.get(toID(name))) {
     return { name, known: false, category: '', isSpread: false };
   }
   const move = new Move(gen, name);
-  const dexMove = Dex.forGen(genNum).moves.get(name);
+  // @pkmn/dex has no Champions generation; move effects are Scarlet/Violet's.
+  const dexMove = Dex.forGen(genNum === CHAMPIONS_GEN ? SV_GEN : genNum).moves.get(name);
   const hasDex = !!(dexMove && dexMove.exists);
   return {
     name: move.name,

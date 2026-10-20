@@ -917,12 +917,24 @@ data** downloaded with `chaos_corpus.py`.
 > is 55.5%. Two misses remain unexplained: Meganium-Mega's Mega Sol (a Pokemon
 > Champions mechanic; see below) and one Heliolisk Thunderbolt into Hydrapple.
 >
-> **Open: Pokemon Champions mechanics.** `@smogon/calc` 0.12 ships Champions'
-> own damage rules as generation 0 (`mechanics/champions.js`, stat points
-> instead of EVs); this project calculates Champions formats with generation 9
-> (Scarlet/Violet) rules and converts stat points to EVs. Stats agree; damage
-> rules that differ in Champions (e.g. Mega Sol) do not. Switching is the next
-> step.
+> **Pokemon Champions rules (ADR-041).** `@smogon/calc` 0.12 ships Champions'
+> own damage rules as generation 0 (stat points instead of EVs, Mega Sol, no
+> Terastallization, its own Mold Breaker list); Champions formats are now
+> calculated under them. Measured with an ablation on the same games:
+>
+> | Same games, ±2pp ±5% | Scarlet/Violet rules | Champions rules |
+> |---|---|---|
+> | Reg M-B, 40 games, non-KO | 57.7% (206/357) | **58.0% (207/357)** |
+> | Reg M-B, misses outside any EV/nature spread | 2 | **1** |
+> | Reg M-C, 40 games, non-KO | 65.1% (261/401) | 65.1% (261/401) |
+> | Reg M-C, KOs reachable | 97.8% (181/185) | 97.8% (181/185) |
+>
+> Paired over the same hits: Reg M-B 1 miss fixed (Meganium-Mega's Mega Sol,
+> now 67.8–81.4% for the 74% observed), 0 new; Reg M-C 0 and 0. Stats already
+> agreed through the stat-point -> EV conversion, and Champions-only rules
+> are rare in these hits; the change is about calculating each game under the
+> game's own rules. The one Reg M-B miss left is a Heliolisk Thunderbolt into
+> Hydrapple.
 
 > **Data correction (ADR-035).** The first runs of this section used
 > `--chaos local`, whose bundled `data/chaos/gen9championsvgc2026regmb-*.json`
@@ -939,7 +951,7 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 
 | ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Projected range contains the real damage — **non-KO hits** | **57.7% (52.5–62.7%)**, 206/357 |
+| Projected range contains the real damage — **non-KO hits** | **58.0% (52.8–63.0%)**, 207/357 |
 | Projection can reach a real KO | 93.9% (89.7–96.5%), 185/197 |
 | Mean miss outside the raw projected range | 8.9 pp |
 | Excluded: crit / multi-hit 25 · no projection 9 | — |
@@ -948,17 +960,17 @@ The conclusion does not hinge on the band — the same hits re-scored:
 
 | Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
 |---|---|---|
-| 0% (±2pp only) | 47.3% (42.2–52.5%) | 93.4% (89.0–96.1%) |
-| **5%** | **57.7% (52.5–62.7%)** | **93.9% (89.7–96.5%)** |
-| 10% | 68.1% (63.1–72.7%) | 93.9% (89.7–96.5%) |
-| 15% | 75.6% (70.9–79.8%) | 95.4% (91.5–97.6%) |
+| 0% (±2pp only) | 47.6% (42.5–52.8%) | 93.4% (89.0–96.1%) |
+| **5%** | **58.0% (52.8–63.0%)** | **93.9% (89.7–96.5%)** |
+| 10% | 68.3% (63.3–73.0%) | 93.9% (89.7–96.5%) |
+| 15% | 75.9% (71.2–80.1%) | 95.4% (91.5–97.6%) |
 
 **How much do EVs explain?** For every miss, the same calc request was re-run
 at minimum and maximum EV/nature investment on both sides, everything else
 equal (`ev_envelope.py`), on exactly the request the projection came from.
-**98.8% of misses (95.6–99.7%, 161/163) fall inside that envelope** — a
-different spread alone explains them — and 2 lie outside any spread (see the
-ADR-040 box above). This was 56 before ADR-039 and 32 before ADR-040: every
+**99.4% of misses (96.6–99.9%, 161/162) fall inside that envelope** — a
+different spread alone explains them — and 1 lies outside any spread (see the
+ADR-040 and ADR-041 boxes above). This was 56 before ADR-039 and 32 before ADR-040: every
 one of those was a pipeline bug (dropped usage-data names, Illusion, missing
 battle state, ...), not an unknowable set. Mega formes resolve in the engine. Upgrading `@smogon/calc` 0.11 → 0.12 changed none of these rates
 by more than 0.5pp.

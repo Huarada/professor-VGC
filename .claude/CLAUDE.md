@@ -252,6 +252,11 @@ replay JSON/log + question
 - An unrevealed spread is backed off the most-used Chaos spread (never invented);
   a Mega/forme uses its real stats when the engine knows it, otherwise the verdict
   carries a `stat_caveat`. The `description` string states the exact spread used.
+- **Each game is calculated under its own game's rules:** Pokemon Champions
+  formats use `@smogon/calc` generation 0 (stat points 0-32, Mega Sol, no Tera),
+  chosen per game by `calc_generation(format_id)`; spreads stay in the EV scale
+  in Python (stat points x 8) and the Node engine converts them back. Never
+  write `gen or default`: 0 is a real generation (ADR-041).
 - Usage data names abilities/items/natures by **id** (`lifeorb`), logs by display
   name (`Life Orb`): the Node engine resolves both through the dex, and Python
   compares them with `src/domain/names.to_id`, never as raw strings. A Mega /
@@ -403,6 +408,11 @@ replay JSON/log + question
     and Megas' own entries, resist berries the log contradicts, Disguise, moves
     the engine cannot project refused; EV envelope pinned to the projection's
     request. Non-KO 57.7%, KOs 93.9%, unexplained misses 32 -> 2 (ADR-040).
+18. **feat(calc):** Pokemon Champions formats calculated under Champions' own
+    rules (`@smogon/calc` generation 0, stat points; `calc_generation`), per
+    game; a generation of 0 no longer swallowed by `or` / `||`; a Pokemon or
+    move missing from the Champions data falls back to Scarlet/Violet rules and
+    says so (ADR-041).
 
 Test count grew alongside these.
 

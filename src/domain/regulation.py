@@ -21,6 +21,18 @@ _SHORT_CODE_RE = re.compile(r"^[a-z]{1,3}$")
 AUTO = "auto"
 
 
+CHAMPIONS_CALC_GEN = 0
+"""@smogon/calc's generation number for Pokemon Champions' own rules."""
+
+
+def calc_generation(format_id: str | None, default: int) -> int:
+    """The damage rules a format is played by: Pokemon Champions has its own
+    (stat points instead of EVs, Mega Sol, no Terastallization, ...), which
+    @smogon/calc implements as generation 0. Any other format uses ``default``.
+    """
+    return CHAMPIONS_CALC_GEN if format_id and "champions" in format_id.lower() else default
+
+
 def normalize_species(name: str) -> str:
     """The normalization usage data is keyed by: lowercase, with spaces,
     hyphens, dots and apostrophes dropped (``"Mr. Rime"`` -> ``"mrrime"``)."""

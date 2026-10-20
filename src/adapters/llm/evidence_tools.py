@@ -22,7 +22,7 @@ from src.domain.interfaces import (
     StrategyKnowledgeProvider,
 )
 from src.domain.models import CalcRequest, PokemonSet
-from src.domain.regulation import RegulationScope
+from src.domain.regulation import RegulationScope, calc_generation
 
 ToolFunction = Callable[..., dict[str, Any]]
 
@@ -97,7 +97,7 @@ class EvidenceTools:
         try:
             result = self._calc.calculate(
                 CalcRequest(
-                    gen=self._gen,
+                    gen=calc_generation(self._scope.format_id, self._gen),
                     attacker=PokemonSet(
                         species=attacker_species,
                         item=attacker_item or None,

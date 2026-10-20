@@ -3988,3 +3988,48 @@ Stats agree; Champions-only damage rules do not. Switching mechanics per
 format is the next step.
 
 ---
+
+## ADR-041 — Pokemon Champions games under Pokemon Champions rules
+
+**Status:** Accepted
+
+### Context
+`@smogon/calc` 0.12 implements Pokemon Champions as **generation 0**
+(`mechanics/champions.js`): stat points (0-32 per stat, one point = one stat
+point at level 50) instead of EVs, no Terastallization or Dynamax, Mega Sol,
+Aura Guard, its own Mold Breaker list. The project calculated every game —
+Champions included — with one global `calc_gen = 9` (Scarlet/Violet rules),
+converting usage data's stat points to EVs (x 8). Stats agreed through that
+conversion; damage rules did not: Meganium-Mega's Mega Sol (moves act as in
+sun, so sand's Rock Sp. Def boost does not apply) projected 45-54% where the
+real game showed 74%. A generation of 0 would also have been swallowed by
+`request.gen or self._gen` (Python) and `request.gen || 9` (Node).
+
+### Decision
+- `calc_generation(format_id, default)` (domain): Champions formats -> 0,
+  anything else -> the configured `calc_gen`. The simulator, the verdicts
+  (`MatchupEvaluator.for_format`) and the agent's damage tool derive it per
+  game; every request carries it and nothing coerces 0 away.
+- Spreads stay in the EV scale on the Python side (stat points x 8); the Node
+  engine converts them back to stat points under generation 0 (capped at 32).
+  Calc descriptions then show stat points, and the explanation prompt says so.
+- A Pokemon or move missing from the Champions data (a regulation newer than
+  the installed `@smogon/calc`) falls back to Scarlet/Violet rules for that
+  calc, and the description says "[Scarlet/Violet rules: X not in the Pokemon
+  Champions data]" rather than failing. Move effect flags come from `@pkmn/dex`
+  generation 9 (it has no Champions generation).
+
+### Verification
+Ablation on the same games (±2pp ±5%): Reg M-B, 40 games, non-KO 57.7% ->
+58.0%, misses outside any EV/nature spread 2 -> 1 (paired: 1 fixed — the Mega
+Sol hit, now 67.8-81.4% — 0 new); Reg M-C, 40 games, identical (65.1%, 0 and
+0). Coverage: the generation-0 data has every species, move, item and ability
+seen in 90 real games and the official usage data. `tests/test_champions_mechanics.py`.
+
+### Consequences
+Each game is calculated under its own game's rules. The measured effect is
+small because stats already agreed and Champions-only rules are rare in these
+hits; it grows as Champions-specific mechanics do. When `@smogon/calc` lags a
+new regulation, the fallback keeps projections flowing and labelled.
+
+---
