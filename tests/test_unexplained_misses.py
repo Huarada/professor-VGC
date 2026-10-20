@@ -445,3 +445,80 @@ def test_a_spread_move_that_hit_one_target_takes_no_spread_reduction(real_calc):
         for flag in (True, False)
     )
     assert one == pytest.approx(both / 0.75, rel=0.02)
+
+
+def test_psych_up_copies_the_targets_stat_stages_into_the_projection():
+    """Reg M-C misses: a Farigiraf that Psych-Upped a Stockpiling Wigglytuff took
+    far less damage than projected; ``-copyboost`` was ignored."""
+    state = _parse(
+        "|switch|p1a: Wigglytuff|Wigglytuff, L50|100/100",
+        "|switch|p1b: Farigiraf|Farigiraf, L50|100/100",
+        "|switch|p2a: Garchomp|Garchomp, L50|100/100",
+        "|turn|1",
+        "|move|p1a: Wigglytuff|Stockpile|p1a: Wigglytuff",
+        "|-boost|p1a: Wigglytuff|def|2", "|-boost|p1a: Wigglytuff|spd|1",
+        "|move|p1b: Farigiraf|Psych Up|p1a: Wigglytuff",
+        "|-copyboost|p1b: Farigiraf|p1a: Wigglytuff|[from] move: Psych Up",
+        "|move|p2a: Garchomp|Dragon Claw|p1b: Farigiraf",
+        "|-damage|p1b: Farigiraf|90/100",
+    )
+    calc = _RecordingCalc()
+    TurnReplaySimulator(calc).simulate(state, MetaContext())
+    own = [r for r in calc.damage_requests("Garchomp", "Dragon Claw", "Farigiraf") if r.spread_hit is not None]
+    assert own[0].defender.boosts == {"def": 2, "spd": 1}  # the move used, after the copy
+
+
+def test_stomping_tantrum_doubles_after_a_failed_move(real_calc):
+    state = _parse(
+        "|switch|p1a: Delphox|Delphox, L50|100/100",
+        "|switch|p2a: Garchomp|Garchomp, L50|100/100",
+        "|turn|1",
+        "|move|p2a: Garchomp|Stomping Tantrum|p1a: Delphox",
+        "|-immune|p1a: Delphox|[from] ability: Levitate",
+        "|turn|2",
+        "|move|p2a: Garchomp|Stomping Tantrum|p1a: Delphox",
+        "|-damage|p1a: Delphox|40/100",
+        "|turn|3",
+        "|move|p2a: Garchomp|Stomping Tantrum|p1a: Delphox",
+        "|-damage|p1a: Delphox|0 fnt",
+    )
+    first, second, third = [e.after_failed_move for e in _moves(state)]
+    assert (first, second, third) == (False, True, False)  # only after the failed one
+    request = CalcRequest(attacker=PokemonSet(species="Garchomp"), defender=PokemonSet(species="Tyranitar"),
+                          move="Stomping Tantrum")
+    plain = real_calc.calculate(request).max_percent
+    doubled = real_calc.calculate(request.model_copy(update={"after_failed_move": True})).max_percent
+    assert doubled == pytest.approx(plain * 2, rel=0.05)
+
+
+def test_ally_switch_is_understood_by_the_independent_reader_and_illusion():
+    log = "\n".join([
+        "|poke|p2|Blastoise, L50|", "|poke|p2|Farigiraf, L50|",
+        "|switch|p1a: Excadrill|Excadrill, L50|100/100",
+        "|switch|p2a: Blastoise|Blastoise, L50|100/100",
+        "|switch|p2b: Farigiraf|Farigiraf, L50|100/100",
+        "|turn|1",
+        "|move|p2b: Farigiraf|Ally Switch|p2b: Farigiraf",
+        "|swap|p2b: Farigiraf|0|[from] move: Ally Switch",
+        "|move|p1a: Excadrill|Rock Slide|p2b: Blastoise|[spread] p2a,p2b",
+        "|-damage|p2a: Farigiraf|85/100", "|-damage|p2b: Blastoise|44/100",
+    ])
+    assert {(h.defender, h.hp_after) for h in extract_observed_hits(log)} == {
+        ("Farigiraf", 85.0), ("Blastoise", 44.0),
+    }
+    assert unmask_illusions(log) == log  # no Illusion user: nothing is rewritten
+
+
+def test_a_focus_sash_survival_is_a_lower_bound_like_a_ko():
+    """A lethal hit that left the target on 1 HP (Focus Sash) read as "99% damage"
+    and counted as a miss; like a KO, the log only shows a lower bound."""
+    hit, = extract_observed_hits("\n".join([
+        "|switch|p1a: Excadrill|Excadrill, L50|100/100",
+        "|switch|p2a: Blastoise|Blastoise, L50|100/100",
+        "|turn|1",
+        "|move|p2a: Blastoise|Water Spout|p1a: Excadrill",
+        "|-supereffective|p1a: Excadrill|1",
+        "|-enditem|p1a: Excadrill|Focus Sash",
+        "|-damage|p1a: Excadrill|1/100",
+    ]))
+    assert hit.survived and hit.lower_bound and not hit.fainted and hit.damage == 99.0

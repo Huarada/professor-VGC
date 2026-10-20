@@ -65,7 +65,7 @@ class HitCalibration:
         negative = the engine over-projected). Only for clean, non-KO hits."""
         if self.projected_min is None or self.projected_max is None:
             return None
-        if self.hit.fainted or not self.hit.projectable:
+        if self.hit.lower_bound or not self.hit.projectable:
             return None
         observed = self.hit.damage
         if observed < self.projected_min:
@@ -81,7 +81,7 @@ class HitCalibration:
         if self.ev_envelope is None or not self.hit.projectable:
             return None
         lo, hi = self.ev_envelope
-        if self.hit.fainted:
+        if self.hit.lower_bound:
             return EXACT_BAND.reaches(hi, self.hit.hp_before)
         return EXACT_BAND.contains(lo, hi, self.hit.damage)
 
@@ -95,7 +95,7 @@ def judge(
     if not hit.projectable:
         return "excluded", "critical hit"
     lo, hi = projected
-    if hit.fainted:
+    if hit.lower_bound:
         if band.reaches(hi, hit.hp_before):
             return "correct", ""
         return "incorrect", f"KO from {hit.hp_before}% but projected max {hi}%"
@@ -112,7 +112,7 @@ class CalibrationReport:
     def count(self, outcome: Outcome, *, ko: bool | None = None) -> int:
         return sum(
             1 for h in self.hits
-            if h.outcome == outcome and (ko is None or h.hit.fainted == ko)
+            if h.outcome == outcome and (ko is None or h.hit.lower_bound == ko)
         )
 
     def rate(self, *, ko: bool | None = None) -> float | None:

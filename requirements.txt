@@ -23,10 +23,13 @@ google-generativeai>=0.7
 google-cloud-firestore>=2.16,<3
 
 # Dev / test
-pytest>=8.0
-mypy>=1.9
-ruff>=0.6
-vulture>=2.11
+# Linters are pinned exactly: a newer mypy/ruff/vulture changes what CI reports
+# (a newer mypy once gave 68 errors on the same code). CI's lint job installs the
+# ruff/vulture lines of this file; bump them on purpose, together.
+pytest>=8.0,<10
+mypy==2.3.0
+ruff==0.16.10
+vulture==2.16
 
 # Benchmark tooling (scripts/faithfulness_benchmark — not shipped in src/)
 scipy>=1.15.3

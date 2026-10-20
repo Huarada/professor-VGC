@@ -124,9 +124,37 @@ after being killed; the replay URL fetcher cannot reach another host.
 - Limit: Illusion unmasking tracks slots from the log as written and does not
   know about swaps (a Zoroark that Ally-Switches before its disguise breaks).
 
+### The six Reg M-C misses, traced
+
+Method as above: reproduce each with its exact request and log lines.
+
+| Cause | Misses | Correction |
+|---|---|---|
+| The benchmark's own reader did not know `|swap|` | 2 | the independent reader exchanges the positions too |
+| Psych Up (`-copyboost`) ignored | 2 | the user takes the target's stages, as per-stat boost events |
+| Stomping Tantrum / Temper Flare after a failed move | 1 | the log's previous move by that Pokemon (missed, blocked, immune, `-fail`) sets `after_failed_move`; the engine doubles the power |
+| Guard Split | 1 | **not modelled** (rare; averages Def/SpD with the ally) |
+
+A Focus Sash / Focus Band / Sturdy survival was also a benchmark artifact: the
+target stays on 1 HP, so "99% damage" is only a lower bound on a lethal hit.
+It is judged like a KO now. Result: Reg M-B non-KO 59.7%, Reg M-C 66.8%,
+misses outside any EV/nature spread 0 and 1 (denominators moved between the
+non-KO and KO groups, so compare with care). Illusion unmasking is now swap
+aware (tested only as a no-op: no real game has both).
+
+### Hardening done alongside
+
+- `mypy`, `ruff` and `vulture` are pinned exactly in `requirements.txt` and CI's
+  lint job installs those lines (a newer mypy once reported 68 errors on the
+  same code); `pyproject`'s dev extra pins mypy too.
+- The UI no longer prints the exception class name (`Analysis failed —
+  LogParsingError: ...`); the message is the user-facing text.
+
 ### Still open
 
-- The 6 Reg M-C misses outside any EV/nature spread are not yet traced.
+- Guard Split / Power Split / Heart Swap (stat or stage exchanges between
+  Pokemon) are not modelled.
+- `Illusion` + Ally Switch together has no test on a real game.
 
 ---
 

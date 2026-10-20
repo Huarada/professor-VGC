@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.handlers.base import Handler, HandlerGroup
+from src.adapters.parsers.showdown_log.roster import Key
 from src.adapters.parsers.showdown_log.protocol import (
     CALC_STATS,
     ITEM_GAINED_FROM,
@@ -21,6 +22,7 @@ class ConditionHandlers(HandlerGroup):
             "-ability": self.on_ability,
             "-boost": self.on_boost,
             "-unboost": self.on_boost,
+            "-copyboost": self.on_copyboost,
             "-item": self.on_item,
             "-enditem": self.on_enditem,
             "-mega": self.on_mega,
@@ -77,10 +79,24 @@ class ConditionHandlers(HandlerGroup):
         except ValueError:
             return
         delta = amount if parts[1] == "-boost" else -amount
+        self._shift_stage(key, parts[3].strip(), delta)
+
+    def on_copyboost(self, parts: list[str]) -> None:
+        # Psych Up: the user takes the target's stat stages (a change per stat, so the
+        # simulator's running ledger follows it like any other boost).
+        if len(parts) <= 3:
+            return
+        user, target = self.state.roster.resolve(parts[2]), self.state.roster.resolve(parts[3])
+        if user is None or target is None:
+            return
+        ledger = self.state.combatants.boosts
+        for stat in sorted(CALC_STATS):
+            self._shift_stage(user, stat, ledger.get(target, {}).get(stat, 0) - ledger.get(user, {}).get(stat, 0))
+
+    def _shift_stage(self, key: Key, stat: str, delta: int) -> None:
         if not delta:
             return
         self.state.roster.register(*key)
-        stat = parts[3].strip()
         self.state.combatants.boost(key, stat, delta)
         stages = abs(delta)
         direction = "rose" if delta > 0 else "fell"

@@ -951,9 +951,9 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 
 | ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Projected range contains the real damage — **non-KO hits** | **58.7% (53.5–63.6%)**, 210/358 |
-| Projection can reach a real KO | 94.4% (90.3–96.9%), 187/198 |
-| Mean miss outside the raw projected range | 9.1 pp |
+| Projected range contains the real damage — **non-KO hits** | **59.7% (54.5–64.7%)**, 209/350 |
+| Projection can reach a real KO | 94.7% (90.7–97.0%), 195/206 |
+| Mean miss outside the raw projected range | 7.8 pp |
 | Excluded: crit 23 · no projection 9 | — |
 
 > **Multi-hit moves are judged now (ADR-042).** They used to be excluded
@@ -973,20 +973,46 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 > (Ally Switch) now exchanges the two battle positions. Reg M-B, same games:
 > non-KO 57.8% -> 58.7%, paired 5 misses fixed, 2 new (p = 0.45); Reg M-C
 > 1 and 1.
+>
+> **Reg M-C's six misses outside the envelope, traced (ADR-042).** Reg M-B had
+> none left; Reg M-C had 6. Each was read in its log:
+>
+> | Cause | Misses |
+> |---|---|
+> | The benchmark's independent reader did not know Ally Switch (`|swap|`): it gave a Farigiraf's damage to the Blastoise | 2 |
+> | Psych Up (`-copyboost`) ignored: a Farigiraf that copied a Stockpiling Wigglytuff's +3/+3 | 2 |
+> | Stomping Tantrum after a failed move (double power): the previous move was immune/missed/blocked | 1 |
+> | Guard Split (averages Def/SpD with the ally): **not modelled**, rare | 1 |
+>
+> Also: a Focus Sash / Focus Band / Sturdy survival left the target on 1 HP and
+> read as "99% damage", counted as a miss; like a KO it is a lower bound, and
+> now is judged as one (`ObservedHit.survived`). Because those hits move from
+> the non-KO to the KO group, the denominators change (Reg M-B 358 -> 350
+> non-KO, 198 -> 206 KO), so these rows are not directly comparable with the
+> ones above. Same games, ±2pp ±5%:
+>
+> | | Reg M-B | Reg M-C |
+> |---|---|---|
+> | Non-KO within band | **59.7% (54.5–64.7%)**, 209/350 | **66.8% (62.0–71.2%)**, 265/397 |
+> | KOs reachable | 94.7% (90.7–97.0%), 195/206 | 97.4% (94.0–98.9%), 186/191 |
+> | Mean miss outside the range | 7.8 pp | 7.1 pp |
+> | Misses outside any EV/nature spread | **0** | **1** (Guard Split) |
+>
+> Reg M-C paired against the previous run: 4 misses fixed, 1 new (p = 0.38).
 
 The conclusion does not hinge on the band — the same hits re-scored:
 
 | Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
 |---|---|---|
-| 0% (±2pp only) | 48.6% (43.5–53.8%) | 93.9% (89.7–96.5%) |
-| **5%** | **58.7% (53.5–63.6%)** | **94.4% (90.3–96.9%)** |
-| 10% | 69.3% (64.3–73.8%) | 94.4% (90.3–96.9%) |
-| 15% | 76.5% (71.9–80.6%) | 96.0% (92.2–97.9%) |
+| 0% (±2pp only) | 49.4% (44.2–54.6%) | 94.2% (90.1–96.6%) |
+| **5%** | **59.7% (54.5–64.7%)** | **94.7% (90.7–97.0%)** |
+| 10% | 70.6% (65.6–75.1%) | 94.7% (90.7–97.0%) |
+| 15% | 78.0% (73.4–82.0%) | 96.1% (92.5–98.0%) |
 
 **How much do EVs explain?** For every miss, the same calc request was re-run
 at minimum and maximum EV/nature investment on both sides, everything else
 equal (`ev_envelope.py`), on exactly the request the projection came from.
-**100% of misses (97.6–100%, 159/159) fall inside that envelope** — a
+**100% of misses (97.5–100%, 152/152) fall inside that envelope** — a
 different spread alone explains them — none lies outside any spread (see the
 ADR-040, ADR-041 and ADR-042 boxes above). The last one was an ability the log
 revealed through `[from] ability: Protean` and the projection ignored. This was 56 before ADR-039 and 32 before ADR-040: every

@@ -14,6 +14,8 @@ consumer can filter on them rather than guess:
 
 - ``crit``: the hit was a critical hit (no calc range models a random crit);
 - ``hit_count > 1``: a multi-hit move (``hp_after`` is after the last hit);
+- ``survived``: Focus Sash / Focus Band / Sturdy left the target on 1 HP, so
+  the observed value is a LOWER bound too (the move was lethal);
 - ``fainted``: the target fainted, so the observed value is only a LOWER bound
   of the damage the move would have dealt (overkill is never shown);
 - spectator logs round HP to whole percents, so every reading carries about
@@ -47,6 +49,13 @@ class ObservedHit:
     hit_count: int = 1
     spread: bool = False
     fainted: bool = False
+    survived: bool = False
+
+    @property
+    def lower_bound(self) -> bool:
+        """The observed damage is capped (KO, or a Sash/Sturdy survival): the move
+        was at least that strong."""
+        return self.fainted or self.survived
 
     @property
     def damage(self) -> float:
@@ -167,6 +176,12 @@ def extract_observed_hits(log: str) -> list[ObservedHit]:
         if tag == "turn":
             close()
             turn = int(parts[2]) if len(parts) > 2 and parts[2].strip().isdigit() else turn
+        elif tag == "swap" and len(parts) > 3 and parts[3].strip().isdigit():
+            # Ally Switch: this Pokemon and its ally exchange battle positions.
+            origin = _slot(parts[2])
+            target = origin[:2] + "ab"[int(parts[3]) % 2]
+            on_slot[origin], on_slot[target] = on_slot.get(target), on_slot.get(origin)
+            on_slot = {slot: mon for slot, mon in on_slot.items() if mon is not None}
         elif tag == "poke" and len(parts) > 3:
             preview.setdefault(parts[2], []).append(parts[3].split(",")[0].strip())
         elif tag == "replace" and len(parts) > 3:
@@ -221,6 +236,13 @@ def extract_observed_hits(log: str) -> list[ObservedHit]:
                     hit = pending.start_hit(target)
                 hit.hp_after, hit.hit_count, hit.fainted = hp, hit.hit_count + 1, hp == 0.0
             target.hp = hp
+        elif tag in ("-enditem", "-ability") and len(parts) > 3 and pending is not None:
+            saved = parts[3].strip() in ("Focus Sash", "Focus Band", "Sturdy")
+            holder = on_slot.get(_slot(parts[2]))
+            if saved and holder is not None and (tag == "-ability") == (parts[3].strip() == "Sturdy"):
+                # Opened now, filled by the "-damage" that follows (as for a crit).
+                hit = pending.hits.get((holder.player, holder.species)) or pending.start_hit(holder)
+                hit.survived = True
         elif tag == "-crit" and len(parts) > 2 and pending is not None:
             crit_target = on_slot.get(_slot(parts[2]))
             if crit_target is not None:

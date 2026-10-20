@@ -199,6 +199,9 @@ class BattleEvent(BaseModel):
     ``targets`` + side resolution are used)."""
     state: BattleSnapshot | None = None
     """Battle state at this move (log-parsed move events only)."""
+    after_failed_move: bool = False
+    """The actor's previous move failed (missed, was blocked or had no effect):
+    Stomping Tantrum and Temper Flare then have double power."""
     hit_count: int = 0
     """Hits a multi-hit move landed (``|-hitcount|``); 0 = not reported (single hit)."""
     effects: list[str] = Field(default_factory=list)  # spread / super effective / ...
@@ -423,6 +426,8 @@ class CalcRequest(BaseModel):
     attacker_hp_percent: float | None = None
     """Attacker's current HP percent (None = full HP): Eruption / Water Spout /
     Dragon Energy power, Flail / Reversal, pinch abilities such as Blaze."""
+    after_failed_move: bool = False
+    """The attacker's previous move failed (Stomping Tantrum / Temper Flare)."""
     spread_hit: bool | None = None
     """Whether a spread move hit more than one target (the log's ``[spread]`` tag):
     the 0.75x reduction applies only then. None = the calc's default (it assumes
