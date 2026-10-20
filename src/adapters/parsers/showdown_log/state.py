@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.combatants import CombatantLedger
 from src.adapters.parsers.showdown_log.field_ledger import FieldLedger
+from src.adapters.parsers.showdown_log.protocol import tag_value
 from src.adapters.parsers.showdown_log.replay_frames import TurnFrame
 from src.adapters.parsers.showdown_log.roster import Roster
 from src.adapters.parsers.showdown_log.timeline import Timeline
@@ -24,6 +25,21 @@ class ParseState:
     @property
     def turn(self) -> int:
         return self.timeline.turn
+
+    def reveal_ability_from(self, parts: list[str]) -> None:
+        """An ability named by a ``[from] ability: X`` suffix is X's holder's: the
+        ``[of]`` Pokemon when given (Rough Skin hurting its attacker), else the
+        line's subject (Protean's type change, Frisk). First reveal wins; the
+        ``-ability`` line has its own handler (Trace names the SOURCE there)."""
+        if parts[1] == "-ability" or len(parts) < 4:
+            return
+        source = tag_value(parts[3:], "from")
+        if not source.lower().startswith("ability:"):
+            return
+        key = self.roster.resolve(tag_value(parts[3:], "of") or parts[2])
+        if key is not None:
+            mon = self.roster.register(*key)
+            mon.ability = mon.ability or source.split(":", 1)[1].strip()
 
     def snapshot(self) -> BattleSnapshot:
         """The battle state right now — stamped on every move event."""

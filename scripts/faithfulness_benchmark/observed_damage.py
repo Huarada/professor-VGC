@@ -58,6 +58,12 @@ class ObservedHit:
         """A single, non-critical hit — directly comparable to a calc range."""
         return not self.crit and self.hit_count == 1
 
+    @property
+    def projectable(self) -> bool:
+        """Comparable to a calc range: not a crit. A multi-hit move is projected
+        for the number of hits the log shows landing (``CalcRequest.hits``)."""
+        return not self.crit
+
 
 @dataclass
 class _Mon:

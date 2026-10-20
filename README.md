@@ -39,9 +39,9 @@ the projection assumes. Every rate carries a **95% confidence interval**
 | AI damage claims — **B**: the same LLM given only the raw log | 51.1% (46.0–56.1%), 191/374 |
 | A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
 | Claims about hits that never happened | A: 18 · B: 57 |
-| Engine projection contains the real damage (non-KO hits, no LLM) | **58.0% (52.8–63.0%)**, 207/357 |
-| Engine projection reaches a real KO | 93.9% (89.7–96.5%), 185/197 |
-| Engine misses explained by EV/nature variance alone | 99.4% (96.6–99.9%), 161/162 |
+| Engine projection contains the real damage (non-KO hits, no LLM) | **57.8% (52.6–62.8%)**, 207/358 |
+| Engine projection reaches a real KO | 94.4% (90.3–96.9%), 187/198 |
+| Engine misses explained by EV/nature variance alone | 100% (97.7–100%), 162/162 |
 
 > **Engine rows re-measured (ADR-039, ADR-040).** Same 40 games, 588 observed
 > hits. Usage data names abilities and items by id (`lifeorb`) and the calc
@@ -52,8 +52,10 @@ the projection assumes. Every rate carries a **95% confidence interval**
 > Transform, forme timing, a resist berry the log shows was not there, moves
 > the engine cannot project — all fixed (ADR-040: non-KO 57.7%, KOs 93.9%,
 > mean miss 11.4pp -> 8.9pp). Pokemon Champions games are now calculated under
-> Champions' own damage rules and stat points (ADR-041: non-KO 58.0%, one
-> unexplained miss left). The AI-claim rows (A vs B) predate these fixes and
+> Champions' own damage rules and stat points (ADR-041), multi-hit moves
+> count the hits the log shows, and abilities the log reveals through
+> `[from] ability:` are used (ADR-042: non-KO 57.8%, no miss left outside the
+> EV/nature envelope). The AI-claim rows (A vs B) predate these fixes and
 > are pending a re-run.
 
 > **Data note (ADR-035).** The engine rows use the official September 2026 VGC

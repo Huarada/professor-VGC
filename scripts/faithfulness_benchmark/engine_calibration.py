@@ -14,8 +14,9 @@ Judging rules per observed hit, under a :class:`ToleranceBand` (default
   projected range;
 - clean, KO: the log only proves damage >= the HP the target had, so it is
   ``correct`` when the widened projected max reaches that HP;
-- crits and multi-hit moves are ``excluded`` (no single calc range models
-  them) and counted separately, never silently dropped.
+- crits are ``excluded`` (no calc range models a random crit), counted
+  separately, never silently dropped. Multi-hit moves are judged like any
+  other hit: the projection is made for the hit count the log shows landing.
 
 Every rate is reported with a 95% Wilson interval, and re-scored at several
 relative tolerances (``sensitivity``). Optionally each hit also carries an
@@ -64,7 +65,7 @@ class HitCalibration:
         negative = the engine over-projected). Only for clean, non-KO hits."""
         if self.projected_min is None or self.projected_max is None:
             return None
-        if self.hit.fainted or not self.hit.clean:
+        if self.hit.fainted or not self.hit.projectable:
             return None
         observed = self.hit.damage
         if observed < self.projected_min:
@@ -77,7 +78,7 @@ class HitCalibration:
     def within_ev_envelope(self) -> bool | None:
         """Whether EV/nature variance alone can explain the observed damage
         (rounding tolerance only; None when no envelope was computed)."""
-        if self.ev_envelope is None or not self.hit.clean:
+        if self.ev_envelope is None or not self.hit.projectable:
             return None
         lo, hi = self.ev_envelope
         if self.hit.fainted:
@@ -91,8 +92,8 @@ def judge(
     """One hit's verdict under ``band`` (pure; used for re-scoring too)."""
     if projected is None:
         return "unmatched", "no projection for this hit"
-    if not hit.clean:
-        return "excluded", "critical hit or multi-hit move"
+    if not hit.projectable:
+        return "excluded", "critical hit"
     lo, hi = projected
     if hit.fainted:
         if band.reaches(hi, hit.hp_before):
@@ -172,7 +173,7 @@ class CalibrationReport:
             "judged": self.count("correct") + self.count("incorrect"),
             "correct": self.count("correct"),
             "incorrect": self.count("incorrect"),
-            "excluded_crit_or_multihit": self.count("excluded"),
+            "excluded_crit": self.count("excluded"),
             "unmatched_no_projection": self.count("unmatched"),
             "coverage_rate_all": self.rate(),
             "coverage_rate_non_ko": self.rate(ko=False),

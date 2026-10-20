@@ -378,3 +378,22 @@ def test_the_independent_observed_reader_resolves_illusion_too():
     assert [(h.defender, h.hp_before, h.hp_after) for h in hits] == [
         ("Zoroark-Hisui", 100.0, 0.0), ("Garchomp", 100.0, 70.0),
     ]
+
+
+def test_abilities_named_by_a_from_suffix_are_revealed():
+    """Protean, Rough Skin, Frisk, Solar Power... are revealed by "[from] ability:"
+    on another line, not by "-ability": the usage-data guess (Overgrow) was used
+    where the log had shown Protean (a missing STAT on a Triple Axel)."""
+    state = _parse(
+        "|switch|p1a: Meowscarada|Meowscarada, L50|100/100",
+        "|switch|p2a: Garchomp|Garchomp, L50|100/100",
+        "|switch|p2b: Torkoal|Torkoal, L50|100/100",
+        "|turn|1",
+        "|move|p1a: Meowscarada|Triple Axel|p2a: Garchomp",
+        "|-start|p1a: Meowscarada|typechange|Ice|[from] ability: Protean",
+        "|-damage|p2a: Garchomp|26/100",
+        "|-damage|p1a: Meowscarada|50/100|[from] ability: Rough Skin|[of] p2a: Garchomp",
+        "|-weather|SunnyDay|[from] ability: Drought|[of] p2b: Torkoal",
+    )
+    abilities = {m.species: m.ability for s in state.sides for m in s.team}
+    assert abilities == {"Meowscarada": "Protean", "Garchomp": "Rough Skin", "Torkoal": "Drought"}

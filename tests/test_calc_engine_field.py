@@ -169,3 +169,20 @@ def test_multi_hit_damage_is_the_total_over_the_hits(real_calc):
     assert axel.min_percent >= 100 and "OHKO" in axel.ko_chance_text
     single = real_calc.calculate(CalcRequest(attacker=weavile, defender=garchomp, move="Knock Off"))
     assert single.max_percent < 60  # one hit stays one hit (Knock Off, neutral)
+
+
+def test_projection_follows_the_hits_that_landed(real_calc):
+    """Variable multi-hit moves: the same move is projected for 2 or 5 hits."""
+    seed = PokemonSet(species="Breloom", ability="Technician", level=50)
+    garchomp = PokemonSet(species="Garchomp")
+    by_hits = {
+        n: real_calc.calculate(CalcRequest(attacker=seed, defender=garchomp, move="Bullet Seed", hits=n))
+        for n in (2, 5)
+    }
+    assert by_hits[5].max_percent == pytest.approx(by_hits[2].max_percent * 2.5, rel=0.1)
+    ax = PokemonSet(species="Weavile", level=50)
+    one, three = (
+        real_calc.calculate(CalcRequest(attacker=ax, defender=garchomp, move="Triple Axel", hits=n))
+        for n in (1, 3)
+    )
+    assert three.max_percent > one.max_percent * 3  # power rises per hit

@@ -951,26 +951,36 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 
 | ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Projected range contains the real damage — **non-KO hits** | **58.0% (52.8–63.0%)**, 207/357 |
-| Projection can reach a real KO | 93.9% (89.7–96.5%), 185/197 |
-| Mean miss outside the raw projected range | 8.9 pp |
-| Excluded: crit / multi-hit 25 · no projection 9 | — |
+| Projected range contains the real damage — **non-KO hits** | **57.8% (52.6–62.8%)**, 207/358 |
+| Projection can reach a real KO | 94.4% (90.3–96.9%), 187/198 |
+| Mean miss outside the raw projected range | 9.2 pp |
+| Excluded: crit 23 · no projection 9 | — |
+
+> **Multi-hit moves are judged now (ADR-042).** They used to be excluded
+> because one calc range cannot model a variable number of hits. The log says
+> how many landed (`|-hitcount|`), the request carries it (`CalcRequest.hits`,
+> only for the move actually used) and the engine projects exactly that many
+> hits, summed (Triple Axel's power rises per hit; Bullet Seed rolls 2-5).
+> Only critical hits stay excluded. The effect on these 90 games is small
+> because multi-hit moves are rare (7 uses): 2 more Reg M-B hits judged, none
+> in Reg M-C.
 
 The conclusion does not hinge on the band — the same hits re-scored:
 
 | Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
 |---|---|---|
-| 0% (±2pp only) | 47.6% (42.5–52.8%) | 93.4% (89.0–96.1%) |
-| **5%** | **58.0% (52.8–63.0%)** | **93.9% (89.7–96.5%)** |
-| 10% | 68.3% (63.3–73.0%) | 93.9% (89.7–96.5%) |
-| 15% | 75.9% (71.2–80.1%) | 95.4% (91.5–97.6%) |
+| 0% (±2pp only) | 47.5% (42.4–52.7%) | 93.9% (89.7–96.5%) |
+| **5%** | **57.8% (52.6–62.8%)** | **94.4% (90.3–96.9%)** |
+| 10% | 68.4% (63.4–73.0%) | 94.4% (90.3–96.9%) |
+| 15% | 75.7% (71.0–79.9%) | 96.0% (92.2–97.9%) |
 
 **How much do EVs explain?** For every miss, the same calc request was re-run
 at minimum and maximum EV/nature investment on both sides, everything else
 equal (`ev_envelope.py`), on exactly the request the projection came from.
-**99.4% of misses (96.6–99.9%, 161/162) fall inside that envelope** — a
-different spread alone explains them — and 1 lies outside any spread (see the
-ADR-040 and ADR-041 boxes above). This was 56 before ADR-039 and 32 before ADR-040: every
+**100% of misses (97.7–100%, 162/162) fall inside that envelope** — a
+different spread alone explains them — none lies outside any spread (see the
+ADR-040, ADR-041 and ADR-042 boxes above). The last one was an ability the log
+revealed through `[from] ability: Protean` and the projection ignored. This was 56 before ADR-039 and 32 before ADR-040: every
 one of those was a pipeline bug (dropped usage-data names, Illusion, missing
 battle state, ...), not an unknowable set. Mega formes resolve in the engine. Upgrading `@smogon/calc` 0.11 → 0.12 changed none of these rates
 by more than 0.5pp.

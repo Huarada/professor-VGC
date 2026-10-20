@@ -234,6 +234,9 @@ class MoveMoment:
             defender_hp_percent=self.hp(defender),
             attacker_hp_percent=self.hp(attacker),
             attacker_allies_fainted=self._fainted_count(attacker[0]),
+            # Only the move actually used has a known hit count.
+            hits=self.event.hit_count or None
+            if attacker == self.actor and move == self.event.move else None,
         )
 
     def _fainted_count(self, player: str) -> int:

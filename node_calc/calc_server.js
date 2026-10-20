@@ -38,7 +38,8 @@ function handle(request) {
           request.field,
           request.defenderHpPercent,
           request.attackerHpPercent,
-          request.attackerAlliesFainted
+          request.attackerAlliesFainted,
+          request.hits
         ),
       };
     case 'speed':

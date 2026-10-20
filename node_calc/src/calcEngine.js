@@ -245,19 +245,19 @@ function buildPokemon(gen, spec) {
 
 function calcDamage(
   genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted,
+  attackerHpPercent, attackerAlliesFainted, hits,
 ) {
   const { gen, note } = rulesFor(genNum, [attackerSpec, defenderSpec], moveName);
   const result = damageUnder(
     gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-    attackerHpPercent, attackerAlliesFainted,
+    attackerHpPercent, attackerAlliesFainted, hits,
   );
   return note ? { ...result, desc: result.desc + note } : result;
 }
 
 function damageUnder(
   gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted,
+  attackerHpPercent, attackerAlliesFainted, hits,
 ) {
   const fainted = Math.max(0, Math.min(5, attackerAlliesFainted || 0));
   // The attacker's CURRENT HP drives Eruption / Water Spout / Dragon Energy,
@@ -270,6 +270,9 @@ function damageUnder(
   // fainted ally (at most 300). Without it every Last Respects was 50 power.
   const lastRespectsPower = toID(moveName) === 'lastrespects' ? 50 + 50 * fainted : null;
   const moveOptions = lastRespectsPower ? { overrides: { basePower: lastRespectsPower } } : {};
+  // The hits the log shows landing (variable multi-hit moves; ignored by the calc
+  // for single-hit and fixed-count moves).
+  if (hits) moveOptions.hits = hits;
   const move = new Move(gen, moveName, moveOptions);
   if (REACTION_MOVES.has(toID(moveName))) {
     throw new Error(

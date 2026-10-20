@@ -413,6 +413,10 @@ replay JSON/log + question
     game; a generation of 0 no longer swallowed by `or` / `||`; a Pokemon or
     move missing from the Champions data falls back to Scarlet/Violet rules and
     says so (ADR-041).
+19. **fix(calc):** multi-hit moves report the total (not one hit's), projected for
+    the hits the log shows (`|-hitcount|`); abilities revealed by `[from]
+    ability: X` are used; guard recognizes Megas in prose and a legal Mega makes
+    its base legal. Method and corrections: ADR.md "Read first" (ADR-042).
 
 Test count grew alongside these.
 

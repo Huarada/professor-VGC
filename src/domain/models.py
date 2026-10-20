@@ -199,6 +199,8 @@ class BattleEvent(BaseModel):
     ``targets`` + side resolution are used)."""
     state: BattleSnapshot | None = None
     """Battle state at this move (log-parsed move events only)."""
+    hit_count: int = 0
+    """Hits a multi-hit move landed (``|-hitcount|``); 0 = not reported (single hit)."""
     effects: list[str] = Field(default_factory=list)  # spread / super effective / ...
     results: list[str] = Field(default_factory=list)  # e.g. "Torkoal->43%", "Pyroar fainted"
     blocked: list[str] = Field(default_factory=list)
@@ -421,6 +423,9 @@ class CalcRequest(BaseModel):
     attacker_hp_percent: float | None = None
     """Attacker's current HP percent (None = full HP): Eruption / Water Spout /
     Dragon Energy power, Flail / Reversal, pinch abilities such as Blaze."""
+    hits: int | None = None
+    """Hits the move landed when known (Triple Axel, Bullet Seed, Population Bomb
+    stop on a miss or roll 2-5); None = the calc's own default."""
     attacker_allies_fainted: int = 0
     """Fainted Pokemon on the attacker's side: Last Respects power, Supreme Overlord."""
 
