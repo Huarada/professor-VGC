@@ -89,7 +89,7 @@ def test_residual_damage_is_not_a_hit_but_moves_the_hp():
 
 def test_multi_hit_moves_are_flagged():
     bomb = _hit("Gholdengo", "Population Bomb", "Garchomp")
-    assert bomb.hit_count == 2 and not bomb.clean and bomb.damage == 35.0
+    assert bomb.hit_count == 2 and not bomb.clean and bomb.projectable and bomb.damage == 35.0
 
 
 @pytest.mark.parametrize("path", sorted(_FIXTURES.glob("*.json")), ids=lambda p: p.stem)

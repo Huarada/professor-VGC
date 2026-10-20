@@ -27,7 +27,13 @@ class ActionHandlers(HandlerGroup):
             "-immune": lambda parts: self.state.timeline.add_effect("immune"),
             "-crit": lambda parts: self.state.timeline.add_effect("crit"),
             "-miss": lambda parts: self.state.timeline.add_effect("missed"),
+            "-hitcount": self.on_hitcount,
         }
+
+    def on_hitcount(self, parts: list[str]) -> None:
+        move = self.state.timeline.current_move
+        if move is not None and len(parts) > 3 and parts[3].strip().isdigit():
+            move.hit_count = int(parts[3])
 
     def on_move(self, parts: list[str]) -> None:
         if len(parts) <= 3:

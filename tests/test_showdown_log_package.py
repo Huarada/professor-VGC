@@ -20,7 +20,7 @@ _EXPECTED_COMMANDS = {
     "player", "poke", "switch", "drag", "detailschange", "-transform",
     # actions
     "move", "-damage", "-heal", "-sethp", "-activate", "-singleturn",
-    "-supereffective", "-resisted", "-immune", "-crit", "-miss",
+    "-supereffective", "-resisted", "-immune", "-crit", "-miss", "-hitcount",
     # field
     "-sidestart", "-sideend", "-fieldstart", "-fieldend", "-weather",
     # conditions

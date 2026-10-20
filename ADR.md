@@ -7,6 +7,112 @@
 
 ---
 
+## Read first — How the bugs were found, and the corrections that came from them (ADR-042)
+
+This section comes first because the method matters more than any single
+fix: it is how every correction recorded below it from ADR-034 on was found,
+and it can be repeated. The corrections of items 1-3 follow, then what the
+method showed to be solid. Detail per decision: ADR-039 to ADR-041; the full
+log of each stress run is not kept, the scripts are.
+
+### Methodology — five instruments, none of them an LLM
+
+1. **Invariants over real games.** The whole deterministic pipeline (parser,
+   simulator, real `@smogon/calc`, official usage data, no LLM) runs on 90
+   public replays (40 Reg M-B, 40 Reg M-C, 10 more M-B) in every regulation
+   mode (auto, pinned M-B, pinned M-C), and asserts facts that must hold
+   whatever the game: nobody acts after fainting, nobody is in two slots, a
+   team has at most 6 and a side brings at most 4, damage ranges are ordered
+   and non-negative, KO text agrees with the range, every switch option is a
+   brought, living, benched Pokemon, a threat comes from a Pokemon on the
+   field. 180 analyses, 3,890 per-move checks.
+2. **An independent truth.** `observed_damage.py` reads the damage the log
+   shows with no import from the product, so a parser bug cannot agree with
+   itself. Every projection is compared with it under a stated tolerance
+   (±2pp, ±5%), with Wilson intervals.
+3. **Forensics, not averages.** Every miss that no EV/nature spread could
+   explain was reproduced one by one with the exact calc request and the log
+   lines around the hit, and given a cause. The EV envelope is the instrument:
+   a miss inside it is investment variance (unknowable); a miss outside it is
+   a bug until proven otherwise. That count went 56 -> 32 -> 2 -> 1 -> 0.
+4. **Paired change measurement.** A fix is judged on the same hits before and
+   after (exact McNemar), and a suspected improvement is ablated (switch only
+   it off and re-measure). Changes that could not be measured are said so.
+5. **Metamorphic and fault tests.** Swapping p1/p2 must not change any
+   projection; renaming every nickname must not either; every prefix of a log
+   must parse; killing the Node engine mid-analysis must not poison the next
+   call; a truncated or hand-edited replay must be a typed error.
+
+Rules that came out of the work: a benchmark number is only trusted after its
+miss list has been read; the benchmark's own bugs are bugs (the EV envelope
+once used the wrong request); an exclusion in a metric is a debt, written
+down and later paid (multi-hit moves); and a documented number is re-measured
+whenever the code under it changes.
+
+### Item 1 — Multi-hit moves reported one hit's damage (largest numeric error)
+
+- **Symptom.** Population Bomb read 10-12% instead of 55-66%; a Triple Axel
+  read "19-66%" next to "guaranteed OHKO"; Parental Bond (Mega Kangaskhan)
+  under-projected every move it used.
+- **Cause.** `@smogon/calc` returns one roll array per hit; the engine
+  flattened them and took the extremes of the flattened list, which is a
+  single hit. The calibration benchmark excluded multi-hit moves, so it never
+  measured this.
+- **Correction.** The damage range is the sum over the hits (it matches the
+  calc's own `range()` and KO text). Then the exclusion itself was paid: the
+  log's `|-hitcount|` is parsed (`BattleEvent.hit_count`), carried as
+  `CalcRequest.hits` for the move actually used only (a later alternative or
+  threat has no known count), and the engine projects exactly that many hits
+  (Triple Axel rises per hit, Bullet Seed rolls 2-5). The benchmark now judges
+  multi-hit moves; only critical hits stay excluded.
+- **Verification.** Real-engine tests (fail on the old engine); calibration on
+  the same games. Honest limit: multi-hit moves are rare (7 uses in 90 games),
+  so the calibration moves by 2 judged hits, not by points.
+
+### Items 2 and 3 — Legality per regulation (the Reg M-B / Reg M-C boundary)
+
+- **Item 2 — Megas written in prose slipped past the guard.** The guard knew
+  dex spellings (`Garchomp-Mega-Z`); LLM prose says "Mega Garchomp Z" or "Mega
+  Salamence". The 6 Reg M-C-only Megas went unflagged in Reg M-B answers: the
+  exact leak ADR-035 promises to prevent. Correction: prose spellings
+  (`Mega X`, `Mega X Z`) map back to the dex name. Remaining: other shapes
+  ("Garchomp Z-Mega") are not matched.
+- **Item 3 — A species listed only as its Mega was called illegal.** Usage
+  data lists Pidgeot, Banette, Beedrill and Floette in Reg M-B only as
+  `X-Mega`, so the roster called the base illegal: a false correction, a false
+  visible warning, and the agent tools refused them. Correction: a legal Mega
+  makes its base species legal.
+- **Verification.** Tests that fail on the old code, and a probe with the real
+  dex and the official Reg M-B data.
+
+### Found while closing the multi-hit debt (ADR-042)
+
+Judging the last multi-hit hit left one miss outside the EV envelope: a
+Meowscarada's Triple Axel with Protean. The log showed the ability through
+`|-start|...|typechange|Ice|[from] ability: Protean`, but only `-ability`
+lines were read as reveals, so the usage-data guess (Overgrow, 62%) was
+used. The same suffix names Rough Skin, Frisk, Solar Power, Drought and many
+more (about 90 lines in the 50 Reg M-B games for the eleven most common alone). Now any `[from] ability: X` reveals X for its
+holder (the `[of]` Pokemon when given, else the line's subject). Effect on
+Reg M-B: misses outside any EV/nature spread 2 -> 0 (paired: 3 fixed, 1 new);
+Reg M-C unchanged (6, not yet investigated).
+
+### What the stress run showed to be solid
+
+180 analyses and 3,890 per-move checks with no crash and no invalid range;
+every replay of another regulation refused when pinned and none wrongly
+refused; swapping p1/p2 changes no projection; no log prefix breaks the
+parser, the simulator or the panel; the Node engine recovers on the next call
+after being killed; the replay URL fetcher cannot reach another host.
+
+### Still open from the same run
+
+- Spread moves aimed at one target still get the two-target 0.75 reduction.
+- Ally Switch (`|swap|`) is not read, which can invert the slot map.
+- The 6 Reg M-C misses outside any EV/nature spread are not yet traced.
+
+---
+
 ## How to read this document
 
 Each ADR follows the same shape: **Context** (the reported symptom and its

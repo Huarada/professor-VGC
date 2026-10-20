@@ -122,7 +122,7 @@ def envelopes_for(
     envelopes: dict[HitKey, tuple[float, float]] = {}
     for hit in hits:
         request = recorder.request_for(hit, (descriptions or {}).get(hit_key(hit)))
-        if request is None or not hit.clean:
+        if request is None or not hit.projectable:
             continue
         envelope = ev_envelope(engine, request)
         if envelope is not None:

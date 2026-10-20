@@ -25,6 +25,7 @@ def _read(text: str) -> ParseState:
         parts = line.split("|")
         if len(parts) < 2:
             continue
+        state.reveal_ability_from(parts)
         handler = handlers.get(parts[1])
         if handler is not None:
             handler(parts)

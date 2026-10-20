@@ -304,3 +304,26 @@ def test_gravity_magic_room_and_wonder_room_reach_the_calc():
         True, True, True,
     )
     assert (after.gravity, after.wonder_room, after.magic_room) == (False, False, False)
+
+
+def test_hit_count_reaches_the_request_of_the_move_actually_used():
+    """Triple Axel / Population Bomb stop on a miss and Bullet Seed rolls 2-5:
+    the move used is projected for the hits the log shows landing."""
+    state = _parse(
+        "|switch|p1a: Weavile|Weavile, L50|100/100",
+        "|switch|p2a: Garchomp|Garchomp, L50|100/100",
+        "|turn|1",
+        "|move|p1a: Weavile|Triple Axel|p2a: Garchomp",
+        "|-damage|p2a: Garchomp|80/100",
+        "|-damage|p2a: Garchomp|50/100",
+        "|-hitcount|p2a: Garchomp|2",
+        "|turn|2",
+        "|move|p2a: Garchomp|Earthquake|p1a: Weavile",
+        "|-damage|p1a: Weavile|40/100",
+    )
+    assert [e.hit_count for e in state.outcome.events if e.kind == "move"] == [2, 0]
+    calc = _run(state)
+    requests = calc.damage_requests("Weavile", "Triple Axel", "Garchomp")
+    assert requests[0].hits == 2  # the move's own check; later threats/alternatives carry None
+    assert all(r.hits is None for r in requests[1:])
+    assert all(r.hits is None for r in calc.damage_requests("Garchomp", "Earthquake", "Weavile"))
