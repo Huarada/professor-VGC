@@ -111,3 +111,47 @@ def test_move_info_comes_from_the_engine(real_calc):
     assert real_calc.move_info(9, "Thunder Wave").speed_control == "paralysis"
     unknown = real_calc.move_info(9, "Not A Real Move")
     assert not unknown.known and unknown.is_damaging  # the engine itself will judge it
+
+
+def _range(calc: SmogonCalcAdapter, attacker: PokemonSet, defender: str, move: str,
+           field: CalcField | None = None) -> float:
+    return calc.calculate(
+        CalcRequest(attacker=attacker, defender=PokemonSet(species=defender), move=move,
+                    field=field or CalcField())
+    ).max_percent
+
+
+def test_rooms_reach_the_engine(real_calc):
+    """Gravity / Wonder Room / Magic Room used to stop at the parser."""
+    chomp = PokemonSet(species="Garchomp", nature="Jolly", evs={"atk": 252})
+    assert _range(real_calc, chomp, "Talonflame", "Earthquake") == 0.0  # Flying: immune
+    assert _range(
+        real_calc, chomp, "Talonflame", "Earthquake", CalcField(gravity=True)
+    ) > 0.0  # Gravity grounds it
+    # Wonder Room swaps Def and SpD: Blissey's tiny Def now takes its huge SpD.
+    plain = _range(real_calc, chomp, "Blissey", "Dragon Claw")
+    assert _range(
+        real_calc, chomp, "Blissey", "Dragon Claw", CalcField(wonder_room=True)
+    ) < plain * 0.5
+    # Magic Room suppresses held items (here the Life Orb boost).
+    orb = chomp.model_copy(update={"item": "Life Orb"})
+    boosted = _range(real_calc, orb, "Amoonguss", "Dragon Claw")
+    assert _range(
+        real_calc, orb, "Amoonguss", "Dragon Claw", CalcField(magic_room=True)
+    ) < boosted * 0.85
+
+
+def test_protosynthesis_and_quark_drive_activate_on_their_field(real_calc):
+    """@smogon/calc ignores both abilities unless boostedStat is set, so they
+    never activated, not even in Sun / Electric Terrain."""
+    mane = PokemonSet(species="Flutter Mane", ability="Protosynthesis",
+                      nature="Modest", evs={"spa": 252})
+    plain = _range(real_calc, mane, "Garchomp", "Moonblast")
+    assert _range(real_calc, mane, "Garchomp", "Moonblast", CalcField(weather="Sun")) > plain * 1.25
+    hands = PokemonSet(species="Iron Hands", ability="Quark Drive",
+                       nature="Adamant", evs={"atk": 252})
+    plain = _range(real_calc, hands, "Garchomp", "Close Combat")
+    assert _range(
+        real_calc, hands, "Garchomp", "Close Combat", CalcField(terrain="Electric")
+    ) > plain * 1.25
+    assert _range(real_calc, hands, "Garchomp", "Close Combat", CalcField(weather="Sun")) == plain

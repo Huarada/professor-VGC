@@ -6,7 +6,7 @@ rosters and the explanation stage sees the same ground-truth ordered timeline.
 
 from __future__ import annotations
 
-from src.domain.models import GameState
+from src.domain.models import FieldWindow, GameState
 
 
 def rosters(game_state: GameState) -> dict[str, list[str]]:
@@ -100,8 +100,26 @@ def outcome_summary(game_state: GameState) -> str:
     return "\n".join(lines)
 
 
+_ENDED = " (ended this turn)"
+
+
+def _expired_on(window: FieldWindow, turn: int) -> bool:
+    return window.end_turn == turn and not window.open_at_end
+
+
+def _sequence_label(kind: str, windows: list[FieldWindow], turn: int) -> list[str]:
+    """One label for a weather or terrain during ``turn``: only one is ever up,
+    so a replacement reads ``weather Sun → Rain`` (never two at once) and an
+    expiry is marked."""
+    covering = [w for w in windows if w.covers(turn)]
+    if not covering:
+        return []
+    label = f"{kind} {' → '.join(w.name for w in covering)}"
+    return [label + _ENDED if _expired_on(covering[-1], turn) else label]
+
+
 def _field_labels(game_state: GameState, turn: int) -> list[str]:
-    """Field conditions active on a given turn, for timeline annotations."""
+    """Field conditions active at some point of ``turn``, for timeline annotations."""
     field = game_state.field
     if field is None:
         return []
@@ -111,8 +129,11 @@ def _field_labels(game_state: GameState, turn: int) -> list[str]:
             labels.append(f"Tailwind {side.player}")
     if field.trick_room_active(turn):
         labels.append("Trick Room")
-    labels.extend(f"weather {name}" for name in field.weather_on(turn))
-    labels.extend(f"terrain {name}" for name in field.terrain_on(turn))
+    labels += _sequence_label("weather", field.weather, turn)
+    labels += _sequence_label("terrain", field.terrain, turn)
     for side in game_state.sides:
-        labels.extend(f"{name} {side.player}" for name in field.screens_on(side.player, turn))
+        for window in field.screens.get(side.player, []):
+            if window.covers(turn):
+                label = f"{window.name} {side.player}"
+                labels.append(label + _ENDED if _expired_on(window, turn) else label)
     return labels

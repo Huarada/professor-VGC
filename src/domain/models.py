@@ -144,6 +144,11 @@ class BattleSnapshot(BaseModel):
     terrain: str = ""
     screens: dict[str, list[str]] = Field(default_factory=dict)
     """player -> Reflect / Light Screen / Aurora Veil currently up on that side."""
+    tailwind: list[str] = Field(default_factory=list)
+    """Players whose Tailwind is up right now (one set later this turn is not)."""
+    trick_room: bool = False
+    rooms: list[str] = Field(default_factory=list)
+    """Gravity / Magic Room / Wonder Room currently up."""
     active: dict[str, list[str]] = Field(default_factory=dict)
     """player -> species on the field right now."""
     fainted: dict[str, list[str]] = Field(default_factory=dict)
@@ -222,17 +227,16 @@ class FieldWindow(BaseModel):
     name: str
     start_turn: int
     end_turn: int
+    open_at_end: bool = False
+    """Still up when the log ended: ``end_turn`` is the last turn, not an expiry."""
 
     def covers(self, turn: int) -> bool:
         return self.start_turn <= turn <= self.end_turn
 
-    def length(self) -> int:
-        return self.end_turn - self.start_turn + 1
-
 
 class FieldConditions(BaseModel):
-    """Turn-level field summary (inclusive windows) for timeline notes and
-    whole-game verdicts; per-move checks use ``BattleSnapshot`` instead.
+    """Turn-level field summary (inclusive windows) for timeline notes and the
+    battle panel; per-move checks use ``BattleSnapshot`` instead.
 
     Names are in-game (``Sun``, ``Rain``, ``Electric``, ...), never protocol ids.
     """
@@ -245,32 +249,16 @@ class FieldConditions(BaseModel):
     terrain: list[FieldWindow] = Field(default_factory=list)
     screens: dict[str, list[FieldWindow]] = Field(default_factory=dict)
     """player -> Reflect / Light Screen / Aurora Veil windows on that side."""
-    final_statuses: dict[str, dict[str, str]] = Field(default_factory=dict)
-    """player -> species -> status still active at the end (whole-game verdicts only)."""
 
     @staticmethod
     def _in_windows(windows: list[list[int]], turn: int) -> bool:
         return any(w[0] <= turn <= w[1] for w in windows)
-
-    @staticmethod
-    def _dominant(windows: list[FieldWindow]) -> str:
-        """The condition that covered the most turns (first one on a tie)."""
-        totals: dict[str, int] = {}
-        for window in windows:
-            totals[window.name] = totals.get(window.name, 0) + window.length()
-        return max(totals, key=lambda name: totals[name]) if totals else ""
-
-    def had_tailwind(self, player: str) -> bool:
-        return bool(self.tailwind.get(player))
 
     def tailwind_active(self, player: str, turn: int) -> bool:
         return self._in_windows(self.tailwind.get(player, []), turn)
 
     def trick_room_active(self, turn: int) -> bool:
         return self._in_windows(self.trick_room, turn)
-
-    def had_trick_room(self) -> bool:
-        return bool(self.trick_room)
 
     def weather_on(self, turn: int) -> list[str]:
         """Every weather active at some point during ``turn``, in order."""
@@ -283,12 +271,6 @@ class FieldConditions(BaseModel):
     def screens_on(self, player: str, turn: int) -> list[str]:
         """Screens up on ``player``'s side at some point during ``turn``."""
         return [w.name for w in self.screens.get(player, []) if w.covers(turn)]
-
-    def dominant_weather(self) -> str:
-        return self._dominant(self.weather)
-
-    def dominant_terrain(self) -> str:
-        return self._dominant(self.terrain)
 
 
 class GameState(BaseModel):
@@ -391,6 +373,9 @@ class CalcField(BaseModel):
     weather: str = ""
     terrain: str = ""
     trick_room: bool = False
+    gravity: bool = False
+    magic_room: bool = False
+    wonder_room: bool = False
     attacker_side: SideField = Field(default_factory=SideField)
     defender_side: SideField = Field(default_factory=SideField)
 

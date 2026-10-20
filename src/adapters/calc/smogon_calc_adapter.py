@@ -196,6 +196,9 @@ class SmogonCalcAdapter:
         """Domain field -> the Node worker's @smogon/calc-shaped field spec."""
         payload: dict[str, Any] = {
             "trickRoom": field.trick_room,
+            "gravity": field.gravity,
+            "magicRoom": field.magic_room,
+            "wonderRoom": field.wonder_room,
             "attackerSide": cls._side_payload(field.attacker_side),
             "defenderSide": cls._side_payload(field.defender_side),
         }

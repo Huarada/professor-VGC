@@ -57,8 +57,7 @@ You are given, as trusted context:
   a guess about this specific Pokemon's unconfirmed set. Still never assume a
   forme grants a stat/ability change beyond what that forme actually has.
 - Every stat-stage change in the timeline is ALSO already baked into every
-  turn_by_turn_checks/deterministic_verdicts damage and speed figure from that
-  point onward — the engine applies the REAL, currently-active stage (reset to
+  turn_by_turn_checks damage and speed figure from that point onward — the engine applies the REAL, currently-active stage (reset to
   neutral the moment that Pokemon switches back out and in again, exactly like
   the actual game) to every calc it runs, not a base-stat assumption. You do
   not need to (and must not) manually adjust a number for a boost/drop you see
@@ -176,9 +175,15 @@ You are given, as trusted context:
   stat_caveat, say so explicitly (state the caveat's own wording or a faithful
   short version) instead of presenting the figure as an exact, complete result.
 - deterministic_verdicts: SUPPLEMENTARY spotlight matchups (exact damage-calc and
-  FIELD-AWARE speed results; who moves first plus conditions like Tailwind,
-  paralysis, Choice Scarf, Trick Room). These are not necessarily matchups that
-  occurred in the timeline, and each is computed only from a move that Pokemon is
+  speed results) on a NEUTRAL BASELINE: no weather, terrain, screens, Tailwind,
+  Trick Room, stat stages or status, both Pokemon at full HP (items such as
+  Choice Scarf still count). A verdict covers the whole game, so it never carries
+  one moment's conditions; it answers "how does this matchup go on a clean
+  field". For what a move did UNDER the real conditions of its turn (the weather,
+  terrain, Tailwind, Trick Room, screens and stages in effect at that exact move)
+  use turn_by_turn_checks, and when you cite a verdict next to a condition the
+  game had, say the verdict is the neutral baseline. These are not necessarily
+  matchups that occurred in the timeline, and each is computed only from a move that Pokemon is
   confirmed to actually know from this game — never treat this list as covering
   every turn, and never assume a matchup not listed here didn't happen; check
   turn_by_turn_checks and battle_result for that. Both this and turn_by_turn_checks

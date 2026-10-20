@@ -242,3 +242,65 @@ def test_mirror_match_keeps_each_sides_pokemon_distinct():
     assert p1_check.damage_checks[0].actual_hp_remaining_percent == 60.0
     assert p2_check.damage_checks[0].target_player == "p1"
     assert p2_check.damage_checks[0].actual_hp_remaining_percent == 75.0
+
+
+def test_tailwind_and_trick_room_apply_only_from_the_move_that_set_them():
+    """Reported: Tailwind / Trick Room came from the turn window, so a move
+    used BEFORE them in the same turn was calculated as if they were up."""
+    state = _parse(
+        "|switch|p1a: Talonflame|Talonflame, L50|100/100",
+        "|switch|p2a: Garchomp|Garchomp, L50|100/100",
+        "|switch|p2b: Hatterene|Hatterene, L50|100/100",
+        "|turn|1",
+        "|move|p2a: Garchomp|Dragon Claw|p1a: Talonflame",
+        "|-damage|p1a: Talonflame|60/100",
+        "|move|p1a: Talonflame|Tailwind|p1a: Talonflame",
+        "|-sidestart|p1: Ash|move: Tailwind",
+        "|move|p2b: Hatterene|Trick Room|p2b: Hatterene",
+        "|-fieldstart|move: Trick Room|[of] p2b: Hatterene",
+        "|move|p2a: Garchomp|Rock Slide|p1a: Talonflame",
+        "|-damage|p1a: Talonflame|20/100",
+        "|turn|2",
+        "|move|p2a: Garchomp|Dragon Claw|p1a: Talonflame",
+        "|-damage|p1a: Talonflame|0 fnt",
+    )
+    checks = [
+        c for c in TurnReplaySimulator(_RecordingCalc()).simulate(state, MetaContext())
+        if c.actor == "Garchomp"
+    ]
+    before, after, next_turn = (c.conditions for c in checks)
+    assert "Tailwind p1" not in before and "Trick Room" not in before
+    assert "Tailwind p1" in after and "Trick Room" in after
+    assert "Tailwind p1" in next_turn and "Trick Room" in next_turn
+
+
+def test_gravity_magic_room_and_wonder_room_reach_the_calc():
+    """Reported: rooms were tracked for the panel but never sent to the calc
+    (a Ground move into a Flying type under Gravity was projected at 0%)."""
+    state = _parse(
+        "|switch|p1a: Talonflame|Talonflame, L50|100/100",
+        "|switch|p2a: Garchomp|Garchomp, L50|100/100",
+        "|turn|1",
+        "|move|p2a: Garchomp|Earthquake|p1a: Talonflame",
+        "|-immune|p1a: Talonflame",
+        "|-fieldstart|move: Gravity",
+        "|-fieldstart|move: Wonder Room",
+        "|-fieldstart|move: Magic Room",
+        "|turn|2",
+        "|move|p2a: Garchomp|Earthquake|p1a: Talonflame",
+        "|-damage|p1a: Talonflame|50/100",
+        "|-fieldend|move: Gravity",
+        "|-fieldend|move: Wonder Room",
+        "|-fieldend|move: Magic Room",
+        "|turn|3",
+        "|move|p2a: Garchomp|Earthquake|p1a: Talonflame",
+    )
+    calc = _run(state)
+    first, under_rooms, after = (
+        r.field for r in calc.damage_requests("Garchomp", "Earthquake", "Talonflame")
+    )
+    assert (first.gravity, first.wonder_room, first.magic_room) == (False, False, False)
+    assert (under_rooms.gravity, under_rooms.wonder_room, under_rooms.magic_room) == (
+        True, True, True,
+    )
+    assert (after.gravity, after.wonder_room, after.magic_room) == (False, False, False)

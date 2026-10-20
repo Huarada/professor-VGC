@@ -154,12 +154,20 @@ class MoveMoment:
         return field.screens_on(player, self.turn) if field else []
 
     def _tailwind(self, player: str) -> bool:
+        if self._state is not None:
+            return player in self._state.tailwind
         field = self._game.field
         return bool(player and field and field.tailwind_active(player, self.turn))
 
     def trick_room(self) -> bool:
+        if self._state is not None:
+            return self._state.trick_room
         field = self._game.field
         return bool(field and field.trick_room_active(self.turn))
+
+    def _rooms(self) -> list[str]:
+        """Gravity / Magic Room / Wonder Room (only known from a snapshot)."""
+        return list(self._state.rooms) if self._state is not None else []
 
     def _friend_guard(self, defender: Combatant) -> bool:
         ally = self.ally(defender)
@@ -168,10 +176,14 @@ class MoveMoment:
     def field(self, attacker: Combatant, defender: Combatant) -> CalcField:
         """Calc field for ``attacker`` hitting ``defender`` at this move."""
         screens = set(self._screens(defender[0]))
+        rooms = set(self._rooms())
         return CalcField(
             weather=self._weather(),
             terrain=self._terrain(),
             trick_room=self.trick_room(),
+            gravity="Gravity" in rooms,
+            magic_room="Magic Room" in rooms,
+            wonder_room="Wonder Room" in rooms,
             attacker_side=SideField(
                 tailwind=self._tailwind(attacker[0]),
                 helping_hand=attacker == self.actor and "helping hand" in self.event.effects,
@@ -208,6 +220,7 @@ class MoveMoment:
             labels.append(f"weather {self._weather()}")
         if self._terrain():
             labels.append(f"terrain {self._terrain()}")
+        labels.extend(self._rooms())
         for side in self._game.sides:
             labels.extend(f"{screen} {side.player}" for screen in self._screens(side.player))
         if "helping hand" in self.event.effects:
