@@ -3886,7 +3886,9 @@ dumps), KOs reachable 84.4% (78.6–88.8%), 68.6% (61.7–74.7%) of misses expla
 by EV/nature variance, mean miss 12.0pp. The difference is within the
 intervals: the singles data was wrong, but the dominant error source remains
 unrevealed sets. The LLM-claim runs (ADR-034) used the singles data for
-Condition A and are pending a re-run with the official data.
+Condition A; they were re-run on 2026-10-20 with the official data and the
+fixes of ADR-035 to ADR-042: A 61.2% vs B 52.2%, odds ratio 1.45 (1.08-1.94),
+p = 0.013 (40 games, 2 runs of 20).
 
 ---
 
