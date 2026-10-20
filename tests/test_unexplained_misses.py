@@ -397,3 +397,51 @@ def test_abilities_named_by_a_from_suffix_are_revealed():
     )
     abilities = {m.species: m.ability for s in state.sides for m in s.team}
     assert abilities == {"Meowscarada": "Protean", "Garchomp": "Rough Skin", "Torkoal": "Drought"}
+
+
+def test_ally_switch_swaps_the_battle_positions():
+    """``|swap|`` (Ally Switch) was ignored: the slot map stayed inverted, so
+    later moves and damage lines landed on the wrong Pokemon."""
+    state = _parse(
+        "|switch|p1a: Garchomp|Garchomp, L50|100/100",
+        "|switch|p2a: Blastoise|Blastoise, L50|100/100",
+        "|switch|p2b: Farigiraf|Farigiraf, L50|100/100",
+        "|turn|1",
+        "|move|p2b: Farigiraf|Ally Switch|p2b: Farigiraf",
+        "|swap|p2b: Farigiraf|0|[from] move: Ally Switch",
+        "|move|p1a: Garchomp|Dragon Claw|p2a: Farigiraf",
+        "|-damage|p2a: Farigiraf|60/100",
+        "|move|p2b: Blastoise|Water Spout|p1a: Garchomp",
+        "|-damage|p1a: Garchomp|40/100",
+    )
+    claw, spout = [e for e in _moves(state) if e.move in ("Dragon Claw", "Water Spout")]
+    assert claw.hits[0].species == "Farigiraf" and claw.hits[0].hp_after == 60.0
+    assert (spout.actor_player, spout.actor) == ("p2", "Blastoise")
+    assert spout.state.active["p2"] == ["Farigiraf", "Blastoise"]
+
+
+def test_a_spread_move_that_hit_one_target_takes_no_spread_reduction(real_calc):
+    """The calc applies the two-target 0.75x to every spread move in Doubles; the
+    log's ``[spread]`` tag says whether more than one target was really hit."""
+    state = _parse(
+        "|switch|p1a: Garchomp|Garchomp, L50|100/100",
+        "|switch|p2a: Incineroar|Incineroar, L50|100/100",
+        "|switch|p2b: Clefairy|Clefairy, L50|100/100",
+        "|turn|1",
+        "|move|p1a: Garchomp|Earthquake|p2a: Incineroar|[spread] p2a,p2b",
+        "|-damage|p2a: Incineroar|50/100", "|-damage|p2b: Clefairy|40/100",
+        "|turn|2",
+        "|move|p1a: Garchomp|Earthquake|p2a: Incineroar",  # Clefairy protected: one target
+        "|-damage|p2a: Incineroar|0 fnt", "|faint|p2a: Incineroar",
+    )
+    recorder = _RecordingCalc()
+    TurnReplaySimulator(recorder).simulate(state, MetaContext())
+    flags = [r.spread_hit for r in recorder.damage_requests("Garchomp", "Earthquake", "Incineroar")
+             if r.spread_hit is not None]
+    assert flags == [True, False]  # each move's own check: two targets, then one
+    garchomp, incineroar = PokemonSet(species="Garchomp"), PokemonSet(species="Incineroar")
+    both, one = (
+        real_calc.calculate(CalcRequest(attacker=garchomp, defender=incineroar, move="Earthquake", spread_hit=flag)).max_percent
+        for flag in (True, False)
+    )
+    assert one == pytest.approx(both / 0.75, rel=0.02)

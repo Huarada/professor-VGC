@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import TypeVar
+
 from src.adapters.parsers.showdown_log.handlers.base import Handler, HandlerGroup
 from src.adapters.parsers.showdown_log.protocol import (
     STATUS_NAMES,
@@ -11,6 +13,16 @@ from src.adapters.parsers.showdown_log.protocol import (
     tag_value,
 )
 from src.domain.models import BattleEvent
+
+_T = TypeVar("_T")
+
+
+def _swap_slots(mapping: dict[str, _T], first: str, second: str) -> None:
+    """Exchange what two battle positions hold (either may be empty)."""
+    held = [mapping.pop(first, None), mapping.pop(second, None)]
+    for slot, value in zip((second, first), held):
+        if value is not None:
+            mapping[slot] = value
 
 
 class RosterHandlers(HandlerGroup):
@@ -22,7 +34,22 @@ class RosterHandlers(HandlerGroup):
             "drag": self.on_switch,
             "detailschange": self.on_detailschange,
             "-transform": self.on_transform,
+            "swap": self.on_swap,
         }
+
+    def on_swap(self, parts: list[str]) -> None:
+        # Ally Switch: ``|swap|p2b: Farigiraf|0`` moves it to position 0 (slot a)
+        # and its ally to the slot it left. Every later reference uses the new slots.
+        split = split_ref(parts[2]) if len(parts) > 3 else None
+        if split is None or not parts[3].strip().isdigit():
+            return
+        player, slot, _nick = split
+        target = player + "ab"[int(parts[3]) % 2]
+        origin = player + slot
+        if origin == target:
+            return
+        _swap_slots(self.state.roster.slot_species, origin, target)
+        _swap_slots(self.state.combatants.on_field, origin, target)
 
     def on_player(self, parts: list[str]) -> None:
         roster = self.state.roster

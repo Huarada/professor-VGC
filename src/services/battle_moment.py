@@ -225,6 +225,7 @@ class MoveMoment:
 
     def request(self, attacker: Combatant, defender: Combatant, move: str) -> CalcRequest:
         """Damage request for ``attacker``'s ``move`` into ``defender`` right now."""
+        used = attacker == self.actor and move == self.event.move
         return CalcRequest(
             gen=self._gen,
             attacker=self.combatant(attacker),
@@ -234,9 +235,9 @@ class MoveMoment:
             defender_hp_percent=self.hp(defender),
             attacker_hp_percent=self.hp(attacker),
             attacker_allies_fainted=self._fainted_count(attacker[0]),
-            # Only the move actually used has a known hit count.
-            hits=self.event.hit_count or None
-            if attacker == self.actor and move == self.event.move else None,
+            # Only the move actually used has a known hit count / target count.
+            hits=self.event.hit_count or None if used else None,
+            spread_hit="spread" in self.event.effects if used else None,
         )
 
     def _fainted_count(self, player: str) -> int:

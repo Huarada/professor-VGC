@@ -951,9 +951,9 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 
 | ±2pp ±5% band (default) | Rate (95% CI) |
 |---|---|
-| Projected range contains the real damage — **non-KO hits** | **57.8% (52.6–62.8%)**, 207/358 |
+| Projected range contains the real damage — **non-KO hits** | **58.7% (53.5–63.6%)**, 210/358 |
 | Projection can reach a real KO | 94.4% (90.3–96.9%), 187/198 |
-| Mean miss outside the raw projected range | 9.2 pp |
+| Mean miss outside the raw projected range | 9.1 pp |
 | Excluded: crit 23 · no projection 9 | — |
 
 > **Multi-hit moves are judged now (ADR-042).** They used to be excluded
@@ -964,20 +964,29 @@ Pokémon's EVs/nature differ from the one spread the projection assumes
 > Only critical hits stay excluded. The effect on these 90 games is small
 > because multi-hit moves are rare (7 uses): 2 more Reg M-B hits judged, none
 > in Reg M-C.
+>
+> **Spread moves that hit one target, and Ally Switch (ADR-042).** The calc
+> applies the two-target 0.75x to every spread move in Doubles; the log's
+> `[spread]` tag says whether more than one target was really hit, and the
+> move's own request carries it (`CalcRequest.spread_hit`). Observed/projected
+> damage of single-target spread hits: median 1.55 -> 1.08 (n = 10). `|swap|`
+> (Ally Switch) now exchanges the two battle positions. Reg M-B, same games:
+> non-KO 57.8% -> 58.7%, paired 5 misses fixed, 2 new (p = 0.45); Reg M-C
+> 1 and 1.
 
 The conclusion does not hinge on the band — the same hits re-scored:
 
 | Relative tolerance | Non-KO hits within band (95% CI) | KOs reachable (95% CI) |
 |---|---|---|
-| 0% (±2pp only) | 47.5% (42.4–52.7%) | 93.9% (89.7–96.5%) |
-| **5%** | **57.8% (52.6–62.8%)** | **94.4% (90.3–96.9%)** |
-| 10% | 68.4% (63.4–73.0%) | 94.4% (90.3–96.9%) |
-| 15% | 75.7% (71.0–79.9%) | 96.0% (92.2–97.9%) |
+| 0% (±2pp only) | 48.6% (43.5–53.8%) | 93.9% (89.7–96.5%) |
+| **5%** | **58.7% (53.5–63.6%)** | **94.4% (90.3–96.9%)** |
+| 10% | 69.3% (64.3–73.8%) | 94.4% (90.3–96.9%) |
+| 15% | 76.5% (71.9–80.6%) | 96.0% (92.2–97.9%) |
 
 **How much do EVs explain?** For every miss, the same calc request was re-run
 at minimum and maximum EV/nature investment on both sides, everything else
 equal (`ev_envelope.py`), on exactly the request the projection came from.
-**100% of misses (97.7–100%, 162/162) fall inside that envelope** — a
+**100% of misses (97.6–100%, 159/159) fall inside that envelope** — a
 different spread alone explains them — none lies outside any spread (see the
 ADR-040, ADR-041 and ADR-042 boxes above). The last one was an ability the log
 revealed through `[from] ability: Protean` and the projection ignored. This was 56 before ADR-039 and 32 before ADR-040: every

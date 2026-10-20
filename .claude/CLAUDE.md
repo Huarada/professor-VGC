@@ -416,7 +416,8 @@ replay JSON/log + question
 19. **fix(calc):** multi-hit moves report the total (not one hit's), projected for
     the hits the log shows (`|-hitcount|`); abilities revealed by `[from]
     ability: X` are used; guard recognizes Megas in prose and a legal Mega makes
-    its base legal. Method and corrections: ADR.md "Read first" (ADR-042).
+    its base legal; spread moves that hit one target take no 0.75x; Ally
+    Switch (`|swap|`) read. Method and corrections: ADR.md "Read first" (ADR-042).
 
 Test count grew alongside these.
 
