@@ -21,6 +21,7 @@ from src.domain.models import (
     SideField,
     SpeedComparison,
 )
+from src.domain.names import to_id
 
 
 class SmogonCalcAdapter:
@@ -333,9 +334,9 @@ class SmogonCalcAdapter:
             labels.append(f"paralysis ({request.attacker.species})")
         if request.defender.status == "par":
             labels.append(f"paralysis ({request.defender.species})")
-        if request.attacker.item == "Choice Scarf":
+        if to_id(request.attacker.item) == "choicescarf":
             labels.append(f"Choice Scarf ({request.attacker.species})")
-        if request.defender.item == "Choice Scarf":
+        if to_id(request.defender.item) == "choicescarf":
             labels.append(f"Choice Scarf ({request.defender.species})")
         if trick_room:
             labels.append("Trick Room")

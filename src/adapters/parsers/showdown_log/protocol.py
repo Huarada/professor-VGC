@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import re
 
+from src.domain.names import to_id as to_id  # re-exported for the handlers
+
 _REF = re.compile(r"^(?P<player>p\d)(?P<slot>[a-z]?): (?P<nick>.+)$")
 
 # Protect-family names as they appear in "-activate|POKEMON|move: X" when that
@@ -47,11 +49,6 @@ ITEM_GAINED_FROM = {
     "trick", "switcheroo", "bestow", "thief", "covet", "recycle",
     "harvest", "pickup", "magician", "pickpocket",
 }
-
-
-def to_id(text: str) -> str:
-    """Showdown-style id: lowercase alphanumerics only (``"Sunny Day"`` -> ``"sunnyday"``)."""
-    return re.sub(r"[^a-z0-9]", "", text.lower())
 
 
 def tag_value(parts: list[str], tag: str) -> str:

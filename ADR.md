@@ -3877,3 +3877,50 @@ numbers are unaffected except for games with Gravity, rooms or paradox
 abilities.
 
 ---
+
+## ADR-039 — Usage-data names (ids) reach the calc engine
+
+**Status:** Accepted
+
+### Context
+Smogon's Chaos usage data names abilities, items and natures by **id**
+(`lifeorb`, `scrappy`, `friendguard`, `jolly`); battle logs use display
+names (`Life Orb`). `@smogon/calc` only matches display names and **silently
+ignores** an unknown ability/item string. So every ability and item the
+pipeline back-filled from usage data (an unrevealed set's most common item
+and ability) was missing from every calc: per-move projections, better
+alternatives, incoming threats and verdicts. Examples on the real engine:
+Garchomp's Dragon Claw with a back-filled Life Orb 40.2–47.6% instead of
+52.4–61.9%; Hisuian Decidueye's Close Combat into Froslass "0% (immune)"
+instead of 137.9–162.8% (Scrappy). The Python side compared display names
+too, so a back-filled Friend Guard or Choice Scarf was never recognized. No
+test caught it because the bundled `sample_data` fixture uses display names,
+unlike the real data.
+
+### Decision
+- The Node engine resolves every ability, item and nature through the
+  `@smogon/calc` dex (`canonicalName`), accepting ids and display names
+  alike; Chaos's `nothing` / `noability` mean none.
+- A Mega / Primal forme always uses its own single ability (Gardevoir-Mega is
+  Pixilate whatever the base revealed or usage data back-filled). Required
+  here: with valid names, a back-filled base ability would otherwise start
+  overriding the Mega's.
+- Python compares abilities/items by id (`src/domain/names.to_id`): Friend
+  Guard and the Choice Scarf speed label.
+- Tests use the real id format (`tests/test_chaos_id_names.py`).
+
+### Verification
+Engine calibration, same 40 games and 549 judged hits, ±2pp ±5%: non-KO
+53.2% -> 55.5%, KOs 86.5% -> 90.6%, misses outside any EV/nature spread
+56 -> 32; paired, 29 misses fixed vs. 13 new (exact McNemar p = 0.020). The
+new misses are hits where the most common item was not the one held (a
+resist berry the log shows was not there); before, they matched only
+because the item was dropped.
+
+### Consequences
+Projections now assume usage data's most common item and ability, as
+intended: right more often, and visibly wrong when this Pokemon held
+something else. Possible follow-up: rule out a back-filled item the log
+contradicts (a resist berry that did not trigger on a super-effective hit).
+
+---

@@ -51,6 +51,22 @@ const SIDE_FLAGS = [
 const SPREAD_TARGETS = new Set(['allAdjacent', 'allAdjacentFoes']);
 const QP_ABILITIES = new Set(['protosynthesis', 'quarkdrive']);
 
+// Usage data (Smogon Chaos) names abilities, items and natures by id
+// ('lifeorb', 'scrappy', 'jolly'), but @smogon/calc only matches display
+// names and SILENTLY ignores anything else — every back-filled ability and
+// item used to drop out of every calc. Resolve every name through the dex.
+// Chaos also uses ids for "no item" / "no ability".
+const NO_ITEM = new Set(['', 'nothing', 'none', 'noitem']);
+const NO_ABILITY = new Set(['', 'none', 'noability']);
+// A Mega / Primal has exactly one ability of its own, whatever the base form
+// had (revealed in the log or back-filled from usage data).
+const FIXED_ABILITY_FORME = /-(Mega|Primal)\b/;
+
+function canonicalName(table, name) {
+  const entry = table.get(toID(name));
+  return entry ? entry.name : name;
+}
+
 // @smogon/calc's species lookup only matches the lowercased/stripped `id`
 // form (e.g. "charizardmegay"), not display names like "Charizard-Mega-Y" —
 // this is the one reliable way to tell "genuinely unknown forme" (undefined)
@@ -93,9 +109,9 @@ function buildPokemon(gen, spec) {
   }
   const options = {};
   if (spec.level != null) options.level = spec.level;
-  if (spec.ability) options.ability = spec.ability;
-  if (spec.item) options.item = spec.item;
-  if (spec.nature) options.nature = spec.nature;
+  if (!NO_ABILITY.has(toID(spec.ability))) options.ability = canonicalName(gen.abilities, spec.ability);
+  if (!NO_ITEM.has(toID(spec.item))) options.item = canonicalName(gen.items, spec.item);
+  if (spec.nature) options.nature = canonicalName(gen.natures, spec.nature);
   if (spec.teraType) options.teraType = spec.teraType;
   if (spec.evs) options.evs = spec.evs;
   if (spec.ivs) options.ivs = spec.ivs;
@@ -122,6 +138,11 @@ function buildPokemon(gen, spec) {
   const species = spec.battleForme && speciesResolves(gen, spec.battleForme)
     ? spec.battleForme
     : spec.species;
+  if (FIXED_ABILITY_FORME.test(species)) {
+    const forme = gen.species.get(toID(species));
+    const own = forme && forme.abilities && forme.abilities[0];
+    if (own) options.ability = own;
+  }
   const pokemon = new Pokemon(gen, species, options);
   if (spec.hpPercent == null) return pokemon;
   // Current HP (damage already taken this game), so the KO-chance text
