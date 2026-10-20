@@ -35,10 +35,10 @@ the projection assumes. Every rate carries a **95% confidence interval**
 
 | Checked against the real log (±2pp ±5%) | Rate (95% CI) |
 |---|---|
-| AI damage claims — **A**: the grounded pipeline | **59.9% (55.0–64.7%)**, 229/382 |
-| AI damage claims — **B**: the same LLM given only the raw log | 51.1% (46.0–56.1%), 191/374 |
-| A vs B | odds ratio **1.43 (1.06–1.93)**, p = 0.016 |
-| Claims about hits that never happened | A: 18 · B: 57 |
+| AI damage claims — **A**: the grounded pipeline | **61.2% (56.4–65.8%)**, 251/410 |
+| AI damage claims — **B**: the same LLM given only the raw log | 52.2% (47.1–57.3%), 190/364 |
+| A vs B | odds ratio **1.45 (1.08–1.94)**, p = 0.013 |
+| Claims about hits that never happened | A: 11 · B: 87 |
 | Engine projection contains the real damage (non-KO hits, no LLM) | **59.7% (54.5–64.7%)**, 209/350 |
 | Engine projection reaches a real KO | 94.7% (90.7–97.0%), 195/206 |
 | Engine misses explained by EV/nature variance alone | 100% (97.5–100%), 152/152 |
@@ -57,29 +57,28 @@ the projection assumes. Every rate carries a **95% confidence interval**
 > `[from] ability:` are used, and a spread move that hit one target takes no
 > 0.75x reduction (ADR-042: Reg M-B non-KO 59.7%, Reg M-C 66.8%, no Reg M-B
 > miss left outside the EV/nature envelope; Focus Sash survivals now count as
-> the lethal hits they were). The AI-claim rows (A vs B) predate these fixes and
-> are pending a re-run.
+> the lethal hits they were). The AI-claim rows (A vs B) were re-run on the
+> current code (gpt-4o-mini, 40 games, 2 runs of 20) and use the official
+> usage data.
 
-> **Data note (ADR-035).** The engine rows use the official September 2026 VGC
-> usage data. The AI-claim rows (A vs B) were measured before the bundled
-> `data/chaos` dumps were found to be singles (BSS) stats, so Condition A's
-> assumed spreads came from singles data; those two rows will be re-measured
-> with the official VGC data. With the singles data the engine row was 47.9%.
+> **Data note (ADR-035).** All rows use the official September 2026 VGC usage
+> data. (Earlier versions used bundled dumps that turned out to be singles
+> stats: the engine row was 47.9% then, and the first A vs B run used them.)
 
 The conclusion does not hinge on the tolerance chosen — the same claims
 re-scored:
 
 | Relative tolerance | A (95% CI) | B (95% CI) | Odds ratio (95% CI) | p |
 |---|---|---|---|---|
-| 0% (±2pp only) | 56.8% (51.8–61.7%) | 49.5% (44.4–54.5%) | 1.34 (1.00–1.81) | 0.049 |
-| **5%** | **59.9% (55.0–64.7%)** | **51.1% (46.0–56.1%)** | **1.43 (1.06–1.93)** | **0.016** |
-| 10% | 63.4% (58.4–68.0%) | 52.9% (47.9–57.9%) | 1.54 (1.14–2.08) | 0.004 |
-| 15% | 67.3% (62.4–71.8%) | 55.3% (50.3–60.3%) | 1.66 (1.22–2.25) | 0.0008 |
+| 0% (±2pp only) | 58.8% (54.0–63.4%) | 50.8% (45.7–55.9%) | 1.38 (1.03–1.85) | 0.030 |
+| **5%** | **61.2% (56.4–65.8%)** | **52.2% (47.1–57.3%)** | **1.45 (1.08–1.94)** | **0.013** |
+| 10% | 65.4% (60.6–69.8%) | 53.3% (48.2–58.4%) | 1.65 (1.23–2.23) | 0.0007 |
+| 15% | 69.8% (65.1–74.0%) | 56.3% (51.2–61.3%) | 1.79 (1.32–2.43) | 0.0001 |
 
 **What it means.**
 
 - **Grounding helps, modestly.** About 9 points more claims consistent with
-  the log, significant at every tolerance, and three times fewer invented hits.
+  the log, significant at every tolerance, and eight times fewer invented hits.
   It is not the 80× an earlier, circular benchmark suggested.
 - **The ceiling is the assumed sets, not the engine.** Unrevealed
   EVs/natures/items/abilities are backed off the single most-used Chaos set.
@@ -88,7 +87,7 @@ re-scored:
   without usage data. Projected damage is a baseline; the log's observed
   damage is what happened.
 - **Pool runs over distinct games.** LLM output varies from run to run: each
-  run of 20 games alone was *not* significant at ±5% (p = 0.088 and 0.10).
+  run of 20 games alone was borderline at ±5% (p = 0.054 and 0.039).
   Results are reported pooled over different games, with intervals.
 
 Methodology, every run, the sensitivity analysis, the EV/nature envelope and

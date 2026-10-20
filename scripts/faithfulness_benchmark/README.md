@@ -30,8 +30,8 @@ table is there.
 > evidence*, not *correctness*, and it judges Condition B against
 > assumptions B never saw. Validated against what **actually happened** in
 > 40 real public games, within a ±2pp ±5% tolerance band, the grounded
-> pipeline is better but modestly: **A 59.9% (95% CI 55.0–64.7%) vs B 51.1%
-> (46.0–56.1%), odds ratio 1.43 (1.06–1.93), p=0.016**. See
+> pipeline is better but modestly: **A 61.2% (95% CI 56.4–65.8%) vs B 52.2%
+> (47.1–57.3%), odds ratio 1.45 (1.08–1.94), p=0.013**. See
 > ["Round 6: validation against real games"](#round-6-validation-against-real-games-log-grounded)
 > below. Cite that section, with its intervals, for any claim about
 > correctness.
@@ -839,9 +839,9 @@ differently, but that is an expectation, not a measurement.
 
 ## Round 6: validation against real games (log-grounded)
 
-> **Re-run pending.** These rows were measured before the parsers read Showdown's
-> colour-suffixed HP fields (`50/100g`); on the 50 cached games that adds 22
-> observed hits (743 -> 765) in 18 games. Expect small changes on the next run.
+> **Re-run done (2026-10-20).** The A vs B rows below were re-measured on the
+> current code (colour-suffixed HP fields read, official usage data, ADR-035 to
+> ADR-042). Earlier numbers are named as such where they are compared.
 
 Every earlier round has the same blind spot: a `damage_range` claim is
 "correct" when it matches the **pipeline's own projection**. If the
@@ -942,8 +942,8 @@ data** downloaded with `chaos_corpus.py`.
 > (`info.metagame = gen9championsbssregmb`); the repository now rejects them.
 > With that data the non-KO rate was 47.9% (42.7–53.2%)
 > (`out/engine_calibration_n40.json`, kept for reference). The numbers below
-> are re-measured with the official VGC data. The 6b runs (LLM claims) still
-> used the singles data for Condition A and are pending a re-run. Agreement is judged
+> are re-measured with the official VGC data. The 6b runs (LLM claims) were
+> re-run on the official data (see 6b). Agreement is judged
 within a **tolerance band**, not as an exact match: ±2pp for HP display
 rounding plus a relative ±5% on each projected bound, because the real
 Pokémon's EVs/nature differ from the one spread the projection assumes
@@ -1026,38 +1026,38 @@ mean over the misses alone is 12.7pp.
 
 ### 6b. Claims vs. what happened — A vs. B, same external truth
 
-`run_log_grounded.py --provider openai --orchestrator native --chaos local
---relative-tolerance 0.05`, gpt-4o-mini, `@smogon/calc` 0.12, question asking
-for the damage of the key attacks. **40 distinct real games** in two runs of
-20 (`--offset 20` for the second, so no game is counted twice; the pooling
-tool refuses overlapping runs). Reports: `out/log_grounded_n20_openai_band5.json`,
-`out/log_grounded_games21-40_openai_band5.json`, pooled summary
-`out/log_grounded_n40_pooled_band5_summary.json` (player names anonymized).
+`run_log_grounded.py --provider openai --chaos data/chaos-cache --limit 20`
+(then `--offset 20`), gpt-4o-mini, `@smogon/calc` 0.12, the official September
+2026 VGC usage data, question asking for the damage of the key attacks, **on
+the code after ADR-035 to ADR-042** (re-run 2026-10-20; the earlier numbers
+used singles data and the pre-fix engine). **40 distinct real games** in two
+runs of 20 (`--offset 20` for the second, so no game is counted twice; the
+pooling tool refuses overlapping runs), pooled with `rescore_log_grounded.py`.
 A claim agrees when the observed damage falls in the claimed range widened by
 ±2pp and ±5%.
 
 | ±2pp ±5% band | Condition A (grounded) | Condition B (raw log only) |
 |---|---|---|
-| `damage_range` claims consistent with the log | **59.9% (95% CI 55.0–64.7%)**, 229/382 | 51.1% (46.0–56.1%), 191/374 |
-| Claims about hits that never happened (`not_in_log`) | 18 | 57 |
+| `damage_range` claims consistent with the log | **61.2% (95% CI 56.4–65.8%)**, 251/410 | 52.2% (47.1–57.3%), 190/364 |
+| Claims about hits that never happened (`not_in_log`) | 11 | 87 |
 
-**Fisher's exact test: odds ratio 1.43 (95% CI 1.06–1.93), two-sided
-p=0.016.** The same claims at other tolerances:
+**Fisher's exact test: odds ratio 1.45 (95% CI 1.08–1.94), two-sided
+p=0.013.** The same claims at other tolerances:
 
 | Relative tolerance | A (95% CI) | B (95% CI) | Odds ratio (95% CI) | p |
 |---|---|---|---|---|
-| 0% (±2pp only) | 56.8% (51.8–61.7%) | 49.5% (44.4–54.5%) | 1.34 (1.00–1.81) | 0.049 |
-| **5%** | **59.9% (55.0–64.7%)** | **51.1% (46.0–56.1%)** | **1.43 (1.06–1.93)** | **0.016** |
-| 10% | 63.4% (58.4–68.0%) | 52.9% (47.9–57.9%) | 1.54 (1.14–2.08) | 0.004 |
-| 15% | 67.3% (62.4–71.8%) | 55.3% (50.3–60.3%) | 1.66 (1.22–2.25) | 0.0008 |
+| 0% (±2pp only) | 58.8% (54.0–63.4%) | 50.8% (45.7–55.9%) | 1.38 (1.03–1.85) | 0.030 |
+| **5%** | **61.2% (56.4–65.8%)** | **52.2% (47.1–57.3%)** | **1.45 (1.08–1.94)** | **0.013** |
+| 10% | 65.4% (60.6–69.8%) | 53.3% (48.2–58.4%) | 1.65 (1.23–2.23) | 0.0007 |
+| 15% | 69.8% (65.1–74.0%) | 56.3% (51.2–61.3%) | 1.79 (1.32–2.43) | 0.0001 |
 
 **Reading it.** Grounding helps — about 9 percentage points and an odds
-ratio of ~1.4–1.7 at every tolerance — and B invents hits that never
-happened about three times as often. But the effect is modest, nothing like
-the 80x of the circular metric, and **20 games are not enough to show it**:
-each half alone was not significant at ±5% (games 1–20: OR 1.47, 95% CI
-0.95–2.29, p=0.088; games 21–40: OR 1.41, 0.93–2.15, p=0.10), and an
-earlier run on games 1–20 gave OR 1.86 (1.14–3.04). Run-to-run LLM variance
+ratio of ~1.4–1.8 at every tolerance — and B invents hits that never
+happened about eight times as often (87 vs 11). But the effect is modest,
+nothing like the 80x of the circular metric, and **20 games barely show it**:
+each half alone is borderline at ±5% (games 1–20: OR 1.55, 95% CI 0.99–2.42,
+p=0.054; games 21–40: OR 1.54, 1.00–2.37, p=0.039); the earlier code gave OR
+1.47 and 1.41 on the same halves, and an even earlier run OR 1.86. Run-to-run LLM variance
 is large relative to the effect, so report pooled results over distinct
 games with their intervals, never a single run's point estimate. B is far
 from the 12.6% the circular metric gave it: the raw log already shows every
@@ -1069,15 +1069,15 @@ verdict by projection (old, ±3pp) → verdict by log (new, ±2pp ±5%):
 
 | old \ new | correct | incorrect | not in log |
 |---|---|---|---|
-| **correct** | 155 | **66** | 11 |
-| **incorrect** | **73** | 83 | 7 |
-| unverifiable | 1 | 4 | 0 |
+| **correct** | 162 | **64** | 8 |
+| **incorrect** | **87** | 93 | 3 |
+| unverifiable | 2 | 2 | 0 |
 
-77 of the 232 claims the old method called correct (33%) were wrong or about
-hits that never happened; 73 of the 163 it called incorrect (45%) were in
+72 of the 234 claims the old method called correct (31%) were wrong or about
+hits that never happened; 87 of the 183 it called incorrect (48%) were in
 fact right — typically the model reporting the real damage it read in the
-log instead of the projection. The old criterion agreed with reality on 238
-of 382 judged claims (62%).
+log instead of the projection. The old criterion agreed with reality on 255
+of 417 judged claims (61%).
 
 **What this changes.** The explanation should present projected damage as a
 baseline under assumed sets and prefer the observed damage for what
