@@ -91,6 +91,7 @@ class RosterHandlers(HandlerGroup):
             hp, condition = parse_hp(parts[4])
             if hp is not None:
                 combatants.hp[(player, key)] = hp
+                combatants.hp_raw[(player, key)] = parts[4].strip()
             if condition in STATUS_NAMES:
                 combatants.status[(player, key)] = condition
         timeline.current_move = None

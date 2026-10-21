@@ -441,4 +441,4 @@ function speciesNames(genNum) {
   return Array.from(Generations.get(genNum).species, (s) => s.name);
 }
 
-module.exports = { calcDamage, compareSpeed, formeResolves, moveInfo, speciesNames };
+module.exports = { calcDamage, compareSpeed, formeResolves, moveInfo, speciesNames, buildPokemon, rulesFor };

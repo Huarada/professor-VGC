@@ -27,6 +27,9 @@ from src.domain.models import (
 )
 from src.domain.regulation import RegulationRoster
 from src.domain.series import Bo3AnalysisRequest, Bo3AnalysisResult
+from src.domain.bo3_inference.models import (
+    DamageSupport, MoveSupport, ProjectionRequest, RuleProfile, TeamSheet,
+)
 
 
 @runtime_checkable
@@ -279,6 +282,28 @@ class Bo3AnalysisPipeline(Protocol):
 
     def analyze(self, request: Bo3AnalysisRequest) -> Bo3AnalysisResult:
         """Review independent games and synthesize their deterministic series evidence."""
+        ...
+
+
+@runtime_checkable
+class TeamSheetParser(Protocol):
+    """Parse declarations without filling hidden set information."""
+
+    def parse(self, payload: dict[str, Any] | str | None) -> TeamSheet:
+        ...
+
+
+@runtime_checkable
+class CandidateProjectionPort(Protocol):
+    """Additional Champions support semantics; BO1's calc contract stays stable."""
+
+    def rules(self) -> RuleProfile:
+        ...
+
+    def move_support(self, move: str) -> MoveSupport:
+        ...
+
+    def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
         ...
 
 

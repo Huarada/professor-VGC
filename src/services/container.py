@@ -5,6 +5,9 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
+from src.adapters.calc.candidate_projection import SmogonCandidateProjectionAdapter
+from src.adapters.node_ipc import NodeIpcClient
+from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
 from src.adapters.chaos.chaos_repository import (
     ChaosRepositoryLike,
@@ -57,6 +60,7 @@ from src.services.regulation_guard import RegulationGuard
 from src.services.selection_service import LLMSelectionService
 from src.services.series_analysis import Bo3AnalysisService, prepare_series
 from src.services.usage_quota import UsageQuotaService
+from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
 
 if TYPE_CHECKING:
     # langchain_core / google-adk stay lazy: the native path works without them.
@@ -72,6 +76,7 @@ class Container:
 
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or load_settings()
+        self._candidate_projection: SmogonCandidateProjectionAdapter | None = None
         self._memory: ConversationMemory | None = None
         self._calc: SmogonCalcAdapter | None = None
         self._dex: SmogonDexAdapter | None = None
@@ -344,8 +349,19 @@ class Container:
 
     def validate_series(self, request: Bo3AnalysisRequest, regulation: str | None = None) -> Bo3Evidence:
         """Validate the entire ordered series before consuming quota or calling an LLM."""
-        evidence, _ = prepare_series(ShowdownReplayParser(), request, self.regulation(regulation))
+        evidence, games = prepare_series(ShowdownReplayParser(), request, self.regulation(regulation))
+        if request.inference_options.enabled:
+            self.bo3_inference().validate(request, evidence, games)
         return evidence
+
+    def bo3_inference(self) -> Bo3InferenceCoordinator:
+        """The separate deterministic inference stage; never wired into BO1."""
+        if self._candidate_projection is None:
+            self._candidate_projection = SmogonCandidateProjectionAdapter(ipc=NodeIpcClient(
+                server_script=self._settings.calc_server_script, node_binary=self._settings.node_binary,
+                timeout_seconds=self._settings.calc_timeout_seconds,
+            ))
+        return Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=self._candidate_projection)
 
     def build_bo3_pipeline(
         self, provider: str | None = None, orchestrator: str | None = None,
@@ -359,6 +375,7 @@ class Container:
             regulation_catalog=self.chaos(strict=self.regulation(regulation) is not None),
             guard=RegulationGuard(self.calc_engine()),
             memory=self.memory(),
+            inference=self.bo3_inference(),
         )
 
     def usage_quota(self) -> UsageQuotaService:
@@ -436,6 +453,9 @@ class Container:
 
     def shutdown(self) -> None:
         """Release long-lived resources (Node subprocesses, Firestore gRPC channel)."""
+        if self._candidate_projection is not None:
+            self._candidate_projection.close()
+            self._candidate_projection = None
         if self._calc is not None:
             self._calc.close()
             self._calc = None

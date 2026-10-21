@@ -25,6 +25,21 @@ def _read(text: str) -> ParseState:
         parts = line.split("|")
         if len(parts) < 2:
             continue
+        if parts[1] in {"-setboost", "-swapboost", "-invertboost", "-clearboost", "-clearallboost",
+                        "-clearpositiveboost", "-clearnegativeboost", "-endability", "-transform"}:
+            state.inference_exclusions.add(f"Unmodeled runtime state: {parts[1]}")
+        if parts[1] in {"-start", "-end"} and len(parts) > 3:
+            state.inference_exclusions.add(f"Unmodeled volatile effect: {parts[3]}")
+        if parts[1] == "-ability" and any("[from]" in part for part in parts[4:]):
+            state.inference_exclusions.add("Copied or changed ability needs initial-set attribution")
+        if parts[1] == "-singleturn" and len(parts) > 3 and "helping hand" not in parts[3].lower():
+            state.inference_exclusions.add(f"Unmodeled turn effect: {parts[3]}")
+        if parts[1] in {"-sidestart", "-fieldstart"} and len(parts) > 3:
+            known = {"tailwind", "reflect", "lightscreen", "auroraveil", "trickroom", "gravity",
+                     "magicroom", "wonderroom", "electricterrain", "grassyterrain", "psychicterrain", "mistyterrain"}
+            name = parts[3].replace("move:", "").strip().lower().replace(" ", "")
+            if name not in known:
+                state.inference_exclusions.add(f"Unmodeled field effect: {parts[3]}")
         state.reveal_ability_from(parts)
         handler = handlers.get(parts[1])
         if handler is not None:

@@ -4244,3 +4244,93 @@ claiming updated accuracy.
 stage, `services/{series_analysis,container}.py`, agent tools/prompts, Smogon and
 calc adapters, Node calc/dex workers, UI mode/results/stepper, sample replay and
 regression tests. Raw `data/chaos` dumps are unchanged.
+
+
+---
+
+## ADR-044 ? BO3-only joint stat-point and nature inference
+
+**Status:** Accepted (direct-damage core). **Date:** 2026-10-21.
+
+### Context
+
+ADR-043 isolated BO3 review but did not constrain hidden investment. Damage couples
+attacker and defender hypotheses; solving only the defender against a Chaos guess
+would turn a prior into a fact. Champions uses fixed IVs and native stat points.
+The approved architecture and semantic methodology live in `docs/bo3-inference`.
+
+### Decision
+
+Add a supporting context invoked only by the BO3 service. Domain candidate families
+preserve unmeasured legal completions and equivalent natures. Application search
+joins eligible damage constraints across all involved Pokemon. Marginal ranges
+are presentation summaries, never recombined into invented joint solutions.
+
+Optional strict JSON sheets carry field source, visibility and availability.
+Conflicting registrations fail before model calls. Explicit registered-team
+continuity carries earlier joint constraints and original revealed traits, never
+HP, boosts, weather, consumption or Mega ability state. Future/private revelations
+cannot fill earlier unknowns. Without continuity, candidate spaces reset each game.
+
+`CandidateProjectionPort` provides versioned rules and integer damage support via
+an additive Node command over the existing Champions engine. The adapter alone
+converts native points to legacy transport (*8). IVs are fixed at 31, per-stat
+points capped at 32 and total budget at 66. See primary rule sources in the
+methodology guide. No foreign-generation fallback is permitted; Mega Evolution
+remains the only allowed special transformation.
+
+Public HP uses integer witnesses compatible with rounding and candidate maximum
+HP; exact mode requires actual HP denominators. KO damage is censored. Assignment,
+projection, time and LRU cache bounds yield explicit bounded coverage. Partial or
+unsupported search cannot prove uniqueness or eliminate unresolved regions.
+Previously sound bounds survive budget exhaustion. Conflicts remain recorded with
+last valid ranges. Historical projections declare sampled or exhaustive support.
+
+Compact Dex metadata omits dynamic callbacks, so eligibility uses an explicit
+constant-power direct-move allowlist, independently of the engine damage formula.
+Unknown items/abilities and unmodeled state are exclusions. Speed, critical hits,
+multi-hit inference, prior ranking and persistent sessions remain deferred.
+
+### Alternatives considered
+
+- Solving against most-used Chaos spreads: rejected because hidden attacker and
+  defender hypotheses are correlated.
+- Reusing BO1 percentage projections: insufficient integer support/max-HP semantics.
+- Enumerating every full spread: replaced by lazy relevant-axis families with
+  explicit legal completions and exhaustive/bounded coverage.
+
+### Consequences and validation
+
+All backends receive shared typed BO3 evidence. BO1 wiring and calculation
+contracts stay independent. Incomplete information can leave results uninformative;
+compatible ranges do not necessarily identify an exact spread. No probabilities,
+held-out real-game accuracy or paid explanation benchmark are claimed.
+
+Tests cover independent planted constraints, real-engine hidden-profile retention,
+joint relationships, legal completions, exact/public HP, p1/p2 swaps, private/future
+knowledge, runtime resets, registered continuity, contradictions, engine failure,
+resource exhaustion, shared-series prompt isolation and existing BO1/backend parity.
+
+### Files touched
+
+`domain/bo3_inference`, `services/bo3_inference`, domain ports/series DTOs, teamsheet
+and candidate-calc adapters, additive parser observation fields, candidate worker
+commands, composition root, BO3 service/UI, prompts, documentation and tests.
+
+
+### ADR-044 follow-up ? reproducible validation benches
+
+Add `scripts/bo3_inference_benchmark` as offline evaluation tooling, without hooks
+into production inference. A 17-case analytic oracle enumerates every attack /
+defense pair independently of candidate generation and compares counts, extrema,
+examples and uniqueness. A frozen 26-series corpus covers physical/special damage,
+three hidden profiles, exact/rounded HP, low/middle/high rolls, side and nickname
+invariance, and two resource-exhaustion controls. Evaluation truth remains separate
+from submitted sheets. Per-case judgments, corpus hash, engine/rule versions,
+latency and projection counts are archived under `docs/bo3-inference/validation`.
+
+CI runs the corpus on Python 3.12 and fails on bad judgments or missing engine
+infrastructure. Synthetic engine-generated observations demonstrate consistency,
+not held-out accuracy. Marginal retention and truth-support probes are reported
+separately; neither claims visibility into the solver's entire joint relation.
+No independent recorded-game corpus or paid explanation benchmark is claimed.

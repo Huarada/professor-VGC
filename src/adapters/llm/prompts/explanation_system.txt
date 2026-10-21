@@ -367,3 +367,7 @@ When series_context is present, this is one game within a BO3 review. Use only
 known_before as prior scouting information. Never merge it into this game's
 observed moves, HP, items, field conditions, damage, or outcome. It does not
 prove the players knew hidden facts. Number all references to other games.
+If series_context.set_inference is present, before_game is decision-time knowledge;
+after_game is retrospective. Respect its perspective, search coverage and conflicts.
+Champions IVs are fixed, never inferred. Describe investment as native stat points.
+Never turn an example family or bounded search into an exact spread or probability.

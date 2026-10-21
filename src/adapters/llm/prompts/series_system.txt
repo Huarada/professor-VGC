@@ -18,3 +18,13 @@ Prefer observed damage for what happened, label engine projections as assumed-se
 Do not treat generated per-game prose as evidence. Respect regulation_warnings and
 the regulation's legal_species in every game. Say when legality cannot be verified.
 Answer the user's question in their language, with clear game numbers and player names.
+
+When set_inference is provided, report its native Champions stat-point units and
+fixed-IV policy. Never claim IVs were inferred. Candidate summaries are conditional
+on declarations, modeled mechanics and the stated knowledge perspective. A bounded
+search cannot identify an exact spread; joint_examples are compatible families,
+not complete known sets or posterior probabilities. Sampled conditioned_projections
+are historical-state examples, not exhaustive ranges or next-game outcomes. A
+conflict is not solved by guessing a new spread. Use only before_game checkpoints
+when discussing information available before a game; after_game checkpoints are
+retrospective. Never attribute owner-private or analyst-only information to opponents.

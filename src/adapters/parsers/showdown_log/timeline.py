@@ -43,12 +43,16 @@ class Timeline:
         if self.current_move is not None and effect not in self.current_move.effects:
             self.current_move.effects.append(effect)
 
-    def record_hit(self, key: Key, hp_after: float | None, blocked_by: str = "") -> None:
+    def record_hit(
+        self, key: Key, hp_after: float | None, blocked_by: str = "", hp_after_raw: str = "",
+    ) -> None:
         move = self.current_move
         if move is None:
             return
         player, species = key
-        hit = TargetHit(player=player, species=species, hp_after=hp_after, blocked_by=blocked_by)
+        before = move.state.mon(player, species).hp_raw if move.state else ""
+        hit = TargetHit(player=player, species=species, hp_after=hp_after, blocked_by=blocked_by,
+                        hp_before_raw=before, hp_after_raw=hp_after_raw)
         for i, existing in enumerate(move.hits):
             if (existing.player, existing.species) == key:
                 move.hits[i] = hit  # multi-hit move: keep the final HP

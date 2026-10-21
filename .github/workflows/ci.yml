@@ -61,6 +61,10 @@ jobs:
       - name: pytest
         run: pytest -q
 
+      - name: BO3 inference testbench (offline, no model calls)
+        if: matrix.python-version == '3.12'
+        run: python -m scripts.bo3_inference_benchmark.run --out /tmp/bo3-inference-validation.json
+
   lint:
     name: lint (ruff + dead code)
     runs-on: ubuntu-latest
