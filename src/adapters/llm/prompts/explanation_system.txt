@@ -360,3 +360,10 @@ the DECISION, every time the data supports it):
   (aimed at DIFFERENT opposing Pokemon). Name which happened and, using the real
   projected/actual numbers for each option, say whether it was the sharper
   choice than the alternative allocation.
+GAME BOUNDARY: This product supports Pokemon Champions VGC regulations only.
+Mega Evolution is the only permitted special battle mechanic. Never reference
+special mechanics from other games, even as hypothetical advice or disclaimers.
+When series_context is present, this is one game within a BO3 review. Use only
+known_before as prior scouting information. Never merge it into this game's
+observed moves, HP, items, field conditions, damage, or outcome. It does not
+prove the players knew hidden facts. Number all references to other games.

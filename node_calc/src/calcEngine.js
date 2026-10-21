@@ -60,7 +60,7 @@ const NO_ITEM = new Set(['', 'nothing', 'none', 'noitem']);
 const NO_ABILITY = new Set(['', 'none', 'noability']);
 // A Mega / Primal has exactly one ability of its own, whatever the base form
 // had (revealed in the log or back-filled from usage data).
-const FIXED_ABILITY_FORME = /-(Mega|Primal)\b/;
+const FIXED_ABILITY_FORME = /-Mega\b/;
 
 // Moves @smogon/calc cannot project, which it reports as "0% (immune)".
 // Reaction moves deal damage from what the user took (Counter, Mirror Coat,
@@ -123,14 +123,24 @@ function disguiseResult(attacker, defender, move) {
 // per stat, one point = one stat point at level 50. The Python side keeps every
 // spread in the EV scale (usage data's stat points x 8), so convert back here.
 const CHAMPIONS_GEN = 0;
-const SV_GEN = 9;
+const MOVE_METADATA_GEN = 9;
 const EVS_PER_STAT_POINT = 8;
 const MAX_STAT_POINTS = 32;
 
-// The rules one calc runs under. A Pokemon or move missing from the Champions
-// data (a regulation newer than this @smogon/calc) falls back to Scarlet/Violet
-// rules for that calc, and says so, rather than failing it.
+// Missing Champions support is an explicit limitation, never another game's rules.
 function rulesFor(genNum, specs, moveName) {
+  for (const spec of specs.filter(Boolean)) {
+    if (spec.teraType || spec.tera_type || spec.isDynamaxed || spec.dynamax || spec.gigantamax
+        || spec.isGigantamax || spec.useZ || spec.zMove || spec.useMax
+        || spec.ultraBurst || /-(?:Primal|Gmax|Ultra)\b/i.test(spec.battleForme || spec.species || '')
+        || Dex.items.get(spec.item || '').zMove) {
+      throw new Error('Only Mega Evolution is supported in Pokemon Champions');
+    }
+  }
+  const move = Dex.moves.get(moveName || '');
+  if (move.isZ || move.isMax || ['terablast', 'terastarstorm', 'dynamaxcannon'].includes(toID(moveName))) {
+    throw new Error('Unsupported battle mechanic');
+  }
   if (genNum !== CHAMPIONS_GEN) return { gen: Generations.get(genNum), note: '' };
   const champions = Generations.get(CHAMPIONS_GEN);
   const missing = specs
@@ -138,10 +148,7 @@ function rulesFor(genNum, specs, moveName) {
     .map((spec) => spec.species);
   if (moveName && !champions.moves.get(toID(moveName))) missing.push(moveName);
   if (!missing.length) return { gen: champions, note: '' };
-  return {
-    gen: Generations.get(SV_GEN),
-    note: ` [Scarlet/Violet rules: ${missing.join(', ')} not in the Pokemon Champions data]`,
-  };
+  throw new Error(`Not supported by the Pokemon Champions engine: ${missing.join(', ')}`);
 }
 
 function toStatPoints(evs) {
@@ -202,7 +209,6 @@ function buildPokemon(gen, spec) {
   if (!NO_ABILITY.has(toID(spec.ability))) options.ability = canonicalName(gen.abilities, spec.ability);
   if (!NO_ITEM.has(toID(spec.item))) options.item = canonicalName(gen.items, spec.item);
   if (spec.nature) options.nature = canonicalName(gen.natures, spec.nature);
-  if (spec.teraType) options.teraType = spec.teraType;
   if (spec.evs) options.evs = gen.num === CHAMPIONS_GEN ? toStatPoints(spec.evs) : spec.evs;
   if (spec.ivs) options.ivs = spec.ivs;
   if (spec.status) options.status = spec.status;
@@ -416,7 +422,7 @@ function moveInfo(genNum, name) {
   }
   const move = new Move(gen, name);
   // @pkmn/dex has no Champions generation; move effects are Scarlet/Violet's.
-  const dexMove = Dex.forGen(genNum === CHAMPIONS_GEN ? SV_GEN : genNum).moves.get(name);
+  const dexMove = Dex.forGen(genNum === CHAMPIONS_GEN ? MOVE_METADATA_GEN : genNum).moves.get(name);
   const hasDex = !!(dexMove && dexMove.exists);
   return {
     name: move.name,

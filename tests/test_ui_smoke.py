@@ -84,6 +84,44 @@ def test_idle_page_renders():
     assert [b.label for b in at.button] == ["Analyze", "Reset conversation"]
 
 
+def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch):
+    from src.domain.series import Bo3AnalysisRequest
+    from src.services.series_analysis import Bo3AnalysisService
+    from tests.test_bo3_analysis import game
+
+    class SeriesContainer(_FakeContainer):
+        def validate_series(self, request: Bo3AnalysisRequest, regulation=None):
+            return Container(self.settings).validate_series(request, regulation)
+
+        def build_bo3_pipeline(self, provider=None, orchestrator=None, regulation=None):
+            return Bo3AnalysisService(
+                parser=ShowdownReplayParser(), pipeline_factory=self.build_pipeline,
+                llm=FakeLLM("{}", "Alice won the series 2-0."), prompts=PROMPTS,
+            )
+
+    monkeypatch.setattr("src.ui.battle_panel.http_head_ok", lambda url, timeout=2.0: False)
+    at = AppTest.from_file(_APP, default_timeout=120)
+    container = SeriesContainer()
+    at.session_state["container"] = container
+    at.run()
+    at.text_area[0].input(_LOG_ATTACKED)
+    at.button[0].click().run()
+    assert not at.exception
+    original = at.session_state["last_result"]
+    at.radio[0].set_value("Best of three").run()
+    assert len(at.text_area) == 3
+    at.text_area[0].input(game())
+    at.text_area[1].input(game(move="Protect"))
+    next(button for button in at.button if button.label == "Analyze BO3").click().run()
+    assert not at.exception
+    assert at.session_state["bo3_result"].evidence.score == {"Alice": 2, "Bob": 0}
+    assert at.session_state["last_result"] == original
+    assert any(slider.key.startswith("bo3_game_") for slider in at.slider)
+    at.radio[0].set_value("Best of one").run()
+    assert not at.exception
+    assert at.session_state["last_result"] == original
+
+
 def test_analysis_flow_renders_answer_and_decision_review(monkeypatch):
     monkeypatch.setattr("src.ui.battle_panel.http_head_ok", lambda url, timeout=2.0: False)
     at = AppTest.from_file(_APP, default_timeout=120)

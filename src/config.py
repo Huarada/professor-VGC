@@ -61,8 +61,8 @@ class Settings(BaseSettings):
     # --- Node / calc engine -------------------------------------------- #
     node_binary: str = "node"
     calc_gen: int = 9
-    """Calc rules for non-Champions formats; Pokemon Champions formats always use
-    Champions' own rules (@smogon/calc generation 0, see ``calc_generation``)."""
+    """Legacy dex generation for Smogon knowledge/species metadata. Application
+    damage and speed always use Champions' own rules (calc generation 0)."""
     calc_timeout_seconds: float = 20.0
 
     # --- Official Smogon data via @pkmn/smogon (needs network) ----------- #

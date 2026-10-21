@@ -236,6 +236,32 @@ streamlit run src/ui/app.py
 Paste a Showdown replay URL, its JSON, or the raw battle log, and ask a
 question. Gemini models must be 3.5 or newer (enforced at startup).
 
+## Pokemon Champions and best-of-three review
+
+The application supports **Pokemon Champions VGC regulations only**. Mega Evolution
+is the only supported special battle mechanic. Replays and questions using other
+games' mechanics are refused before model calls; foreign strategy fields are
+filtered and generated explanations are checked before display. Missing Champions
+engine support is reported as unavailable, never calculated with another game's rules.
+
+Choose **Best of one** (the existing independent-battle flow) or **Best of three**
+in the sidebar. For BO3, supply one to three replay URLs, JSONs or logs in game
+order. All games must identify the same regulation and the same two players.
+Player names track identity even when p1/p2 swap. Declared team previews must
+stay consistent; leads and the Pokemon brought may change.
+
+Each game is analyzed independently through the selected ADK, LangChain or native
+backend. Only prior games' observed reveals become scouting context; HP, weather,
+stat stages, damage and actions never carry between games. The series summary
+uses typed evidence, not generated per-game prose. It reports the actual score,
+lead changes and observed adjustments. Two wins end the series; missing games or
+an unfinished last game remain explicitly incomplete. Duplicate games, gaps in
+the UI inputs, changed players/regulations and games after two wins are refused.
+
+A BO3 submission uses one daily analysis slot, with per-game model calls plus a
+series synthesis. Use `Container.validate_series` before quota consumption and
+`Container.build_bo3_pipeline(...).analyze(Bo3AnalysisRequest(...))` from code.
+
 ## Regulation controller
 
 Pick which regulation an analysis uses — in the sidebar, or with

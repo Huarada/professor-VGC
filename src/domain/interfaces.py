@@ -26,6 +26,7 @@ from src.domain.models import (
     SpeedComparison,
 )
 from src.domain.regulation import RegulationRoster
+from src.domain.series import Bo3AnalysisRequest, Bo3AnalysisResult
 
 
 @runtime_checkable
@@ -269,6 +270,15 @@ class AnalysisPipeline(Protocol):
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         """Run one full analysis turn and return the UI DTO."""
+        ...
+
+
+@runtime_checkable
+class Bo3AnalysisPipeline(Protocol):
+    """Ordered series use case; deliberately separate from the BO1 contract."""
+
+    def analyze(self, request: Bo3AnalysisRequest) -> Bo3AnalysisResult:
+        """Review independent games and synthesize their deterministic series evidence."""
         ...
 
 

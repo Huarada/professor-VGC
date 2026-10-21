@@ -10,6 +10,7 @@ from typing import Any
 
 from src.adapters.node_ipc import NodeIpcClient
 from src.adapters.smogon.archetype_signals import infer_archetypes
+from src.domain.champions import clean_champions_knowledge
 from src.domain.exceptions import CalcEngineError, StrategyKnowledgeError
 from src.domain.models import PokemonMetaSummary, SmogonStrategy
 
@@ -62,7 +63,7 @@ class SmogonDexAdapter:
             raise StrategyKnowledgeError(
                 f"Smogon dex '{cmd}' unavailable for {name}: {response.get('error')}"
             )
-        return response.get("result")
+        return clean_champions_knowledge(response.get("result"))
 
     # -- StrategyKnowledgeProvider -------------------------------------- #
 

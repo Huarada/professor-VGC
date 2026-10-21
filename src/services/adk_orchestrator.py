@@ -36,6 +36,7 @@ from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
     build_result,
+    load_champions_history,
     remember_turn,
 )
 from src.services.selection_logic import (
@@ -262,7 +263,7 @@ class AdkAnalysisOrchestrator:
             ) from exc
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
-        history = self._memory.load(request.session_id)
+        history = load_champions_history(self._memory, request.session_id)
         game_state = self._evidence.prepare(self._parser, request)
         selection = self._select(request, game_state, history)
         evidence = self._evidence.assemble(

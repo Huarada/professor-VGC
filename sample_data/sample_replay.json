@@ -8,7 +8,7 @@
       "team": [
         {
           "species": "Garchomp", "level": 50, "ability": "Rough Skin", "item": "Life Orb",
-          "nature": "Jolly", "tera_type": "Steel",
+          "nature": "Jolly",
           "moves": ["Earthquake", "Dragon Claw", "Rock Slide", "Protect"],
           "evs": { "hp": 4, "atk": 252, "spe": 252 }
         },

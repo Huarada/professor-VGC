@@ -13,7 +13,9 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from src.domain.champions import validate_champions_input
 
 
 class Archetype(str, Enum):
@@ -62,7 +64,6 @@ class PokemonSet(BaseModel):
     level: int = 50
     ability: str | None = None
     item: str | None = None
-    tera_type: str | None = None
     nature: str | None = None
     status: str | None = None  # e.g. "par", "brn", "slp" (affects speed/damage)
     moves: list[str] = Field(default_factory=list)
@@ -74,6 +75,12 @@ class PokemonSet(BaseModel):
     boosts: dict[str, int] = Field(default_factory=dict)
     """Stat stages (-6..+6) at the moment this copy represents; built fresh
     per turn, reset on switch-out, never mutated on the shared set."""
+
+    @model_validator(mode="before")
+    @classmethod
+    def _champions_mechanics(cls, value: Any) -> Any:
+        validate_champions_input(value)
+        return value
 
     @field_validator("species")
     @classmethod
@@ -285,7 +292,7 @@ class FieldConditions(BaseModel):
 class GameState(BaseModel):
     """Typed snapshot of a replay: the Pokemon involved and, with a log, the result."""
 
-    format_id: str = "gen9vgc2025"
+    format_id: str = "gen9championsvgc"
     turn: int = 0
     rating: int | None = None
     sides: list[SideState] = Field(default_factory=list)
@@ -515,6 +522,8 @@ class AnalysisRequest(BaseModel):
     replay_raw_text: str | None = None
     question: str = ""
     provider: str = "openai"
+    series_context: dict[str, Any] | None = None
+    """Prior-game facts supplied by the BO3 use case; never merged into this game's state."""
 
 
 class SelectionPlan(BaseModel):
@@ -706,6 +715,7 @@ class AnalysisEvidence(BaseModel):
     recurring_concepts: list[dict[str, str]] = Field(default_factory=list)
     battle_result: str = ""
     regulation: RegulationInfo | None = None
+    series_context: dict[str, Any] | None = None
 
 
 class AnalysisResult(BaseModel):

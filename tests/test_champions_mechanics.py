@@ -115,17 +115,14 @@ def test_spreads_become_stat_points(real_calc):
     assert full.max_percent > bare.max_percent
 
 
-def test_a_pokemon_missing_from_the_champions_data_falls_back_and_says_so(real_calc):
+def test_a_pokemon_missing_from_champions_never_falls_back_to_another_game(real_calc):
     chomp = PokemonSet(species="Garchomp")
-    result = _damage(real_calc, 0, chomp, PokemonSet(species="Amoonguss"), "Dragon Claw")
-    assert result.max_percent > 0
-    assert result.description.endswith(
-        "[Scarlet/Violet rules: Amoonguss not in the Pokemon Champions data]"
-    )
-    speed = real_calc.compare_speed(CalcRequest(
-        gen=0, attacker=chomp, defender=PokemonSet(species="Amoonguss"), move="Dragon Claw"
-    ))
-    assert speed.faster == "Garchomp"
+    with pytest.raises(CalcEngineError, match="Pokemon Champions engine"):
+        _damage(real_calc, 0, chomp, PokemonSet(species="Amoonguss"), "Dragon Claw")
+    with pytest.raises(CalcEngineError, match="Pokemon Champions engine"):
+        real_calc.compare_speed(CalcRequest(
+            gen=0, attacker=chomp, defender=PokemonSet(species="Amoonguss"), move="Dragon Claw"
+        ))
 
 
 def test_move_data_under_champions_rules(real_calc):
