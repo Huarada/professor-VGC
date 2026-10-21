@@ -26,7 +26,7 @@ firestore = ["google-cloud-firestore>=2.16,<3"]
 # `pip install -r requirements.txt` already provides — no test should ever
 # fail (as opposed to skip) purely because of which of these two documented
 # install paths someone used.
-dev = ["pytest>=8.0,<10", "mypy==2.3.0", "professorvgc[openai,gemini]"]
+dev = ["pytest>=8.0,<10", "mypy==2.4.0", "professorvgc[openai,gemini]"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
