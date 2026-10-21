@@ -262,6 +262,19 @@ A BO3 submission uses one daily analysis slot, with per-game model calls plus a
 series synthesis. Use `Container.validate_series` before quota consumption and
 `Container.build_bo3_pipeline(...).analyze(Bo3AnalysisRequest(...))` from code.
 
+BO3 includes deterministic **stat-point and nature inference** from an optional
+JSON teamsheet and eligible observed damage. In the BO3 form, expand the inference
+settings, paste the sheet, choose perspective and HP mode, and submit games in
+order. IVs are fixed at 31 and are not inferred. Native investment uses 0-32
+points per stat and at most 66 total; legacy EV-scale values are rejected.
+
+Results expose chronological checkpoints, compatible ranges, natures, provenance,
+coverage and unsupported observations. Cross-game constraints require
+`registered_team: true`; otherwise candidates reset each game. Partial searches
+never establish a unique spread. BO1 remains independent. See the
+[methodology and usage guide](docs/bo3-inference/README.md) and
+[example teamsheet](docs/bo3-inference/example-teamsheet.json).
+
 ## Regulation controller
 
 Pick which regulation an analysis uses — in the sidebar, or with

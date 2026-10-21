@@ -1,0 +1,200 @@
+schema: professorvgc.bo3_set_inference.design.v1
+status: implemented_direct_damage_core
+deferred: [speed_constraints, critical_hits, multi_hit_inference, prior_ranking, held_out_evaluation]
+language: en
+
+bounded_context:
+  name: BO3 Set Inference
+  role: supporting_context_within_professorvgc
+  deployment: existing_application_module
+  entrypoint: explicit_bo3_use_case
+  upstream_contexts:
+    - Battle Reconstruction
+    - Damage and Speed Mechanics
+    - Metagame Intelligence
+  downstream_context: BO3 Coaching
+  bo1_contract_change: false
+
+rules:
+  game: pokemon_champions_vgc
+  calc_generation: 0
+  special_mechanics_allowlist:
+    - mega_evolution
+  iv_policy: fixed_by_installed_champions_engine_not_inferred
+  inferred_dimensions:
+    - stat_points
+    - nature
+  legacy_evs_representation: adapter_transport_only
+  legality_source: versioned_champions_rule_profile
+  unknown_budget_or_cap_policy: refuse_candidate_generation_until_verified
+  cross_game_rules_fallback: forbidden
+  cross_game_set_continuity: verified_rules_or_registered_team_declaration_required
+  unverified_continuity: keep_per_game_candidate_spaces_separate_and_report_limitation
+
+authorities:
+  declared: validated_field_with_provenance_and_availability
+  observed: ordered_replay_fact
+  calculated: supported_champions_engine_projection
+  prior: ranking_only_not_a_fact
+  generated: explanation_only_not_evidence
+
+identity:
+  key:
+    - series_id
+    - participant_id
+    - roster_slot_id
+  independent_of:
+    - p1_p2_position
+    - nickname
+    - current_mega_forme
+  unresolved_mapping: require_explicit_mapping
+
+knowledge:
+  audiences:
+    - public
+    - owner_private
+    - analyst_only
+  availability_key:
+    - game_number
+    - event_index
+  checkpoint_kinds:
+    - before_game
+    - before_event
+    - after_event
+    - after_game
+    - retrospective_series
+  immutable_checkpoints: true
+  retroactive_rewrite_of_decision_checkpoint: forbidden
+  teamsheet_missing_fields: unknown
+  teamsheet_private_fields: never_assumed_from_sheet_type
+
+aggregate:
+  root: SeriesInferenceSession
+  owns:
+    - declared_base_sets
+    - evidence_ledger
+    - legal_candidate_space
+    - joint_candidate_relations
+    - immutable_checkpoints
+    - conflict_records
+    - search_coverage
+    - engine_and_rule_versions
+  carries_between_games:
+    - compatible_base_set_hypotheses
+    - applicable_declared_facts
+    - earlier_observation_constraints
+  resets_between_games:
+    - hp
+    - status
+    - stat_stages
+    - field_conditions
+    - current_held_item
+    - current_ability_override
+    - current_mega_state
+
+contracts:
+  DeclaredField:
+    required: [pokemon_id, field_name, value, source_id, audience, available_at]
+  CandidateProfile:
+    required: [pokemon_id, stat_points, nature, initial_item, initial_ability]
+    unknown_initial_item_or_ability: branch_or_keep_unresolved
+  BattleObservation:
+    required:
+      - observation_id
+      - game_number
+      - event_index
+      - participants
+      - measurement_kind
+      - measured_hp_transition_or_order
+      - raw_measurement_tokens_and_precision
+      - runtime_state
+      - provenance
+    measurement_kinds: [exact_hp, rounded_percent_hp, censored_ko, eligible_speed_order]
+  CandidateCalcRequest:
+    required: [joint_assignment, observation_id, runtime_state, rule_version]
+  DamageSupport:
+    required:
+      - supported
+      - unsupported_reason
+      - maximum_hp_by_pokemon
+      - uncapped_integer_damage_support
+      - roll_semantics
+      - engine_version
+      - rule_version
+    roll_semantics: [single_hit, total_multihit, unsupported]
+    legacy_flattened_multihit_rolls: not_accepted_as_total_damage
+  InferenceCheckpoint:
+    required:
+      - checkpoint_id
+      - knowledge_cutoff
+      - audience
+      - candidate_relation_reference
+      - outcome
+      - coverage
+      - supporting_observation_ids
+      - unsupported_observation_ids
+      - conflict_ids
+  Bo3InferenceEvidence:
+    required: [series_id, checkpoints, candidate_summaries, conditioned_projections, limitations]
+
+solver:
+  constraint_scope: joint_attacker_and_defender_assignments
+  update_rule: retain_assignments_with_a_supported_witness_compatible_with_observation
+  damage_match: integer_support_and_candidate_dependent_hp_rounding
+  ko_match: lower_bound_with_explicit_survival_and_residual_effects
+  speed_match: only_when_priority_modifiers_ties_and_procs_are_accounted_for
+  unsupported_projection: retain_as_unresolved_not_disproven
+  unsearched_assignment: retain_as_unresolved_not_disproven
+  marginals: preserve_joint_relations_do_not_recombine_as_cartesian_product
+  empty_support: conflict_only_when_no_unresolved_assignment_can_explain_evidence
+  conflict_policy: retain_evidence_and_last_valid_checkpoint_do_not_silently_widen
+  conflict_resolution: explicit_input_or_rule_revision_required
+  equivalent_effective_stats: retain_original_profile_membership
+  candidate_search: lazy_legal_space_with_explicit_budget
+  prior_policy: optional_ordering_and_ranking_without_exclusion
+  confidence_policy: no_probabilities_without_validated_likelihood_and_calibration
+  outcomes: [not_informative, ambiguous, identified_within_model, conflict]
+  coverage: [exhaustive, bounded, unsupported]
+  bounded_search_can_claim_identification: false
+  cache_key_includes: [engine_version, rule_version, full_assignment, full_runtime_state]
+
+ports:
+  location: src/domain/interfaces.py
+  implemented:
+    - TeamSheetParser
+    - CandidateProjectionPort
+  rule_catalog: CandidateProjectionPort.rules
+  deferred: [CandidatePriorProvider]
+  optional_ports: [CandidatePriorProvider]
+  existing_bo1_calc_contract: preserved
+  persistence: request_scoped_initially
+
+relations:
+  - [TeamSheetAdapter, implements, TeamSheetParser]
+  - [SmogonCandidateProjectionAdapter, implements, CandidateProjectionPort]
+  - [Container, injects, Bo3InferenceCoordinator]
+  - [Bo3AnalysisService, invokes, Bo3InferenceCoordinator]
+  - [Bo3InferenceCoordinator, coordinates, SeriesInferenceSession]
+  - [JointConstraintSolver, narrows, CandidateRelation]
+  - [SeriesInferenceSession, publishes, InferenceCheckpoint]
+  - [Bo3ProjectionService, consumes, InferenceCheckpoint]
+  - [Bo3ProjectionService, produces, ConditionedProjection]
+  - [Bo3InferenceEvidence, contains, InferenceCheckpoint]
+  - [BO3Coaching, explains, Bo3InferenceEvidence]
+  - [BO1Pipeline, remains_independent_of, SeriesInferenceSession]
+
+patterns:
+  - PortsAndAdapters
+  - Specification
+  - Strategy
+  - Factory
+  - Memento
+  - Memoization
+
+delivery_stages:
+  - rules_and_teamsheets
+  - structured_engine_support
+  - joint_direct_damage_inference
+  - chronological_series_checkpoints
+  - bo3_coaching_integration
+  - extended_evidence_and_evaluation

@@ -1,0 +1,44 @@
+{
+  "registered_team": true,
+  "pokemon": [
+    {
+      "participant": "Alice",
+      "slot": 1,
+      "species": "Garchomp",
+      "ability": "Rough Skin",
+      "item": "Clear Amulet",
+      "moves": [
+        "Dragon Claw",
+        "Earthquake",
+        "Rock Slide",
+        "Protect"
+      ],
+      "source": "open_teamsheet"
+    },
+    {
+      "participant": "Bob",
+      "slot": 1,
+      "species": "Incineroar",
+      "ability": "Intimidate",
+      "item": "Sitrus Berry",
+      "source": "open_teamsheet"
+    },
+    {
+      "participant": "Alice",
+      "slot": 1,
+      "species": "Garchomp",
+      "nature": "Adamant",
+      "stat_points": {
+        "hp": 2,
+        "atk": 32,
+        "def": 0,
+        "spa": 0,
+        "spd": 0,
+        "spe": 32
+      },
+      "visibility": "owner_private",
+      "available_from_game": 1,
+      "source": "owner_export"
+    }
+  ]
+}

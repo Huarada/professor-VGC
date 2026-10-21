@@ -504,3 +504,33 @@ only after CI (pytest on 3.10/3.12, Node tests, `mypy --strict`) is green.
 Never force-push `master`, never bypass checks. Security reports go through
 `SECURITY.md`. Deployment is the `Dockerfile` (Cloud Run); there are no
 patch/bundle handoff scripts any more.
+
+
+## 14. BO3 set inference (ADR-044)
+
+Only `Bo3AnalysisService` invokes `Bo3InferenceCoordinator`; BO1 does not instantiate
+this context. Domain contracts, legal candidate families, HP compatibility and
+append-only checkpoints live in `domain/bo3_inference`. Application coordination,
+causal observations, bounded joint search and historical projections live in
+`services/bo3_inference`. Domain ports are `TeamSheetParser` and
+`CandidateProjectionPort`; only Container wires concrete adapters.
+
+- IVs are fixed at 31, not searched. Native stat points: cap 32/stat, total 66.
+  Only the calc adapter converts to legacy `evs` transport (*8).
+- Unknowns stay unknown; never fill them from Chaos. Preserve field provenance,
+  audience and availability; future species/reveals cannot enter earlier checkpoints.
+- Explicit registered-team continuity carries joint constraints and original traits,
+  never runtime state. Otherwise candidates reset each game.
+- Integer HP witnesses model public display rounding, candidate max HP, censored
+  KO damage and exact HP mode. Unsupported observations cannot reject candidates.
+- Bound assignments, engine calls, time and LRU memory. Samples cannot establish
+  uniqueness or narrow global ranges. Preserve sound prior bounds on exhaustion;
+  retain explicit conflicts and last valid ranges.
+- Eligible direct damage only initially: speed, critical and multi-hit inference
+  remain deferred. The worker owns move eligibility. LLMs explain typed evidence;
+  example families are not complete exact spreads. See `docs/bo3-inference/README.md`.
+
+- Offline inference bench: `python -m scripts.bo3_inference_benchmark.run --out PATH`.
+  CI runs the frozen corpus on Python 3.12. Inputs/results live under
+  `docs/bo3-inference/validation`; regeneration is explicit. Engine consistency,
+  independent analytic search checks and held-out game accuracy are distinct claims.
