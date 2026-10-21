@@ -21,7 +21,11 @@ from src.domain.models import AnalysisRequest
 from src.domain.replay_view_models import BattleReplay
 from src.services.container import Container
 from src.ui.audio import render_background_music
-from src.ui.battle_panel import battle_stage_html, current_turn_number, render_battle_panel
+from src.ui.battle_panel import (
+    battle_stage_html,
+    current_turn_number,
+    render_battle_panel,
+)
 from src.ui.icons import POKEBALL_ICON, icon_md
 from src.ui.landing import (
     ambient_background_html,
@@ -33,6 +37,7 @@ from src.ui.landing import (
 )
 from src.ui.loading import loading_overlay_html
 from src.ui.results import render_result
+from src.ui.series import render_series
 from src.ui.theme import inject_global_styles
 
 
@@ -142,12 +147,13 @@ def main() -> None:
     st.caption("Deterministic damage-calc + Chaos metagame stats + LLM explainability.")
 
     # Landing sections only before the first analysis.
-    is_idle = "last_replay" not in st.session_state and "last_result" not in st.session_state
+    is_idle = not any(key in st.session_state for key in ("last_replay", "last_result", "bo3_result"))
     if is_idle:
         st.markdown(hero_section_html(), unsafe_allow_html=True)
 
     with st.sidebar:
         st.header("Configuration (BYOK)")
+        battle_mode = st.radio("Analysis mode", ["Best of one", "Best of three"])
         provider = st.selectbox("LLM provider", ["gemini", "openai"], index=0)
         orchestrator = st.selectbox(
             "Orchestration", ["adk", "langchain", "native"], index=0,
@@ -184,22 +190,33 @@ def main() -> None:
             for key in (
                 "session_id", "container", "last_replay", "last_result",
                 "last_error", "turn_index",
+                "bo3_result", "bo3_replays", "bo3_error", "bo3_source_1", "bo3_source_2",
+                "bo3_source_3", "bo3_question",
             ):
                 st.session_state.pop(key, None)
+            for session_key in list(st.session_state):
+                if str(session_key).startswith("bo3_"):
+                    st.session_state.pop(session_key, None)
             st.rerun()
 
         # Optional background music (renders nothing when the folder is empty).
         render_background_music()
 
     container = _get_container()
+    if battle_mode == "Best of three":
+        render_series(container, session_id=_session_id(), provider=provider,
+                      orchestrator=orchestrator, regulation=regulation,
+                      visitor=_visitor_id(), quota_slot=quota_slot)
+        st.markdown(footer_html(), unsafe_allow_html=True)
+        return
 
     st.subheader("1 · Replay")
     replay_text = st.text_area(
         "Paste the Showdown replay JSON, raw battle log, or a replay URL",
         height=200,
         placeholder=(
-            '{"format": "gen9vgc2025", "sides": [...]}  — or raw |...| log  — or '
-            "https://play.pokemonshowdown.com/battle-gen9vgc2025regh-1234567890"
+            '{"format": "gen9championsvgc2026regmb", "sides": [...]} — or raw |...| log — or '
+            "https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-1234567890"
         ),
     )
 

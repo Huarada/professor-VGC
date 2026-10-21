@@ -102,7 +102,7 @@ class ShowdownReplayParser:
 
     def _parse_json(self, payload: dict[str, Any]) -> GameState:
         try:
-            format_id = payload.get("format") or payload.get("formatid") or "gen9vgc2025"
+            format_id = payload.get("format") or payload.get("formatid") or "gen9championsvgc"
             turn = int(payload.get("turn", 0) or 0)
             sides_payload = payload.get("sides")
             if sides_payload is None:

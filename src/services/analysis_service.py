@@ -17,11 +17,17 @@ from src.domain.interfaces import (
     PromptRepository,
     SelectionStrategy,
 )
-from src.domain.models import AnalysisEvidence, AnalysisRequest, AnalysisResult, ChatMessage
+from src.domain.models import (
+    AnalysisEvidence,
+    AnalysisRequest,
+    AnalysisResult,
+    ChatMessage,
+)
 from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
     build_result,
+    load_champions_history,
     remember_turn,
 )
 
@@ -48,7 +54,7 @@ class AnalysisService:
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         """Run one full analysis turn and return the UI DTO."""
-        history = self._memory.load(request.session_id)
+        history = load_champions_history(self._memory, request.session_id)
         game_state = self._evidence.prepare(self._parser, request)
         selection = self._selector.select(
             request=request, game_state=game_state, history=history

@@ -169,8 +169,6 @@ class SmogonCalcAdapter:
             payload["item"] = mon.item
         if mon.nature:
             payload["nature"] = mon.nature
-        if mon.tera_type:
-            payload["teraType"] = mon.tera_type
         if mon.status:
             payload["status"] = mon.status
         if mon.evs is not None:

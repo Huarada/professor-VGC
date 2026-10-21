@@ -4185,4 +4185,62 @@ small because stats already agreed and Champions-only rules are rare in these
 hits; it grows as Champions-specific mechanics do. When `@smogon/calc` lags a
 new regulation, the fallback keeps projections flowing and labelled.
 
+**Superseded by ADR-043:** the cross-game fallback above is no longer permitted.
+
 ---
+
+## ADR-043 — Champions-only rules and an isolated best-of-three review
+
+### Context
+BO3 format ids already shared their regulation's BO1 usage data, but there was
+no series-level analysis. The app still accepted foreign formats and set fields,
+and the Champions engine could fall back to another game's rules. The product
+now explicitly supports Champions regulations with Mega Evolution only.
+
+### Decision
+- Keep `AnalysisPipeline.analyze(AnalysisRequest)` as the BO1 contract. Add typed
+  BO3 request/evidence/result models and a separate service composed over any
+  of the three existing backends. The final synthesis uses the injected
+  `LLMProvider` port and its own versioned prompt.
+- Validate all supplied games before model calls: 1–3 ordered logs, one Champions
+  regulation, the same named players, consistent declared team previews, no
+  duplicate game and no game after two wins. One supplied game or an unknown
+  final result is an incomplete series, never a guessed winner.
+- Track player identity independently of side ids. Each game gets a fresh
+  pipeline scope and a unique conversation session. Prior observed reveals are
+  scouting context only; never copy HP, field, stages, moves or items into the
+  later battle state. Changes of leads are observed facts; intent is not.
+- Build the series score, leads, brought Pokemon and revelation history in
+  deterministic code. Final synthesis reads typed per-game evidence and never
+  generated per-game prose. Check its rules and regulation boundary too.
+- Enforce the Champions boundary in input validation, structured Pokemon sets,
+  external-knowledge filtering, agent tools and generated-answer validation.
+  Correct a foreign-mechanic answer once, then refuse it. Remove the active
+  foreign-mechanic set field and its Python/Node forwarding. Direct engine
+  payloads reject unsupported mechanic fields, items, formes and moves.
+- Remove ADR-041's cross-game fallback. Missing Champions engine support means
+  an unavailable projection, not a calculation using another game's rules.
+  Generation-9 dex metadata remains useful for move flags and strategy lookup;
+  it cannot select the application's damage or speed rules.
+- The UI defaults to BO1 and exposes BO3 explicitly, with separate result and
+  stepper keys. A BO3 submission consumes one existing daily analysis slot,
+  regardless of its internal per-game and synthesis calls, as ADR-036 defines.
+
+### Alternatives considered
+Concatenating logs would corrupt per-game state and chronology. Using shared
+conversation history would allow future-game knowledge to justify earlier
+decisions. Prompt-only mechanic restrictions would leave engine and tool bypasses.
+
+### Consequences
+BO1 retains its independent-game flow. Series identity requires named players;
+team-only JSON cannot establish game order or outcomes. No inferred open-team-sheet
+knowledge, hidden sets or series winner is claimed. Every supplied log must name
+its regulation. Older benchmark figures remain historical: no new paid benchmark
+was run for this feature, and changed engine coverage must be re-measured before
+claiming updated accuracy.
+
+### Files touched
+`src/domain/{champions,series,models,exceptions,regulation}.py`, the shared evidence
+stage, `services/{series_analysis,container}.py`, agent tools/prompts, Smogon and
+calc adapters, Node calc/dex workers, UI mode/results/stepper, sample replay and
+regression tests. Raw `data/chaos` dumps are unchanged.

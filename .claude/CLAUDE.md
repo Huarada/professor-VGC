@@ -20,6 +20,22 @@ battles. It combines:
 
 The guiding principle: **the LLM explains ground truth; it never invents it.**
 
+**Game boundary (ADR-043):** the application supports Pokemon Champions VGC
+regulations only. Mega Evolution is the only permitted special battle mechanic.
+Reject foreign formats/mechanics before any model call; filter external knowledge
+and fail closed if generated text still references unsupported mechanics after
+one correction. Missing Champions calc support never falls back to another game.
+
+**BO3 (ADR-043):** `domain/series.py` and `services/series_analysis.py` define a
+separate use case over the unchanged BO1 pipeline contract. Accept 1–3 ordered
+replays, validate all before quota/model calls, follow players by normalized name
+(p1/p2 may swap), require one regulation and consistent declared team previews,
+stop at two wins. Keep incomplete series explicit. Per-game state and memory are
+isolated; `series_context.known_before` contains only earlier observed reveals,
+never later knowledge or Chaos guesses. Synthesize typed evidence, not generated
+answers. `Container.validate_series` / `build_bo3_pipeline` expose this flow;
+the UI has explicit BO1/BO3 modes with separate result and replay-stepper state.
+
 ---
 
 ## 2. Methodology (agreed and approved in conversation) — read first
@@ -193,7 +209,7 @@ Read by `src/config.py` (`Settings`, pydantic-settings; `.env` supported).
 | `PROFESSORVGC_OPENAI_EMBEDDING_MODEL` / `PROFESSORVGC_GEMINI_EMBEDDING_MODEL` | text-embedding-3-small / models/text-embedding-004 | Embedding model ids. |
 | `PROFESSORVGC_SEMANTIC_STRATEGY_TOP_K` | `3` | Passages kept per species after ranking. |
 | `PROFESSORVGC_NODE_BINARY` | `node` | Node executable. |
-| `PROFESSORVGC_CALC_GEN` | `9` | Generation. |
+| `PROFESSORVGC_CALC_GEN` | `9` | Legacy Smogon dex metadata generation; application damage/speed always use Champions generation 0. |
 | `PROFESSORVGC_CALC_TIMEOUT_SECONDS` | `20` | Calc IPC timeout. |
 
 ---
@@ -411,8 +427,8 @@ replay JSON/log + question
 18. **feat(calc):** Pokemon Champions formats calculated under Champions' own
     rules (`@smogon/calc` generation 0, stat points; `calc_generation`), per
     game; a generation of 0 no longer swallowed by `or` / `||`; a Pokemon or
-    move missing from the Champions data falls back to Scarlet/Violet rules and
-    says so (ADR-041).
+    move missing from the Champions data was originally handled by a labelled
+    fallback (ADR-041); ADR-043 removes that fallback and refuses the projection.
 19. **fix(calc):** multi-hit moves report the total (not one hit's), projected for
     the hits the log shows (`|-hitcount|`); abilities revealed by `[from]
     ability: X` are used; guard recognizes Megas in prose and a legal Mega makes

@@ -18,7 +18,7 @@ from src.domain.interfaces import SmogonSuggestionSource
 _INTENT_KEYWORDS = (
     "improve", "improvement", "suggest", "suggestion", "synergy", "adjust",
     "optimize", "better", "build", "moveset", "spread", "ev", "evs", "item",
-    "ability", "tera", "team", "swap this",
+    "ability", "team", "swap this",
     # pt-br
     "melhor", "melhoria", "melhorar", "sugest", "sinergia", "ajuste", "ajustar",
     "otimiz", "montar", "movimento", "conjunto", "equipe", "time",
