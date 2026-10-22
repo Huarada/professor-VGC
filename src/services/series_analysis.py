@@ -7,6 +7,7 @@ import uuid
 from collections.abc import Callable
 
 from src.domain.champions import forbidden_references, require_champions_format
+from src.domain.bo3_inference.narration import contains_numerical_investment
 from src.domain.exceptions import (
     LLMProviderError,
     SeriesValidationError,
@@ -203,14 +204,20 @@ class Bo3AnalysisService:
         }
 
         def explain(correction: str) -> str:
-            answer = self._llm.complete(
-                system=self._system, messages=[ChatMessage(role="user", content=(
-                    json.dumps(payload, ensure_ascii=False) + "\n" + correction
-                ))], temperature=0.2,
-            )
-            if not answer.strip():
-                raise LLMProviderError("The BO3 explanation was empty.")
-            return answer
+            for _ in range(2):
+                answer = self._llm.complete(
+                    system=self._system, messages=[ChatMessage(role="user", content=(
+                        json.dumps(payload, ensure_ascii=False) + "\n" + correction
+                    ))], temperature=0.2,
+                )
+                if not answer.strip():
+                    raise LLMProviderError("The BO3 explanation was empty.")
+                if inferred is None or not contains_numerical_investment(answer):
+                    return answer
+                correction += ("\nRemove numerical investment allocations, baseline builds and legacy EV conversions. "
+                               "The deterministic stat-point tables report all numerical investment. "
+                               "Explain uncertainty and battle adjustments in prose instead.")
+            raise LLMProviderError("The BO3 summary repeatedly included numerical investment prose. Please retry the analysis.")
 
         answer = explain_champions_only(explain)
         if self._catalog is not None:

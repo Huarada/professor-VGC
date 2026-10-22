@@ -191,7 +191,7 @@ def solve(
         result = retain_known_bounds(result, proof)
     if factors:
         result = result.model_copy(update={
-            "local_constraints": tuple(proof.observation_ids[0] for proof in factors),
+            "local_constraints": tuple(dict.fromkeys(identifier for proof in factors for identifier in proof.observation_ids)),
             "local_evaluated_assignments": sum(proof.evaluated_assignments for proof in factors),
         })
         if result.outcome == "not_informative" and any(proof.compatible_families for proof in factors):

@@ -124,6 +124,14 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     assert any(heading.value == "Stat-point inference (BO3)" for heading in at.subheader)
     assert at.session_state["last_result"] == original
     assert any(slider.key.startswith("bo3_game_") for slider in at.slider)
+    built = container.pipelines_built
+    at.slider(key="bo3_game_0_turn_index").set_value(1).run()
+    at.selectbox(key="bo3_review_game").set_value(1).run()
+    assert at.slider(key="bo3_game_1_turn_index").value == 0
+    at.selectbox(key="bo3_review_game").set_value(0).run()
+    assert at.slider(key="bo3_game_0_turn_index").value == 1
+    assert container.pipelines_built == built
+    assert not at.exception
     at.radio[0].set_value("Best of one").run()
     assert not at.exception
     assert at.session_state["last_result"] == original

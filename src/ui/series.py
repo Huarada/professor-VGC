@@ -65,6 +65,8 @@ def render_series(
                 for key in list(st.session_state):
                     if str(key).startswith("bo3_game_"):
                         st.session_state.pop(key, None)
+                st.session_state.pop("bo3_turn_positions", None)
+                st.session_state.pop("bo3_review_game", None)
                 st.session_state.pop("bo3_error", None)
         except ProfessorVGCError as exc:
             st.session_state.pop("bo3_result", None)
@@ -79,17 +81,27 @@ def render_series(
     st.caption("Complete" if result.evidence.complete else "Incomplete series")
     for limitation in result.evidence.limitations:
         st.info(limitation)
-    st.markdown(result.answer)
-    if result.inference is not None:
-        render_inference(result.inference)
     index = st.selectbox("Review game", range(len(result.games)),
                          key="bo3_review_game", format_func=lambda i: f"Game {i + 1}")
-    with st.expander(f"Game {index + 1} evidence and review", expanded=True):
-        replay = container.parse_replay_for_viewer(st.session_state["bo3_replays"][index])
-        prefix = f"bo3_game_{index}_"
-        render_result(result.games[index], current_turn_number(replay, key_prefix=prefix))
+    replay = container.parse_replay_for_viewer(st.session_state["bo3_replays"][index])
+    prefix = f"bo3_game_{index}_"
+    positions = st.session_state.setdefault("bo3_turn_positions", {})
+    if f"{prefix}turn_index" not in st.session_state:
+        st.session_state[f"{prefix}turn_index"] = positions.get(index, 0)
+    field, review = st.columns([1, 2])
+    with field:
         if replay.snapshots:
             render_battle_panel(replay, key_prefix=prefix)
+            positions[index] = st.session_state[f"{prefix}turn_index"]
+        else:
+            st.caption("No battlefield snapshots are available for this game.")
+    with review:
+        with st.expander(f"Game {index + 1} evidence and review", expanded=True):
+            render_result(result.games[index], current_turn_number(replay, key_prefix=prefix))
+    if result.inference is not None:
+        render_inference(result.inference)
+    with st.expander("Series review", expanded=True):
+        st.markdown(result.answer)
 
 
 def render_inference(evidence: Bo3InferenceEvidence) -> None:
@@ -101,7 +113,8 @@ def render_inference(evidence: Bo3InferenceEvidence) -> None:
     for checkpoint in evidence.checkpoints:
         if checkpoint.phase != "after_game":
             continue
-        with st.expander(f"After game {checkpoint.game}: {checkpoint.outcome} ({checkpoint.coverage})"):
+        with st.expander(f"After game {checkpoint.game}: {checkpoint.outcome} ({checkpoint.coverage})",
+                         expanded=checkpoint == evidence.checkpoints[-1]):
             st.caption(f"Eligible damage observations: {len(checkpoint.observation_ids)} · "
                        f"Joint assignments evaluated: {checkpoint.evaluated_assignments} · "
                        f"Exhaustive local constraints: {len(checkpoint.local_constraints)}")

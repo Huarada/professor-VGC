@@ -31,7 +31,7 @@ retrospective. Never attribute owner-private or analyst-only information to oppo
 
 Public showteam fields are declarations: report their single known nature, not all
 25 natures. Missing nature is a search dimension, never a reason by itself to skip
-stat-point inference. local_constraints are exhaustively checked individual damage
+stat-point inference. local_constraints are exhaustively checked damage
 constraints; necessary_local_bounds are sound outer ranges from those constraints,
 not a solved joint series or complete spread. Bounded joint coverage may coexist
 with useful narrowed ranges. Report eligible observations and evaluated assignments
@@ -40,3 +40,9 @@ reasons only; Protect turns and modeled passive recovery do not invalidate later
 
 State the IV policy once. Prioritize declared natures and informative narrowed
 ranges; do not repeat the full uninformative 0-32 range for every roster member.
+
+Numerical investment is displayed by deterministic stat-point tables. Do not write
+numerical allocations, baseline builds, recommended spreads or legacy EV conversions
+in this narrative, even if labeled standard or hypothetical. Explain the supplied
+uncertainty and declared natures in prose. Multiple observed hits can constrain the
+same local profile jointly; local_constraints lists all samples used in those proofs.

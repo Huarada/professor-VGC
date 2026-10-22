@@ -403,9 +403,19 @@ metadata establishes registration continuity without an extra manual assertion.
 Protect/Detect and modeled terrain/passive recovery do not disable unrelated
 later attacks. Truly unmodeled runtime effects remain explicit exclusions. The
 parser uses the correct distinct protocol positions for side and field effects.
+Encore, Perish Song counters and observed Follow Me/Rage Powder redirection do
+not themselves alter a direct hit's damage formula; they no longer poison later
+eligible hits. Perish faints are not used as damage observations. Substitute and
+unknown damage-affecting effects still fail conservatively.
 
 If the full Cartesian space exceeds the joint assignment limit, the solver can
-exhaustively evaluate one affordable individual damage constraint after each game.
+exhaustively evaluate one affordable local factor after each game. Observations
+with the same Pokemon identities and measured stat axes are evaluated together:
+every retained assignment must explain all their rolls, HP rounding and runtime
+states. Registered-team continuity permits earlier-game samples; otherwise only
+the current game's samples enter a factor. Try a two-sample subset, then individual
+factors if the complete group cannot fit the remaining budget. Report exactly the
+sample IDs used; a subset never proves compatibility with omitted observations.
 The local limit is at most four times `max_assignments`, capped at 100,000; it
 shares the global projection/time budgets. Earlier completed proofs are reused in
 before-game checkpoints. Partial local searches cannot narrow ranges. Completed
@@ -419,3 +429,17 @@ The default projection budget is 120,000 per request, with the existing 20-secon
 time limit and 4,096 cache entries. Existing archived synthetic fixtures explicitly
 retain their original 30,000-projection settings. The public-series regression
 uses a 60-second validation budget and has no hidden investment ground truth.
+
+### Coaching and replay presentation (ADR-048)
+
+The BO3 field uses the existing BO1 battle panel beside the selected game's
+review, before the series narrative. Each game retains its turn position without
+making another analysis/model call. The latest inference table opens by default.
+
+Numerical investment belongs to these typed tables. The series narrator explains
+declared natures, uncertainty and battle adjustments without baseline spreads or
+legacy EV conversions. A narrow allocation-notation guard requests one correction
+and raises a typed error if the narrator repeats it. This format guard is not a
+general natural-language factuality proof; per-game coaching still follows its
+existing ground-truth contract. No arbitrary LLM-driven candidate search is added:
+the bounded inverse search already calls the deterministic calculator directly.

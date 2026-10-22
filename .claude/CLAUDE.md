@@ -581,3 +581,21 @@ newly private games remain missing. Preserve original room errors when no index 
 uploaded seed is known. Never guess IDs or read production data from test fixtures.
 The index is bounded (64 series, 3 refs, 512 KB reads), atomic, and local to the
 installation. Disk persistence does not imply cross-deployment/cloud durability.
+
+
+## 18. BO3 damage samples and visible field (ADR-048)
+
+Local factors group observations by Pokemon identities and measured stat axes,
+intersecting each selected sample's supported rolls at its own runtime state.
+Try full groups, affordable two-sample subsets, then single hits. Retain strict
+resource limits, reported sample IDs, registered-team continuity and causal
+checkpoints. Partial local searches never justify new bounds. Encore, Perish Song
+counters and observed Follow Me/Rage Powder redirection do not alter direct-hit
+damage; unknown effects and Substitute remain excluded.
+
+Series coaching reserves numerical investment for typed inference tables. Its
+allocation-notation guard requests one correction, then fails explicitly; it is
+not a complete semantic factuality validator. BO1 narration remains unchanged.
+The existing battle panel is visible beside the selected BO3 game's review,
+before the series narrative, with independent persisted turn positions. Navigation
+does not analyze again. The latest inference checkpoint opens by default.

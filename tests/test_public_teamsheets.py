@@ -8,7 +8,7 @@ import pytest
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
 from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
 from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
-from src.domain.bo3_inference.models import InferenceOptions
+from src.domain.bo3_inference.models import DamageWitness, InferenceOptions
 from src.domain.exceptions import SeriesValidationError
 from src.domain.series import Bo3AnalysisRequest
 from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
@@ -155,3 +155,93 @@ def test_unknown_volatile_remains_excluded_instead_of_becoming_a_false_constrain
     result = run(source, teamsheet=sheet())
     assert not result.checkpoints[-1].observation_ids
     assert any("Substitute" in reason for reason in result.checkpoints[-1].unsupported)
+
+
+@pytest.mark.parametrize("effect", [
+    "|-start|p1a: Garchomp|move: Encore",
+    "|-end|p1a: Garchomp|Encore",
+    "|-start|p1a: Garchomp|perish3|[silent]",
+    "|-start|p2a: Incineroar|perish0|[silent]",
+    "|-singleturn|p1a: Garchomp|Rage Powder",
+    "|-singleturn|p1a: Garchomp|Follow Me",
+])
+def test_selection_redirection_and_perish_counters_preserve_observed_direct_damage(effect):
+    source = log().replace("|turn|1", effect + "\n|turn|1")
+    result = run(source, teamsheet=sheet())
+    checkpoint = result.checkpoints[-1]
+    assert checkpoint.observation_ids
+    assert checkpoint.outcome == "identified_within_model"
+    assert summary(checkpoint, "Bob:slot1").stat_points["def"].minimum == 20
+
+
+def test_local_factor_intersects_repeated_hits_instead_of_ignoring_the_second_hit():
+    first = log(damage=60)
+    second_hit = "\n".join([
+        "|turn|2", "|move|p1a: Garchomp|Dragon Claw|p2a: Incineroar",
+        "|-damage|p2a: Incineroar|0 fnt", "|win|Alice",
+    ])
+    source = first.replace("|win|Alice", second_hit)
+    result = run(source, teamsheet=sheet(known_attack=False), max_assignments=500)
+    checkpoint = result.checkpoints[-1]
+    assert len(checkpoint.observation_ids) == 2
+    assert set(checkpoint.local_constraints) == set(checkpoint.observation_ids)
+    assert checkpoint.coverage == "bounded" and checkpoint.outcome == "ambiguous"
+    # The censored KO is compatible with the first observed 60 damage.
+    assert summary(checkpoint, "Alice:slot1").stat_points["atk"].minimum == 10
+
+
+def test_two_locally_possible_samples_can_conflict_when_jointly_constrained():
+    second_hit = "\n".join([
+        "|turn|2", "|move|p1a: Garchomp|Dragon Claw|p2a: Incineroar",
+        "|-damage|p2a: Incineroar|10/110", "|win|Alice",
+    ])
+    source = log(damage=60).replace("|win|Alice", second_hit)
+    result = run(source, teamsheet=sheet(known_attack=False), max_assignments=500)
+    checkpoint = result.checkpoints[-1]
+    assert len(checkpoint.local_constraints) == 2
+    assert checkpoint.outcome == "conflict"
+
+
+def test_multiple_roll_samples_narrow_bounds_without_using_future_games():
+    class RollProjection(AnalyticProjection):
+        def project_batch(self, requests):
+            return [support.model_copy(update={"witnesses": tuple(
+                DamageWitness(hp_before=witness.hp_before, damage=witness.damage + roll)
+                for witness in support.witnesses for roll in range(6)
+            )}) for support in super().project_batch(requests)]
+
+    result = run(log(damage=60), log(damage=65, winner="Bob"), teamsheet=sheet(known_attack=False),
+                 port=RollProjection(), max_assignments=500)
+    first, before_second, second = result.checkpoints[1:]
+    assert summary(first, "Alice:slot1").stat_points["atk"].minimum == 5
+    assert summary(before_second, "Alice:slot1").stat_points["atk"].minimum == 5
+    assert summary(second, "Alice:slot1").stat_points["atk"].minimum == 10
+    assert summary(second, "Bob:slot1").stat_points["def"].maximum == 22
+    assert len(second.local_constraints) == 2
+    assert second.coverage == "bounded"
+
+
+def test_unregistered_teams_never_combine_damage_from_different_games():
+    result = run(log(damage=60), log(damage=65, winner="Bob"),
+                 teamsheet=sheet(registered=False, known_attack=False), max_assignments=500)
+    last = result.checkpoints[-1]
+    assert last.outcome == "ambiguous"
+    assert len(last.local_constraints) == 1
+    assert all(identifier.startswith("g2:") for identifier in last.local_constraints)
+
+
+def test_unaffordable_full_group_uses_a_completed_two_sample_subset():
+    extra = []
+    for turn in (2, 3):
+        extra.extend([
+            "|-heal|p2a: Incineroar|110/110|[from] move: Recover",
+            f"|turn|{turn}", "|move|p1a: Garchomp|Dragon Claw|p2a: Incineroar",
+            "|-damage|p2a: Incineroar|50/110",
+        ])
+    source = log(damage=60).replace("|win|Alice", "\n".join(extra + ["|win|Alice"]))
+    result = run(source, teamsheet=sheet(known_attack=False), max_assignments=500, max_projections=2600)
+    checkpoint = result.checkpoints[-1]
+    assert len(checkpoint.observation_ids) == 3
+    assert len(checkpoint.local_constraints) == 2
+    assert checkpoint.local_evaluated_assignments == 1089
+    assert checkpoint.coverage == "bounded"

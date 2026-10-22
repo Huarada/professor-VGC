@@ -46,9 +46,19 @@ def local_bounds(
     attempted = 0
     ranked = sorted(observations, key=lambda o: (o.after.numerator == 0,
                     -(o.before.numerator - o.after.numerator) / o.before.denominator, o.id))
+    # Repeated hits constrain the same registered stats simultaneously, even
+    # when their runtime fields, boosts or moves differ. Keep axis sets small.
+    groups: dict[str, list[DamageObservation]] = {}
     for observation in ranked:
-        local = {key: declarations[key] for key in {observation.attacker_id, observation.defender_id}}
-        key = observation.model_dump_json() + json.dumps({name: {
+        signature = json.dumps({name: sorted(axes) for name, axes in
+                                sorted(relevant_axes([observation]).items())}, sort_keys=True)
+        groups.setdefault(signature, []).append(observation)
+    candidates = (list(groups.values()) + [group[:2] for group in groups.values() if len(group) > 2]
+                  + [[sample] for group in groups.values() if len(group) > 1 for sample in group])
+    for samples in candidates:
+        axes = relevant_axes(samples)
+        local = {key: declarations[key] for key in axes}
+        key = json.dumps([sample.model_dump(mode="json") for sample in samples], sort_keys=True) + json.dumps({name: {
             "species": value.species, "nature": value.nature, "stat_points": value.stat_points,
         } for name, value in sorted(local.items())}, sort_keys=True)
         cached = budget.factor_checkpoints.get(key)
@@ -58,16 +68,17 @@ def local_bounds(
         # Preserve budget for later games; before-game checkpoints reuse prior proofs.
         if phase != "after_game" or attempted >= 1:
             continue
-        estimate = space_bound(local, relevant_axes([observation]), rules)
+        estimate = space_bound(local, axes, rules)
         remaining = budget.options.max_projections - budget.projections
         local_limit = min(100000, budget.options.max_assignments * 4)
         # Reserve some time/projections for the full joint search. The upper bound
         # may overestimate equivalent natures or legal budgets; skipping is sound.
-        if estimate > min(local_limit, max(0, remaining - 256)) or time.monotonic() >= budget.deadline:
+        if (estimate > local_limit or estimate * len(samples) > max(0, remaining - 256)
+                or time.monotonic() >= budget.deadline):
             continue
         attempted += 1
         proof = enumerate_constraints(game=game, phase=phase, declarations=local,
-            observations=[observation], unsupported=(), rules=rules, budget=budget, assignment_limit=local_limit)
+            observations=samples, unsupported=(), rules=rules, budget=budget, assignment_limit=local_limit)
         if proof.coverage == "exhaustive":
             budget.factor_checkpoints[key] = proof
             proofs.append(proof)

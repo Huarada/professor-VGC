@@ -4529,3 +4529,69 @@ private/unclassified exclusion, deleted/newly private games and strict series/sl
 checks. Live validation imported the user's supplied public game-3 URL, learned
 three verified references, then successfully imported the expired room URL with
 all three games and twelve declared natures. No paid model calls were used.
+
+
+## ADR-048 - Intersect BO3 damage samples and expose the existing battlefield
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+A generated series review substituted standard 32/32 builds for unresolved hidden
+investment and described native stat points using a legacy EV scale. The parser
+also treated Encore, Perish Song counters and redirection as permanently unknown
+damage state. The existing BO3 battlefield was buried below the series prose and
+game review, so users could not readily discover the turn navigator.
+
+### Decision
+
+Keep inverse calculation in the deterministic application service behind
+CandidateProjectionPort. Group observations using stable Pokemon identities and
+measured axes; each legal assignment must explain every selected sample with its
+own runtime state and integer roll/HP support. Prefer complete groups, then a
+two-sample subset and individual factors under the existing shared budgets. Only
+completed exhaustive factors narrow bounds. Report every sample ID used; never
+claim global feasibility from a local proof or a subset. Preserve registered-team
+continuity and decision-time knowledge boundaries.
+
+Do not exclude direct damage merely because move choice was constrained by Encore,
+a Perish counter exists, or redirection selected the observed target. The actual
+hit target remains authoritative. Perish faints are not damage samples. Unknown
+effects, Substitute, critical and multihit inference remain conservative.
+
+Numerical investment is rendered from typed inference tables, with the latest
+checkpoint expanded. The series narrator describes natures, uncertainty and
+coaching without numerical builds. Add a narrow notation guard and one corrective
+retry, then a typed error. It does not claim to validate all natural-language
+facts, and per-game coaching retains its existing contract. No additional
+LLM-driven arithmetic or unbounded calculator tool loop is introduced.
+
+Reuse the BO1 battlefield component in BO3 columns before the narrative. Render
+the navigator before computing the selected-turn highlight. Keep non-widget
+per-game turn positions across game selection and clear them on a new analysis;
+navigation never consumes another analysis slot. BO1 widgets remain independent.
+
+### Alternatives considered
+
+- Recommend popular 32/32 builds: unsupported by replay evidence.
+- Search candidates through autonomous model tool calls: duplicates deterministic
+  logic while making cost, bounds and reproducibility harder to enforce.
+- Accept partial factor marginals as inferred bounds: unsound exclusion of
+  unsearched assignments.
+- Ignore all unsupported effects: may falsely exclude the actual hidden spread.
+
+### Consequences and validation
+
+Independent roll-support tests show two samples tightening Atk from 5-32 to 10-32
+and Def to 0-22 without using the second game in the first checkpoint. Conflicting
+samples produce an explicit conflict. Unregistered games remain separate. Other
+tests cover known non-damage effects, unknown-effect exclusions, allocation-format
+correction/failure and UI navigation without analysis calls or BO1 state changes.
+The frozen offline corpus remains 26/26 series (78 games), plus 17/17 independent
+oracle cases, retaining all planted outer-range truths with 31,945 projections.
+No paid model calls or held-out real-game accuracy measurement is claimed.
+
+### Files touched
+
+Parser inference eligibility, local factor search, series narration contract and
+prompt, BO3 UI, regression tests and inference methodology/semantics documentation.

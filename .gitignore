@@ -33,3 +33,5 @@ scripts/faithfulness_benchmark/out/
 
 # Verified public BO3 replay link index, local runtime data (not a fixture).
 .cache/bo3-series/
+.cache/pytest-*/
+.cache/bo3-inference-*.json
