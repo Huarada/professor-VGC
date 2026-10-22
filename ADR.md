@@ -4478,3 +4478,54 @@ validation benches remain separate.
 Public teamsheet adapter/port, BO3 import DTO/service/UI, inference declarations,
 checkpoint summaries, bounded local solver, parser effect eligibility, composition
 root, explanation prompts, regression fixtures/tests and documentation.
+
+
+---
+
+## ADR-047 ? Remember verified public BO3 links across live-room expiry
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+The user-reported room genuinely expired, although its published game replays
+remained available. The importer could recover from a game replay, but a room-only
+input lost the already known mapping. Ephemeral room state is not durable series
+storage, and guessing adjacent IDs or loading an example fixture is unacceptable.
+
+### Decision
+
+Add a domain `SeriesReplayIndex` port and a bounded atomic JSON adapter, wired only
+in Container. After import, persist numbered references only for replays explicitly
+marked public by current server metadata, with no password. Private/unclassified
+references and battle payloads are not stored. The runtime index is ignored by Git.
+
+If room discovery fails, reuse known references but download each replay anew and
+verify exact series identity/ordinal. Deleted or newly private indexed games remain
+missing. Indexed partial sets may seed forward-link/search discovery. Keep existing
+room/replay validation and request budgets. Save failures produce a warning without
+blocking imported games. Preserve the original room failure when no seed/index is
+available. A previously unseen expired room still needs one uploaded game seed.
+
+Use a 64-series / three-reference cap, a 512 KB read limit, versioned typed JSON,
+shared-process locking and atomic file replacement. This is local filesystem
+persistence, not cross-deployment or cloud persistence. No hardcoded series IDs or
+production reads from test fixtures. Container uses `.cache/bo3-series/index.json`.
+
+### Alternatives considered
+
+- Continue relying only on live rooms: loses import UX after ordinary room expiry.
+- Guess the first battle ID or group by usernames: cannot prove membership.
+- Store private links or full logs: unnecessary for durable public discovery.
+- Introduce a cloud database: not required for this local testing workflow.
+
+### Consequences and validation
+
+Known public series can be imported through the original room URL after restart,
+subject to replay availability and local disk persistence. On another machine or
+fresh deployment, import an uploaded game once. Tests cover restart/new instances,
+fresh downloads, absent/malformed/unwritable indexes, bounded merging/eviction,
+private/unclassified exclusion, deleted/newly private games and strict series/slot
+checks. Live validation imported the user's supplied public game-3 URL, learned
+three verified references, then successfully imported the expired room URL with
+all three games and twelve declared natures. No paid model calls were used.

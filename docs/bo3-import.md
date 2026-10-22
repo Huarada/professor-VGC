@@ -44,12 +44,14 @@ Every Analyze submission still validates the final edited inputs before quota us
 
 ## Availability limits
 
-- A series room is live server state and can expire. If it cannot be read, paste
-  any uploaded replay from that series instead.
+- A series room is live server state and can expire. Previously verified public
+  links are recovered from the local index and re-fetched. For a room never seen
+  on this installation, paste any uploaded replay once to establish the index.
 - A room link does not publish battle replays. Games without an accessible uploaded
   replay are reported unavailable. Save/share them in Showdown, then import again.
-- If both room and published replay metadata are unavailable, the application
-  cannot recover the series from the room URL alone.
+- If the room is unavailable and no local index or seed replay is known, the
+  application cannot recover the series from the room URL alone. It preserves the
+  original failure and asks for one uploaded game rather than guessing identifiers.
 - Manually supplied Champions replays without series metadata keep their supplied
   order and show a warning; they are not automatically grouped by player names.
 - Two imported games do not automatically mean a complete series. The existing
@@ -97,3 +99,24 @@ records declared natures, eligible damage and narrowed necessary bounds. Full
 hidden investment is unknown in these public logs; no hidden-set accuracy is
 claimed. A bounded joint search may still retain sound constraints from an
 exhaustively checked individual attack.
+
+
+## Expired-room recovery
+
+After a verified import, the application remembers only references to replays the
+server explicitly marks public (`private: 0`, no password). The bounded local index
+is `.cache/bo3-series/index.json`, ignored by Git. It retains at most 64 series and
+three numbered links per series, with atomic writes. It stores no battle payload,
+teamsheet, model answer or private/unclassified replay URL.
+
+When a room cannot be read, indexed links are fetched again and checked against
+their actual series ID and game number. Deleted or newly private games remain
+unavailable; no cached log resurrects them. Partial results preserve missing slots.
+A corrupt/unwritable index does not prevent an import through an uploaded replay.
+The file survives local app restarts while the filesystem persists; it is not a
+shared cloud database or a guarantee across fresh deployments/other machines.
+
+No known game IDs or test fixtures are hardcoded into this fallback. The reported
+series was registered locally by importing the public game-3 replay supplied by
+the user, then re-importing the original expired room URL successfully. On a fresh
+installation, importing any uploaded replay once can establish the same mapping.

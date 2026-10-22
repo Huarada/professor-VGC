@@ -27,6 +27,7 @@ class ImportedReplay(BaseModel):
     next_id: str | None = None
     players: tuple[str, ...] = ()
     format_id: str = ""
+    publicly_listed: bool = False
 
 
 class SeriesRoomGame(BaseModel):

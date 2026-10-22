@@ -122,7 +122,8 @@ class ShowdownSeriesGateway:
         if not isinstance(players, list) or any(not isinstance(player, str) for player in players):
             raise ReplayFetchError("Showdown returned invalid player metadata.")
         return ImportedReplay(location=canonical, payload=json.dumps(data), number=number, series_id=series_id,
-                              next_id=next_id, players=tuple(str(p) for p in players), format_id=format_id)
+                              next_id=next_id, players=tuple(str(p) for p in players), format_id=format_id,
+                              publicly_listed=data.get("private") == 0 and not data.get("password"))
 
     def _room_log(self, series_id: str) -> str:
         # Lazy import keeps BO1 and ordinary replay fetching independent of WebSockets.

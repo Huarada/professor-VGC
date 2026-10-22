@@ -31,6 +31,7 @@ from src.adapters.parsers.showdown_parser import (
 )
 from src.adapters.replay_url_fetcher import fetch_replay_json, normalize_replay_json_url
 from src.adapters.showdown_series_gateway import ShowdownSeriesGateway
+from src.adapters.series_replay_index import JsonSeriesReplayIndex
 from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
 from src.adapters.smogon.smogon_dex_adapter import SmogonDexAdapter
@@ -426,7 +427,9 @@ class Container:
     def import_bo3_replays(self, text: str) -> SeriesImportResult:
         """Acquire and validate public BO3 replays without quota or model usage."""
         return SeriesReplayImporter(gateway=ShowdownSeriesGateway(), parser=ShowdownReplayParser(),
-                                    public_sheets=ShowdownTeamSheetParser()).import_series(text)
+                                    public_sheets=ShowdownTeamSheetParser(),
+                                    index=JsonSeriesReplayIndex(path=self._settings.project_root / ".cache" /
+                                                               "bo3-series" / "index.json")).import_series(text)
 
     @staticmethod
     def resolve_replay_text(text: str) -> str:

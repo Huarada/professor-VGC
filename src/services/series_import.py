@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from src.domain.exceptions import ReplayFetchError, SeriesValidationError
-from src.domain.interfaces import LogParser, ReplayTeamSheetParser, SeriesReplayGateway
+from src.domain.interfaces import LogParser, ReplayTeamSheetParser, SeriesReplayGateway, SeriesReplayIndex
 from src.domain.series import Bo3AnalysisRequest
-from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesImportResult
+from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesImportResult, SeriesRoomGame
 from src.services.series_analysis import prepare_series
 
 
@@ -13,10 +13,12 @@ class SeriesReplayImporter:
     """One request-scoped import; no quota use, model calls or replay uploads."""
 
     def __init__(self, *, gateway: SeriesReplayGateway, parser: LogParser,
-                 public_sheets: ReplayTeamSheetParser | None = None) -> None:
+                 public_sheets: ReplayTeamSheetParser | None = None,
+                 index: SeriesReplayIndex | None = None) -> None:
         self._gateway = gateway
         self._parser = parser
         self._public_sheets = public_sheets
+        self._index = index
         self._cache: dict[str, ImportedReplay] = {}
         self._failures: dict[str, str] = {}
 
@@ -59,17 +61,37 @@ class SeriesReplayImporter:
         for replay in explicit:
             self._add(games, replay, series_id)
         room_available = False
+        using_index = False
         try:
             room_games = self._gateway.room_games(series_id)
             room_available = True
             expected = {game.number: game.location for game in room_games}
-        except ReplayFetchError:
-            if not explicit:
-                raise ReplayFetchError("The BO3 room is unavailable or expired. Paste any uploaded game replay to find the series.") from None
-            warnings.append("The live series room is unavailable; discovery uses uploaded replay metadata.")
+        except ReplayFetchError as room_error:
+            cached: tuple[SeriesRoomGame, ...] = ()
+            if self._index:
+                try:
+                    cached = self._index.get(series_id)
+                except ReplayFetchError:
+                    warnings.append("The local public replay link index could not be read.")
+            if cached:
+                using_index = True
+                for game in cached:
+                    location = self._gateway.locate(game.location.url)
+                    if location.kind != "replay" or location.id != game.location.id:
+                        raise ReplayFetchError("Invalid cached replay reference; paste an uploaded game replay instead.")
+                    expected[game.number] = location
+                warnings.append("The live room is unavailable; previously verified public replay links are being rechecked.")
+            elif not explicit:
+                raise ReplayFetchError(f"{room_error} No verified local links are known for this room. "
+                                       "Paste any uploaded game replay once to recover and remember the series.") from room_error
+            else:
+                warnings.append("The live series room is unavailable; discovery uses uploaded replay metadata.")
         for number, location in expected.items():
             try:
-                self._add(games, self._read(location), series_id, number)
+                replay = self._read(location)
+                if using_index and not replay.publicly_listed and location.id not in {item.location.id for item in explicit}:
+                    raise ReplayFetchError("A previously public replay is no longer publicly listed.")
+                self._add(games, replay, series_id, number)
             except ReplayFetchError:
                 warnings.append(f"Game {number} could not be downloaded. Upload/share its replay in Showdown, then retry.")
         # Archived games explicitly link forward even if the series room expired.
@@ -89,8 +111,9 @@ class SeriesReplayImporter:
                 except ReplayFetchError:
                     warnings.append("A linked next game is unavailable. Import again after its replay is uploaded.")
         missing = set(range(1, max(set(games) | set(expected), default=1) + 1)) - games.keys()
-        if explicit and (missing or not room_available and len(games) < 3):
-            self._search(games, explicit[0], series_id, warnings)
+        seed = explicit[0] if explicit else next(iter(games.values()), None)
+        if seed and (missing or not room_available and len(games) < 3):
+            self._search(games, seed, series_id, warnings, public_only=using_index)
         highest = max(set(games) | set(expected), default=1)
         missing = set(range(1, highest + 1)) - games.keys()
         if not games:
@@ -100,6 +123,13 @@ class SeriesReplayImporter:
         ordered = tuple(replay for _, replay in sorted(games.items()))
         if not missing:
             self._validate(ordered)
+        if self._index:
+            references = tuple(SeriesRoomGame(number=game.number, location=game.location)
+                               for game in ordered if game.publicly_listed and game.number is not None)
+            try:
+                self._index.put(series_id, references)
+            except ReplayFetchError:
+                warnings.append("Imported games are ready, but their public links could not be saved for future room recovery.")
         return SeriesImportResult(games=ordered, series_id=series_id, missing_games=tuple(sorted(missing)),
                                   warnings=tuple(dict.fromkeys(warnings)),
                                   teamsheet=self._public_sheets.parse([game.payload for game in ordered])
@@ -117,7 +147,7 @@ class SeriesReplayImporter:
         games[replay.number] = replay
 
     def _search(self, games: dict[int, ImportedReplay], seed: ImportedReplay, series_id: str,
-                warnings: list[str]) -> None:
+                warnings: list[str], *, public_only: bool = False) -> None:
         try:
             locations = self._gateway.related(seed)
         except ReplayFetchError:
@@ -127,6 +157,8 @@ class SeriesReplayImporter:
             try:
                 replay = self._read(location)
             except ReplayFetchError:
+                continue
+            if public_only and not replay.publicly_listed:
                 continue
             # Same players alone are insufficient: repeated opponents may play many sets.
             if replay.series_id == series_id:

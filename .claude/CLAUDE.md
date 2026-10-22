@@ -569,3 +569,15 @@ Local examples never become global joint evidence, and bounded coverage cannot
 prove uniqueness/global feasibility. Local limits share projection/time budgets;
 default projections 120,000, deadline 20 seconds, cache 4,096. Public-series
 regression uses 60 seconds and has no hidden investment truth. See ADR-046.
+
+
+## 17. Expired public BO3 room recovery (ADR-047)
+
+Container injects `SeriesReplayIndex` via `JsonSeriesReplayIndex` at the Git-ignored
+`.cache/bo3-series/index.json`. Remember only numbered references explicitly marked
+public/no-password by the server, never private/unclassified links or full logs.
+When a room is unavailable, re-fetch and revalidate indexed references; missing or
+newly private games remain missing. Preserve original room errors when no index or
+uploaded seed is known. Never guess IDs or read production data from test fixtures.
+The index is bounded (64 series, 3 refs, 512 KB reads), atomic, and local to the
+installation. Disk persistence does not imply cross-deployment/cloud durability.

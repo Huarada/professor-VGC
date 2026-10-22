@@ -46,6 +46,17 @@ class ReplayTeamSheetParser(Protocol):
 
 
 @runtime_checkable
+class SeriesReplayIndex(Protocol):
+    """Persist only verified public replay references, never private links or battle logs."""
+
+    def get(self, series_id: str) -> tuple[SeriesRoomGame, ...]:
+        ...
+
+    def put(self, series_id: str, games: tuple[SeriesRoomGame, ...]) -> None:
+        ...
+
+
+@runtime_checkable
 class SeriesReplayGateway(Protocol):
     """Read public replay/room evidence; never log in or upload battles."""
 
