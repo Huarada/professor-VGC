@@ -31,6 +31,7 @@ from src.adapters.parsers.showdown_parser import (
     parse_replay_for_viewer,
 )
 from src.adapters.replay_url_fetcher import fetch_replay_json, normalize_replay_json_url
+from src.adapters.showdown_series_gateway import ShowdownSeriesGateway
 from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
 from src.adapters.smogon.smogon_dex_adapter import SmogonDexAdapter
@@ -52,6 +53,8 @@ from src.domain.models import AnalysisRequest
 from src.domain.regulation import Regulation, RegulationScope, parse_regulation_setting
 from src.domain.replay_view_models import BattleReplay
 from src.domain.series import Bo3AnalysisRequest, Bo3Evidence
+from src.domain.series_import import SeriesImportResult
+from src.services.series_import import SeriesReplayImporter
 from src.services.adk_orchestrator import AdkAnalysisOrchestrator
 from src.services.analysis_service import AnalysisService
 from src.services.ground_truth import GroundTruthAssembler, parse_replay
@@ -417,6 +420,10 @@ class Container:
             "(scripts/sync_smogon_chaos_to_firestore.py)."
             for tier, reason in self._chaos_repo.rejected_tiers.items()
         ]
+
+    def import_bo3_replays(self, text: str) -> SeriesImportResult:
+        """Acquire and validate public BO3 replays without quota or model usage."""
+        return SeriesReplayImporter(gateway=ShowdownSeriesGateway(), parser=ShowdownReplayParser()).import_series(text)
 
     @staticmethod
     def resolve_replay_text(text: str) -> str:

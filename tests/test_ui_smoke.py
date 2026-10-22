@@ -113,10 +113,10 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     assert not at.exception
     original = at.session_state["last_result"]
     at.radio[0].set_value("Best of three").run()
-    assert [area.label for area in at.text_area[:3]] == [f"Game {i} replay JSON, log or URL" for i in range(1, 4)]
+    assert [at.text_area(key=f"bo3_source_{i}").label for i in range(1, 4)] == [f"Game {i} replay JSON, log or URL" for i in range(1, 4)]
     assert any(area.label == "Teamsheet JSON (optional)" for area in at.text_area)
-    at.text_area[0].input(game())
-    at.text_area[1].input(game(move="Protect"))
+    at.text_area(key="bo3_source_1").input(game())
+    at.text_area(key="bo3_source_2").input(game(move="Protect"))
     next(button for button in at.button if button.label == "Analyze BO3").click().run()
     assert not at.exception
     assert at.session_state["bo3_result"].evidence.score == {"Alice": 2, "Bob": 0}
@@ -134,6 +134,7 @@ def test_analysis_flow_renders_answer_and_decision_review(monkeypatch):
     at = AppTest.from_file(_APP, default_timeout=120)
     at.session_state["container"] = _FakeContainer()
     at.run()
+
     at.text_area[0].input(_LOG_ATTACKED)
     at.text_input[0].input("Should Talonflame have protected on turn 3?")
     next(b for b in at.button if b.label == "Analyze").click()
@@ -146,6 +147,35 @@ def test_analysis_flow_renders_answer_and_decision_review(monkeypatch):
     assert "KO threat: Garchomp's Rock Slide" in captions
     assert "Switching Talonflame out to Amoonguss" in captions
     assert "Tailwind (confirmed in Talonflame's moveset" in captions
+
+
+@pytest.mark.parametrize("missing", [(), (1,)])
+def test_bo3_import_fills_official_slots_without_building_a_paid_pipeline(monkeypatch, missing):
+    from src.services.series_import import SeriesReplayImporter
+    from tests.test_series_import import Gateway, ROOT, URLS
+
+    class ImportContainer(_FakeContainer):
+        def import_bo3_replays(self, text):
+            return SeriesReplayImporter(gateway=Gateway(missing=missing), parser=ShowdownReplayParser()).import_series(text)
+
+    monkeypatch.setattr("src.ui.battle_panel.http_head_ok", lambda url, timeout=2.0: False)
+    at = AppTest.from_file(_APP, default_timeout=120)
+    container = ImportContainer()
+    at.session_state["container"] = container
+    at.run()
+    at.radio[0].set_value("Best of three").run()
+    at.text_area(key="bo3_import_source").input(ROOT if missing else URLS[2] + "\n" + URLS[1])
+    next(button for button in at.button if button.label == "Import BO3").click().run()
+    assert not at.exception
+    assert container.pipelines_built == 0
+    assert at.session_state["bo3_import_receipt"].missing_games == missing
+    for number in range(1, 4):
+        payload = at.text_area(key=f"bo3_source_{number}").value
+        if number in missing:
+            assert payload == ""
+        else:
+            assert f"Game {number}" in json.loads(payload)["log"]
+    assert "bo3_result" not in at.session_state
 
 
 def _analyze_as_openai(at: AppTest) -> None:

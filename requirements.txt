@@ -5,6 +5,7 @@ pydantic-settings>=2.2,<3
 # Presentation
 streamlit>=1.33
 requests>=2.31
+websockets>=15,<16  # public Showdown BO3 room discovery; read-only, no login
 
 # Orchestration
 langchain>=1.0

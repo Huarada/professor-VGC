@@ -80,7 +80,7 @@ def validate_champions_input(value: Any) -> None:
             if normalized in _FIELDS and entry:
                 raise UnsupportedRulesError("Only Mega Evolution is supported in Champions.")
             if key in {"format", "formatid"} and isinstance(entry, str):
-                require_champions_format(entry)
+                require_champions_format(re.sub(r"[^a-z0-9]", "", entry.lower()) if key == "format" else entry)
             if key in {"item", "moves", "battle_formes", "species"}:
                 if forbidden_references(str(entry)) or re.search(r"-(?:Gmax|Primal)\b", str(entry), re.I):
                     raise UnsupportedRulesError("This set uses unsupported battle mechanics.")

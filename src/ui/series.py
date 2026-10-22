@@ -12,6 +12,7 @@ from src.domain.bo3_inference.models import InferenceOptions, Bo3InferenceEviden
 from src.services.container import Container
 from src.ui.battle_panel import current_turn_number, render_battle_panel
 from src.ui.results import render_result
+from src.ui.series_import import render_series_import
 
 
 def render_series(
@@ -20,9 +21,11 @@ def render_series(
 ) -> None:
     """Collect ordered replays, validate all of them, then spend one analysis slot."""
     st.subheader("1 · Best of three")
-    st.caption("Pokemon Champions · Mega Evolution only. Paste games in order; leave unplayed games empty.")
-    sources = [st.text_area(f"Game {i} replay JSON, log or URL", key=f"bo3_source_{i}", height=120)
-               for i in range(1, 4)]
+    st.caption("Pokemon Champions · Mega Evolution only. Import a series or paste individual games in order.")
+    render_series_import(container)
+    with st.expander("Review or paste individual games", expanded=False):
+        sources = [st.text_area(f"Game {i} replay JSON, log or URL", key=f"bo3_source_{i}", height=120)
+                   for i in range(1, 4)]
     question = st.text_input("Ask ProfessorVGC about the series", key="bo3_question")
     with st.expander("Teamsheet and stat-point inference"):
         enabled = st.checkbox("Infer compatible stat points and natures", value=True, key="bo3_infer_enabled")

@@ -27,9 +27,27 @@ from src.domain.models import (
 )
 from src.domain.regulation import RegulationRoster
 from src.domain.series import Bo3AnalysisRequest, Bo3AnalysisResult
+from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesRoomGame
 from src.domain.bo3_inference.models import (
     DamageSupport, MoveSupport, ProjectionRequest, RuleProfile, TeamSheet,
 )
+
+
+@runtime_checkable
+class SeriesReplayGateway(Protocol):
+    """Read public replay/room evidence; never log in or upload battles."""
+
+    def locate(self, url: str) -> ReplayLocation:
+        ...
+
+    def replay(self, location: ReplayLocation) -> ImportedReplay:
+        ...
+
+    def room_games(self, series_id: str) -> tuple[SeriesRoomGame, ...]:
+        ...
+
+    def related(self, replay: ImportedReplay) -> tuple[ReplayLocation, ...]:
+        ...
 
 
 @runtime_checkable

@@ -534,3 +534,19 @@ causal observations, bounded joint search and historical projections live in
   CI runs the frozen corpus on Python 3.12. Inputs/results live under
   `docs/bo3-inference/validation`; regeneration is explicit. Engine consistency,
   independent analytic search checks and held-out game accuracy are distinct claims.
+
+
+## 15. BO3 replay acquisition (ADR-045)
+
+`Container.import_bo3_replays` wires `SeriesReplayImporter` to a domain-owned
+`SeriesReplayGateway` implemented by `ShowdownSeriesGateway`. Acquisition is
+request-scoped and separate from inference/analysis. The UI imports a room, any
+replay or a batch, then lets the user review before Analyze BO3. Never consume
+quota, call a model, log in, post chat or upload a replay during import.
+
+Only numbered room/protocol metadata establishes series membership and game order.
+Usernames alone never establish it. Missing slots stay missing; manual inputs
+without metadata retain supplied order with a warning. Keep BO1 fetching stable.
+Public room discovery uses a bounded guest WebSocket; expired rooms can fall back
+to uploaded replay links and bounded public search. Hosts/IDs, redirects, sizes,
+time and read counts are bounded. See `docs/bo3-import.md` for limits and tests.

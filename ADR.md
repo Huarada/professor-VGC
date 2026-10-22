@@ -4334,3 +4334,74 @@ infrastructure. Synthetic engine-generated observations demonstrate consistency,
 not held-out accuracy. Marginal retention and truth-support probes are reported
 separately; neither claims visibility into the solver's entire joint relation.
 No independent recorded-game corpus or paid explanation benchmark is claimed.
+
+
+---
+
+## ADR-045 ? Import a BO3 from one series/replay URL or a batch of links
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+Three independent replay fields require users to open each Showdown game. The
+reported series room links all three games, while the two supplied replay URLs
+were game 3 and game 2; blindly preserving paste order would corrupt chronology.
+The official `server/room-battle-bestof.ts` emits numbered room links and per-game
+`bestof`/`next` protocol metadata. Rooms are ephemeral and uploaded replays may be
+unavailable independently. Repeated opponents can play multiple unrelated sets.
+
+### Decision
+
+Add immutable acquisition DTOs and a domain-owned `SeriesReplayGateway` port.
+`ShowdownSeriesGateway` normalizes allowlisted Champions URLs, reads public room
+protocol through a short-lived guest WebSocket connection, fetches uploaded replay
+JSON and supplies bounded replay-search candidates. Container wires it to the
+request-scoped `SeriesReplayImporter`; UI calls only the composition-root method.
+
+The application accepts a room, any replay or a batch of URLs; it deduplicates,
+verifies exact series identity, orders by explicit game numbers and validates
+consistent series inputs. Search never accepts candidates merely because names
+match. Missing games retain their slots and block ordinary analysis when they
+leave a gap. Without series metadata, explicit manual inputs preserve paste order
+with a warning. Failed imports preserve existing inputs; successful imports clear
+the previous BO3 result. BO1 fetching remains independent.
+
+The separate Import BO3 action performs no quota consumption, model calls, login,
+chat or upload. Analyze BO3 remains the explicit action that incurs ordinary
+analysis quota/calls. Live rooms can expire; any uploaded replay can seed archived
+metadata/search discovery. If neither source is accessible, explain the limitation
+and retain manual inputs rather than inventing identifiers or bypassing privacy.
+
+Use existing requests plus an explicit `websockets>=15,<16` dependency. Bound host,
+path, redirects, response/frame size, request time and discovery counts. The server
+endpoint is the official client default. See `docs/bo3-import.md` for exact limits.
+
+Live validation also found that the Champions guard rejected the official JSON's
+human-readable `format` label, even when `formatid` was valid. Normalize that
+label exactly as protocol tier labels are normalized; keep `formatid` strict and
+continue rejecting foreign formats and mechanics.
+
+### Alternatives considered
+
+- Guess adjacent battle IDs: rejected; only explicit links/metadata identify games.
+- Group by usernames or timestamps: rejected because the same players can rematch.
+- Require a browser extension or session credentials: unnecessary for public room
+  and replay evidence, and adds installation/authentication friction.
+- Automatically upload each battle: requires player/session authority; excluded.
+
+### Consequences and validation
+
+One paste can populate all available published games, with an explicit review step.
+Room expiry, unavailable uploads and bounded search remain visible limitations.
+Tests cover real protocol shapes, reversed/duplicate input, expired-room fallback,
+missing slots, mismatched series/ordinals, unrelated rematches, allowlisted URLs,
+redirect/size/time limits, WebSocket closure, chat isolation, public JSON labels
+and UI imports without paid pipelines. Live read-only validation recovered games
+1/2/3 from the exact room reported by the user, with no model or Firestore access.
+
+### Files touched
+
+`domain/series_import.py`, domain gateway port, `adapters/showdown_series_gateway.py`,
+`services/series_import.py`, Container, BO3 UI import view, Champions JSON format
+validation, dependency declarations, documentation and acquisition/UI tests.

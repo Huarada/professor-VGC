@@ -258,6 +258,12 @@ lead changes and observed adjustments. Two wins end the series; missing games or
 an unfinished last game remain explicitly incomplete. Duplicate games, gaps in
 the UI inputs, changed players/regulations and games after two wins are refused.
 
+Use **Import BO3** to paste a series-room URL, any game replay, or multiple replay
+URLs together. The app discovers published games, verifies series identity and
+fills their official game slots before analysis. Missing games remain explicit;
+import uses no model calls or analysis quota. Individual inputs remain available
+for review. See [BO3 import and availability limits](docs/bo3-import.md).
+
 A BO3 submission uses one daily analysis slot, with per-game model calls plus a
 series synthesis. Use `Container.validate_series` before quota consumption and
 `Container.build_bo3_pipeline(...).analyze(Bo3AnalysisRequest(...))` from code.
