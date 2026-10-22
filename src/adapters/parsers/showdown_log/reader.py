@@ -32,11 +32,11 @@ def _read(text: str) -> ParseState:
             effect = parts[3].removeprefix("move:").strip().casefold()
             # These constrain move selection or cause a separate faint; they do
             # not modify the damage formula of an observed direct hit.
-            if effect not in {"encore", "perish song", "perish0", "perish1", "perish2", "perish3"}:
+            if effect not in {"encore", "disable", "throat chop", "perish song", "perish0", "perish1", "perish2", "perish3"}:
                 state.inference_exclusions.add(f"Unmodeled volatile effect: {parts[3]}")
         if parts[1] == "-ability" and any("[from]" in part for part in parts[4:]):
             state.inference_exclusions.add("Copied or changed ability needs initial-set attribution")
-        if parts[1] == "-singleturn" and len(parts) > 3 and parts[3].lower() not in {
+        if parts[1] == "-singleturn" and len(parts) > 3 and parts[3].removeprefix("move:").strip().casefold() not in {
             "helping hand", "protect", "detect", "wide guard", "quick guard", "spiky shield", "baneful bunker",
             "rage powder", "follow me",
         }:

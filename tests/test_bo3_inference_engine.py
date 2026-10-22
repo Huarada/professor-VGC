@@ -103,3 +103,23 @@ def test_reported_public_bo3_retrieves_natures_and_narrows_investment_without_mo
     assert narrowed.basis == "necessary_local_bounds"
     assert not any("Protect" in reason or "Grassy Surge" in reason for reason in final.unsupported)
     assert result.projections <= request.inference_options.max_projections
+
+
+def test_sauron_real_series_restores_eleven_damage_samples_with_the_actual_worker(engine):
+    from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
+    from src.services.bo3_inference.declarations import identities, visible_declarations
+    from src.services.bo3_inference.observations import observations
+    from tests.test_public_teamsheets import sauron_games
+
+    request = Bo3AnalysisRequest(session_id="sauron-damage-samples", games=sauron_games())
+    evidence, states = prepare_series(ShowdownReplayParser(), request)
+    sheet = ShowdownTeamSheetParser().parse(request.games)
+    initial, mappings = identities(evidence, states, sheet)
+    counts = []
+    for number, (state, mapping) in enumerate(zip(states, mappings), 1):
+        declared = visible_declarations(initial, sheet, number, "public")
+        found, skipped = observations(state, number, declared, mapping, engine, "percent")
+        counts.append(len(found))
+        assert not any("Unmodeled turn effect" in reason or "Unmodeled volatile effect" in reason for reason in skipped)
+        assert all(declared[key].nature for sample in found for key in (sample.attacker_id, sample.defender_id))
+    assert counts == [4, 5, 2]

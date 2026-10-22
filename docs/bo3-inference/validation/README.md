@@ -35,3 +35,33 @@ and observational. No model/API calls were made.
 - [Reproduction and judging methodology](../../../scripts/bo3_inference_benchmark/README.md)
 
 Corpus SHA-256 (canonical Pydantic JSON): `42ec36a4c2db176fa7ae2d6bf0bd1c8edc4a5b1f494b316259dd4d4b7d84c96c`.
+
+## User-reported real series 2702605271
+
+The [public-series regression report](sauron-public-regression.json) records
+sauronMobile vs miro kart ds, final score 1-2. The uploaded games' metadata
+confirms the exact BO3 room and game order. Twelve natures are declared in every
+game; hidden investment is unavailable. Spectator chat is removed from the
+versioned battle fixture.
+
+Normalizing `move:` on redirection effects, and treating Disable/Throat Chop as
+move-choice restrictions, restores eligible sample counts from 1/1/0 to 4/5/2.
+The actual worker verifies these counts. Unsupported survival mechanics,
+variable-power/critical/multihit attacks and active ability effects remain explicit.
+
+The corrected 60-second / 120,000-projection and 120-second / 200,000-projection
+searches both remain bounded, without narrowing any stat-point range. Neither run
+proves global feasibility or that no tighter constraint could be found by another
+search. The result validates acquisition and eligibility, not spread accuracy.
+It must not be converted into assumed 32/32 builds. These are manual observations
+on one installation, not a timing guarantee. No model calls were used.
+
+To run the fast offline real-protocol regressions:
+
+```bash
+python -m pytest -q tests/test_public_teamsheets.py tests/test_bo3_inference_engine.py -k sauron
+```
+
+The original live room had expired. Importing an uploaded seed populates the local
+public-link index, after which the expired room URL resolves on that installation.
+Fresh installations can use the game's public replay URL as their seed.

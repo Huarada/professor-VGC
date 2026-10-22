@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from src.adapters.parsers.showdown_parser import ShowdownReplayParser
+from src.adapters.parsers.showdown_parser import ShowdownReplayParser, parse_replay_for_viewer
 from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
 from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
 from src.domain.bo3_inference.models import DamageWitness, InferenceOptions
@@ -17,10 +17,32 @@ from src.services.series_analysis import prepare_series
 from tests.test_bo3_inference import AnalyticProjection, log, run, sheet, summary
 
 PUBLIC_FIXTURE = Path(__file__).parent / "fixtures/series/bo3-public-showteam-2702587956.json"
+SAURON_FIXTURE = Path(__file__).parent / "fixtures/series/bo3-public-showteam-2702605271.json"
 
 
 def public_games():
     return json.loads(PUBLIC_FIXTURE.read_text(encoding="utf-8"))["games"]
+
+
+def sauron_games():
+    return json.loads(SAURON_FIXTURE.read_text(encoding="utf-8"))["games"]
+
+
+def test_sauron_series_recovers_twelve_natures_and_preserves_real_redirection_protocol():
+    games = sauron_games()
+    sheet = ShowdownTeamSheetParser().parse(games)
+    assert sheet.registered_team and len(sheet.pokemon) == 36
+    for number in range(1, 4):
+        entries = [entry for entry in sheet.pokemon if entry.only_game == number]
+        assert len(entries) == 12 and all(entry.nature for entry in entries)
+        assert all(not entry.stat_points and not entry.ivs for entry in entries)
+    request = Bo3AnalysisRequest(session_id="sauron", games=games)
+    evidence, states = prepare_series(ShowdownReplayParser(), request)
+    assert evidence.complete and evidence.score == {"sauronMobile": 1, "miro kart ds": 2}
+    for source, state in zip(games, states):
+        assert "|move: Rage Powder" in source["log"]
+        assert not state.inference_exclusions
+        assert parse_replay_for_viewer(source).snapshots
 
 
 def packed_log(*, nature="Hardy", late=False, root=True):
@@ -164,6 +186,12 @@ def test_unknown_volatile_remains_excluded_instead_of_becoming_a_false_constrain
     "|-start|p2a: Incineroar|perish0|[silent]",
     "|-singleturn|p1a: Garchomp|Rage Powder",
     "|-singleturn|p1a: Garchomp|Follow Me",
+    "|-singleturn|p1a: Garchomp|move: Rage Powder",
+    "|-singleturn|p1a: Garchomp|move: Follow Me",
+    "|-singleturn|p1a: Garchomp|move: Protect",
+    "|-start|p1a: Garchomp|Throat Chop",
+    "|-end|p1a: Garchomp|Throat Chop",
+    "|-start|p1a: Garchomp|Disable|Dragon Claw",
 ])
 def test_selection_redirection_and_perish_counters_preserve_observed_direct_damage(effect):
     source = log().replace("|turn|1", effect + "\n|turn|1")

@@ -443,3 +443,11 @@ and raises a typed error if the narrator repeats it. This format guard is not a
 general natural-language factuality proof; per-game coaching still follows its
 existing ground-truth contract. No arbitrary LLM-driven candidate search is added:
 the bounded inverse search already calls the deterministic calculator directly.
+
+Real-series protocol regression: `tests/fixtures/series/bo3-public-showteam-2702605271.json`
+contains the public sauronMobile vs miro kart ds series, with spectator chat
+removed. The actual worker recognizes 4/5/2 eligible samples after normalizing
+the optional `move:` prefix on redirection effects and excluding move-choice
+restrictions from damage modifiers. Twelve declared natures are recovered in each
+game. Hidden investment is unavailable, so sample recovery is not a spread accuracy
+measurement. See the [validation notes](validation/README.md).

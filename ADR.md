@@ -4595,3 +4595,24 @@ No paid model calls or held-out real-game accuracy measurement is claimed.
 
 Parser inference eligibility, local factor search, series narration contract and
 prompt, BO3 UI, regression tests and inference methodology/semantics documentation.
+
+### Real-series protocol follow-up
+
+The user supplied room `game-bestof3-gen9championsvgc2026regmcbo3-2702605271`.
+Its live room had expired. Public player search located three uploaded games;
+their own metadata confirmed the exact room and game numbers. Importing an
+uploaded seed learned the verified public references, and a new importer then
+recovered all three games using the original expired-room URL.
+
+Unlike synthetic examples, real `-singleturn` redirection uses `move: Rage Powder`
+and `move: Follow Me`. Normalize that optional prefix before eligibility checks.
+Throat Chop and Disable constrain move choice rather than observed direct-hit
+damage, so they join Encore in the explicit non-damage-effect allowlist. Unknown
+effects and Substitute remain excluded. Freeze the public battle protocol without
+spectator chat as a separate real-series fixture. Regression tests verify all
+twelve natures in each game, the 1-2 score, replay frames and damage eligibility
+with the actual worker: 4, 5 and 2 samples instead of 1, 1 and 0.
+
+The real investment remains hidden. Recovering eleven samples does not establish
+an exact spread or an inference accuracy score; bounded search and supported
+mechanics still limit the result. No model calls are needed for this validation.

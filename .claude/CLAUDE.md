@@ -599,3 +599,8 @@ not a complete semantic factuality validator. BO1 narration remains unchanged.
 The existing battle panel is visible beside the selected BO3 game's review,
 before the series narrative, with independent persisted turn positions. Navigation
 does not analyze again. The latest inference checkpoint opens by default.
+
+Normalize the optional `move:` prefix on real `-singleturn` effects. Throat Chop
+and Disable also constrain move choice, not observed direct damage. Public series
+2702605271 freezes this protocol with twelve known natures and 4/5/2 eligible hits
+verified by the real worker; its hidden investment is not evaluation ground truth.
