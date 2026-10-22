@@ -74,3 +74,26 @@ tests mock the public protocol, HTTP responses and UI without network/model keys
 ```bash
 python -m pytest -q tests/test_series_import.py tests/test_ui_smoke.py
 ```
+
+
+## Public teamsheets and natures
+
+Import also extracts pre-battle `showteam` protocol exports from the published
+replays. These provide only the fields explicitly present: species, item, named
+ability, moves and nature. The BO3 form prefills the teamsheet and shows the count
+of declared natures. Analysis repeats extraction from raw/JSON replays, so it also
+works when the form was not prefilled. A known public nature stays fixed; a blank
+nature stays a search dimension. Redacted investment is never interpreted as zero.
+
+For the reported series, all 12 natures are public (Delphox and Dragapult Timid;
+Sylveon, Indeedee and Blaziken Modest; Incineroar Careful; the others Adamant).
+The shared official BO3 room identifier establishes registered-team continuity.
+Species previews or player names alone do not. Private manual investment can be
+added without becoming public; conflicting declarations fail before model calls.
+Late `showteam` lines are not used to justify earlier moves.
+
+The [public-series regression](bo3-inference/validation/public-teamsheet-regression.json)
+records declared natures, eligible damage and narrowed necessary bounds. Full
+hidden investment is unknown in these public logs; no hidden-set accuracy is
+claimed. A bounded joint search may still retain sound constraints from an
+exhaustively checked individual attack.

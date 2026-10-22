@@ -93,6 +93,10 @@ def observations(
                 reason = "Critical/multi-hit or unsupported move: " + move.reason
             elif any(mon.ability is None for mon in active.values()) or attacker.item is None or target.item is None:
                 reason = "Item or active ability is unknown; provide a teamsheet or earlier reveal"
+            elif to_id(target.item) in {"focussash", "focusband"} or any(
+                to_id(mon.ability) == "sturdy" for mon in (attacker, target)
+            ):
+                reason = "Survival item/ability requires additional damage support"
             elif any(to_id(mon.ability) in _UNMODELED for mon in active.values()):
                 reason = "An active ability requires additional runtime/stat modeling"
             elif any(mon.battle_formes and not mon.battle_formes[-1].startswith(mon.species + "-Mega")

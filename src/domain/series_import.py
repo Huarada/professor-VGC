@@ -6,6 +6,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from src.domain.bo3_inference.models import TeamSheet
+
 
 class ReplayLocation(BaseModel):
     model_config = ConfigDict(frozen=True)
@@ -41,3 +43,4 @@ class SeriesImportResult(BaseModel):
     series_id: str | None = None
     missing_games: tuple[int, ...] = ()
     warnings: tuple[str, ...] = ()
+    teamsheet: TeamSheet | None = None

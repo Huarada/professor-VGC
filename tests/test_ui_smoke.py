@@ -181,10 +181,41 @@ def test_bo3_import_fills_official_slots_without_building_a_paid_pipeline(monkey
 def _analyze_as_openai(at: AppTest) -> None:
     at.sidebar.selectbox[0].select("openai")
     at.run()
+
     at.text_area[0].input(_LOG_ATTACKED)
     at.text_input[0].input("Should Talonflame have protected on turn 3?")
     next(b for b in at.button if b.label == "Analyze").click()
     at.run()
+
+
+def test_import_retrieves_and_prefills_public_natures_without_a_paid_analysis(monkeypatch):
+    from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
+    from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesImportResult
+    from tests.test_public_teamsheets import public_games
+
+    class PublicContainer(_FakeContainer):
+        def import_bo3_replays(self, text):
+            games = public_games()
+            return SeriesImportResult(games=tuple(ImportedReplay(number=number, payload=json.dumps(game),
+                location=ReplayLocation(kind="replay", id=game["id"],
+                                        url="https://replay.pokemonshowdown.com/" + game["id"]))
+                for number, game in enumerate(games, 1)), teamsheet=ShowdownTeamSheetParser().parse(games))
+
+    monkeypatch.setattr("src.ui.battle_panel.http_head_ok", lambda url, timeout=2.0: False)
+    at = AppTest.from_file(_APP, default_timeout=120)
+    container = PublicContainer()
+    at.session_state["container"] = container
+    at.run()
+    at.radio[0].set_value("Best of three").run()
+    at.text_area(key="bo3_import_source").input("https://play.pokemonshowdown.com/game-bestof3-gen9championsvgc2026regmcbo3-2702587956")
+    next(button for button in at.button if button.label == "Import BO3").click().run()
+    assert not at.exception
+    value = json.loads(at.text_area(key="bo3_teamsheet").value)
+    assert value["registered_team"]
+    assert len(value["pokemon"]) == 36
+    assert next(entry for entry in value["pokemon"] if entry["species"] == "Delphox")["nature"] == "Timid"
+    assert any("12 declared natures" in caption.value for caption in at.caption)
+    assert container.pipelines_built == 0
 
 
 def test_openai_quota_counts_down_then_blocks_without_calling_the_model(monkeypatch):

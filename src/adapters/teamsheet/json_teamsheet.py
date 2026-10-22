@@ -27,6 +27,8 @@ class JsonTeamSheetParser:
                 fields = {field: provenance for field in ("item", "ability", "nature")
                           if getattr(entry, field) is not None}
                 fields.update({f"stat_points.{stat}": provenance for stat in entry.stat_points})
+                if entry.moves:
+                    fields["moves"] = provenance
                 entries.append(entry.model_copy(update={"field_sources": fields}))
             return sheet.model_copy(update={"pokemon": tuple(entries)})
         except (ValidationError, ValueError, TypeError) as exc:

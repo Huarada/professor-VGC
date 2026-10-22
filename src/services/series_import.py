@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from src.domain.exceptions import ReplayFetchError, SeriesValidationError
-from src.domain.interfaces import LogParser, SeriesReplayGateway
+from src.domain.interfaces import LogParser, ReplayTeamSheetParser, SeriesReplayGateway
 from src.domain.series import Bo3AnalysisRequest
 from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesImportResult
 from src.services.series_analysis import prepare_series
@@ -12,9 +12,11 @@ from src.services.series_analysis import prepare_series
 class SeriesReplayImporter:
     """One request-scoped import; no quota use, model calls or replay uploads."""
 
-    def __init__(self, *, gateway: SeriesReplayGateway, parser: LogParser) -> None:
+    def __init__(self, *, gateway: SeriesReplayGateway, parser: LogParser,
+                 public_sheets: ReplayTeamSheetParser | None = None) -> None:
         self._gateway = gateway
         self._parser = parser
+        self._public_sheets = public_sheets
         self._cache: dict[str, ImportedReplay] = {}
         self._failures: dict[str, str] = {}
 
@@ -99,7 +101,9 @@ class SeriesReplayImporter:
         if not missing:
             self._validate(ordered)
         return SeriesImportResult(games=ordered, series_id=series_id, missing_games=tuple(sorted(missing)),
-                                  warnings=tuple(dict.fromkeys(warnings)))
+                                  warnings=tuple(dict.fromkeys(warnings)),
+                                  teamsheet=self._public_sheets.parse([game.payload for game in ordered])
+                                  if self._public_sheets and not missing else None)
 
     @staticmethod
     def _add(games: dict[int, ImportedReplay], replay: ImportedReplay, series_id: str,
@@ -135,7 +139,9 @@ class SeriesReplayImporter:
             raise SeriesValidationError("A BO3 import requires one to three battle replays.")
         games = tuple(replay.model_copy(update={"number": number}) for number, replay in enumerate(explicit, 1))
         self._validate(games)
-        return SeriesImportResult(games=games, warnings=(
+        return SeriesImportResult(games=games,
+                                  teamsheet=self._public_sheets.parse([game.payload for game in games]) if self._public_sheets else None,
+                                  warnings=(
             "These replays contain no series identifier; the supplied order was kept. Verify the game order before analysis.",))
 
     def _validate(self, games: tuple[ImportedReplay, ...]) -> None:

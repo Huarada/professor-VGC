@@ -39,6 +39,7 @@ class DeclaredSet(Value):
     ivs: dict[StatName, int] = Field(default_factory=dict)
     visibility: Literal["public", "owner_private", "analyst_only"] = "public"
     available_from_game: int = Field(default=1, ge=1, le=3)
+    only_game: int | None = Field(default=None, ge=1, le=3)
     source: str = "user_teamsheet"
     field_sources: dict[str, FieldSource] = Field(default_factory=dict)
 
@@ -79,7 +80,8 @@ class TeamSheet(Value):
 
     @model_validator(mode="after")
     def unique_slots(self) -> TeamSheet:
-        keys = [(entry.participant.casefold(), entry.slot, entry.visibility, entry.available_from_game)
+        keys = [(entry.participant.casefold(), entry.slot, entry.visibility, entry.available_from_game,
+                 entry.only_game, entry.source)
                 for entry in self.pokemon]
         if len(keys) != len(set(keys)):
             raise ValueError("Duplicate teamsheet slot/audience/availability declaration.")
@@ -100,7 +102,7 @@ class InferenceOptions(Value):
     perspective: str = "public"
     hp_mode: Literal["percent", "exact"] = "percent"
     max_assignments: int = Field(default=12000, ge=1, le=100000)
-    max_projections: int = Field(default=30000, ge=1, le=200000)
+    max_projections: int = Field(default=120000, ge=1, le=200000)
     max_cache_entries: int = Field(default=4096, ge=64, le=20000)
     timeout_seconds: float = Field(default=20, gt=0, le=120)
 
@@ -193,10 +195,13 @@ class CandidateSummary(Value):
     species: str
     stat_points: dict[StatName, PointRange]
     natures: tuple[str, ...]
-    basis: Literal["declarations", "compatible_assignments"]
+    basis: Literal["declarations", "compatible_assignments", "necessary_local_bounds"]
     declared_stat_points: tuple[StatName, ...] = ()
     nature_declared: bool = False
     field_sources: dict[str, FieldSource] = Field(default_factory=dict)
+    declared_item: str | None = None
+    declared_ability: str | None = None
+    declared_moves: tuple[str, ...] = ()
 
 
 class InferenceCheckpoint(Value):
@@ -212,6 +217,8 @@ class InferenceCheckpoint(Value):
     unsupported: tuple[str, ...] = ()
     summaries: tuple[CandidateSummary, ...] = ()
     joint_examples: tuple[dict[str, CandidateProfile], ...] = ()
+    local_constraints: tuple[str, ...] = ()
+    local_evaluated_assignments: int = 0
 
 
 class Bo3InferenceEvidence(Value):

@@ -64,7 +64,7 @@ def visible_declarations(
 ) -> dict[str, DeclaredSet]:
     result = {key: entry for key, entry in initial.items() if entry.available_from_game <= number}
     for entry in sheet.pokemon:
-        if entry.available_from_game > number:
+        if entry.available_from_game > number or entry.only_game is not None and entry.only_game != number:
             continue
         visible = entry.visibility == "public" or perspective == "analyst" or (
             entry.visibility == "owner_private" and person(perspective) == person(entry.participant)
@@ -77,7 +77,7 @@ def visible_declarations(
         changes: dict[str, object] = {"source": previous.source + ";" + entry.source}
         for field in ("nature", "item", "ability"):
             old, new = getattr(previous, field), getattr(entry, field)
-            if old is not None and new is not None and str(old).casefold() != str(new).casefold():
+            if old is not None and new is not None and to_id(str(old)) != to_id(str(new)):
                 raise SeriesValidationError(f"Conflicting declared {field} for {pokemon_id}.")
             changes[field] = new if new is not None else old
         points = dict(previous.stat_points)
@@ -86,12 +86,39 @@ def visible_declarations(
                 raise SeriesValidationError(f"Conflicting declared stat points for {pokemon_id}.")
             points[stat] = value
         changes["stat_points"] = points
+        moves = {to_id(move): move for move in (*previous.moves, *entry.moves)}
+        if len(moves) > 4:
+            raise SeriesValidationError(f"Declared moves exceed four for {pokemon_id}.")
+        changes["moves"] = tuple(moves.values())
         changes["field_sources"] = {**previous.field_sources, **entry.field_sources}
         try:
             result[pokemon_id] = DeclaredSet.model_validate({**previous.model_dump(), **changes})
         except ValueError as exc:
             raise SeriesValidationError(str(exc)) from exc
     return result
+
+
+def merge_sheets(manual: TeamSheet, public: TeamSheet) -> TeamSheet:
+    """Preserve manual slot identities while adding visible public facts, never overrides."""
+    slots = {(person(entry.participant), base(entry.species)): entry.slot for entry in manual.pokemon}
+    occupied: dict[str, set[int]] = {}
+    for (owner, _), slot in slots.items():
+        occupied.setdefault(owner, set()).add(slot)
+    entries = list(manual.pokemon)
+    for entry in public.pokemon:
+        owner = person(entry.participant)
+        key = (owner, base(entry.species))
+        if key not in slots:
+            used = occupied.setdefault(owner, set())
+            slot = entry.slot if entry.slot not in used else next((i for i in range(1, 7) if i not in used), 0)
+            if not slot:
+                raise SeriesValidationError("Manual and public teamsheets cannot fit six registered slots.")
+            slots[key] = slot
+            used.add(slot)
+        candidate = entry.model_copy(update={"slot": slots[key]})
+        if candidate not in entries:
+            entries.append(candidate)
+    return TeamSheet(registered_team=manual.registered_team or public.registered_team, pokemon=tuple(entries))
 
 
 def with_reveals(

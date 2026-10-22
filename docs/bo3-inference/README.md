@@ -25,7 +25,7 @@ Choose percent mode for rounded public HP; exact mode requires actual HP values.
 From Python, pass `teamsheet` (dict or JSON string) and `InferenceOptions` in
 `Bo3AnalysisRequest` to the existing BO3 pipeline. `result.inference` holds typed
 checkpoints; `enabled=False` disables the stage. Default budgets: 12,000 assignments
-per checkpoint, 30,000 projections overall, 20 seconds and 4,096 cached projections.
+per checkpoint, 120,000 projections overall, 20 seconds and 4,096 cached projections.
 Limits are configurable. Exhaustion yields bounded coverage and preserves sound
 prior bounds. Samples never prove uniqueness or an exhaustive damage range.
 
@@ -389,3 +389,33 @@ python -m scripts.bo3_inference_benchmark.run --out /tmp/bo3-validation.json
 The command exits nonzero for failed gates or unavailable infrastructure. CI runs
 it on Python 3.12. Inputs and [archived results](validation/README.md) are versioned.
 Synthetic retention and engine consistency do not establish held-out accuracy.
+
+
+### Public-sheet retrieval and necessary local bounds
+
+Pre-battle Showdown `showteam` packed exports are extracted automatically on import
+and analysis. Only explicit public item/ability/move/nature fields become facts;
+redacted investment remains unknown. `only_game` scopes each public sheet to its
+own game. Public and private declarations retain independent provenance and
+visibility, and contradictory known fields are refused. Shared official BO3 room
+metadata establishes registration continuity without an extra manual assertion.
+
+Protect/Detect and modeled terrain/passive recovery do not disable unrelated
+later attacks. Truly unmodeled runtime effects remain explicit exclusions. The
+parser uses the correct distinct protocol positions for side and field effects.
+
+If the full Cartesian space exceeds the joint assignment limit, the solver can
+exhaustively evaluate one affordable individual damage constraint after each game.
+The local limit is at most four times `max_assignments`, capped at 100,000; it
+shares the global projection/time budgets. Earlier completed proofs are reused in
+before-game checkpoints. Partial local searches cannot narrow ranges. Completed
+local proofs supply necessary outer bounds while joint coverage stays bounded.
+They neither supply fabricated global joint examples nor prove global feasibility.
+`local_constraints`, `local_evaluated_assignments` and `necessary_local_bounds`
+make that distinction visible. Missing nature remains a dimension of either search,
+not a reason to skip otherwise eligible observations.
+
+The default projection budget is 120,000 per request, with the existing 20-second
+time limit and 4,096 cache entries. Existing archived synthetic fixtures explicitly
+retain their original 30,000-projection settings. The public-series regression
+uses a 60-second validation budget and has no hidden investment ground truth.

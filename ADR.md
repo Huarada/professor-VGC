@@ -4405,3 +4405,76 @@ and UI imports without paid pipelines. Live read-only validation recovered games
 `domain/series_import.py`, domain gateway port, `adapters/showdown_series_gateway.py`,
 `services/series_import.py`, Container, BO3 UI import view, Champions JSON format
 validation, dependency declarations, documentation and acquisition/UI tests.
+
+
+---
+
+## ADR-046 ? Retrieve public BO3 sheets and preserve useful local inference
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+The reported series contains `showteam` protocol exports with all twelve natures,
+items, abilities and moves, but import populated only replay inputs. Inference
+therefore treated public facts as unknown. A second issue marked Protect turns
+and Grassy Surge as permanent unsupported state: field-start arguments were read
+at the side-start position. Once eligible hits were restored, a full Cartesian
+search across many hidden sets exhausted assignments without useful global output.
+
+### Decision
+
+Add a domain `ReplayTeamSheetParser` port and an adapter for pre-battle packed
+public exports. Inject it into BO3 acquisition and inference. Preserve only fields
+explicitly present; do not supply a default nature or treat redacted investments
+as zero. Scope each sheet to its game, retain field provenance/audience, merge
+manual private inputs using stable roster identities and reject contradictions.
+Ignore spectator chat and late exports for earlier decisions. Known public items,
+abilities and moves also appear in typed checkpoint summaries for the narrator.
+
+The official server BO3 context uses a registered team across its games; matching
+explicit room IDs permit continuity. Previews/names alone do not. Validate that
+known public fields do not change within that registered context. Cosmetic gender
+changes do not change registered investment. Import prefills sheets; direct BO3
+analysis re-extracts them so the behavior does not depend on UI state.
+
+Read field-start and side-start effects at their respective protocol positions.
+Protect/Detect and related modeled blocking effects do not invalidate unrelated
+later hits; blocked hits remain excluded. Modeled terrain and raw HP updates handle
+passive recovery. Unmodeled effects continue to fail conservatively. Skip known
+unsupported survival mechanics before spending candidate projection budget.
+
+When a joint space exceeds the assignment limit, evaluate at most one affordable
+local damage factor after each game, exhaustively. Its assignment cap is four times
+the joint limit, at most 100,000, under the same projection/time budget. Cache only
+completed proofs. Necessary marginal bounds may tighten a bounded joint result;
+local examples never become global witnesses. Mark their basis and scope explicitly,
+and do not claim uniqueness or global feasibility. Before-game checkpoints reuse
+only earlier proofs. Default projections rise to 120,000, still capped by the
+20-second deadline. Users can configure budgets; archived fixtures keep theirs.
+
+### Alternatives considered
+
+- Guess popular natures/sets: rejected; public declared facts and hidden search
+  dimensions must remain distinct.
+- Treat missing nature as unsupported: rejected; the legal nature space is known.
+- Narrow from sampled Cartesian candidates: rejected because omitted regions may
+  contain valid sets. Only completed local constraints justify additional bounds.
+- Remove all runtime exclusions: rejected; unsupported mechanics remain explicit.
+
+### Consequences and validation
+
+The real public series now supplies all twelve known natures and eligible damage.
+At least one investment range narrows while global coverage remains bounded. Full
+hidden investment is unavailable, so this is not an accuracy/retention benchmark.
+No paid explanation calls are used. Tests freeze the user-reported public series
+in a dedicated series-fixture namespace and cover extraction, redaction, privacy,
+chronology, conflicts, partial/global distinction, resource bounds, the real calc
+worker and UI prefill without a paid pipeline. Synthetic analytic and engine
+validation benches remain separate.
+
+### Files touched
+
+Public teamsheet adapter/port, BO3 import DTO/service/UI, inference declarations,
+checkpoint summaries, bounded local solver, parser effect eligibility, composition
+root, explanation prompts, regression fixtures/tests and documentation.

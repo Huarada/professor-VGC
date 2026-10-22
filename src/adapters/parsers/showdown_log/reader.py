@@ -32,14 +32,17 @@ def _read(text: str) -> ParseState:
             state.inference_exclusions.add(f"Unmodeled volatile effect: {parts[3]}")
         if parts[1] == "-ability" and any("[from]" in part for part in parts[4:]):
             state.inference_exclusions.add("Copied or changed ability needs initial-set attribution")
-        if parts[1] == "-singleturn" and len(parts) > 3 and "helping hand" not in parts[3].lower():
+        if parts[1] == "-singleturn" and len(parts) > 3 and parts[3].lower() not in {
+            "helping hand", "protect", "detect", "wide guard", "quick guard", "spiky shield", "baneful bunker",
+        }:
             state.inference_exclusions.add(f"Unmodeled turn effect: {parts[3]}")
-        if parts[1] in {"-sidestart", "-fieldstart"} and len(parts) > 3:
+        effect_index = 2 if parts[1] == "-fieldstart" else 3
+        if parts[1] in {"-sidestart", "-fieldstart"} and len(parts) > effect_index:
             known = {"tailwind", "reflect", "lightscreen", "auroraveil", "trickroom", "gravity",
                      "magicroom", "wonderroom", "electricterrain", "grassyterrain", "psychicterrain", "mistyterrain"}
-            name = parts[3].replace("move:", "").strip().lower().replace(" ", "")
+            name = parts[effect_index].replace("move:", "").strip().lower().replace(" ", "")
             if name not in known:
-                state.inference_exclusions.add(f"Unmodeled field effect: {parts[3]}")
+                state.inference_exclusions.add(f"Unmodeled field effect: {parts[effect_index]}")
         state.reveal_ability_from(parts)
         handler = handlers.get(parts[1])
         if handler is not None:

@@ -17,6 +17,7 @@ def _import(container: Container) -> None:
     for number in range(1, 4):
         st.session_state[f"bo3_source_{number}"] = by_number.get(number, "")
     st.session_state["bo3_import_receipt"] = result
+    st.session_state["bo3_teamsheet"] = result.teamsheet.model_dump_json(indent=2) if result.teamsheet else ""
     for key in ("bo3_result", "bo3_replays", "bo3_error", "bo3_import_error"):
         st.session_state.pop(key, None)
 
@@ -35,5 +36,10 @@ def render_series_import(container: Container) -> None:
         st.success(f"Imported {len(receipt.games)} game(s). Review the games below, then analyze the series.")
         for game in receipt.games:
             st.markdown(f"Game {game.number}: [Replay]({game.location.url})")
+        if receipt.teamsheet and receipt.teamsheet.pokemon:
+            first = [entry for entry in receipt.teamsheet.pokemon if entry.available_from_game == 1]
+            st.caption(f"Public teamsheets retrieved: {len(first)} Pokemon, "
+                       f"{sum(entry.nature is not None for entry in first)} declared natures. "
+                       "Hidden stat points remain unknown and are searched from damage evidence.")
         for warning in receipt.warnings:
             st.warning(warning)

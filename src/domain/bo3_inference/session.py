@@ -34,6 +34,8 @@ def summarize(
                             natures=tuple(sorted({n for family in families for n in family.natures})),
                             basis="compatible_assignments" if candidates else "declarations",
                             declared_stat_points=tuple(declaration.stat_points), nature_declared=declaration.nature is not None,
+                            declared_item=declaration.item, declared_ability=declaration.ability,
+                            declared_moves=declaration.moves,
                             field_sources=dict(declaration.field_sources))
 
 
@@ -56,7 +58,9 @@ def retain_known_bounds(current: InferenceCheckpoint, previous: InferenceCheckpo
             return current.model_copy(update={"outcome": "conflict", "coverage": "exhaustive",
                                               "compatible_families": 0, "summaries": previous.summaries,
                                               "unsupported": (*current.unsupported, "New declarations contradict prior compatible bounds")})
-        summaries.append(summary.model_copy(update={"stat_points": ranges, "natures": natures}))
+        inferred = ranges != summary.stat_points and old.basis != "declarations"
+        summaries.append(summary.model_copy(update={"stat_points": ranges, "natures": natures,
+            "basis": "necessary_local_bounds" if inferred else summary.basis}))
     return current.model_copy(update={"summaries": tuple(summaries)})
 
 

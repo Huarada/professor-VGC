@@ -11,6 +11,13 @@ from __future__ import annotations
 
 from typing import Any, Protocol, Sequence, runtime_checkable
 
+from src.domain.bo3_inference.models import (
+    DamageSupport,
+    MoveSupport,
+    ProjectionRequest,
+    RuleProfile,
+    TeamSheet,
+)
 from src.domain.models import (
     AnalysisRequest,
     AnalysisResult,
@@ -28,9 +35,14 @@ from src.domain.models import (
 from src.domain.regulation import RegulationRoster
 from src.domain.series import Bo3AnalysisRequest, Bo3AnalysisResult
 from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesRoomGame
-from src.domain.bo3_inference.models import (
-    DamageSupport, MoveSupport, ProjectionRequest, RuleProfile, TeamSheet,
-)
+
+
+@runtime_checkable
+class ReplayTeamSheetParser(Protocol):
+    """Extract only public, explicitly published team fields from replay protocol."""
+
+    def parse(self, games: Sequence[dict[str, Any] | str]) -> TeamSheet:
+        ...
 
 
 @runtime_checkable

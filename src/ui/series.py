@@ -6,9 +6,9 @@ from typing import Any
 
 import streamlit as st
 
+from src.domain.bo3_inference.models import Bo3InferenceEvidence, InferenceOptions
 from src.domain.exceptions import ProfessorVGCError, SeriesValidationError
 from src.domain.series import Bo3AnalysisRequest
-from src.domain.bo3_inference.models import InferenceOptions, Bo3InferenceEvidence
 from src.services.container import Container
 from src.ui.battle_panel import current_turn_number, render_battle_panel
 from src.ui.results import render_result
@@ -102,6 +102,9 @@ def render_inference(evidence: Bo3InferenceEvidence) -> None:
         if checkpoint.phase != "after_game":
             continue
         with st.expander(f"After game {checkpoint.game}: {checkpoint.outcome} ({checkpoint.coverage})"):
+            st.caption(f"Eligible damage observations: {len(checkpoint.observation_ids)} · "
+                       f"Joint assignments evaluated: {checkpoint.evaluated_assignments} · "
+                       f"Exhaustive local constraints: {len(checkpoint.local_constraints)}")
             if checkpoint.coverage != "exhaustive":
                 st.info("The search is incomplete or unsupported. Displayed ranges retain unresolved possibilities.")
             if checkpoint.outcome == "conflict":

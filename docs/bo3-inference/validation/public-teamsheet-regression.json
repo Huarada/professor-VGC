@@ -1,0 +1,367 @@
+{
+  "date": "2026-10-22",
+  "source": "public user-reported Showdown series 2702587956",
+  "fixture_sha256": "e783287412447e9c07fb2403fc69627543b13f4b98ca2d8b32c1ae132d13b3c4",
+  "engine_version": "0.12.0",
+  "rule_version": "champions-stat-points-66-32-v1",
+  "options": {
+    "enabled": true,
+    "perspective": "public",
+    "hp_mode": "percent",
+    "max_assignments": 12000,
+    "max_projections": 120000,
+    "max_cache_entries": 4096,
+    "timeout_seconds": 60.0
+  },
+  "continuity": "registered_team",
+  "public_natures": 12,
+  "projections": 108611,
+  "model_calls": 0,
+  "hidden_investment_ground_truth_available": false,
+  "joint_inference_complete": false,
+  "limitations": [
+    "These are public replay observations with declared natures, not known investment truth.",
+    "Necessary local bounds do not establish a complete joint spread or global feasibility."
+  ],
+  "checkpoints": [
+    {
+      "game": 1,
+      "outcome": "ambiguous",
+      "coverage": "bounded",
+      "eligible_observations": 4,
+      "local_constraints": [
+        "g1:e19:p1:Incineroar"
+      ],
+      "local_assignments": 35937,
+      "joint_assignments": 12000,
+      "natures": {
+        "tz999:slot1": {
+          "species": "Delphox",
+          "natures": [
+            "Timid"
+          ],
+          "declared": true
+        },
+        "tz999:slot2": {
+          "species": "Annihilape",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "tz999:slot3": {
+          "species": "Sylveon",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "tz999:slot4": {
+          "species": "Incineroar",
+          "natures": [
+            "Careful"
+          ],
+          "declared": true
+        },
+        "tz999:slot5": {
+          "species": "Rillaboom",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "tz999:slot6": {
+          "species": "Metagross",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot1": {
+          "species": "Indeedee",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot2": {
+          "species": "Blaziken",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot3": {
+          "species": "Dragapult",
+          "natures": [
+            "Timid"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot4": {
+          "species": "Excadrill",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot5": {
+          "species": "Tyranitar",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot6": {
+          "species": "Corviknight",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        }
+      },
+      "narrowed_ranges": {
+        "tz999:slot4": {
+          "hp": {
+            "minimum": 3,
+            "maximum": 32
+          }
+        }
+      },
+      "unsupported": [
+        "g1:e13:p2:Tyranitar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g1:e22:p1:Incineroar: Raw HP measurement is missing"
+      ]
+    },
+    {
+      "game": 2,
+      "outcome": "ambiguous",
+      "coverage": "bounded",
+      "eligible_observations": 11,
+      "local_constraints": [
+        "g1:e19:p1:Incineroar",
+        "g2:e9:p1:Sylveon"
+      ],
+      "local_assignments": 71874,
+      "joint_assignments": 12000,
+      "natures": {
+        "tz999:slot1": {
+          "species": "Delphox",
+          "natures": [
+            "Timid"
+          ],
+          "declared": true
+        },
+        "tz999:slot2": {
+          "species": "Annihilape",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "tz999:slot3": {
+          "species": "Sylveon",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "tz999:slot4": {
+          "species": "Incineroar",
+          "natures": [
+            "Careful"
+          ],
+          "declared": true
+        },
+        "tz999:slot5": {
+          "species": "Rillaboom",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "tz999:slot6": {
+          "species": "Metagross",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot1": {
+          "species": "Indeedee",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot2": {
+          "species": "Blaziken",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot3": {
+          "species": "Dragapult",
+          "natures": [
+            "Timid"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot4": {
+          "species": "Excadrill",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot5": {
+          "species": "Tyranitar",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot6": {
+          "species": "Corviknight",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        }
+      },
+      "narrowed_ranges": {
+        "tz999:slot4": {
+          "hp": {
+            "minimum": 3,
+            "maximum": 32
+          }
+        }
+      },
+      "unsupported": [
+        "g1:e13:p2:Tyranitar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g1:e22:p1:Incineroar: Raw HP measurement is missing",
+        "g2:e17:p1:Sylveon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g2:e21:p1:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g2:e22:p2:Excadrill: Survival item/ability requires additional damage support"
+      ]
+    },
+    {
+      "game": 3,
+      "outcome": "ambiguous",
+      "coverage": "bounded",
+      "eligible_observations": 20,
+      "local_constraints": [
+        "g3:e28:p1:Delphox",
+        "g1:e19:p1:Incineroar",
+        "g2:e9:p1:Sylveon"
+      ],
+      "local_assignments": 107811,
+      "joint_assignments": 12000,
+      "natures": {
+        "tz999:slot1": {
+          "species": "Delphox",
+          "natures": [
+            "Timid"
+          ],
+          "declared": true
+        },
+        "tz999:slot2": {
+          "species": "Annihilape",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "tz999:slot3": {
+          "species": "Sylveon",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "tz999:slot4": {
+          "species": "Incineroar",
+          "natures": [
+            "Careful"
+          ],
+          "declared": true
+        },
+        "tz999:slot5": {
+          "species": "Rillaboom",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "tz999:slot6": {
+          "species": "Metagross",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot1": {
+          "species": "Indeedee",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot2": {
+          "species": "Blaziken",
+          "natures": [
+            "Modest"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot3": {
+          "species": "Dragapult",
+          "natures": [
+            "Timid"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot4": {
+          "species": "Excadrill",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot5": {
+          "species": "Tyranitar",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        },
+        "Test 12414:slot6": {
+          "species": "Corviknight",
+          "natures": [
+            "Adamant"
+          ],
+          "declared": true
+        }
+      },
+      "narrowed_ranges": {
+        "tz999:slot4": {
+          "hp": {
+            "minimum": 3,
+            "maximum": 32
+          }
+        }
+      },
+      "unsupported": [
+        "g1:e13:p2:Tyranitar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g1:e22:p1:Incineroar: Raw HP measurement is missing",
+        "g2:e17:p1:Sylveon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g2:e21:p1:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g2:e22:p2:Excadrill: Survival item/ability requires additional damage support",
+        "g3:e17:p2:Dragapult: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g3:e23:p2:Tyranitar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+        "g3:e35:p2:Excadrill: Survival item/ability requires additional damage support"
+      ]
+    }
+  ]
+}

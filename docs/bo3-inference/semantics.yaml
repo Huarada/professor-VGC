@@ -198,3 +198,21 @@ delivery_stages:
   - chronological_series_checkpoints
   - bo3_coaching_integration
   - extended_evidence_and_evaluation
+
+
+public_sheet_retrieval:
+  protocol: prebattle_showteam
+  fields: [species, item, named_ability, moves, nature]
+  empty_nature: unknown_search_dimension
+  redacted_investment: unknown_not_zero
+  scope: only_game_with_public_provenance
+  continuity: verified_shared_official_bestof3_room
+  late_or_chat_exports: excluded_from_earlier_inference
+local_constraint_search:
+  purpose: necessary_outer_bounds_when_joint_search_is_bounded
+  maximum_new_factor_attempts_per_after_game: 1
+  assignment_cap: min_100000_and_four_times_joint_assignment_limit
+  shares_request_time_and_projection_budgets: true
+  partial_factors_can_narrow: false
+  local_examples_are_global_witnesses: false
+  global_feasibility_or_uniqueness_claim: forbidden_without_exhaustive_joint_search

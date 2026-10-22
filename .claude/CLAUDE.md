@@ -550,3 +550,22 @@ without metadata retain supplied order with a warning. Keep BO1 fetching stable.
 Public room discovery uses a bounded guest WebSocket; expired rooms can fall back
 to uploaded replay links and bounded public search. Hosts/IDs, redirects, sizes,
 time and read counts are bounded. See `docs/bo3-import.md` for limits and tests.
+
+
+## 16. Public BO3 sheets and local constraints (ADR-046)
+
+`ReplayTeamSheetParser` extracts pre-battle `showteam` exports in BO3 only. Public
+item/ability/move/nature fields retain source, audience, availability and `only_game`.
+Never default a blank nature or redacted investment. Import prefills the form;
+analysis re-extracts independently. Verified shared official BO3 room metadata can
+establish registration continuity. Manual private facts remain private; conflicts
+are refused. Cosmetic gender changes are irrelevant to registered investment.
+
+Protect/Detect and modeled terrain/passive recovery do not disable later direct
+hits. Keep genuinely unknown state excluded. Side/field protocol positions differ.
+For large joint searches, one affordable exhaustive local factor after each game
+can supply `necessary_local_bounds`; before-game checkpoints reuse prior proofs.
+Local examples never become global joint evidence, and bounded coverage cannot
+prove uniqueness/global feasibility. Local limits share projection/time budgets;
+default projections 120,000, deadline 20 seconds, cache 4,096. Public-series
+regression uses 60 seconds and has no hidden investment truth. See ADR-046.

@@ -260,7 +260,9 @@ the UI inputs, changed players/regulations and games after two wins are refused.
 
 Use **Import BO3** to paste a series-room URL, any game replay, or multiple replay
 URLs together. The app discovers published games, verifies series identity and
-fills their official game slots before analysis. Missing games remain explicit;
+fills their official game slots before analysis. Pre-battle public teamsheets
+(including disclosed natures) are retrieved automatically; redacted stat points
+remain inference dimensions. Missing games remain explicit;
 import uses no model calls or analysis quota. Individual inputs remain available
 for review. See [BO3 import and availability limits](docs/bo3-import.md).
 

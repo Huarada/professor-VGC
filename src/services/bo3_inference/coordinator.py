@@ -11,12 +11,17 @@ from src.domain.bo3_inference.models import (
 )
 from src.domain.bo3_inference.session import SeriesInferenceSession, retain_known_bounds
 from src.domain.exceptions import CalcEngineError, SeriesValidationError
-from src.domain.interfaces import CandidateProjectionPort, TeamSheetParser
+from src.domain.interfaces import (
+    CandidateProjectionPort,
+    ReplayTeamSheetParser,
+    TeamSheetParser,
+)
 from src.domain.models import GameState
 from src.domain.names import to_id
 from src.domain.series import Bo3AnalysisRequest, Bo3Evidence
 from src.services.bo3_inference.declarations import (
     identities,
+    merge_sheets,
     person,
     visible_declarations,
     with_reveals,
@@ -29,12 +34,16 @@ from src.services.bo3_inference.solver import ProjectionBudget, solve
 class Bo3InferenceCoordinator:
     """A bounded deterministic stage, shared by all BO3 explanation backends."""
 
-    def __init__(self, *, sheets: TeamSheetParser, projection: CandidateProjectionPort) -> None:
+    def __init__(self, *, sheets: TeamSheetParser, projection: CandidateProjectionPort,
+                 public_sheets: ReplayTeamSheetParser | None = None) -> None:
         self._sheets = sheets
         self._projection = projection
+        self._public_sheets = public_sheets
 
     def validate(self, request: Bo3AnalysisRequest, evidence: Bo3Evidence, games: Sequence[GameState]) -> TeamSheet:
         sheet = self._sheets.parse(request.teamsheet)
+        if self._public_sheets:
+            sheet = merge_sheets(sheet, self._public_sheets.parse(request.games))
         initial, maps = identities(evidence, games, sheet)
         perspective = request.inference_options.perspective
         if perspective not in {"public", "analyst"} and person(perspective) not in {person(name) for name in evidence.players}:

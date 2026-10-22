@@ -21,7 +21,7 @@ from src.domain.bo3_inference.models import (
     RuleProfile,
     StatName,
 )
-from src.domain.bo3_inference.session import summarize
+from src.domain.bo3_inference.session import retain_known_bounds, summarize
 from src.domain.exceptions import CalcEngineError
 from src.domain.interfaces import CandidateProjectionPort
 from src.domain.names import to_id
@@ -38,6 +38,7 @@ class ProjectionBudget:
         self.deadline = time.monotonic() + options.timeout_seconds
         self.cache: OrderedDict[str, DamageSupport] = OrderedDict()
         self.projections = 0
+        self.factor_checkpoints: dict[str, InferenceCheckpoint] = {}
 
     def project(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
         keys = [request.model_dump_json() for request in requests]
@@ -108,10 +109,11 @@ def evaluate_batch(
     return alive, unresolved.intersection(alive), reasons
 
 
-def solve(
+def enumerate_constraints(
     *, game: int, phase: Literal["before_game", "after_game"], declarations: Mapping[str, DeclaredSet],
     observations: Sequence[DamageObservation], unsupported: Sequence[str], rules: RuleProfile,
     budget: ProjectionBudget,
+    assignment_limit: int | None = None,
 ) -> InferenceCheckpoint:
     axes = relevant_axes(observations)
     families: dict[str, dict[str, CandidateProfile]] = {key: {} for key in axes}
@@ -120,9 +122,10 @@ def solve(
     reasons = set(unsupported)
     partial = False
     iterator: Iterator[dict[str, CandidateProfile]] = joint_assignments(declarations, axes, rules) if axes else iter(())
+    limit = assignment_limit if assignment_limit is not None else budget.options.max_assignments
     try:
-        while tested < budget.options.max_assignments:
-            batch = list(islice(iterator, min(64, budget.options.max_assignments - tested)))
+        while tested < limit:
+            batch = list(islice(iterator, min(64, limit - tested)))
             if not batch:
                 break
             alive, uncertain, skipped = evaluate_batch(batch, observations, budget)
@@ -164,3 +167,33 @@ def solve(
                                evaluated_assignments=tested, compatible_families=compatible if complete else None,
                                observation_ids=tuple(o.id for o in observations), unsupported=tuple(sorted(reasons)),
                                summaries=summaries, joint_examples=tuple(examples))
+
+
+def solve(
+    *, game: int, phase: Literal["before_game", "after_game"], declarations: Mapping[str, DeclaredSet],
+    observations: Sequence[DamageObservation], unsupported: Sequence[str], rules: RuleProfile,
+    budget: ProjectionBudget,
+) -> InferenceCheckpoint:
+    """Use exact necessary local bounds when a full-series Cartesian search is huge."""
+    from src.services.bo3_inference.factor_bounds import local_bounds, space_bound
+
+    factors = []
+    if observations and space_bound(declarations, relevant_axes(observations), rules) > budget.options.max_assignments:
+        factors = local_bounds(game=game, phase=phase, declarations=declarations, observations=observations,
+                               rules=rules, budget=budget)
+    result = enumerate_constraints(game=game, phase=phase, declarations=declarations,
+                                   observations=observations, unsupported=unsupported, rules=rules, budget=budget)
+    for proof in factors:
+        if proof.outcome == "conflict":
+            result = result.model_copy(update={"outcome": "conflict", "compatible_families": 0,
+                                               "joint_examples": ()})
+            break
+        result = retain_known_bounds(result, proof)
+    if factors:
+        result = result.model_copy(update={
+            "local_constraints": tuple(proof.observation_ids[0] for proof in factors),
+            "local_evaluated_assignments": sum(proof.evaluated_assignments for proof in factors),
+        })
+        if result.outcome == "not_informative" and any(proof.compatible_families for proof in factors):
+            result = result.model_copy(update={"outcome": "ambiguous"})
+    return result

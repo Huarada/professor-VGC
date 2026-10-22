@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.calc.candidate_projection import SmogonCandidateProjectionAdapter
-from src.adapters.node_ipc import NodeIpcClient
-from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
+from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
 from src.adapters.chaos.chaos_repository import (
     ChaosRepositoryLike,
@@ -26,6 +24,7 @@ from src.adapters.llm.openai_embedding_provider import OpenAIEmbeddingProvider
 from src.adapters.llm.openai_provider import OpenAIProvider
 from src.adapters.llm.prompts import FilePromptRepository
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory
+from src.adapters.node_ipc import NodeIpcClient
 from src.adapters.parsers.showdown_parser import (
     ShowdownReplayParser,
     parse_replay_for_viewer,
@@ -36,6 +35,8 @@ from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
 from src.adapters.smogon.smogon_dex_adapter import SmogonDexAdapter
 from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
+from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
+from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
 from src.adapters.usage.firestore_usage_quota import FirestoreUsageQuotaStore
 from src.config import Settings, load_settings
 from src.domain.champions import forbidden_references, require_champions_format
@@ -54,16 +55,16 @@ from src.domain.regulation import Regulation, RegulationScope, parse_regulation_
 from src.domain.replay_view_models import BattleReplay
 from src.domain.series import Bo3AnalysisRequest, Bo3Evidence
 from src.domain.series_import import SeriesImportResult
-from src.services.series_import import SeriesReplayImporter
 from src.services.adk_orchestrator import AdkAnalysisOrchestrator
 from src.services.analysis_service import AnalysisService
+from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
 from src.services.ground_truth import GroundTruthAssembler, parse_replay
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
 from src.services.regulation_guard import RegulationGuard
 from src.services.selection_service import LLMSelectionService
 from src.services.series_analysis import Bo3AnalysisService, prepare_series
+from src.services.series_import import SeriesReplayImporter
 from src.services.usage_quota import UsageQuotaService
-from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
 
 if TYPE_CHECKING:
     # langchain_core / google-adk stay lazy: the native path works without them.
@@ -364,7 +365,8 @@ class Container:
                 server_script=self._settings.calc_server_script, node_binary=self._settings.node_binary,
                 timeout_seconds=self._settings.calc_timeout_seconds,
             ))
-        return Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=self._candidate_projection)
+        return Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=self._candidate_projection,
+                                       public_sheets=ShowdownTeamSheetParser())
 
     def build_bo3_pipeline(
         self, provider: str | None = None, orchestrator: str | None = None,
@@ -423,7 +425,8 @@ class Container:
 
     def import_bo3_replays(self, text: str) -> SeriesImportResult:
         """Acquire and validate public BO3 replays without quota or model usage."""
-        return SeriesReplayImporter(gateway=ShowdownSeriesGateway(), parser=ShowdownReplayParser()).import_series(text)
+        return SeriesReplayImporter(gateway=ShowdownSeriesGateway(), parser=ShowdownReplayParser(),
+                                    public_sheets=ShowdownTeamSheetParser()).import_series(text)
 
     @staticmethod
     def resolve_replay_text(text: str) -> str:

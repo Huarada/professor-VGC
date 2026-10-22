@@ -80,3 +80,26 @@ def test_real_engine_search_retains_a_hidden_legal_profile(engine):
     assert target.stat_points["def"].minimum <= 32 <= target.stat_points["def"].maximum
     assert "Impish" in target.natures
     assert checkpoint.compatible_families > 0
+
+
+def test_reported_public_bo3_retrieves_natures_and_narrows_investment_without_model_calls(engine):
+    from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
+    from tests.test_public_teamsheets import public_games
+
+    request = Bo3AnalysisRequest(session_id="reported-public-series", games=public_games(),
+                                 inference_options=InferenceOptions(timeout_seconds=60))
+    evidence, states = prepare_series(ShowdownReplayParser(), request)
+    coordinator = Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=engine,
+                                         public_sheets=ShowdownTeamSheetParser())
+    result = coordinator.analyze(request, evidence, states)
+    assert result.continuity == "registered_team"
+    final = result.checkpoints[-1]
+    assert final.coverage == "bounded" and final.outcome == "ambiguous"
+    assert len(final.observation_ids) >= 18
+    assert len(final.local_constraints) >= 1
+    assert all(summary.nature_declared and len(summary.natures) == 1 for summary in final.summaries)
+    narrowed = next(summary for summary in final.summaries if summary.species == "Incineroar")
+    assert narrowed.stat_points["hp"].minimum > 0
+    assert narrowed.basis == "necessary_local_bounds"
+    assert not any("Protect" in reason or "Grassy Surge" in reason for reason in final.unsupported)
+    assert result.projections <= request.inference_options.max_projections

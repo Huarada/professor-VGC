@@ -371,3 +371,9 @@ If series_context.set_inference is present, before_game is decision-time knowled
 after_game is retrospective. Respect its perspective, search coverage and conflicts.
 Champions IVs are fixed, never inferred. Describe investment as native stat points.
 Never turn an example family or bounded search into an exact spread or probability.
+
+For BO3 set_inference, a declared public nature stays known. Missing nature is
+searched, never automatically disqualifying. Exhaustive local_constraints may
+narrow necessary_local_bounds while joint coverage remains bounded; these are
+necessary ranges, not complete spreads or proof of global feasibility. Explain
+incompleteness using the supplied observation counts and unsupported reasons.
