@@ -65,3 +65,24 @@ python -m pytest -q tests/test_public_teamsheets.py tests/test_bo3_inference_eng
 The original live room had expired. Importing an uploaded seed populates the local
 public-link index, after which the expired room URL resolves on that installation.
 Fresh installations can use the game's public replay URL as their seed.
+
+
+## Inverse-search optimization regression
+
+The [optimization rerun](inverse-optimization-results.json) preserves all 26 corpus
+gates (78 synthetic games) and all 17 independent oracle cases. The corpus does
+not exercise disconnected-component work reduction; that has separate controlled
+regressions in `tests/test_inverse_components.py`:
+
+| Controlled case | Cartesian work / space | Optimized evaluated assignments |
+|---|---:|---:|
+| Two independent unknown defenses | 1,089 evaluated assignments | 66 |
+| Two unknown attack/defense pairs | 1,185,921 possible assignments | 2,178 |
+
+The first comparison verifies identical summaries and compatible-family count
+against full enumeration. The second verifies the independent oracle relation
+and 23 x 23 compatible families, preserving each pair's correlation. Further
+controls cover shared identities, checkpoint budgets, impossible components and
+partial engine failure. The Node suite compares roll-only/full support over 36
+causal-input combinations. These are correctness/work regressions, not portable
+latency guarantees or held-out spread-identification accuracy.

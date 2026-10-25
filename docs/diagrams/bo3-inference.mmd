@@ -1,0 +1,12 @@
+flowchart LR
+    input["Ordered BO3 replays and optional teamsheet"] --> validate["Validate Champions rules and series identity"]
+    validate --> facts["Read public declarations and causal battle state"]
+    facts --> eligible{"Damage observation supported?"}
+    eligible -->|"yes"| components["Keep shared profiles coupled; split independent components"]
+    components --> profiles["Generate legal stat-point and nature families"]
+    profiles --> calc["Champions calcRolls: nature, item, ability and field"]
+    calc --> match["Match observed integer or rounded HP changes"]
+    match --> checkpoints["Before and after checkpoints with ranges and joint examples"]
+    eligible -->|"no"| unresolved["Record unsupported observation; preserve unresolved profiles"]
+    unresolved --> checkpoints
+    checkpoints --> coach["Typed tables and BO3 coaching"]

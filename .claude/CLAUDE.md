@@ -604,3 +604,38 @@ Normalize the optional `move:` prefix on real `-singleturn` effects. Throat Chop
 and Disable also constrain move choice, not observed direct damage. Public series
 2702605271 freezes this protocol with twelve known natures and 4/5/2 eligible hits
 verified by the real worker; its hidden investment is not evaluation ground truth.
+
+
+### BO3 investment-unit boundary (ADR-048 follow-up)
+
+Both per-game BO3 explanations and the series synthesis use the shared bounded
+output guard in `ground_truth.explain_champions_only(bo3=True)`. Numerical
+investment belongs to typed tables even when inference is disabled. Reject legacy
+EV notation and allocation prose in English/Portuguese; request one correction,
+then raise a typed error. This is a format guard, not a semantic accuracy proof.
+BO1 retains its existing output-check policy. `CandidateSummary` validates native
+bounds within 0-32, without summing marginal maxima as a joint allocation.
+
+
+## 19. Optimized BO3 inverse search (ADR-049)
+
+Candidate projection uses Node `calcRolls`, sharing the existing calculation path
+while omitting KO/description work. The forward calculator response stays stable.
+Domain `observation_components` splits only disconnected hidden-profile graphs;
+application `component_search` solves them with shared assignment and request-wide
+engine/time limits. Never split shared combatants or recombine marginal ranges.
+Multiply counts only for exhaustive components; report `search_components` and
+preserve prior/local proofs when later work is bounded. All backends receive the
+same inverse evidence before explanation; no free-form LLM numerical search.
+
+
+## 20. Overview and architecture documentation
+
+`README.md` is the concise product/setup entry point. `docs/architecture.md` is
+the current runtime/dependency/BO3 reference; canonical Mermaid sources live in
+`docs/diagrams/{architecture,dependencies,bo3-inference}.mmd`. Keep embedded blocks
+and `docs/architecture-blueprint.html` synchronized. Legacy fig2/fig3 SVGs are
+historical, not current references. Archived explanation benchmark details live
+in `docs/validation-evidence.md`; do not present them as current hidden-spread
+accuracy. The implemented series format is BO3 (up to three games, two wins),
+distinct from the bring-four rule within each VGC battle.

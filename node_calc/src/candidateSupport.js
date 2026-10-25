@@ -3,7 +3,7 @@
 // Additional inverse-inference semantics over the SAME Champions damage engine.
 const { Generations } = require('@smogon/calc');
 const { Dex } = require('@pkmn/dex');
-const { calcDamage, buildPokemon, rulesFor } = require('./calcEngine');
+const { calcRolls, buildPokemon, rulesFor } = require('./calcEngine');
 const engineVersion = require('@smogon/calc/package.json').version;
 const toID = value => String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 // Eligibility policy, not a damage formula. The compact dex omits effect callbacks,
@@ -83,10 +83,10 @@ function project(request) {
     const witnesses = new Map();
     for (const before of possibleHP(request.before, maximum)) {
       for (const attackerHP of possibleHP(request.attackerBefore, attacker.maxHP())) {
-        const result = calcDamage(0, request.attacker, request.defender, request.move, request.field,
+        const damageRolls = calcRolls(0, request.attacker, request.defender, request.move, request.field,
           before / maximum * 100, attackerHP / attacker.maxHP() * 100,
           request.attackerAlliesFainted, null, request.spreadHit, request.afterFailedMove);
-        for (const damage of result.damage) {
+        for (const damage of damageRolls) {
           witnesses.set(`${before}:${damage}`, { hp_before: before, damage });
         }
       }

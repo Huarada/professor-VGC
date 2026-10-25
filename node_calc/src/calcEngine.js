@@ -252,19 +252,29 @@ function buildPokemon(gen, spec) {
 
 function calcDamage(
   genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly = false,
 ) {
   const { gen, note } = rulesFor(genNum, [attackerSpec, defenderSpec], moveName);
   const result = damageUnder(
     gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-    attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
+    attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly,
   );
   return note ? { ...result, desc: result.desc + note } : result;
 }
 
+// Inverse inference needs integer support, never narration or repeated KO analysis.
+function calcRolls(
+  genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
+) {
+  return calcDamage(genNum, attackerSpec, defenderSpec, moveName, fieldSpec,
+    defenderHpPercent, attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
+    afterFailedMove, true).damage;
+}
+
 function damageUnder(
   gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly = false,
 ) {
   const fainted = Math.max(0, Math.min(5, attackerAlliesFainted || 0));
   // The attacker's CURRENT HP drives Eruption / Water Spout / Dragon Energy,
@@ -304,6 +314,7 @@ function damageUnder(
     damage = damage != null ? [damage] : [];
   }
   const flatDamage = damage.flat ? damage.flat(Infinity) : damage;
+  if (rollsOnly) return { damage: flatDamage };
 
   const maxHp = defender.maxHP();
   // A multi-hit move (Triple Axel, Population Bomb, Parental Bond) reports one
@@ -441,4 +452,4 @@ function speciesNames(genNum) {
   return Array.from(Generations.get(genNum).species, (s) => s.name);
 }
 
-module.exports = { calcDamage, compareSpeed, formeResolves, moveInfo, speciesNames, buildPokemon, rulesFor };
+module.exports = { calcDamage, calcRolls, compareSpeed, formeResolves, moveInfo, speciesNames, buildPokemon, rulesFor };

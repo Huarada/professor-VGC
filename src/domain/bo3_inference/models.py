@@ -203,6 +203,14 @@ class CandidateSummary(Value):
     declared_ability: str | None = None
     declared_moves: tuple[str, ...] = ()
 
+    @field_validator("stat_points")
+    @classmethod
+    def native_summary_bounds(cls, value: dict[StatName, PointRange]) -> dict[StatName, PointRange]:
+        if any(not 0 <= bound.minimum <= bound.maximum <= 32 for bound in value.values()):
+            raise ValueError("Champions summary bounds must stay within 0-32 native stat points.")
+        # Marginal maxima need not sum to 66: their joint combinations may be impossible.
+        return value
+
 
 class InferenceCheckpoint(Value):
     id: str
@@ -219,6 +227,7 @@ class InferenceCheckpoint(Value):
     joint_examples: tuple[dict[str, CandidateProfile], ...] = ()
     local_constraints: tuple[str, ...] = ()
     local_evaluated_assignments: int = 0
+    search_components: int = Field(default=1, ge=1)
 
 
 class Bo3InferenceEvidence(Value):

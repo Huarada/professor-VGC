@@ -4616,3 +4616,74 @@ with the actual worker: 4, 5 and 2 samples instead of 1, 1 and 0.
 The real investment remains hidden. Recovering eleven samples does not establish
 an exact spread or an inference accuracy score; bounded search and supported
 mechanics still limit the result. No model calls are needed for this validation.
+
+
+### ADR-048 follow-up ? close the per-game legacy-investment narration gap
+
+A user reported allocations up to 252 in a BO3 analysis. The candidate generator
+already used a 32-point per-stat cap and 66-point total budget. However, the shared
+explanation prompt still contained a legacy allocation example and an obsolete
+cross-game fallback explanation. Only the series synthesis enforced numerical
+investment-free prose, and that guard was conditional on inference being enabled.
+Per-game explanations could therefore expose inconsistent investment units.
+
+Remove the legacy example/fallback text. Centralize the bounded mechanics and BO3
+allocation output guard in `ground_truth.explain_champions_only`; all backends use
+it for BO3 game reviews, and the synthesis uses it even without inference. Request
+one correction, then fail explicitly, sharing a single two-attempt budget for
+mechanics and allocation errors. Typed tables remain the source of numerical
+investment. Recognize explicit EV quantities and Portuguese stat notation.
+
+Validate CandidateSummary ranges within 0-32. Do not sum marginal maxima: different
+maxima may belong to incompatible joint assignments. Internal legacy calc transport
+and BO1 evidence calculations are unchanged. Regression tests cover per-game BO3
+versus BO1 policy, disabled inference, invalid bounds, valid marginal ranges and
+Portuguese/EV notation. No paid explanation benchmark is run; the original full
+analysis text is still needed to assess its other claims.
+
+
+## ADR-049 ? Roll-only inverse calculation and independent-component search
+
+**Status:** Accepted. **Date:** 2026-10-24.
+
+### Context
+
+BO3 reverse damage inference already uses declared nature/items/abilities and the
+Champions engine, but its candidate loop generated descriptions and KO analyses
+that inference does not consume. Enumerating a Cartesian product also multiplied
+independent hidden profiles which share no damage constraint.
+
+### Decision
+
+Add an internal `calcRolls` facade over the same calculation path, returning exact
+integer rolls and bypassing KO/description/percentage work. Candidate projection
+uses it; the full forward calculator's default API is unchanged. Do not duplicate
+the damage formula or ask an LLM to deduce numbers.
+
+Partition the observed profile graph into connected components. Every hit joins
+its attacker and defender, regardless of side, game or role; known runtime field
+conditions remain part of each calculation. Solve independent components under
+a shared checkpoint assignment allowance and request-wide projection/time budget.
+Preserve nature equivalences, profile completion rules and the 66-point per-mon
+budget inside each component. Only multiply exhaustive counts and combine whole
+compatible examples across disjoint components. Keep affordable local proofs
+before broad searches so optimization does not erase previously available bounds.
+Expose `search_components` on checkpoints; partial coverage never proves uniqueness.
+
+### Alternatives considered
+
+- More unconstrained `damage_calc` agent calls: cannot ensure causal evidence,
+  completeness or budget discipline and would create backend-dependent search.
+- Splitting every hit independently: unsound when one hidden profile participates
+  in multiple hits; retain connected components instead.
+- A second Python damage formula: rejected in favor of the existing engine.
+
+### Consequences and validation
+
+Native, ADK and LangChain consume the same deterministic inverse evidence; no
+additional model calls or BO1 inference hooks. Ambiguity and unsupported mechanics
+remain explicit. Independent controlled regressions compare 66 versus 1,089
+assignments with identical results, and preserve 23 x 23 correlated solutions
+using 2,178 evaluations instead of a 1,185,921-element space. Engine tests compare
+roll-only and full integer support over declared natures/items and causal states.
+These checks do not establish held-out inference accuracy or portable latency.

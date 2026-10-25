@@ -451,3 +451,37 @@ the optional `move:` prefix on redirection effects and excluding move-choice
 restrictions from damage modifiers. Twelve declared natures are recovered in each
 game. Hidden investment is unavailable, so sample recovery is not a spread accuracy
 measurement. See the [validation notes](validation/README.md).
+
+
+## 9. Optimized inverse evaluation
+
+Declared nature, item and ability constrain the causal candidate projection; missing
+values never become popular metagame guesses. The read-only candidate projection
+port uses the same Champions worker as the forward `damage_calc` agent tool. The
+inverse search is deterministic and runs before model explanation, so native,
+LangChain and ADK receive the same evidence without an LLM choosing the search.
+No new unrestricted agent tool or paid-model call is required.
+
+The worker's `calcRolls` path shares the existing rules, Pokemon construction,
+field handling and damage calculation, but skips percentage formatting, KO chance
+and description generation in the candidate loop. The full calculator API retains
+its existing response. An equivalence matrix tests the integer arrays against the
+full path across moves, declared items/natures, HP, boosts and field conditions.
+
+The hidden-profile constraint graph is split only at disconnected components.
+Combatants joined by any observed hit remain coupled, including reversed roles.
+Independent components are solved separately and their compatible-family counts
+multiply only when all are exhaustive. Whole compatible examples combine across
+disjoint components; marginal ranges never become invented joint solutions.
+`search_components` records the decomposition in each checkpoint. A shared
+checkpoint assignment allowance and request projection/time limits remain active.
+Exhaustive local proofs are prioritized before broader enumeration, and useful
+bounds survive a bounded global search.
+
+In an independent synthetic two-pair regression, 66 evaluated assignments replace
+1,089 with identical results. With both attacks and defenses unknown, 2,178
+assignments replace a 1,185,921-element Cartesian space while preserving each
+pair's correlations. These are structural work reductions, not claims of universal
+speedup or real-game identification accuracy. Connected, underdetermined battles
+can still exhaust budgets and remain ambiguous. Caps remain 32 per stat / 66 total;
+IVs remain fixed at 31 and are not inferred.

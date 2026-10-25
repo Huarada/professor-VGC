@@ -172,17 +172,25 @@ def enumerate_constraints(
 def solve(
     *, game: int, phase: Literal["before_game", "after_game"], declarations: Mapping[str, DeclaredSet],
     observations: Sequence[DamageObservation], unsupported: Sequence[str], rules: RuleProfile,
-    budget: ProjectionBudget,
+    budget: ProjectionBudget, assignment_limit: int | None = None,
 ) -> InferenceCheckpoint:
     """Use exact necessary local bounds when a full-series Cartesian search is huge."""
+    from src.domain.bo3_inference.components import observation_components
+    from src.services.bo3_inference.component_search import solve_components
     from src.services.bo3_inference.factor_bounds import local_bounds, space_bound
 
+    limit = assignment_limit if assignment_limit is not None else budget.options.max_assignments
+    components = observation_components(observations)
     factors = []
-    if observations and space_bound(declarations, relevant_axes(observations), rules) > budget.options.max_assignments:
+    if limit > 0 and observations and space_bound(declarations, relevant_axes(observations), rules) > limit:
         factors = local_bounds(game=game, phase=phase, declarations=declarations, observations=observations,
                                rules=rules, budget=budget)
-    result = enumerate_constraints(game=game, phase=phase, declarations=declarations,
-                                   observations=observations, unsupported=unsupported, rules=rules, budget=budget)
+    if len(components) > 1:
+        result = solve_components(game=game, phase=phase, declarations=declarations,
+            components=components, unsupported=unsupported, rules=rules, budget=budget, assignment_limit=limit)
+    else:
+        result = enumerate_constraints(game=game, phase=phase, declarations=declarations,
+            observations=observations, unsupported=unsupported, rules=rules, budget=budget, assignment_limit=limit)
     for proof in factors:
         if proof.outcome == "conflict":
             result = result.model_copy(update={"outcome": "conflict", "compatible_families": 0,
@@ -191,8 +199,8 @@ def solve(
         result = retain_known_bounds(result, proof)
     if factors:
         result = result.model_copy(update={
-            "local_constraints": tuple(dict.fromkeys(identifier for proof in factors for identifier in proof.observation_ids)),
-            "local_evaluated_assignments": sum(proof.evaluated_assignments for proof in factors),
+            "local_constraints": tuple(dict.fromkeys((*result.local_constraints, *(identifier for proof in factors for identifier in proof.observation_ids)))),
+            "local_evaluated_assignments": result.local_evaluated_assignments + sum(proof.evaluated_assignments for proof in factors),
         })
         if result.outcome == "not_informative" and any(proof.compatible_families for proof in factors):
             result = result.model_copy(update={"outcome": "ambiguous"})
