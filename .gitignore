@@ -35,3 +35,6 @@ scripts/faithfulness_benchmark/out/
 .cache/bo3-series/
 .cache/pytest-*/
 .cache/bo3-inference-*.json
+
+# Windows-specific environment; keep WSL environments separate.
+.venv-windows/

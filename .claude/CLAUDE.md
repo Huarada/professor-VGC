@@ -639,3 +639,16 @@ historical, not current references. Archived explanation benchmark details live
 in `docs/validation-evidence.md`; do not present them as current hidden-spread
 accuracy. The implemented series format is BO3 (up to three games, two wins),
 distinct from the bring-four rule within each VGC battle.
+
+
+## 21. BO3 narration recovery and environment isolation (ADR-050)
+
+BO3 narrator context omits numeric investment fields/prior spreads; full typed
+result evidence retains them. After one failed correction, allocation-bearing
+model prose is replaced entirely by an explicit notice, preserving deterministic
+results rather than aborting a whole series. Foreign mechanics still fail closed.
+Log omission reasons, never raw model text. BO1 narrative context stays unchanged.
+Mechanical HP damage and explicitly labeled effective/base speed are not investment.
+On Windows use `.venv-windows/Scripts/python.exe`; keep WSL `.venv` separate and do
+not repair unrelated global packages by uninstalling dependencies used elsewhere.
+See `docs/troubleshooting.md` for reproduction and validation commands.

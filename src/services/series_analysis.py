@@ -6,6 +6,7 @@ import json
 import uuid
 from collections.abc import Callable
 
+from src.domain.bo3_inference.narration import coaching_context
 from src.domain.champions import forbidden_references, require_champions_format
 from src.domain.exceptions import (
     LLMProviderError,
@@ -205,7 +206,7 @@ class Bo3AnalysisService:
         def explain(correction: str) -> str:
             answer = self._llm.complete(
                 system=self._system, messages=[ChatMessage(role="user", content=(
-                    json.dumps(payload, ensure_ascii=False) + "\n" + correction
+                    json.dumps(coaching_context(payload), ensure_ascii=False) + "\n" + correction
                 ))], temperature=0.2,
             )
             if not answer.strip():

@@ -134,7 +134,8 @@ flowchart LR
 
 BO1 does not invoke this inference context. Speed, critical-hit and multi-hit
 inverse inference remain deferred. Numerical BO3 investment belongs to typed
-tables; explanation guards reject allocation prose and unsupported mechanics.
+tables; explanation guards omit repeatedly unvalidated allocation prose while
+preserving computed results. Unsupported mechanics still fail closed.
 Full methodology and limitations: [BO3 inference](bo3-inference/README.md).
 
 ## Diagram maintenance and validation

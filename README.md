@@ -103,8 +103,8 @@ See [architecture and BO3 flow](docs/architecture.md), the
 Requires Python 3.10+ and Node.js 20+. From the repository root, in PowerShell:
 
 ```powershell
-python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+python -m venv .venv-windows
+.\.venv-windows\Scripts\python.exe -m pip install -r requirements.txt
 Push-Location node_calc
 npm ci
 Pop-Location
@@ -119,11 +119,12 @@ The running app reads Chaos data from Firestore; data-loading instructions and
 optional Smogon/semantic retrieval are in [DATA.md](DATA.md).
 
 ```powershell
-.\.venv\Scripts\python.exe -m streamlit run src/ui/app.py
+python scripts/run_local.py
 ```
 
-Open **http://localhost:8501**. On Linux/macOS, use `.venv/bin/python` instead of
-the Windows virtual-environment executable; copy the configuration with
+Open **http://localhost:8501**. This Windows environment is separate from any WSL
+`.venv`. On Linux/macOS, create an environment with `python3 -m venv .venv` and use
+`.venv/bin/python` instead of the Windows executable; copy the configuration with
 `cp .env.example .env` only when `.env` does not already exist.
 
 ## Analyze a BO3
@@ -148,9 +149,9 @@ In BO1, paste a replay URL, JSON or log and ask about that individual battle.
 ## Validation
 
 ```powershell
-.\.venv\Scripts\python.exe -m pytest -q
-.\.venv\Scripts\python.exe -m mypy src
-.\.venv\Scripts\python.exe -m scripts.bo3_inference_benchmark.run --out bo3-validation.json
+.\.venv-windows\Scripts\python.exe -m pytest -q
+.\.venv-windows\Scripts\python.exe -m mypy src
+.\.venv-windows\Scripts\python.exe -m scripts.bo3_inference_benchmark.run --out bo3-validation.json
 Push-Location node_calc
 npm test
 npm run smoke
@@ -176,3 +177,6 @@ those archived explanation runs, not current inverse-inference accuracy.
 - [Data and Firestore setup](DATA.md), [configuration](.env.example) and [Docker image](Dockerfile)
 - [Architectural decisions](ADR.md) and [project invariants](.claude/CLAUDE.md)
 - [Contributing](CONTRIBUTING.md), [security](SECURITY.md) and [Apache License 2.0](LICENSE)
+
+
+Troubleshooting: [BO3 narration recovery and isolated environments](docs/troubleshooting.md).

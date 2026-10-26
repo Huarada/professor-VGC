@@ -485,3 +485,12 @@ pair's correlations. These are structural work reductions, not claims of univers
 speedup or real-game identification accuracy. Connected, underdetermined battles
 can still exhaust budgets and remain ambiguous. Caps remain 32 per stat / 66 total;
 IVs remain fixed at 31 and are not inferred.
+
+
+## 10. Narration recovery (ADR-050)
+
+BO3 coaching receives a projection without numeric investment priors or candidate
+allocations; full typed results retain all calculated ranges. After one correction,
+repeated allocation prose is replaced wholesale by an explicit notice. The series
+and game evidence are preserved rather than losing the analysis to a narrative
+format error. Foreign mechanics still fail closed. See [troubleshooting and audit](../troubleshooting.md).

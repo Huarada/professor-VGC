@@ -4687,3 +4687,52 @@ assignments with identical results, and preserve 23 x 23 correlated solutions
 using 2,178 evaluations instead of a 1,185,921-element space. Engine tests compare
 roll-only and full integer support over declared natures/items and causal states.
 These checks do not establish held-out inference accuracy or portable latency.
+
+
+## ADR-050 ? Preserve BO3 evidence when model investment prose cannot be validated
+
+**Status:** Accepted. **Date:** 2026-10-25.
+
+### Context
+
+The shared BO3 allocation guard introduced in the ADR-048 follow-up correctly
+rejected model-generated investment, but after one correction it raised a provider
+error and aborted the whole series. This included correctly computed inference
+and game evidence. At the same time, narrative context exposed legacy Chaos spread
+values and full numeric inference examples, encouraging the model to restate the
+very investment the narrative policy forbids. Some mechanical HP/speed quantities
+could also be recognized as investment when an assumed-set paragraph was used.
+
+Environment audit found unrelated conflicts in the global interpreter and a WSL
+`.venv` configuration without a Windows executable. Neither explains this exact
+error string, which originates in our output guard; a separate Windows environment
+provides isolation without uninstalling shared packages or changing the WSL setup.
+
+### Decision
+
+Project a BO3-only coaching context which omits numeric investment fields and
+allocation-bearing descriptive text, while preserving damage fields, declared
+traits, causal state, provenance and coverage. Keep the full typed evidence and
+numeric inference tables unchanged in result DTOs. BO1 context remains unchanged.
+
+After at most two explanation attempts, repeated numerical allocations cause the
+unsafe narrative to be replaced wholesale by an explicit deterministic notice.
+The computed series/game evidence remains available and the rest of the BO3 flow
+can complete. Do not silently salvage or certify parts of the rejected prose.
+Record the omission reason without logging model text. Foreign mechanics still
+fail closed after the same bounded correction, and real provider failures remain
+typed errors. Mechanical HP damage and explicitly labeled actual/base speed are
+not investment allocations.
+
+### Consequences and validation
+
+A model that ignores the output contract can reduce coaching detail, but cannot
+turn an invented spread into a valid result or discard completed deterministic
+analysis. The notice is transparent about the omitted narrative; it does not claim
+model correctness or an exact hidden spread. No paid model benchmark was run.
+
+Regression tests cover repeated allocations without series failure, disabled
+inference, unchanged BO1 context, source immutability, numeric-table preservation,
+legacy-prior exclusion, mechanical quantities, bounded calls, private-text-safe
+logging and continued rejection of foreign mechanics. Full offline validation and
+isolated-environment dependency checks are recorded in troubleshooting guidance.

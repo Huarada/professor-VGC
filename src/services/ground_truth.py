@@ -11,16 +11,21 @@ Pokemon, and the answer checked before it is returned.
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any, Callable, Sequence
 
-from src.domain.bo3_inference.narration import contains_numerical_investment
+from src.domain.bo3_inference.narration import (
+    UNVALIDATED_INVESTMENT_NOTICE,
+    coaching_context,
+    contains_numerical_investment,
+)
 from src.domain.champions import (
     clean_champions_knowledge,
     forbidden_references,
     require_champions_format,
     validate_champions_input,
 )
-from src.domain.exceptions import LLMProviderError, UnsupportedRulesError
+from src.domain.exceptions import UnsupportedRulesError
 from src.domain.interfaces import (
     CalcEngineAdapter,
     ConversationMemory,
@@ -55,6 +60,7 @@ from src.services.regulation_guard import RegulationGuard
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
 
+_LOGGER = logging.getLogger(__name__)
 
 class GroundTruthAssembler:
     """Builds the :class:`AnalysisEvidence` bundle for one analysis turn."""
@@ -260,7 +266,7 @@ def parse_replay(parser: LogParser, request: AnalysisRequest) -> GameState:
 def explain_champions_only(
     explain: Callable[[str], str], correction: str = "", *, bo3: bool = False,
 ) -> str:
-    """Correct once, then reject foreign mechanics or BO3 investment allocations."""
+    """Correct once; reject foreign mechanics and safely omit unvalidated BO3 prose."""
     for attempt in range(2):
         answer = explain(correction)
         foreign = forbidden_references(answer)
@@ -270,7 +276,8 @@ def explain_champions_only(
         if attempt:
             if foreign:
                 raise UnsupportedRulesError("The explanation included unsupported rules. Please retry the analysis.")
-            raise LLMProviderError("The BO3 explanation repeatedly included numerical investment prose. Please retry the analysis.")
+            _LOGGER.warning("BO3 numerical investment narrative omitted after the bounded correction")
+            return UNVALIDATED_INVESTMENT_NOTICE
         if foreign:
             correction += ("\nRewrite using Pokemon Champions rules only. Mega Evolution is the "
                            "only permitted special battle mechanic. Remove all references to other games' mechanics.")
@@ -303,7 +310,7 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
         context["regulation"] = evidence.regulation.model_dump(mode="json")
     if evidence.series_context is not None:
         context["series_context"] = evidence.series_context
-    return context
+    return dict(coaching_context(context)) if evidence.series_context is not None else context
 
 
 def build_explanation_input(question: str, evidence: AnalysisEvidence, correction: str = "") -> str:
