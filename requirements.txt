@@ -28,7 +28,7 @@ google-cloud-firestore>=2.16,<3
 # ruff/vulture lines of this file; bump them on purpose, together.
 pytest>=8.0,<10
 mypy==2.3.0
-ruff==0.16.10
+ruff==0.17.2
 vulture==2.16
 
 # Benchmark tooling (scripts/faithfulness_benchmark — not shipped in src/)
