@@ -21,3 +21,5 @@ Hard rules:
 - Prefer matchups that explain the battle result (e.g. what threatened the loser's
   key Pokemon). If the question is generic, pick the most decisive cross-side matchups.
 - Output JSON only. No markdown, no prose outside the JSON object.
+This product supports Pokemon Champions VGC only, with Mega Evolution as its
+only special battle mechanic. Never select or recommend mechanics from other games.

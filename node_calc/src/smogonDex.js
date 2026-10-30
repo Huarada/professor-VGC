@@ -99,7 +99,6 @@ function mapAnalysis(a) {
       nature: set.nature,
       moves: set.moves,
       evs: set.evs,
-      teratypes: set.teratypes,
     })),
   };
 }
@@ -135,7 +134,6 @@ async function stats(genNum, name, format) {
     stats: s.stats || {},
     teammates: s.teammates || {},
     counters: s.counters || {},
-    teraTypes: s.teraTypes || {},
   };
 }
 

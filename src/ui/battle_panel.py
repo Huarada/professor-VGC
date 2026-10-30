@@ -360,16 +360,16 @@ def battle_stage_html(replay: BattleReplay, snapshot: ReplayTurnSnapshot) -> str
 """
 
 
-def _step_turn(delta: int, max_idx: int) -> None:
-    current = st.session_state.get("turn_index", 0)
-    st.session_state["turn_index"] = max(0, min(max_idx, current + delta))
+def _step_turn(delta: int, max_idx: int, state_key: str = "turn_index") -> None:
+    current = st.session_state.get(state_key, 0)
+    st.session_state[state_key] = max(0, min(max_idx, current + delta))
 
 
-def current_turn_number(replay: BattleReplay) -> int:
+def current_turn_number(replay: BattleReplay, *, key_prefix: str = "") -> int:
     """The in-game turn (0 = Leads) of the stepper's selected snapshot."""
     if not replay.snapshots:
         return 0
-    idx = cast(int, st.session_state.get("turn_index", 0))
+    idx = cast(int, st.session_state.get(f"{key_prefix}turn_index", 0))
     idx = max(0, min(idx, len(replay.snapshots) - 1))
     return replay.snapshots[idx].turn
 
@@ -408,30 +408,32 @@ def highlight_answer_by_turn(answer_md: str, turn: int) -> str:
     return "".join(pieces)
 
 
-def render_battle_panel(replay: BattleReplay) -> None:
+def render_battle_panel(replay: BattleReplay, *, key_prefix: str = "") -> None:
+    """Render a replay with an optional namespace for independent series games."""
+    state_key = f"{key_prefix}turn_index"
     max_idx = len(replay.snapshots) - 1
-    if "turn_index" not in st.session_state:
-        st.session_state["turn_index"] = 0  # default: first turn (Leads)
+    if state_key not in st.session_state:
+        st.session_state[state_key] = 0  # default: first turn (Leads)
     # Clamp: a new replay may have fewer turns than the previous selection.
-    st.session_state["turn_index"] = max(0, min(max_idx, st.session_state["turn_index"]))
+    st.session_state[state_key] = max(0, min(max_idx, st.session_state[state_key]))
 
     col_prev, col_slider, col_next = st.columns([1, 6, 1])
     with col_prev:
         st.button(
-            "◀", key="prev_turn", use_container_width=True,
-            on_click=_step_turn, args=(-1, max_idx),
-            disabled=st.session_state["turn_index"] <= 0,
+            "◀", key=f"{key_prefix}prev_turn", use_container_width=True,
+            on_click=_step_turn, args=(-1, max_idx, state_key),
+            disabled=st.session_state[state_key] <= 0,
         )
     with col_next:
         st.button(
-            "▶", key="next_turn", use_container_width=True,
-            on_click=_step_turn, args=(1, max_idx),
-            disabled=st.session_state["turn_index"] >= max_idx,
+            "▶", key=f"{key_prefix}next_turn", use_container_width=True,
+            on_click=_step_turn, args=(1, max_idx, state_key),
+            disabled=st.session_state[state_key] >= max_idx,
         )
     with col_slider:
-        st.slider("Turn", 0, max_idx, key="turn_index", label_visibility="collapsed")
+        st.slider("Turn", 0, max_idx, key=state_key, label_visibility="collapsed")
 
-    snapshot: ReplayTurnSnapshot = replay.snapshots[st.session_state["turn_index"]]
+    snapshot: ReplayTurnSnapshot = replay.snapshots[st.session_state[state_key]]
     st.markdown(battle_stage_html(replay, snapshot), unsafe_allow_html=True)
 
     if snapshot.conditions:
@@ -448,7 +450,7 @@ def render_battle_panel(replay: BattleReplay) -> None:
         unsafe_allow_html=True,
     )
 
-    if st.session_state["turn_index"] == max_idx:
+    if st.session_state[state_key] == max_idx:
         # No forfeit/trophy emoji: the winner's avatar stands in, like the real client.
         if replay.forfeited_player:
             name = html.escape(

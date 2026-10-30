@@ -14,7 +14,12 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-from src.domain.exceptions import CalcEngineError, ChaosDataError, StrategyKnowledgeError
+from src.domain.champions import clean_champions_knowledge, forbidden_references
+from src.domain.exceptions import (
+    CalcEngineError,
+    ChaosDataError,
+    StrategyKnowledgeError,
+)
 from src.domain.interfaces import (
     CalcEngineAdapter,
     MetaStatsProvider,
@@ -94,10 +99,12 @@ class EvidenceTools:
         refused = self._not_legal([attacker_species, defender_species])
         if refused is not None:
             return refused
+        if forbidden_references(" ".join([attacker_species, defender_species, move, attacker_item])):
+            return {"ok": False, "error": "Only Champions mechanics with Mega Evolution are supported."}
         try:
             result = self._calc.calculate(
                 CalcRequest(
-                    gen=calc_generation(self._scope.format_id, self._gen),
+                    gen=calc_generation(self._scope.format_id, 0),
                     attacker=PokemonSet(
                         species=attacker_species,
                         item=attacker_item or None,
@@ -128,7 +135,7 @@ class EvidenceTools:
             )
         except ChaosDataError as exc:
             return {"ok": False, "error": str(exc)}
-        return {"ok": True, **context.model_dump(mode="json")}
+        return {"ok": True, **clean_champions_knowledge(context.model_dump(mode="json"))}
 
     def smogon_strategy(self, species: str) -> dict[str, Any]:
         """Return Smogon-derived archetypes and common teammates for one species.
@@ -143,7 +150,7 @@ class EvidenceTools:
             strategy = self._strategy.get_strategy(species, metagame=self._scope.format_id)
         except StrategyKnowledgeError as exc:
             return {"ok": False, "error": str(exc)}
-        return {"ok": True, **strategy.model_dump(mode="json")}
+        return {"ok": True, **clean_champions_knowledge(strategy.model_dump(mode="json"))}
 
     def functions(self) -> list[ToolFunction]:
         """The tools as bound functions (name + docstring + signature intact)."""

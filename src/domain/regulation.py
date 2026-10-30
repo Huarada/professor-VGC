@@ -11,6 +11,7 @@ import re
 
 from pydantic import BaseModel, ConfigDict
 
+from src.domain.champions import require_champions_format
 from src.domain.exceptions import ConfigurationError, RegulationMismatchError
 
 _FORMAT_RE = re.compile(
@@ -141,6 +142,7 @@ def parse_regulation_setting(value: str, format_prefix: str) -> Regulation | Non
             f"Unknown regulation {value!r}: use 'auto', a regulation code such as "
             f"'mb' / 'mc' (prefix {format_prefix!r}), or a full VGC format id."
         )
+    require_champions_format(regulation.format_id)
     return regulation
 
 

@@ -1,0 +1,12 @@
+flowchart TD
+    input["Streamlit BO1: one replay and question"] --> pipeline["AnalysisPipeline: ADK, LangChain or native"]
+    pipeline --> parse["Parse replay and validate Champions regulation"]
+    parse --> selection["Structured matchup selection with deterministic validation"]
+    selection --> truth["GroundTruthAssembler: typed battle evidence"]
+    truth --> calc["CalcEngineAdapter: forward damage and speed"]
+    calc --> worker["Node worker: Champions calculator"]
+    truth --> context["Regulation-scoped Chaos and strategy adapters"]
+    context --> sources["Firestore and official Smogon data"]
+    truth --> explain["LLM explanation with evidence and read-only tools"]
+    explain --> guard["Validate supported rules and roster"]
+    guard --> result["AnalysisResult: answer, evidence and battle viewer"]

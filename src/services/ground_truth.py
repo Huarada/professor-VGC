@@ -11,8 +11,22 @@ Pokemon, and the answer checked before it is returned.
 from __future__ import annotations
 
 import json
+import logging
 from typing import Any, Callable, Sequence
 
+from src.domain.bo3_inference.narration import (
+    UNVALIDATED_INVESTMENT_NOTICE,
+    coaching_context,
+    contains_numerical_attributes,
+    contains_numerical_investment,
+)
+from src.domain.champions import (
+    clean_champions_knowledge,
+    forbidden_references,
+    require_champions_format,
+    validate_champions_input,
+)
+from src.domain.exceptions import UnsupportedRulesError
 from src.domain.interfaces import (
     CalcEngineAdapter,
     ConversationMemory,
@@ -36,13 +50,18 @@ from src.domain.models import (
     SmogonStrategy,
 )
 from src.domain.regulation import RegulationRoster, RegulationScope
-from src.services.battle_context import candidate_species, context_species, outcome_summary
+from src.services.battle_context import (
+    candidate_species,
+    context_species,
+    outcome_summary,
+)
 from src.services.concept_tracking import recurring_concepts
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
 from src.services.regulation_guard import RegulationGuard
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
 
+_LOGGER = logging.getLogger(__name__)
 
 class GroundTruthAssembler:
     """Builds the :class:`AnalysisEvidence` bundle for one analysis turn."""
@@ -78,6 +97,9 @@ class GroundTruthAssembler:
             RegulationMismatchError: Pinned regulation and replay disagree.
         """
         game_state = parse_replay(parser, request)
+        require_champions_format(game_state.format_id)
+        if forbidden_references(request.question):
+            raise UnsupportedRulesError("Only Pokemon Champions coaching with Mega Evolution is supported.")
         has_replay = request.replay_json is not None or request.replay_raw_text is not None
         self.scope.bind(game_state.format_id, has_replay=has_replay)
         return game_state
@@ -124,26 +146,30 @@ class GroundTruthAssembler:
             ),
             roster,
         )
+        meta_context = MetaContext.model_validate(clean_champions_knowledge(meta_context.model_dump()))
         turn_checks = self._simulator.simulate(game_state, meta_context)
         return AnalysisEvidence(
-            selection=selection,
+            selection=selection.model_copy(update={
+                "rationale": clean_champions_knowledge(selection.rationale),
+            }),
             meta_context=meta_context,
             verdicts=self._evaluator.evaluate(game_state, selection, meta_context),
             turn_checks=turn_checks,
             protect_reads=self._simulator.build_protect_reads(turn_checks, game_state),
             strategies=[
-                _filter_strategy(s, roster)
+                SmogonStrategy.model_validate(clean_champions_knowledge(_filter_strategy(s, roster).model_dump()))
                 for s in collect_strategies(
                     self._strategy, context_mons, metagame=data_format,
                     question=request.question,
                 )
             ],
-            improvement_suggestions=_filter_improvements(
+            improvement_suggestions=clean_champions_knowledge(_filter_improvements(
                 self._improvements(request, selection, game_state, data_format), roster
-            ),
+            )),
             recurring_concepts=recurring_concepts(history, request.question),
             battle_result=outcome_summary(game_state),
             regulation=self._regulation_info(roster),
+            series_context=clean_champions_knowledge(request.series_context),
         )
 
     def _improvements(
@@ -166,7 +192,10 @@ class GroundTruthAssembler:
         """Run ``explain``; if the answer names an illegal Pokemon, retry once with a
         correction note. Returns the answer and any remaining warnings.
         """
-        answer = explain("")
+        def checked_explain(correction: str) -> str:
+            return explain_champions_only(explain, correction, bo3=evidence.series_context is not None)
+
+        answer = checked_explain("")
         roster = self._roster()
         if evidence.regulation is None:
             return answer, []
@@ -179,7 +208,7 @@ class GroundTruthAssembler:
         violations = self._guard.violations(answer, roster, in_game)
         if not violations:
             return answer, []
-        answer = explain(self._guard.correction_note(violations, evidence.regulation.label))
+        answer = checked_explain(self._guard.correction_note(violations, evidence.regulation.label))
         remaining = self._guard.violations(answer, roster, in_game)
         if not remaining:
             return answer, []
@@ -231,7 +260,35 @@ def parse_replay(parser: LogParser, request: AnalysisRequest) -> GameState:
     source = request.replay_json if request.replay_json is not None else request.replay_raw_text
     if source is None:
         return GameState()
+    validate_champions_input(source)
     return parser.parse(source)
+
+
+def explain_champions_only(
+    explain: Callable[[str], str], correction: str = "", *, bo3: bool = False,
+) -> str:
+    """Correct once; reject foreign mechanics and safely omit unvalidated BO3 prose."""
+    for attempt in range(2):
+        answer = explain(correction)
+        foreign = forbidden_references(answer)
+        investment = bo3 and (contains_numerical_investment(answer) or contains_numerical_attributes(answer))
+        if not foreign and not investment:
+            return answer
+        if attempt:
+            if foreign:
+                raise UnsupportedRulesError("The explanation included unsupported rules. Please retry the analysis.")
+            _LOGGER.warning("BO3 numerical investment narrative omitted after the bounded correction")
+            return UNVALIDATED_INVESTMENT_NOTICE
+        if foreign:
+            correction += ("\nRewrite using Pokemon Champions rules only. Mega Evolution is the "
+                           "only permitted special battle mechanic. Remove all references to other games' mechanics.")
+        if investment:
+            correction += ("\nRemove numerical investment allocations, baseline builds and legacy EV conversions. "
+                           "Champions uses native stat points: at most 32 per stat and 66 total; IVs are fixed at 31. "
+                           "The deterministic tables report all numerical investment and card attributes. "
+                           "Do not claim exact Speed or other attributes from assumed-set projections. "
+                           "Explain uncertainty and battle adjustments in prose instead.")
+    raise AssertionError("The explanation retry loop must return or raise")
 
 
 def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
@@ -253,7 +310,9 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
     }
     if evidence.regulation is not None:
         context["regulation"] = evidence.regulation.model_dump(mode="json")
-    return context
+    if evidence.series_context is not None:
+        context["series_context"] = evidence.series_context
+    return dict(coaching_context(context)) if evidence.series_context is not None else context
 
 
 def build_explanation_input(question: str, evidence: AnalysisEvidence, correction: str = "") -> str:
@@ -272,6 +331,11 @@ def remember_turn(memory: ConversationMemory, request: AnalysisRequest, answer: 
     """Append this question/answer pair to the session's conversation memory."""
     memory.append(request.session_id, ChatMessage(role="user", content=request.question))
     memory.append(request.session_id, ChatMessage(role="assistant", content=answer))
+
+
+def load_champions_history(memory: ConversationMemory, session_id: str) -> list[ChatMessage]:
+    """Keep pre-deployment foreign-rule messages out of all three backends."""
+    return [message for message in memory.load(session_id) if not forbidden_references(message.content)]
 
 
 def build_result(

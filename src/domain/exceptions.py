@@ -13,6 +13,14 @@ class ConfigurationError(ProfessorVGCError):
     """Required configuration (keys, paths, binaries) is missing/invalid."""
 
 
+class UnsupportedRulesError(ProfessorVGCError):
+    """Input or output crosses the Champions-only game boundary."""
+
+
+class SeriesValidationError(ProfessorVGCError):
+    """Replays cannot form a consistent, ordered best-of-three series."""
+
+
 class LogParsingError(ProfessorVGCError):
     """A Showdown replay/log cannot be parsed into a :class:`GameState`."""
 

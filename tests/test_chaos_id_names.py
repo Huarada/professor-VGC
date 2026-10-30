@@ -123,31 +123,31 @@ def test_usage_data_back_fill_reaches_the_verdict(real_calc, tmp_path):
             "Moves": {"dragonclaw": 1000},
             "Spreads": {"Adamant:2/32/0/0/0/32": 1000},  # Champions stat points
         },
-        "Amoonguss": {
+        "Sinistcha": {
             "Raw count": 1000,
-            "Abilities": {"regenerator": 1000},
+            "Abilities": {"hospitality": 1000},
             "Items": {"nothing": 1000},
-            "Moves": {"spore": 1000},
+            "Moves": {"matchagotcha": 1000},
             "Spreads": {"Relaxed:32/0/32/0/2/0": 1000},
         },
     })
     meta = ChaosAdapter(repository=ChaosRepository(tmp_path)).build_match_context(
-        ["Garchomp", "Amoonguss"], metagame=_FORMAT
+        ["Garchomp", "Sinistcha"], metagame=_FORMAT
     )
     state = _parse(
         "|switch|p1a: Garchomp|Garchomp, L50|100/100",
-        "|switch|p2a: Amoonguss|Amoonguss, L50|100/100",
+        "|switch|p2a: Sinistcha|Sinistcha, L50|100/100",
         "|turn|1",
-        "|move|p1a: Garchomp|Dragon Claw|p2a: Amoonguss",
-        "|-damage|p2a: Amoonguss|40/100",
+        "|move|p1a: Garchomp|Dragon Claw|p2a: Sinistcha",
+        "|-damage|p2a: Sinistcha|40/100",
     )
     verdicts = MatchupEvaluator(real_calc).evaluate(
-        state, SelectionPlan(matchups=[("Garchomp", "Amoonguss")]), meta
+        state, SelectionPlan(matchups=[("Garchomp", "Sinistcha")]), meta
     )
     assert len(verdicts) == 1
     description = verdicts[0].best_damage.description
     assert "Life Orb Garchomp" in description  # the back-filled item was applied
-    assert "256+ Atk" in description  # the back-filled Adamant spread too
+    assert "32+ Atk" in description  # Champions' back-filled Adamant stat points
 
 
 def test_back_filled_friend_guard_is_recognized():

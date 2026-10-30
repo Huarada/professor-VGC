@@ -1,0 +1,42 @@
+flowchart LR
+    subgraph presentation ["Presentation"]
+        ui["Streamlit: BO1, BO3 and battle viewer"]
+    end
+    subgraph application ["Python application"]
+        importer["SeriesReplayImporter"]
+        series["Bo3AnalysisService"]
+        single["BO1 pipelines: ADK, LangChain or native"]
+        evidence["GroundTruthAssembler"]
+        inverse["Bo3InferenceCoordinator"]
+    end
+    subgraph infrastructure ["Adapters and workers"]
+        calc["Forward and candidate calc adapters"]
+        worker["Node: Champions damage and speed engine"]
+        meta["Chaos adapter"]
+        strategy["Strategy adapters and optional Node dex"]
+        provider["LLM provider adapters"]
+    end
+    subgraph external ["External systems"]
+        showdown["Public Showdown replays"]
+        firestore["Google Cloud Firestore"]
+        smogon["Official Smogon data"]
+        llm["Gemini or OpenAI"]
+    end
+    ui --> importer
+    importer --> showdown
+    ui --> single
+    ui --> series
+    importer -->|"validated ordered games"| series
+    series -->|"isolated game reviews"| single
+    series --> inverse
+    single --> evidence
+    evidence --> calc
+    evidence --> meta
+    evidence --> strategy
+    inverse -->|"typed integer damage support"| calc
+    calc -->|"JSON-line IPC"| worker
+    meta --> firestore
+    strategy --> smogon
+    single --> provider
+    series -->|"typed series evidence"| provider
+    provider --> llm

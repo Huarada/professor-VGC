@@ -20,6 +20,22 @@ battles. It combines:
 
 The guiding principle: **the LLM explains ground truth; it never invents it.**
 
+**Game boundary (ADR-043):** the application supports Pokemon Champions VGC
+regulations only. Mega Evolution is the only permitted special battle mechanic.
+Reject foreign formats/mechanics before any model call; filter external knowledge
+and fail closed if generated text still references unsupported mechanics after
+one correction. Missing Champions calc support never falls back to another game.
+
+**BO3 (ADR-043):** `domain/series.py` and `services/series_analysis.py` define a
+separate use case over the unchanged BO1 pipeline contract. Accept 1–3 ordered
+replays, validate all before quota/model calls, follow players by normalized name
+(p1/p2 may swap), require one regulation and consistent declared team previews,
+stop at two wins. Keep incomplete series explicit. Per-game state and memory are
+isolated; `series_context.known_before` contains only earlier observed reveals,
+never later knowledge or Chaos guesses. Synthesize typed evidence, not generated
+answers. `Container.validate_series` / `build_bo3_pipeline` expose this flow;
+the UI has explicit BO1/BO3 modes with separate result and replay-stepper state.
+
 ---
 
 ## 2. Methodology (agreed and approved in conversation) — read first
@@ -193,7 +209,7 @@ Read by `src/config.py` (`Settings`, pydantic-settings; `.env` supported).
 | `PROFESSORVGC_OPENAI_EMBEDDING_MODEL` / `PROFESSORVGC_GEMINI_EMBEDDING_MODEL` | text-embedding-3-small / models/text-embedding-004 | Embedding model ids. |
 | `PROFESSORVGC_SEMANTIC_STRATEGY_TOP_K` | `3` | Passages kept per species after ranking. |
 | `PROFESSORVGC_NODE_BINARY` | `node` | Node executable. |
-| `PROFESSORVGC_CALC_GEN` | `9` | Generation. |
+| `PROFESSORVGC_CALC_GEN` | `9` | Legacy Smogon dex metadata generation; application damage/speed always use Champions generation 0. |
 | `PROFESSORVGC_CALC_TIMEOUT_SECONDS` | `20` | Calc IPC timeout. |
 
 ---
@@ -411,8 +427,8 @@ replay JSON/log + question
 18. **feat(calc):** Pokemon Champions formats calculated under Champions' own
     rules (`@smogon/calc` generation 0, stat points; `calc_generation`), per
     game; a generation of 0 no longer swallowed by `or` / `||`; a Pokemon or
-    move missing from the Champions data falls back to Scarlet/Violet rules and
-    says so (ADR-041).
+    move missing from the Champions data was originally handled by a labelled
+    fallback (ADR-041); ADR-043 removes that fallback and refuses the projection.
 19. **fix(calc):** multi-hit moves report the total (not one hit's), projected for
     the hits the log shows (`|-hitcount|`); abilities revealed by `[from]
     ability: X` are used; guard recognizes Megas in prose and a legal Mega makes
@@ -488,3 +504,164 @@ only after CI (pytest on 3.10/3.12, Node tests, `mypy --strict`) is green.
 Never force-push `master`, never bypass checks. Security reports go through
 `SECURITY.md`. Deployment is the `Dockerfile` (Cloud Run); there are no
 patch/bundle handoff scripts any more.
+
+
+## 14. BO3 set inference (ADR-044)
+
+Only `Bo3AnalysisService` invokes `Bo3InferenceCoordinator`; BO1 does not instantiate
+this context. Domain contracts, legal candidate families, HP compatibility and
+append-only checkpoints live in `domain/bo3_inference`. Application coordination,
+causal observations, bounded joint search and historical projections live in
+`services/bo3_inference`. Domain ports are `TeamSheetParser` and
+`CandidateProjectionPort`; only Container wires concrete adapters.
+
+- IVs are fixed at 31, not searched. Native stat points: cap 32/stat, total 66.
+  Only the calc adapter converts to legacy `evs` transport (*8).
+- Unknowns stay unknown; never fill them from Chaos. Preserve field provenance,
+  audience and availability; future species/reveals cannot enter earlier checkpoints.
+- Explicit registered-team continuity carries joint constraints and original traits,
+  never runtime state. Otherwise candidates reset each game.
+- Integer HP witnesses model public display rounding, candidate max HP, censored
+  KO damage and exact HP mode. Unsupported observations cannot reject candidates.
+- Bound assignments, engine calls, time and LRU memory. Samples cannot establish
+  uniqueness or narrow global ranges. Preserve sound prior bounds on exhaustion;
+  retain explicit conflicts and last valid ranges.
+- Eligible direct damage only initially: speed, critical and multi-hit inference
+  remain deferred. The worker owns move eligibility. LLMs explain typed evidence;
+  example families are not complete exact spreads. See `docs/bo3-inference/README.md`.
+
+- Offline inference bench: `python -m scripts.bo3_inference_benchmark.run --out PATH`.
+  CI runs the frozen corpus on Python 3.12. Inputs/results live under
+  `docs/bo3-inference/validation`; regeneration is explicit. Engine consistency,
+  independent analytic search checks and held-out game accuracy are distinct claims.
+
+
+## 15. BO3 replay acquisition (ADR-045)
+
+`Container.import_bo3_replays` wires `SeriesReplayImporter` to a domain-owned
+`SeriesReplayGateway` implemented by `ShowdownSeriesGateway`. Acquisition is
+request-scoped and separate from inference/analysis. The UI imports a room, any
+replay or a batch, then lets the user review before Analyze BO3. Never consume
+quota, call a model, log in, post chat or upload a replay during import.
+
+Only numbered room/protocol metadata establishes series membership and game order.
+Usernames alone never establish it. Missing slots stay missing; manual inputs
+without metadata retain supplied order with a warning. Keep BO1 fetching stable.
+Public room discovery uses a bounded guest WebSocket; expired rooms can fall back
+to uploaded replay links and bounded public search. Hosts/IDs, redirects, sizes,
+time and read counts are bounded. See `docs/bo3-import.md` for limits and tests.
+
+
+## 16. Public BO3 sheets and local constraints (ADR-046)
+
+`ReplayTeamSheetParser` extracts pre-battle `showteam` exports in BO3 only. Public
+item/ability/move/nature fields retain source, audience, availability and `only_game`.
+Never default a blank nature or redacted investment. Import prefills the form;
+analysis re-extracts independently. Verified shared official BO3 room metadata can
+establish registration continuity. Manual private facts remain private; conflicts
+are refused. Cosmetic gender changes are irrelevant to registered investment.
+
+Protect/Detect and modeled terrain/passive recovery do not disable later direct
+hits. Keep genuinely unknown state excluded. Side/field protocol positions differ.
+For large joint searches, one affordable exhaustive local factor after each game
+can supply `necessary_local_bounds`; before-game checkpoints reuse prior proofs.
+Local examples never become global joint evidence, and bounded coverage cannot
+prove uniqueness/global feasibility. Local limits share projection/time budgets;
+default projections 120,000, deadline 60 seconds, cache 4,096. Public-series
+regression uses 60 seconds and has no hidden investment truth. See ADR-046.
+
+
+## 17. Expired public BO3 room recovery (ADR-047)
+
+Container injects `SeriesReplayIndex` via `JsonSeriesReplayIndex` at the Git-ignored
+`.cache/bo3-series/index.json`. Remember only numbered references explicitly marked
+public/no-password by the server, never private/unclassified links or full logs.
+When a room is unavailable, re-fetch and revalidate indexed references; missing or
+newly private games remain missing. Preserve original room errors when no index or
+uploaded seed is known. Never guess IDs or read production data from test fixtures.
+The index is bounded (64 series, 3 refs, 512 KB reads), atomic, and local to the
+installation. Disk persistence does not imply cross-deployment/cloud durability.
+
+
+## 18. BO3 damage samples and visible field (ADR-048)
+
+Local factors group observations by Pokemon identities and measured stat axes,
+intersecting each selected sample's supported rolls at its own runtime state.
+Try full groups, affordable two-sample subsets, then single hits. Retain strict
+resource limits, reported sample IDs, registered-team continuity and causal
+checkpoints. Partial local searches never justify new bounds. Encore, Perish Song
+counters and observed Follow Me/Rage Powder redirection do not alter direct-hit
+damage; unknown effects and Substitute remain excluded.
+
+Series coaching reserves numerical investment for typed inference tables. Its
+allocation-notation guard requests one correction, then fails explicitly; it is
+not a complete semantic factuality validator. BO1 narration remains unchanged.
+The existing battle panel is visible beside the selected BO3 game's review,
+before the series narrative, with independent persisted turn positions. Navigation
+does not analyze again. The latest inference checkpoint opens by default.
+
+Normalize the optional `move:` prefix on real `-singleturn` effects. Throat Chop
+and Disable also constrain move choice, not observed direct damage. Public series
+2702605271 freezes this protocol with twelve known natures and 4/5/2 eligible hits
+verified by the real worker; its hidden investment is not evaluation ground truth.
+
+
+### BO3 investment-unit boundary (ADR-048 follow-up)
+
+Both per-game BO3 explanations and the series synthesis use the shared bounded
+output guard in `ground_truth.explain_champions_only(bo3=True)`. Numerical
+investment belongs to typed tables even when inference is disabled. Reject legacy
+EV notation and allocation prose in English/Portuguese; request one correction,
+then raise a typed error. This is a format guard, not a semantic accuracy proof.
+BO1 retains its existing output-check policy. `CandidateSummary` validates native
+bounds within 0-32, without summing marginal maxima as a joint allocation.
+
+
+## 19. Optimized BO3 inverse search (ADR-049)
+
+Candidate projection uses Node `calcRolls`, sharing the existing calculation path
+while omitting KO/description work. The forward calculator response stays stable.
+Domain `observation_components` splits only disconnected hidden-profile graphs;
+application `component_search` solves them with shared assignment and request-wide
+engine/time limits. Never split shared combatants or recombine marginal ranges.
+Multiply counts only for exhaustive components; report `search_components` and
+preserve prior/local proofs when later work is bounded. All backends receive the
+same inverse evidence before explanation; no free-form LLM numerical search.
+
+
+## 20. Overview and architecture documentation
+
+`README.md` is the concise product/setup entry point. `docs/architecture.md` is
+the current runtime/dependency/BO3 reference; canonical Mermaid sources live in
+`docs/diagrams/{architecture,dependencies,bo3-inference}.mmd`. Keep embedded blocks
+and `docs/architecture-blueprint.html` synchronized. Legacy fig2/fig3 SVGs are
+historical, not current references. Archived explanation benchmark details live
+in `docs/validation-evidence.md`; do not present them as current hidden-spread
+accuracy. The implemented series format is BO3 (up to three games, two wins),
+distinct from the bring-four rule within each VGC battle.
+
+
+## 21. BO3 narration recovery and environment isolation (ADR-050)
+
+BO3 narrator context omits numeric investment fields/prior spreads; full typed
+result evidence retains them. After one failed correction, allocation-bearing
+model prose is replaced entirely by an explicit notice, preserving deterministic
+results rather than aborting a whole series. Foreign mechanics still fail closed.
+Log omission reasons, never raw model text. BO1 narrative context stays unchanged.
+Mechanical HP damage and explicitly labeled effective/base speed are not investment.
+On Windows use `.venv-windows/Scripts/python.exe`; keep WSL `.venv` separate and do
+not repair unrelated global packages by uninstalling dependencies used elsewhere.
+See `docs/troubleshooting.md` for reproduction and validation commands.
+
+
+## 22. BO3 six-attribute ranges (ADR-051)
+
+`AttributeProjectionPort` and immutable envelopes derive all six raw level-50
+attributes through the existing Champions worker. Bounds are conservative outer
+ranges from native point ranges/natures, with per-endpoint budget legality; they
+are neither observed stats nor joint examples. Keep raw attributes, native points
+and effective battle values in separate units. Only base and already-observed
+Mega forms appear at each checkpoint. The request cache/batch/profile limits bound
+this extra work; engine failures never erase damage-inference results. BO1 does
+not invoke this port. BO3 narrator context excludes numeric speed projections
+and raw attribute envelopes; typed tables own attribute values.

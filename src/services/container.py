@@ -4,9 +4,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from src.adapters.calc.candidate_projection import SmogonCandidateProjectionAdapter
 from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.chaos.chaos_adapter import ChaosAdapter
-from src.adapters.chaos.chaos_repository import ChaosRepositoryLike, StrictRegulationRepository
+from src.adapters.chaos.chaos_repository import (
+    ChaosRepositoryLike,
+    StrictRegulationRepository,
+)
 from src.adapters.chaos.firestore_chaos_repository import FirestoreChaosRepository
 from src.adapters.firestore_client import build_firestore_client
 from src.adapters.llm.adk_provider import build_adk_model
@@ -20,17 +24,27 @@ from src.adapters.llm.openai_embedding_provider import OpenAIEmbeddingProvider
 from src.adapters.llm.openai_provider import OpenAIProvider
 from src.adapters.llm.prompts import FilePromptRepository
 from src.adapters.memory.conversation_memory import InMemoryConversationMemory
-from src.adapters.parsers.showdown_parser import ShowdownReplayParser, parse_replay_for_viewer
+from src.adapters.node_ipc import NodeIpcClient
+from src.adapters.parsers.showdown_parser import (
+    ShowdownReplayParser,
+    parse_replay_for_viewer,
+)
 from src.adapters.replay_url_fetcher import fetch_replay_json, normalize_replay_json_url
+from src.adapters.series_replay_index import JsonSeriesReplayIndex
+from src.adapters.showdown_series_gateway import ShowdownSeriesGateway
 from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
 from src.adapters.smogon.smogon_dex_adapter import SmogonDexAdapter
 from src.adapters.smogon.smogon_strategy_adapter import ChaosStrategyAdapter
+from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
+from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
 from src.adapters.usage.firestore_usage_quota import FirestoreUsageQuotaStore
 from src.config import Settings, load_settings
-from src.domain.exceptions import ConfigurationError
+from src.domain.champions import forbidden_references, require_champions_format
+from src.domain.exceptions import ConfigurationError, UnsupportedRulesError
 from src.domain.interfaces import (
     AnalysisPipeline,
+    Bo3AnalysisPipeline,
     ConversationMemory,
     EmbeddingProvider,
     LLMProvider,
@@ -40,12 +54,17 @@ from src.domain.interfaces import (
 from src.domain.models import AnalysisRequest
 from src.domain.regulation import Regulation, RegulationScope, parse_regulation_setting
 from src.domain.replay_view_models import BattleReplay
+from src.domain.series import Bo3AnalysisRequest, Bo3Evidence
+from src.domain.series_import import SeriesImportResult
 from src.services.adk_orchestrator import AdkAnalysisOrchestrator
 from src.services.analysis_service import AnalysisService
+from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
 from src.services.ground_truth import GroundTruthAssembler, parse_replay
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
 from src.services.regulation_guard import RegulationGuard
 from src.services.selection_service import LLMSelectionService
+from src.services.series_analysis import Bo3AnalysisService, prepare_series
+from src.services.series_import import SeriesReplayImporter
 from src.services.usage_quota import UsageQuotaService
 
 if TYPE_CHECKING:
@@ -62,6 +81,7 @@ class Container:
 
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or load_settings()
+        self._candidate_projection: SmogonCandidateProjectionAdapter | None = None
         self._memory: ConversationMemory | None = None
         self._calc: SmogonCalcAdapter | None = None
         self._dex: SmogonDexAdapter | None = None
@@ -97,7 +117,7 @@ class Container:
             self._calc = SmogonCalcAdapter(
                 server_script=self._settings.calc_server_script,
                 node_binary=self._settings.node_binary,
-                gen=self._settings.calc_gen,
+                gen=0,
                 timeout_seconds=self._settings.calc_timeout_seconds,
             )
         return self._calc
@@ -237,7 +257,7 @@ class Container:
             calc_engine=self.calc_engine(),
             meta_provider=chaos,
             strategy_provider=self.strategy(provider, strict=scope.strict),
-            default_gen=self._settings.calc_gen,
+            default_gen=0,
             scope=scope,
             regulation_catalog=chaos,
         )
@@ -254,7 +274,7 @@ class Container:
             meta_provider=chaos,
             calc_engine=calc,
             strategy_provider=self.strategy(provider, strict=scope.strict),
-            default_gen=self._settings.calc_gen,
+            default_gen=0,
             suggestion_source=self.smogon_dex(),
             scope=scope,
             regulation_catalog=chaos,
@@ -332,6 +352,38 @@ class Container:
             return self.build_langchain_pipeline(provider, regulation)
         return self.build_native_pipeline(provider, regulation)
 
+    def validate_series(self, request: Bo3AnalysisRequest, regulation: str | None = None) -> Bo3Evidence:
+        """Validate the entire ordered series before consuming quota or calling an LLM."""
+        evidence, games = prepare_series(ShowdownReplayParser(), request, self.regulation(regulation))
+        if request.inference_options.enabled:
+            self.bo3_inference().validate(request, evidence, games)
+        return evidence
+
+    def bo3_inference(self) -> Bo3InferenceCoordinator:
+        """The separate deterministic inference stage; never wired into BO1."""
+        if self._candidate_projection is None:
+            self._candidate_projection = SmogonCandidateProjectionAdapter(ipc=NodeIpcClient(
+                server_script=self._settings.calc_server_script, node_binary=self._settings.node_binary,
+                timeout_seconds=self._settings.calc_timeout_seconds,
+            ))
+        return Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=self._candidate_projection,
+                                       public_sheets=ShowdownTeamSheetParser(), attributes=self._candidate_projection)
+
+    def build_bo3_pipeline(
+        self, provider: str | None = None, orchestrator: str | None = None,
+        regulation: str | None = None,
+    ) -> Bo3AnalysisPipeline:
+        """BO3 is a separate use case composed over fresh BO1 pipelines."""
+        return Bo3AnalysisService(
+            parser=ShowdownReplayParser(),
+            pipeline_factory=lambda: self.build_pipeline(provider, orchestrator, regulation),
+            llm=self.build_llm(provider), prompts=self.prompts(), pinned=self.regulation(regulation),
+            regulation_catalog=self.chaos(strict=self.regulation(regulation) is not None),
+            guard=RegulationGuard(self.calc_engine()),
+            memory=self.memory(),
+            inference=self.bo3_inference(),
+        )
+
     def usage_quota(self) -> UsageQuotaService:
         """The per-visitor daily quota (ADR-036); a no-op without a limit.
 
@@ -372,6 +424,13 @@ class Container:
             for tier, reason in self._chaos_repo.rejected_tiers.items()
         ]
 
+    def import_bo3_replays(self, text: str) -> SeriesImportResult:
+        """Acquire and validate public BO3 replays without quota or model usage."""
+        return SeriesReplayImporter(gateway=ShowdownSeriesGateway(), parser=ShowdownReplayParser(),
+                                    public_sheets=ShowdownTeamSheetParser(),
+                                    index=JsonSeriesReplayIndex(path=self._settings.project_root / ".cache" /
+                                                               "bo3-series" / "index.json")).import_series(text)
+
     @staticmethod
     def resolve_replay_text(text: str) -> str:
         """The pasted text, or the replay JSON when it is a Showdown replay URL.
@@ -392,6 +451,9 @@ class Container:
             RegulationMismatchError: Pinned regulation and replay disagree.
         """
         game_state = parse_replay(ShowdownReplayParser(), request)
+        require_champions_format(game_state.format_id)
+        if forbidden_references(request.question):
+            raise UnsupportedRulesError("Only Pokemon Champions coaching with Mega Evolution is supported.")
         has_replay = request.replay_json is not None or request.replay_raw_text is not None
         RegulationScope(self.regulation(regulation)).bind(
             game_state.format_id, has_replay=has_replay
@@ -404,6 +466,9 @@ class Container:
 
     def shutdown(self) -> None:
         """Release long-lived resources (Node subprocesses, Firestore gRPC channel)."""
+        if self._candidate_projection is not None:
+            self._candidate_projection.close()
+            self._candidate_projection = None
         if self._calc is not None:
             self._calc.close()
             self._calc = None
