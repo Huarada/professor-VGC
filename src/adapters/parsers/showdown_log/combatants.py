@@ -19,6 +19,8 @@ class CombatantLedger:
         self._roster = roster
         self._timeline = timeline
         self.hp: dict[Key, float] = {}
+        self.hp_raw: dict[Key, str] = {}
+        self.abilities: dict[Key, str] = {}
         self.status: dict[Key, str] = {}
         self.held: dict[Key, str] = {}  # current item when determined ("" = none)
         self.gained_item: set[Key] = set()
@@ -33,6 +35,7 @@ class CombatantLedger:
     def enter(self, slot_ref: str, key: Key, appearance: str) -> None:
         self.on_field[slot_ref] = key
         self.boosts[key] = {}  # stat stages never survive a switch
+        self.abilities.pop(key, None)
         self.set_forme(key, appearance)
 
     def set_forme(self, key: Key, appearance: str) -> None:

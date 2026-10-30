@@ -21,10 +21,25 @@
 
 const readline = require('readline');
 const { calcDamage, compareSpeed, formeResolves, moveInfo, speciesNames } = require('./src/calcEngine');
+const candidateSupport = require('./src/candidateSupport');
 
 function handle(request) {
   const cmd = request.cmd || 'calc';
   switch (cmd) {
+    case 'candidateAttributes':
+      if (!Array.isArray(request.requests) || request.requests.length > 64) {
+        throw new Error('Attribute batches require at most 64 requests');
+      }
+      return { ok: true, result: request.requests.map(candidateSupport.attributes) };
+    case 'candidateRules':
+      return { ok: true, result: candidateSupport.rules() };
+    case 'candidateMove':
+      return { ok: true, result: candidateSupport.moveSupport(request.move) };
+    case 'candidateBatch':
+      if (!Array.isArray(request.requests) || request.requests.length > 64) {
+        throw new Error('Candidate batches require at most 64 requests');
+      }
+      return { ok: true, result: request.requests.map(candidateSupport.project) };
     case 'ping':
       return { ok: true, result: { pong: true } };
     case 'calc':

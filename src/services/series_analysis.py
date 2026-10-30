@@ -6,6 +6,7 @@ import json
 import uuid
 from collections.abc import Callable
 
+from src.domain.bo3_inference.narration import coaching_context
 from src.domain.champions import forbidden_references, require_champions_format
 from src.domain.exceptions import (
     LLMProviderError,
@@ -28,6 +29,7 @@ from src.domain.series import (
     Bo3Evidence,
     SeriesGameEvidence,
 )
+from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
 from src.services.ground_truth import explain_champions_only, parse_replay
 from src.services.regulation_guard import RegulationGuard
 
@@ -157,7 +159,8 @@ class Bo3AnalysisService:
                  llm: LLMProvider, prompts: PromptRepository, pinned: Regulation | None = None,
                  regulation_catalog: RegulationCatalog | None = None,
                  guard: RegulationGuard | None = None,
-                 memory: ConversationMemory | None = None) -> None:
+                 memory: ConversationMemory | None = None,
+                 inference: Bo3InferenceCoordinator | None = None) -> None:
         self._parser = parser
         self._pipeline_factory = pipeline_factory
         self._llm = llm
@@ -166,9 +169,11 @@ class Bo3AnalysisService:
         self._catalog = regulation_catalog
         self._guard = guard or RegulationGuard(None)
         self._memory = memory
+        self._inference = inference
 
     def analyze(self, request: Bo3AnalysisRequest) -> Bo3AnalysisResult:
-        evidence, _ = prepare_series(self._parser, request, self._pinned)
+        evidence, states = prepare_series(self._parser, request, self._pinned)
+        inferred = self._inference.analyze(request, evidence, states) if self._inference else None
         run_id = uuid.uuid4().hex
         results = []
         for source, game in zip(request.games, evidence.games):
@@ -178,7 +183,12 @@ class Bo3AnalysisService:
                 replay_raw_text=source if isinstance(source, str) else None,
                 question=request.question, provider=request.provider,
                 series_context={"game": game.number, "players_by_side": game.players_by_side,
-                                "score_before": game.score_before, "known_before": game.known_before},
+                                "score_before": game.score_before, "known_before": game.known_before,
+                                "set_inference": {
+                                    "perspective": inferred.perspective,
+                                    "checkpoints": [checkpoint.model_dump(mode="json") for checkpoint in inferred.checkpoints
+                                                    if checkpoint.game == game.number],
+                                } if inferred else None},
             )
             try:
                 results.append(self._pipeline_factory().analyze(game_request))
@@ -187,6 +197,7 @@ class Bo3AnalysisService:
                     self._memory.clear(game_request.session_id)
         payload = {
             "question": request.question, "series": evidence.model_dump(mode="json"),
+            "set_inference": inferred.model_dump(mode="json") if inferred else None,
             "game_evidence": [result.model_dump(mode="json", exclude={
                 "answer", "session_id", "question", "agent_tool_calls",
             }) for result in results],
@@ -195,22 +206,22 @@ class Bo3AnalysisService:
         def explain(correction: str) -> str:
             answer = self._llm.complete(
                 system=self._system, messages=[ChatMessage(role="user", content=(
-                    json.dumps(payload, ensure_ascii=False) + "\n" + correction
+                    json.dumps(coaching_context(payload), ensure_ascii=False) + "\n" + correction
                 ))], temperature=0.2,
             )
             if not answer.strip():
                 raise LLMProviderError("The BO3 explanation was empty.")
             return answer
 
-        answer = explain_champions_only(explain)
+        answer = explain_champions_only(explain, bo3=True)
         if self._catalog is not None:
             roster = self._catalog.roster(evidence.format_id)
             violations = self._guard.violations(answer, roster)
             if violations:
                 answer = explain_champions_only(
-                    explain, self._guard.correction_note(violations, evidence.format_id),
+                    explain, self._guard.correction_note(violations, evidence.format_id), bo3=True,
                 )
                 if self._guard.violations(answer, roster):
                     raise SeriesValidationError("The series summary included Pokemon outside its regulation.")
         return Bo3AnalysisResult(session_id=request.session_id,
-                                 answer=answer, evidence=evidence, games=results)
+                                 answer=answer, evidence=evidence, games=results, inference=inferred)

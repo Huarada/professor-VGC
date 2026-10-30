@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import Sequence
 
 from src.adapters.llm.base import require_modern_gemini_model
@@ -42,6 +43,15 @@ class GeminiProvider:
         if json_mode:
             generation_config["response_mime_type"] = "application/json"
         try:
+            from google.api_core.exceptions import (  # noqa: PLC0415 - lazy optional dep
+                DeadlineExceeded,
+                InternalServerError,
+                ServiceUnavailable,
+            )
+            from google.generativeai.types import (
+                RequestOptions,  # noqa: PLC0415 - lazy optional dep
+            )
+
             model = self._genai.GenerativeModel(  # type: ignore[attr-defined]
                 model_name=self._model_name,
                 system_instruction=system,
@@ -54,7 +64,17 @@ class GeminiProvider:
                 }
                 for m in messages
             ]
-            response = model.generate_content(history)
+            for attempt in range(3):
+                try:
+                    # Own the retry budget instead of nesting the SDK's defaults.
+                    response = model.generate_content(
+                        history, request_options=RequestOptions(retry=None, timeout=30),
+                    )
+                    break
+                except (InternalServerError, ServiceUnavailable, DeadlineExceeded):
+                    if attempt == 2:
+                        raise
+                    time.sleep(2 ** attempt)
         except Exception as exc:  # noqa: BLE001 - SDK raises many concrete types
             raise LLMProviderError(f"Gemini request failed: {exc}") from exc
         text = getattr(response, "text", None)

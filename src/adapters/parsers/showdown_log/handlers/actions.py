@@ -91,6 +91,7 @@ class ActionHandlers(HandlerGroup):
         fainted = condition == "fnt"
         if hp is not None:
             combatants.hp[key] = 0.0 if fainted else hp
+            combatants.hp_raw[key] = parts[3].strip()
         source = tag_value(parts[4:], "from")
         if source:
             if source.lower().startswith("item:"):
@@ -106,11 +107,11 @@ class ActionHandlers(HandlerGroup):
         if fainted:
             move.results.append(f"{species} fainted")
             timeline.fainted_in_move.add((timeline.turn, species))
-            timeline.record_hit(key, 0.0)
+            timeline.record_hit(key, 0.0, hp_after_raw=parts[3].strip())
         else:
             pct = parts[3].strip().split("/")[0]
             move.results.append(f"{species}->{pct}%")
-            timeline.record_hit(key, hp)
+            timeline.record_hit(key, hp, hp_after_raw=parts[3].strip())
 
     def on_heal(self, parts: list[str]) -> None:
         if len(parts) <= 3:
@@ -121,6 +122,7 @@ class ActionHandlers(HandlerGroup):
         hp, _condition = parse_hp(parts[3])
         if hp is not None:
             self.state.combatants.hp[key] = hp
+            self.state.combatants.hp_raw[key] = parts[3].strip()
         source = tag_value(parts[4:], "from")
         if source.lower().startswith("item:"):
             self.state.combatants.reveal_item(key, source.split(":", 1)[1].strip())

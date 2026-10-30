@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.domain.exceptions import SeriesValidationError
 from src.domain.models import AnalysisResult
+from src.domain.bo3_inference.models import Bo3InferenceEvidence, InferenceOptions
 
 
 class Bo3AnalysisRequest(BaseModel):
@@ -17,6 +18,8 @@ class Bo3AnalysisRequest(BaseModel):
     games: list[dict[str, Any] | str]
     question: str = ""
     provider: str = "openai"
+    teamsheet: dict[str, Any] | str | None = None
+    inference_options: InferenceOptions = Field(default_factory=InferenceOptions)
 
     @field_validator("games")
     @classmethod
@@ -64,3 +67,4 @@ class Bo3AnalysisResult(BaseModel):
     answer: str
     evidence: Bo3Evidence
     games: list[AnalysisResult]
+    inference: Bo3InferenceEvidence | None = None

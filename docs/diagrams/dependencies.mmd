@@ -1,0 +1,6 @@
+flowchart LR
+    uiLayer["UI"] --> services["Application services"]
+    services --> domain["Domain models, rules and Protocol ports"]
+    adapters["Infrastructure adapters"] -->|"implement ports"| domain
+    container["Container composition root"] -.->|"injects"| services
+    container -.->|"constructs"| adapters

@@ -1,0 +1,2789 @@
+{
+  "schema_version": 1,
+  "generator_engine_version": "0.12.0",
+  "rule_version": "champions-stat-points-66-32-v1",
+  "fixtures": [
+    {
+      "name": "physical/physical_bulk/exact",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|144/202\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|138/202\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|132/202\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 2,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "physical/physical_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|202/202\n|turn|1\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|144/202\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|202/202\n|turn|2\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|138/202\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|202/202\n|turn|3\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|132/202\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 2,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "physical/physical_bulk/exact"
+    },
+    {
+      "name": "physical/physical_bulk/percent",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|72/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|69/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|66/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 2,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "physical/physical_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|1\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|72/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|2\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|69/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|3\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|66/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 2,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "physical/physical_bulk/percent"
+    },
+    {
+      "name": "physical/special_bulk/exact",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|186/186\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|102/186\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|186/186\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|95/186\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|186/186\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|87/186\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 24,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "physical/special_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|186/186\n|turn|1\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|102/186\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|186/186\n|turn|2\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|95/186\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|186/186\n|turn|3\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|87/186\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 24,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "physical/special_bulk/exact"
+    },
+    {
+      "name": "physical/special_bulk/percent",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|55/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|52/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|47/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 24,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "physical/special_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|1\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|55/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|2\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|52/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|3\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|47/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 24,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "physical/special_bulk/percent"
+    },
+    {
+      "name": "physical/fast_neutral/exact",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|170/170\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|86/170\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|170/170\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|79/170\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|170/170\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|71/170\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "spa": 0,
+              "spd": 2,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "physical/fast_neutral/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|170/170\n|turn|1\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|86/170\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|170/170\n|turn|2\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|79/170\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|170/170\n|turn|3\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|71/170\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "spa": 0,
+              "spd": 2,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "physical/fast_neutral/exact"
+    },
+    {
+      "name": "physical/fast_neutral/percent",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|51/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|47/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|42/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "spa": 0,
+              "spd": 2,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "physical/fast_neutral/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|1\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|51/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|2\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|47/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|3\n|move|p2a: NewDragon|Dragon Claw|p1a: NewTiger\n|-damage|p1a: NewTiger|42/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "spa": 0,
+              "spd": 2,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "physical/fast_neutral/percent"
+    },
+    {
+      "name": "special/physical_bulk/exact",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|1\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|139/202\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|2\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|133/202\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|3\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|127/202\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 32,
+              "spa": 0,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "special/physical_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|202/202\n|turn|1\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|139/202\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|202/202\n|turn|2\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|133/202\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|202/202\n|turn|3\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|127/202\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 32,
+              "spa": 0,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "special/physical_bulk/exact"
+    },
+    {
+      "name": "special/physical_bulk/percent",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|1\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|69/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|2\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|66/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|3\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|63/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 32,
+              "spa": 0,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "special/physical_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|1\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|69/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|2\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|66/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|3\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|63/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 32,
+              "spa": 0,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "special/physical_bulk/percent"
+    },
+    {
+      "name": "special/special_bulk/exact",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|186/186\n|turn|1\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|138/186\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|186/186\n|turn|2\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|134/186\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|186/186\n|turn|3\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|129/186\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 0,
+              "spa": 0,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "special/special_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|186/186\n|turn|1\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|138/186\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|186/186\n|turn|2\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|134/186\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|186/186\n|turn|3\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|129/186\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 0,
+              "spa": 0,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "special/special_bulk/exact"
+    },
+    {
+      "name": "special/special_bulk/percent",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|1\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|75/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|2\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|73/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|3\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|70/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 0,
+              "spa": 0,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "special/special_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|1\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|75/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|2\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|73/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|3\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|70/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "def": 0,
+              "spa": 0,
+              "spe": 26
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Calm",
+          "stat_points": {
+            "hp": 16,
+            "atk": 0,
+            "def": 0,
+            "spa": 0,
+            "spd": 24,
+            "spe": 26
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "special/special_bulk/percent"
+    },
+    {
+      "name": "special/fast_neutral/exact",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|170/170\n|turn|1\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|107/170\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|170/170\n|turn|2\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|101/170\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|170/170\n|turn|3\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|95/170\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "def": 0,
+              "spa": 0,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "special/fast_neutral/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|170/170\n|turn|1\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|107/170\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|170/170\n|turn|2\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|101/170\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|185/185\n|switch|p1a: NewTiger|Incineroar, L50|170/170\n|turn|3\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|95/170\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "def": 0,
+              "spa": 0,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "special/fast_neutral/exact"
+    },
+    {
+      "name": "special/fast_neutral/percent",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|1\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|63/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|2\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|60/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|100/100\n|switch|p2a: Cat|Incineroar, L50|100/100\n|turn|3\n|move|p1a: Chomp|Dragon Pulse|p2a: Cat\n|-damage|p2a: Cat|56/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "def": 0,
+              "spa": 0,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": null
+    },
+    {
+      "name": "special/fast_neutral/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|1\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|63/100\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|2\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|60/100\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p2|Alice|\n|player|p1|Bob|\n|poke|p2|Garchomp, L50|\n|poke|p1|Incineroar, L50|\n|switch|p2a: NewDragon|Garchomp, L50|100/100\n|switch|p1a: NewTiger|Incineroar, L50|100/100\n|turn|3\n|move|p2a: NewDragon|Dragon Pulse|p1a: NewTiger\n|-damage|p1a: NewTiger|56/100\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Modest",
+            "stat_points": {
+              "hp": 2,
+              "spa": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 32,
+              "def": 0,
+              "spa": 0,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Modest",
+          "stat_points": {
+            "hp": 2,
+            "spa": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Hardy",
+          "stat_points": {
+            "hp": 0,
+            "atk": 32,
+            "def": 0,
+            "spa": 0,
+            "spd": 2,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "percent",
+        "max_assignments": 12000,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "exhaustive",
+      "equivalent_to": "special/fast_neutral/percent"
+    },
+    {
+      "name": "budget/one_assignment",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|144/202\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|138/202\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|132/202\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 2,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 1,
+        "max_projections": 30000,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "bounded",
+      "equivalent_to": null
+    },
+    {
+      "name": "budget/one_projection",
+      "provenance": "engine_generated",
+      "games": [
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|1\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|144/202\n|win|Alice",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|2\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|138/202\n|win|Bob",
+        "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)\n|player|p1|Alice|\n|player|p2|Bob|\n|poke|p1|Garchomp, L50|\n|poke|p2|Incineroar, L50|\n|switch|p1a: Chomp|Garchomp, L50|185/185\n|switch|p2a: Cat|Incineroar, L50|202/202\n|turn|3\n|move|p1a: Chomp|Dragon Claw|p2a: Cat\n|-damage|p2a: Cat|132/202\n|win|Alice"
+      ],
+      "teamsheet": {
+        "registered_team": true,
+        "pokemon": [
+          {
+            "participant": "Alice",
+            "slot": 1,
+            "species": "Garchomp",
+            "item": "",
+            "ability": "Rough Skin",
+            "moves": [],
+            "nature": "Adamant",
+            "stat_points": {
+              "hp": 2,
+              "atk": 32,
+              "spe": 32
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          },
+          {
+            "participant": "Bob",
+            "slot": 1,
+            "species": "Incineroar",
+            "item": "",
+            "ability": "Intimidate",
+            "moves": [],
+            "nature": null,
+            "stat_points": {
+              "atk": 0,
+              "spa": 0,
+              "spd": 2,
+              "spe": 0
+            },
+            "ivs": {},
+            "visibility": "public",
+            "available_from_game": 1,
+            "source": "user_teamsheet",
+            "field_sources": {}
+          }
+        ]
+      },
+      "truth": {
+        "Alice:slot1": {
+          "participant": "Alice",
+          "slot": 1,
+          "species": "Garchomp",
+          "item": "",
+          "ability": "Rough Skin",
+          "moves": [],
+          "nature": "Adamant",
+          "stat_points": {
+            "hp": 2,
+            "atk": 32,
+            "spe": 32
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        },
+        "Bob:slot1": {
+          "participant": "Bob",
+          "slot": 1,
+          "species": "Incineroar",
+          "item": "",
+          "ability": "Intimidate",
+          "moves": [],
+          "nature": "Impish",
+          "stat_points": {
+            "hp": 32,
+            "atk": 0,
+            "def": 32,
+            "spa": 0,
+            "spd": 2,
+            "spe": 0
+          },
+          "ivs": {},
+          "visibility": "public",
+          "available_from_game": 1,
+          "source": "user_teamsheet",
+          "field_sources": {}
+        }
+      },
+      "options": {
+        "enabled": true,
+        "perspective": "public",
+        "hp_mode": "exact",
+        "max_assignments": 12000,
+        "max_projections": 1,
+        "max_cache_entries": 4096,
+        "timeout_seconds": 60.0
+      },
+      "expected_coverage": "bounded",
+      "equivalent_to": null
+    }
+  ]
+}

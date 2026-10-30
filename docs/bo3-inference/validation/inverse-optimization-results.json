@@ -1,0 +1,1046 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-10-25T02:40:14.188758+00:00",
+  "environment": {
+    "python": "3.12.10",
+    "platform": "Windows-11-10.0.26300-SP0"
+  },
+  "corpus_sha256": "c492015f3c97f50ea1e428ad8d522b017e8ce85bd417655a2c87b1cd1b5d1adb",
+  "engine_version": "0.12.0",
+  "rule_version": "champions-stat-points-66-32-v1",
+  "fixture_engine_version": "0.12.0",
+  "fixture_rule_version": "champions-stat-points-66-32-v1",
+  "passed": true,
+  "summary": {
+    "fixtures": 26,
+    "fixtures_passed": 26,
+    "games": 78,
+    "independent_oracle_cases": 17,
+    "independent_oracle_passed": 17,
+    "truth_outer_ranges_retained": 26,
+    "production_projections": 31945,
+    "median_latency_seconds": 0.371919,
+    "max_latency_seconds": 3.861109,
+    "independently_recorded_fixtures": 0
+  },
+  "limitations": [
+    "Engine-generated fixtures test self-consistency, not held-out real-game accuracy.",
+    "Analytic oracle validates solver relationships, not Champions damage mechanics.",
+    "Marginal truth retention is not a proof that every combination inside ranges is compatible.",
+    "Truth probes independently check constraints but do not inspect the solver's full joint relation.",
+    "Marginal width reduction is not candidate-volume reduction or a calibrated probability.",
+    "Latency is observational; no portable wall-clock performance threshold is claimed.",
+    "Truth-probe and fixture-generation projections are excluded from production-projection counts."
+  ],
+  "fixtures": [
+    {
+      "name": "physical/physical_bulk/exact",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.396305,
+      "production_projections": 3267,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        3,
+        3,
+        3
+      ],
+      "marginal_width_reduction": 0.96875
+    },
+    {
+      "name": "physical/physical_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.347533,
+      "production_projections": 3267,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        3,
+        3,
+        3
+      ],
+      "marginal_width_reduction": 0.96875
+    },
+    {
+      "name": "physical/physical_bulk/percent",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 1.142634,
+      "production_projections": 3267,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        6,
+        6,
+        6
+      ],
+      "marginal_width_reduction": 0.953125
+    },
+    {
+      "name": "physical/physical_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 3.699668,
+      "production_projections": 3267,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        6,
+        6,
+        6
+      ],
+      "marginal_width_reduction": 0.953125
+    },
+    {
+      "name": "physical/special_bulk/exact",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.241635,
+      "production_projections": 459,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        2,
+        1,
+        1
+      ],
+      "marginal_width_reduction": 1.0
+    },
+    {
+      "name": "physical/special_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.243576,
+      "production_projections": 459,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        2,
+        1,
+        1
+      ],
+      "marginal_width_reduction": 1.0
+    },
+    {
+      "name": "physical/special_bulk/percent",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.734019,
+      "production_projections": 459,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        266,
+        240,
+        70
+      ],
+      "marginal_width_reduction": 0.15625
+    },
+    {
+      "name": "physical/special_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.701194,
+      "production_projections": 459,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        266,
+        240,
+        70
+      ],
+      "marginal_width_reduction": 0.15625
+    },
+    {
+      "name": "physical/fast_neutral/exact",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.022515,
+      "production_projections": 3,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        2,
+        1,
+        1
+      ],
+      "marginal_width_reduction": 0
+    },
+    {
+      "name": "physical/fast_neutral/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.021104,
+      "production_projections": 3,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        2,
+        1,
+        1
+      ],
+      "marginal_width_reduction": 0
+    },
+    {
+      "name": "physical/fast_neutral/percent",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.021562,
+      "production_projections": 3,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        2,
+        2,
+        1
+      ],
+      "marginal_width_reduction": 0
+    },
+    {
+      "name": "physical/fast_neutral/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.016625,
+      "production_projections": 3,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        2,
+        2,
+        1
+      ],
+      "marginal_width_reduction": 0
+    },
+    {
+      "name": "special/physical_bulk/exact",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.971908,
+      "production_projections": 1872,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        5,
+        5,
+        2
+      ],
+      "marginal_width_reduction": 0.984375
+    },
+    {
+      "name": "special/physical_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.855952,
+      "production_projections": 1872,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        5,
+        5,
+        2
+      ],
+      "marginal_width_reduction": 0.984375
+    },
+    {
+      "name": "special/physical_bulk/percent",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 3.085391,
+      "production_projections": 1872,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        892,
+        736,
+        282
+      ],
+      "marginal_width_reduction": 0.0
+    },
+    {
+      "name": "special/physical_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 3.114013,
+      "production_projections": 1872,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        892,
+        736,
+        282
+      ],
+      "marginal_width_reduction": 0.0
+    },
+    {
+      "name": "special/special_bulk/exact",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 1.302139,
+      "production_projections": 2367,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        1,
+        1,
+        1
+      ],
+      "marginal_width_reduction": 1.0
+    },
+    {
+      "name": "special/special_bulk/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 1.328282,
+      "production_projections": 2367,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        1,
+        1,
+        1
+      ],
+      "marginal_width_reduction": 1.0
+    },
+    {
+      "name": "special/special_bulk/percent",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 3.861109,
+      "production_projections": 2367,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        32,
+        32,
+        32
+      ],
+      "marginal_width_reduction": 0.5625
+    },
+    {
+      "name": "special/special_bulk/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 3.389949,
+      "production_projections": 2367,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        32,
+        32,
+        32
+      ],
+      "marginal_width_reduction": 0.5625
+    },
+    {
+      "name": "special/fast_neutral/exact",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.024732,
+      "production_projections": 18,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        5,
+        5,
+        2
+      ],
+      "marginal_width_reduction": 0.75
+    },
+    {
+      "name": "special/fast_neutral/exact/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.027018,
+      "production_projections": 18,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        5,
+        5,
+        2
+      ],
+      "marginal_width_reduction": 0.75
+    },
+    {
+      "name": "special/fast_neutral/percent",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.046923,
+      "production_projections": 18,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        12,
+        12,
+        6
+      ],
+      "marginal_width_reduction": 0.0
+    },
+    {
+      "name": "special/fast_neutral/percent/swapped_renamed",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true,
+        "side_and_nickname_invariance": true
+      },
+      "passed": true,
+      "latency_seconds": 0.046276,
+      "production_projections": 18,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "ambiguous",
+      "final_coverage": "exhaustive",
+      "compatible_families_after_games": [
+        12,
+        12,
+        6
+      ],
+      "marginal_width_reduction": 0.0
+    },
+    {
+      "name": "budget/one_assignment",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.017839,
+      "production_projections": 1,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [],
+      "final_outcome": "not_informative",
+      "final_coverage": "bounded",
+      "compatible_families_after_games": [],
+      "marginal_width_reduction": 0.0
+    },
+    {
+      "name": "budget/one_projection",
+      "provenance": "engine_generated",
+      "checks": {
+        "expected_coverage": true,
+        "truth_in_reported_outer_ranges": true,
+        "truth_satisfies_all_modeled_damage": true,
+        "all_damage_eligible": true,
+        "no_false_unique_on_budget": true,
+        "no_conflict": true,
+        "progressive_family_count": true,
+        "chronology": true,
+        "projection_budget": true
+      },
+      "passed": true,
+      "latency_seconds": 0.02515,
+      "production_projections": 0,
+      "truth_probe_observations": 3,
+      "truth_outer_ranges_retained": true,
+      "modeled_damage_observations": 3,
+      "unsupported_reasons": [
+        "Projection/time budget reached"
+      ],
+      "final_outcome": "not_informative",
+      "final_coverage": "bounded",
+      "compatible_families_after_games": [],
+      "marginal_width_reduction": 0.0
+    }
+  ],
+  "independent_oracle": [
+    {
+      "delta": -32,
+      "expected_pairs": 1,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": -28,
+      "expected_pairs": 5,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": -24,
+      "expected_pairs": 9,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": -20,
+      "expected_pairs": 13,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": -16,
+      "expected_pairs": 17,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": -12,
+      "expected_pairs": 21,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": -8,
+      "expected_pairs": 25,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": -4,
+      "expected_pairs": 29,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 0,
+      "expected_pairs": 33,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 4,
+      "expected_pairs": 29,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 8,
+      "expected_pairs": 25,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 12,
+      "expected_pairs": 21,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 16,
+      "expected_pairs": 17,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 20,
+      "expected_pairs": 13,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 24,
+      "expected_pairs": 9,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 28,
+      "expected_pairs": 5,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "delta": 32,
+      "expected_pairs": 1,
+      "checks": {
+        "exhaustive": true,
+        "joint_count": true,
+        "attack_range": true,
+        "defense_range": true,
+        "joint_examples": true,
+        "unique_only_at_boundary": true
+      },
+      "passed": true
+    }
+  ]
+}

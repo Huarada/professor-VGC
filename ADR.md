@@ -4244,3 +4244,570 @@ claiming updated accuracy.
 stage, `services/{series_analysis,container}.py`, agent tools/prompts, Smogon and
 calc adapters, Node calc/dex workers, UI mode/results/stepper, sample replay and
 regression tests. Raw `data/chaos` dumps are unchanged.
+
+
+---
+
+## ADR-044 ? BO3-only joint stat-point and nature inference
+
+**Status:** Accepted (direct-damage core). **Date:** 2026-10-21.
+
+### Context
+
+ADR-043 isolated BO3 review but did not constrain hidden investment. Damage couples
+attacker and defender hypotheses; solving only the defender against a Chaos guess
+would turn a prior into a fact. Champions uses fixed IVs and native stat points.
+The approved architecture and semantic methodology live in `docs/bo3-inference`.
+
+### Decision
+
+Add a supporting context invoked only by the BO3 service. Domain candidate families
+preserve unmeasured legal completions and equivalent natures. Application search
+joins eligible damage constraints across all involved Pokemon. Marginal ranges
+are presentation summaries, never recombined into invented joint solutions.
+
+Optional strict JSON sheets carry field source, visibility and availability.
+Conflicting registrations fail before model calls. Explicit registered-team
+continuity carries earlier joint constraints and original revealed traits, never
+HP, boosts, weather, consumption or Mega ability state. Future/private revelations
+cannot fill earlier unknowns. Without continuity, candidate spaces reset each game.
+
+`CandidateProjectionPort` provides versioned rules and integer damage support via
+an additive Node command over the existing Champions engine. The adapter alone
+converts native points to legacy transport (*8). IVs are fixed at 31, per-stat
+points capped at 32 and total budget at 66. See primary rule sources in the
+methodology guide. No foreign-generation fallback is permitted; Mega Evolution
+remains the only allowed special transformation.
+
+Public HP uses integer witnesses compatible with rounding and candidate maximum
+HP; exact mode requires actual HP denominators. KO damage is censored. Assignment,
+projection, time and LRU cache bounds yield explicit bounded coverage. Partial or
+unsupported search cannot prove uniqueness or eliminate unresolved regions.
+Previously sound bounds survive budget exhaustion. Conflicts remain recorded with
+last valid ranges. Historical projections declare sampled or exhaustive support.
+
+Compact Dex metadata omits dynamic callbacks, so eligibility uses an explicit
+constant-power direct-move allowlist, independently of the engine damage formula.
+Unknown items/abilities and unmodeled state are exclusions. Speed, critical hits,
+multi-hit inference, prior ranking and persistent sessions remain deferred.
+
+### Alternatives considered
+
+- Solving against most-used Chaos spreads: rejected because hidden attacker and
+  defender hypotheses are correlated.
+- Reusing BO1 percentage projections: insufficient integer support/max-HP semantics.
+- Enumerating every full spread: replaced by lazy relevant-axis families with
+  explicit legal completions and exhaustive/bounded coverage.
+
+### Consequences and validation
+
+All backends receive shared typed BO3 evidence. BO1 wiring and calculation
+contracts stay independent. Incomplete information can leave results uninformative;
+compatible ranges do not necessarily identify an exact spread. No probabilities,
+held-out real-game accuracy or paid explanation benchmark are claimed.
+
+Tests cover independent planted constraints, real-engine hidden-profile retention,
+joint relationships, legal completions, exact/public HP, p1/p2 swaps, private/future
+knowledge, runtime resets, registered continuity, contradictions, engine failure,
+resource exhaustion, shared-series prompt isolation and existing BO1/backend parity.
+
+### Files touched
+
+`domain/bo3_inference`, `services/bo3_inference`, domain ports/series DTOs, teamsheet
+and candidate-calc adapters, additive parser observation fields, candidate worker
+commands, composition root, BO3 service/UI, prompts, documentation and tests.
+
+
+### ADR-044 follow-up ? reproducible validation benches
+
+Add `scripts/bo3_inference_benchmark` as offline evaluation tooling, without hooks
+into production inference. A 17-case analytic oracle enumerates every attack /
+defense pair independently of candidate generation and compares counts, extrema,
+examples and uniqueness. A frozen 26-series corpus covers physical/special damage,
+three hidden profiles, exact/rounded HP, low/middle/high rolls, side and nickname
+invariance, and two resource-exhaustion controls. Evaluation truth remains separate
+from submitted sheets. Per-case judgments, corpus hash, engine/rule versions,
+latency and projection counts are archived under `docs/bo3-inference/validation`.
+
+CI runs the corpus on Python 3.12 and fails on bad judgments or missing engine
+infrastructure. Synthetic engine-generated observations demonstrate consistency,
+not held-out accuracy. Marginal retention and truth-support probes are reported
+separately; neither claims visibility into the solver's entire joint relation.
+No independent recorded-game corpus or paid explanation benchmark is claimed.
+
+
+---
+
+## ADR-045 ? Import a BO3 from one series/replay URL or a batch of links
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+Three independent replay fields require users to open each Showdown game. The
+reported series room links all three games, while the two supplied replay URLs
+were game 3 and game 2; blindly preserving paste order would corrupt chronology.
+The official `server/room-battle-bestof.ts` emits numbered room links and per-game
+`bestof`/`next` protocol metadata. Rooms are ephemeral and uploaded replays may be
+unavailable independently. Repeated opponents can play multiple unrelated sets.
+
+### Decision
+
+Add immutable acquisition DTOs and a domain-owned `SeriesReplayGateway` port.
+`ShowdownSeriesGateway` normalizes allowlisted Champions URLs, reads public room
+protocol through a short-lived guest WebSocket connection, fetches uploaded replay
+JSON and supplies bounded replay-search candidates. Container wires it to the
+request-scoped `SeriesReplayImporter`; UI calls only the composition-root method.
+
+The application accepts a room, any replay or a batch of URLs; it deduplicates,
+verifies exact series identity, orders by explicit game numbers and validates
+consistent series inputs. Search never accepts candidates merely because names
+match. Missing games retain their slots and block ordinary analysis when they
+leave a gap. Without series metadata, explicit manual inputs preserve paste order
+with a warning. Failed imports preserve existing inputs; successful imports clear
+the previous BO3 result. BO1 fetching remains independent.
+
+The separate Import BO3 action performs no quota consumption, model calls, login,
+chat or upload. Analyze BO3 remains the explicit action that incurs ordinary
+analysis quota/calls. Live rooms can expire; any uploaded replay can seed archived
+metadata/search discovery. If neither source is accessible, explain the limitation
+and retain manual inputs rather than inventing identifiers or bypassing privacy.
+
+Use existing requests plus an explicit `websockets>=15,<16` dependency. Bound host,
+path, redirects, response/frame size, request time and discovery counts. The server
+endpoint is the official client default. See `docs/bo3-import.md` for exact limits.
+
+Live validation also found that the Champions guard rejected the official JSON's
+human-readable `format` label, even when `formatid` was valid. Normalize that
+label exactly as protocol tier labels are normalized; keep `formatid` strict and
+continue rejecting foreign formats and mechanics.
+
+### Alternatives considered
+
+- Guess adjacent battle IDs: rejected; only explicit links/metadata identify games.
+- Group by usernames or timestamps: rejected because the same players can rematch.
+- Require a browser extension or session credentials: unnecessary for public room
+  and replay evidence, and adds installation/authentication friction.
+- Automatically upload each battle: requires player/session authority; excluded.
+
+### Consequences and validation
+
+One paste can populate all available published games, with an explicit review step.
+Room expiry, unavailable uploads and bounded search remain visible limitations.
+Tests cover real protocol shapes, reversed/duplicate input, expired-room fallback,
+missing slots, mismatched series/ordinals, unrelated rematches, allowlisted URLs,
+redirect/size/time limits, WebSocket closure, chat isolation, public JSON labels
+and UI imports without paid pipelines. Live read-only validation recovered games
+1/2/3 from the exact room reported by the user, with no model or Firestore access.
+
+### Files touched
+
+`domain/series_import.py`, domain gateway port, `adapters/showdown_series_gateway.py`,
+`services/series_import.py`, Container, BO3 UI import view, Champions JSON format
+validation, dependency declarations, documentation and acquisition/UI tests.
+
+
+---
+
+## ADR-046 ? Retrieve public BO3 sheets and preserve useful local inference
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+The reported series contains `showteam` protocol exports with all twelve natures,
+items, abilities and moves, but import populated only replay inputs. Inference
+therefore treated public facts as unknown. A second issue marked Protect turns
+and Grassy Surge as permanent unsupported state: field-start arguments were read
+at the side-start position. Once eligible hits were restored, a full Cartesian
+search across many hidden sets exhausted assignments without useful global output.
+
+### Decision
+
+Add a domain `ReplayTeamSheetParser` port and an adapter for pre-battle packed
+public exports. Inject it into BO3 acquisition and inference. Preserve only fields
+explicitly present; do not supply a default nature or treat redacted investments
+as zero. Scope each sheet to its game, retain field provenance/audience, merge
+manual private inputs using stable roster identities and reject contradictions.
+Ignore spectator chat and late exports for earlier decisions. Known public items,
+abilities and moves also appear in typed checkpoint summaries for the narrator.
+
+The official server BO3 context uses a registered team across its games; matching
+explicit room IDs permit continuity. Previews/names alone do not. Validate that
+known public fields do not change within that registered context. Cosmetic gender
+changes do not change registered investment. Import prefills sheets; direct BO3
+analysis re-extracts them so the behavior does not depend on UI state.
+
+Read field-start and side-start effects at their respective protocol positions.
+Protect/Detect and related modeled blocking effects do not invalidate unrelated
+later hits; blocked hits remain excluded. Modeled terrain and raw HP updates handle
+passive recovery. Unmodeled effects continue to fail conservatively. Skip known
+unsupported survival mechanics before spending candidate projection budget.
+
+When a joint space exceeds the assignment limit, evaluate at most one affordable
+local damage factor after each game, exhaustively. Its assignment cap is four times
+the joint limit, at most 100,000, under the same projection/time budget. Cache only
+completed proofs. Necessary marginal bounds may tighten a bounded joint result;
+local examples never become global witnesses. Mark their basis and scope explicitly,
+and do not claim uniqueness or global feasibility. Before-game checkpoints reuse
+only earlier proofs. Default projections rise to 120,000, still capped by the
+20-second deadline. Users can configure budgets; archived fixtures keep theirs.
+
+### Alternatives considered
+
+- Guess popular natures/sets: rejected; public declared facts and hidden search
+  dimensions must remain distinct.
+- Treat missing nature as unsupported: rejected; the legal nature space is known.
+- Narrow from sampled Cartesian candidates: rejected because omitted regions may
+  contain valid sets. Only completed local constraints justify additional bounds.
+- Remove all runtime exclusions: rejected; unsupported mechanics remain explicit.
+
+### Consequences and validation
+
+The real public series now supplies all twelve known natures and eligible damage.
+At least one investment range narrows while global coverage remains bounded. Full
+hidden investment is unavailable, so this is not an accuracy/retention benchmark.
+No paid explanation calls are used. Tests freeze the user-reported public series
+in a dedicated series-fixture namespace and cover extraction, redaction, privacy,
+chronology, conflicts, partial/global distinction, resource bounds, the real calc
+worker and UI prefill without a paid pipeline. Synthetic analytic and engine
+validation benches remain separate.
+
+### Files touched
+
+Public teamsheet adapter/port, BO3 import DTO/service/UI, inference declarations,
+checkpoint summaries, bounded local solver, parser effect eligibility, composition
+root, explanation prompts, regression fixtures/tests and documentation.
+
+
+---
+
+## ADR-047 ? Remember verified public BO3 links across live-room expiry
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+The user-reported room genuinely expired, although its published game replays
+remained available. The importer could recover from a game replay, but a room-only
+input lost the already known mapping. Ephemeral room state is not durable series
+storage, and guessing adjacent IDs or loading an example fixture is unacceptable.
+
+### Decision
+
+Add a domain `SeriesReplayIndex` port and a bounded atomic JSON adapter, wired only
+in Container. After import, persist numbered references only for replays explicitly
+marked public by current server metadata, with no password. Private/unclassified
+references and battle payloads are not stored. The runtime index is ignored by Git.
+
+If room discovery fails, reuse known references but download each replay anew and
+verify exact series identity/ordinal. Deleted or newly private indexed games remain
+missing. Indexed partial sets may seed forward-link/search discovery. Keep existing
+room/replay validation and request budgets. Save failures produce a warning without
+blocking imported games. Preserve the original room failure when no seed/index is
+available. A previously unseen expired room still needs one uploaded game seed.
+
+Use a 64-series / three-reference cap, a 512 KB read limit, versioned typed JSON,
+shared-process locking and atomic file replacement. This is local filesystem
+persistence, not cross-deployment or cloud persistence. No hardcoded series IDs or
+production reads from test fixtures. Container uses `.cache/bo3-series/index.json`.
+
+### Alternatives considered
+
+- Continue relying only on live rooms: loses import UX after ordinary room expiry.
+- Guess the first battle ID or group by usernames: cannot prove membership.
+- Store private links or full logs: unnecessary for durable public discovery.
+- Introduce a cloud database: not required for this local testing workflow.
+
+### Consequences and validation
+
+Known public series can be imported through the original room URL after restart,
+subject to replay availability and local disk persistence. On another machine or
+fresh deployment, import an uploaded game once. Tests cover restart/new instances,
+fresh downloads, absent/malformed/unwritable indexes, bounded merging/eviction,
+private/unclassified exclusion, deleted/newly private games and strict series/slot
+checks. Live validation imported the user's supplied public game-3 URL, learned
+three verified references, then successfully imported the expired room URL with
+all three games and twelve declared natures. No paid model calls were used.
+
+
+## ADR-048 - Intersect BO3 damage samples and expose the existing battlefield
+
+**Status:** Accepted. **Date:** 2026-10-22.
+
+### Context
+
+A generated series review substituted standard 32/32 builds for unresolved hidden
+investment and described native stat points using a legacy EV scale. The parser
+also treated Encore, Perish Song counters and redirection as permanently unknown
+damage state. The existing BO3 battlefield was buried below the series prose and
+game review, so users could not readily discover the turn navigator.
+
+### Decision
+
+Keep inverse calculation in the deterministic application service behind
+CandidateProjectionPort. Group observations using stable Pokemon identities and
+measured axes; each legal assignment must explain every selected sample with its
+own runtime state and integer roll/HP support. Prefer complete groups, then a
+two-sample subset and individual factors under the existing shared budgets. Only
+completed exhaustive factors narrow bounds. Report every sample ID used; never
+claim global feasibility from a local proof or a subset. Preserve registered-team
+continuity and decision-time knowledge boundaries.
+
+Do not exclude direct damage merely because move choice was constrained by Encore,
+a Perish counter exists, or redirection selected the observed target. The actual
+hit target remains authoritative. Perish faints are not damage samples. Unknown
+effects, Substitute, critical and multihit inference remain conservative.
+
+Numerical investment is rendered from typed inference tables, with the latest
+checkpoint expanded. The series narrator describes natures, uncertainty and
+coaching without numerical builds. Add a narrow notation guard and one corrective
+retry, then a typed error. It does not claim to validate all natural-language
+facts, and per-game coaching retains its existing contract. No additional
+LLM-driven arithmetic or unbounded calculator tool loop is introduced.
+
+Reuse the BO1 battlefield component in BO3 columns before the narrative. Render
+the navigator before computing the selected-turn highlight. Keep non-widget
+per-game turn positions across game selection and clear them on a new analysis;
+navigation never consumes another analysis slot. BO1 widgets remain independent.
+
+### Alternatives considered
+
+- Recommend popular 32/32 builds: unsupported by replay evidence.
+- Search candidates through autonomous model tool calls: duplicates deterministic
+  logic while making cost, bounds and reproducibility harder to enforce.
+- Accept partial factor marginals as inferred bounds: unsound exclusion of
+  unsearched assignments.
+- Ignore all unsupported effects: may falsely exclude the actual hidden spread.
+
+### Consequences and validation
+
+Independent roll-support tests show two samples tightening Atk from 5-32 to 10-32
+and Def to 0-22 without using the second game in the first checkpoint. Conflicting
+samples produce an explicit conflict. Unregistered games remain separate. Other
+tests cover known non-damage effects, unknown-effect exclusions, allocation-format
+correction/failure and UI navigation without analysis calls or BO1 state changes.
+The frozen offline corpus remains 26/26 series (78 games), plus 17/17 independent
+oracle cases, retaining all planted outer-range truths with 31,945 projections.
+No paid model calls or held-out real-game accuracy measurement is claimed.
+
+### Files touched
+
+Parser inference eligibility, local factor search, series narration contract and
+prompt, BO3 UI, regression tests and inference methodology/semantics documentation.
+
+### Real-series protocol follow-up
+
+The user supplied room `game-bestof3-gen9championsvgc2026regmcbo3-2702605271`.
+Its live room had expired. Public player search located three uploaded games;
+their own metadata confirmed the exact room and game numbers. Importing an
+uploaded seed learned the verified public references, and a new importer then
+recovered all three games using the original expired-room URL.
+
+Unlike synthetic examples, real `-singleturn` redirection uses `move: Rage Powder`
+and `move: Follow Me`. Normalize that optional prefix before eligibility checks.
+Throat Chop and Disable constrain move choice rather than observed direct-hit
+damage, so they join Encore in the explicit non-damage-effect allowlist. Unknown
+effects and Substitute remain excluded. Freeze the public battle protocol without
+spectator chat as a separate real-series fixture. Regression tests verify all
+twelve natures in each game, the 1-2 score, replay frames and damage eligibility
+with the actual worker: 4, 5 and 2 samples instead of 1, 1 and 0.
+
+The real investment remains hidden. Recovering eleven samples does not establish
+an exact spread or an inference accuracy score; bounded search and supported
+mechanics still limit the result. No model calls are needed for this validation.
+
+
+### ADR-048 follow-up ? close the per-game legacy-investment narration gap
+
+A user reported allocations up to 252 in a BO3 analysis. The candidate generator
+already used a 32-point per-stat cap and 66-point total budget. However, the shared
+explanation prompt still contained a legacy allocation example and an obsolete
+cross-game fallback explanation. Only the series synthesis enforced numerical
+investment-free prose, and that guard was conditional on inference being enabled.
+Per-game explanations could therefore expose inconsistent investment units.
+
+Remove the legacy example/fallback text. Centralize the bounded mechanics and BO3
+allocation output guard in `ground_truth.explain_champions_only`; all backends use
+it for BO3 game reviews, and the synthesis uses it even without inference. Request
+one correction, then fail explicitly, sharing a single two-attempt budget for
+mechanics and allocation errors. Typed tables remain the source of numerical
+investment. Recognize explicit EV quantities and Portuguese stat notation.
+
+Validate CandidateSummary ranges within 0-32. Do not sum marginal maxima: different
+maxima may belong to incompatible joint assignments. Internal legacy calc transport
+and BO1 evidence calculations are unchanged. Regression tests cover per-game BO3
+versus BO1 policy, disabled inference, invalid bounds, valid marginal ranges and
+Portuguese/EV notation. No paid explanation benchmark is run; the original full
+analysis text is still needed to assess its other claims.
+
+
+## ADR-049 ? Roll-only inverse calculation and independent-component search
+
+**Status:** Accepted. **Date:** 2026-10-24.
+
+### Context
+
+BO3 reverse damage inference already uses declared nature/items/abilities and the
+Champions engine, but its candidate loop generated descriptions and KO analyses
+that inference does not consume. Enumerating a Cartesian product also multiplied
+independent hidden profiles which share no damage constraint.
+
+### Decision
+
+Add an internal `calcRolls` facade over the same calculation path, returning exact
+integer rolls and bypassing KO/description/percentage work. Candidate projection
+uses it; the full forward calculator's default API is unchanged. Do not duplicate
+the damage formula or ask an LLM to deduce numbers.
+
+Partition the observed profile graph into connected components. Every hit joins
+its attacker and defender, regardless of side, game or role; known runtime field
+conditions remain part of each calculation. Solve independent components under
+a shared checkpoint assignment allowance and request-wide projection/time budget.
+Preserve nature equivalences, profile completion rules and the 66-point per-mon
+budget inside each component. Only multiply exhaustive counts and combine whole
+compatible examples across disjoint components. Keep affordable local proofs
+before broad searches so optimization does not erase previously available bounds.
+Expose `search_components` on checkpoints; partial coverage never proves uniqueness.
+
+### Alternatives considered
+
+- More unconstrained `damage_calc` agent calls: cannot ensure causal evidence,
+  completeness or budget discipline and would create backend-dependent search.
+- Splitting every hit independently: unsound when one hidden profile participates
+  in multiple hits; retain connected components instead.
+- A second Python damage formula: rejected in favor of the existing engine.
+
+### Consequences and validation
+
+Native, ADK and LangChain consume the same deterministic inverse evidence; no
+additional model calls or BO1 inference hooks. Ambiguity and unsupported mechanics
+remain explicit. Independent controlled regressions compare 66 versus 1,089
+assignments with identical results, and preserve 23 x 23 correlated solutions
+using 2,178 evaluations instead of a 1,185,921-element space. Engine tests compare
+roll-only and full integer support over declared natures/items and causal states.
+These checks do not establish held-out inference accuracy or portable latency.
+
+
+## ADR-050 ? Preserve BO3 evidence when model investment prose cannot be validated
+
+**Status:** Accepted. **Date:** 2026-10-25.
+
+### Context
+
+The shared BO3 allocation guard introduced in the ADR-048 follow-up correctly
+rejected model-generated investment, but after one correction it raised a provider
+error and aborted the whole series. This included correctly computed inference
+and game evidence. At the same time, narrative context exposed legacy Chaos spread
+values and full numeric inference examples, encouraging the model to restate the
+very investment the narrative policy forbids. Some mechanical HP/speed quantities
+could also be recognized as investment when an assumed-set paragraph was used.
+
+Environment audit found unrelated conflicts in the global interpreter and a WSL
+`.venv` configuration without a Windows executable. Neither explains this exact
+error string, which originates in our output guard; a separate Windows environment
+provides isolation without uninstalling shared packages or changing the WSL setup.
+
+### Decision
+
+Project a BO3-only coaching context which omits numeric investment fields and
+allocation-bearing descriptive text, while preserving damage fields, declared
+traits, causal state, provenance and coverage. Keep the full typed evidence and
+numeric inference tables unchanged in result DTOs. BO1 context remains unchanged.
+
+After at most two explanation attempts, repeated numerical allocations cause the
+unsafe narrative to be replaced wholesale by an explicit deterministic notice.
+The computed series/game evidence remains available and the rest of the BO3 flow
+can complete. Do not silently salvage or certify parts of the rejected prose.
+Record the omission reason without logging model text. Foreign mechanics still
+fail closed after the same bounded correction, and real provider failures remain
+typed errors. Mechanical HP damage and explicitly labeled actual/base speed are
+not investment allocations.
+
+### Consequences and validation
+
+A model that ignores the output contract can reduce coaching detail, but cannot
+turn an invented spread into a valid result or discard completed deterministic
+analysis. The notice is transparent about the omitted narrative; it does not claim
+model correctness or an exact hidden spread. No paid model benchmark was run.
+
+Regression tests cover repeated allocations without series failure, disabled
+inference, unchanged BO1 context, source immutability, numeric-table preservation,
+legacy-prior exclusion, mechanical quantities, bounded calls, private-text-safe
+logging and continued rejection of foreign mechanics. Full offline validation and
+isolated-environment dependency checks are recorded in troubleshooting guidance.
+
+
+## ADR-051 ? Engine-derived ranges for all six BO3 attributes
+
+**Status:** Accepted. **Date:** 2026-10-26.
+
+### Context
+
+A user interpreted narrated speed projections as accurately inferred attributes
+and requested all six stats. Those values were ordinary assumed-set calculations,
+not numerical observations from move order. A concrete counterexample is Modest
+Mega Gengar: the installed Champions engine produces unboosted Speed 150-182 over
+native investment 0-32, contradicting the quoted narrative's exact 200.
+
+### Decision
+
+Add `AttributeProjectionPort`, typed requests and attribute envelopes. The existing
+Node Champions integration evaluates all six raw level-50 attributes across known
+nature alternatives and necessary point bounds. Respect the 66-point budget for
+each endpoint. Display conservative outer ranges separately from native point
+ranges and effective battle values. Do not recombine marginal extrema into a
+complete set or feed these derived values back as new observed constraints.
+
+The BO3 coordinator enriches immutable checkpoints through a request-scoped cached
+service: batches up to 64 and at most 512 unique profiles. Failure adds unsupported
+attribute envelopes and preserves inference. Track attribute projections separately
+from damage evaluations. Container wires the additional port only in BO3; BO1's
+contracts and calculation path remain independent.
+
+Base and observed Mega formes get separate envelopes. Only forms available before
+a checkpoint are included; runtime fields, ability effects and items never modify
+these raw card attributes. Existing damage observations retain their causal item,
+ability and field semantics. Remove numeric assumed-set speed comparisons from
+BO3 narrator context and instruct the narrator not to call them observed/inferred.
+
+### Consequences and validation
+
+Every supported roster member can show all six legal attribute ranges, even when
+not all are narrowed by battle evidence. This does not infer six exact hidden
+investments or add speed-order inference. Unknown natures and unsupported species
+remain explicit, with no foreign-generation fallback.
+
+Tests cover engine endpoints against native profiles, a fully declared 66-point
+spread, remaining-budget caps, invalid inputs, request caching, engine failure,
+source immutability, public Mega availability and six-column UI rendering. A real
+sauronMobile fixture verifies the 150-182 Mega Gengar interval after transformation
+and absence of that forme in the before-game checkpoint. No paid model evaluation
+or held-out hidden-set accuracy is claimed.
+
+## ADR-052: Prioritize complete inverse damage constraints across BO3 games
+
+**Status:** Accepted (2026-10-26).
+
+**Context:** The reported public BO3 could exhaust its 20-second budget without
+finishing a local constraint. Parent and component searches could repeat local
+work, and large joint searches competed with later games for the same budget.
+
+**Decision:** Keep inverse inference deterministic over the existing calculator
+port. Compute local factors inside independent components only, defer factors
+estimated above 48,000 projections behind cheaper ones, and retain affordable
+repeated-hit intersections. For known natures and an oversized component, cap
+after-game joint sampling at 256 assignments and skip before-game sampling.
+Reuse complete local proofs and preserve causal knowledge boundaries. Raise the
+default request deadline to 60 seconds, retaining the 120,000 projection limit.
+BO1 is unchanged; no LLM inference tool loop or alternate damage formula is added.
+
+**Consequences:** A completed local constraint can reject correlated combinations
+while leaving every marginal point interval at 0-32. Report ambiguity rather than
+inventing a complete spread. Unsupported damage mechanics remain excluded. The
+real public replay regression checks completed inverse work under default limits,
+legal ranges and causal checkpoints, not hidden-set accuracy. Existing planted
+and analytic tests cover actual narrowing, correlations and conflicting samples.
+
+**Files:** Inference models, solver, local-factor scheduler, regression tests and
+BO3 methodology documentation.

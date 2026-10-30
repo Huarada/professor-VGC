@@ -59,6 +59,7 @@ class ConditionHandlers(HandlerGroup):
         if key is None:
             return
         ability = parts[3].strip()
+        self.state.combatants.abilities[key] = ability
         mon = self.state.roster.register(*key)
         if not mon.ability:
             mon.ability = ability
