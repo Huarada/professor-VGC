@@ -1,0 +1,249 @@
+{
+  "date": "2026-10-22",
+  "source": "public user-reported Showdown series 2702605271",
+  "fixture_sha256": "6892513902675ba5d8736a46602e4960ea82bdd51091af130c85a1fd5959760b",
+  "replays": [
+    "gen9championsvgc2026regmcbo3-2702605273",
+    "gen9championsvgc2026regmcbo3-2702606439",
+    "gen9championsvgc2026regmcbo3-2702607924"
+  ],
+  "score": {
+    "sauronMobile": 1,
+    "miro kart ds": 2
+  },
+  "engine_version": "0.12.0",
+  "rule_version": "champions-stat-points-66-32-v1",
+  "public_natures_per_game": 12,
+  "eligible_samples_per_game_before_fix": [
+    1,
+    1,
+    0
+  ],
+  "eligible_samples_per_game_after_fix": [
+    4,
+    5,
+    2
+  ],
+  "model_calls": 0,
+  "hidden_investment_ground_truth_available": false,
+  "joint_inference_complete": false,
+  "limitations": [
+    "Eligibility and public nature retrieval are validated; hidden-spread accuracy is not measured.",
+    "Both corrected searches remain bounded. Zero narrowed ranges is not proof that no tighter mathematical constraint exists.",
+    "Critical/multi-hit/variable-power moves, survival mechanics and unmodeled active abilities still exclude observations.",
+    "Expired-room recovery is local to this installation after importing a verified uploaded seed."
+  ],
+  "runs": [
+    {
+      "options": {
+        "timeout_seconds": 60,
+        "max_projections": 120000,
+        "max_assignments": 12000,
+        "max_cache_entries": 4096,
+        "hp_mode": "percent",
+        "perspective": "public"
+      },
+      "projections": 49495,
+      "checkpoints": [
+        {
+          "game": 1,
+          "coverage": "bounded",
+          "outcome": "ambiguous",
+          "eligible_observations": 4,
+          "local_constraints": [
+            "g1:e45:p1:Incineroar"
+          ],
+          "local_assignments": 35937,
+          "joint_assignments": 12000,
+          "narrowed_stat_ranges": 0,
+          "unsupported": [
+            "g1:e25:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e26:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e28:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e33:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e53:p2:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage"
+          ]
+        },
+        {
+          "game": 2,
+          "coverage": "bounded",
+          "outcome": "ambiguous",
+          "eligible_observations": 9,
+          "local_constraints": [
+            "g1:e45:p1:Incineroar"
+          ],
+          "local_assignments": 35937,
+          "joint_assignments": 0,
+          "narrowed_stat_ranges": 0,
+          "unsupported": [
+            "Projection/time budget reached",
+            "g1:e25:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e26:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e28:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e33:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e53:p2:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e17:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e29:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e32:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e38:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e45:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e47:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e57:p2:Maushold-Four: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e58:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e59:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e73:p1:Gengar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e9:p1:Vivillon: Survival item/ability requires additional damage support"
+          ]
+        },
+        {
+          "game": 3,
+          "coverage": "bounded",
+          "outcome": "ambiguous",
+          "eligible_observations": 11,
+          "local_constraints": [
+            "g1:e45:p1:Incineroar"
+          ],
+          "local_assignments": 35937,
+          "joint_assignments": 0,
+          "narrowed_stat_ranges": 0,
+          "unsupported": [
+            "Projection/time budget reached",
+            "g1:e25:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e26:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e28:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e33:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e53:p2:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e17:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e29:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e32:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e38:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e45:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e47:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e57:p2:Maushold-Four: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e58:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e59:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e73:p1:Gengar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e9:p1:Vivillon: Survival item/ability requires additional damage support",
+            "g3:e10:p1:Vivillon: Survival item/ability requires additional damage support",
+            "g3:e17:p2:Gholdengo: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e18:p1:Garchomp: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e19:p2:Maushold-Four: Critical/multi-hit or unsupported move: ",
+            "g3:e24:p2:Maushold-Four: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e33:p2:Incineroar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e41:p1:Primarina: An active ability requires additional runtime/stat modeling",
+            "g3:e44:p2:Incineroar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e45:p1:Gengar: An active ability requires additional runtime/stat modeling",
+            "g3:e47:p1:Garchomp: Critical/multi-hit or unsupported move: ",
+            "g3:e6:p1:Vivillon: Survival item/ability requires additional damage support"
+          ]
+        }
+      ]
+    },
+    {
+      "options": {
+        "timeout_seconds": 120,
+        "max_projections": 200000,
+        "max_assignments": 12000,
+        "max_cache_entries": 4096,
+        "hp_mode": "percent",
+        "perspective": "public"
+      },
+      "projections": 82463,
+      "checkpoints": [
+        {
+          "game": 1,
+          "coverage": "bounded",
+          "outcome": "ambiguous",
+          "eligible_observations": 4,
+          "local_constraints": [
+            "g1:e45:p1:Incineroar"
+          ],
+          "local_assignments": 35937,
+          "joint_assignments": 12000,
+          "narrowed_stat_ranges": 0,
+          "unsupported": [
+            "g1:e25:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e26:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e28:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e33:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e53:p2:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage"
+          ]
+        },
+        {
+          "game": 2,
+          "coverage": "bounded",
+          "outcome": "ambiguous",
+          "eligible_observations": 9,
+          "local_constraints": [
+            "g1:e45:p1:Incineroar"
+          ],
+          "local_assignments": 35937,
+          "joint_assignments": 0,
+          "narrowed_stat_ranges": 0,
+          "unsupported": [
+            "Projection/time budget reached",
+            "g1:e25:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e26:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e28:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e33:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e53:p2:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e17:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e29:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e32:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e38:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e45:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e47:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e57:p2:Maushold-Four: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e58:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e59:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e73:p1:Gengar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e9:p1:Vivillon: Survival item/ability requires additional damage support"
+          ]
+        },
+        {
+          "game": 3,
+          "coverage": "bounded",
+          "outcome": "ambiguous",
+          "eligible_observations": 11,
+          "local_constraints": [
+            "g1:e45:p1:Incineroar"
+          ],
+          "local_assignments": 35937,
+          "joint_assignments": 0,
+          "narrowed_stat_ranges": 0,
+          "unsupported": [
+            "Projection/time budget reached",
+            "g1:e25:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e26:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e28:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g1:e33:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g1:e53:p2:Annihilape: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e17:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e29:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e32:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e38:p1:Vivillon: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e45:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e47:p1:Primarina: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e57:p2:Maushold-Four: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e58:p2:Maushold-Four: Survival item/ability requires additional damage support",
+            "g2:e59:p1:Rillaboom: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e73:p1:Gengar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g2:e9:p1:Vivillon: Survival item/ability requires additional damage support",
+            "g3:e10:p1:Vivillon: Survival item/ability requires additional damage support",
+            "g3:e17:p2:Gholdengo: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e18:p1:Garchomp: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e19:p2:Maushold-Four: Critical/multi-hit or unsupported move: ",
+            "g3:e24:p2:Maushold-Four: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e33:p2:Incineroar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e41:p1:Primarina: An active ability requires additional runtime/stat modeling",
+            "g3:e44:p2:Incineroar: Critical/multi-hit or unsupported move: Variable, critical, multi-hit or nonstandard-stat damage",
+            "g3:e45:p1:Gengar: An active ability requires additional runtime/stat modeling",
+            "g3:e47:p1:Garchomp: Critical/multi-hit or unsupported move: ",
+            "g3:e6:p1:Vivillon: Survival item/ability requires additional damage support"
+          ]
+        }
+      ]
+    }
+  ],
+  "baseline_commit": "b87b834"
+}

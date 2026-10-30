@@ -12,6 +12,8 @@ dependencies = [
     "pydantic-settings>=2.2,<3",
     "streamlit>=1.33",
     "requests>=2.31",
+    "truststore>=0.10,<1; sys_platform == 'win32'",
+    "websockets>=15,<16",
     "langchain>=1.0",
     "langchain-core>=1.0",
     "google-adk>=2.0,<3",

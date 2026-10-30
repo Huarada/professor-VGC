@@ -11,6 +11,15 @@ from __future__ import annotations
 
 from typing import Any, Protocol, Sequence, runtime_checkable
 
+from src.domain.bo3_inference.models import (
+    AttributeBoundsRequest,
+    AttributeEnvelope,
+    DamageSupport,
+    MoveSupport,
+    ProjectionRequest,
+    RuleProfile,
+    TeamSheet,
+)
 from src.domain.models import (
     AnalysisRequest,
     AnalysisResult,
@@ -27,6 +36,43 @@ from src.domain.models import (
 )
 from src.domain.regulation import RegulationRoster
 from src.domain.series import Bo3AnalysisRequest, Bo3AnalysisResult
+from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesRoomGame
+
+
+@runtime_checkable
+class ReplayTeamSheetParser(Protocol):
+    """Extract only public, explicitly published team fields from replay protocol."""
+
+    def parse(self, games: Sequence[dict[str, Any] | str]) -> TeamSheet:
+        ...
+
+
+@runtime_checkable
+class SeriesReplayIndex(Protocol):
+    """Persist only verified public replay references, never private links or battle logs."""
+
+    def get(self, series_id: str) -> tuple[SeriesRoomGame, ...]:
+        ...
+
+    def put(self, series_id: str, games: tuple[SeriesRoomGame, ...]) -> None:
+        ...
+
+
+@runtime_checkable
+class SeriesReplayGateway(Protocol):
+    """Read public replay/room evidence; never log in or upload battles."""
+
+    def locate(self, url: str) -> ReplayLocation:
+        ...
+
+    def replay(self, location: ReplayLocation) -> ImportedReplay:
+        ...
+
+    def room_games(self, series_id: str) -> tuple[SeriesRoomGame, ...]:
+        ...
+
+    def related(self, replay: ImportedReplay) -> tuple[ReplayLocation, ...]:
+        ...
 
 
 @runtime_checkable
@@ -279,6 +325,36 @@ class Bo3AnalysisPipeline(Protocol):
 
     def analyze(self, request: Bo3AnalysisRequest) -> Bo3AnalysisResult:
         """Review independent games and synthesize their deterministic series evidence."""
+        ...
+
+
+@runtime_checkable
+class TeamSheetParser(Protocol):
+    """Parse declarations without filling hidden set information."""
+
+    def parse(self, payload: dict[str, Any] | str | None) -> TeamSheet:
+        ...
+
+
+@runtime_checkable
+class CandidateProjectionPort(Protocol):
+    """Additional Champions support semantics; BO1's calc contract stays stable."""
+
+    def rules(self) -> RuleProfile:
+        ...
+
+    def move_support(self, move: str) -> MoveSupport:
+        ...
+
+    def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
+        ...
+
+
+@runtime_checkable
+class AttributeProjectionPort(Protocol):
+    """Derive six unboosted Champions attributes from necessary investment bounds."""
+
+    def attributes_batch(self, requests: Sequence[AttributeBoundsRequest]) -> list[AttributeEnvelope]:
         ...
 
 

@@ -21,6 +21,7 @@ class ParseState:
         self.combatants = CombatantLedger(self.roster, self.timeline)
         self.format_id: str | None = None
         self.frames: list[TurnFrame] = []  # one per turn boundary, for the battle panel
+        self.inference_exclusions: set[str] = set()
 
     @property
     def turn(self) -> int:
@@ -40,6 +41,7 @@ class ParseState:
         if key is not None:
             mon = self.roster.register(*key)
             mon.ability = mon.ability or source.split(":", 1)[1].strip()
+            self.combatants.abilities[key] = source.split(":", 1)[1].strip()
 
     def snapshot(self) -> BattleSnapshot:
         """The battle state right now — stamped on every move event."""
@@ -50,9 +52,12 @@ class ParseState:
                 k = (player, key)
                 mons[BattleSnapshot.key(player, key)] = MonState(
                     hp_percent=ledger.hp.get(k), status=ledger.status.get(k, ""),
+                    hp_raw=ledger.hp_raw.get(k, ""), ability=ledger.abilities.get(k),
+                    boosts=dict(ledger.boosts.get(k, {})),
                     item=ledger.held.get(k), forme=ledger.forme.get(k, ""),
                 )
         return BattleSnapshot(
+            inference_exclusions=sorted(self.inference_exclusions),
             weather=self.field.weather,
             terrain=self.field.terrain,
             screens=self.field.screens(),
@@ -73,6 +78,7 @@ class ParseState:
         self.field.close(self.turn)
         self.timeline.finalize_texts()
         state = GameState(
+            inference_exclusions=sorted(self.inference_exclusions),
             turn=self.turn,
             sides=self.roster.sides(),
             outcome=self.timeline.outcome(self.roster),
