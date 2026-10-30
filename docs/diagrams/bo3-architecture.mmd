@@ -1,0 +1,18 @@
+flowchart TD
+    input["Streamlit BO3: ordered replays and optional teamsheet"] --> importer["SeriesReplayImporter: published replay import"]
+    importer --> validate["Validate 1-3 games, players, regulation and score"]
+    validate --> service["Bo3AnalysisService"]
+    service --> inverse["Bo3InferenceCoordinator: before/after-game checkpoints"]
+    inverse --> facts["Public declarations and eligible event-time damage"]
+    facts --> solve["Bounded inverse search: legal stat-point and nature families"]
+    solve --> candidate["CandidateProjectionPort: Champions damage rolls"]
+    candidate --> match["Match HP transitions and intersect compatible constraints"]
+    match --> inferred["Typed ranges, coverage and unsupported observations"]
+    inferred --> attributes["AttributeProjectionPort: all six level-50 attribute ranges"]
+    attributes --> reviews["Fresh per-game AnalysisPipeline: BO1 engine reused"]
+    service --> reviews
+    reviews --> isolated["Independent battle state and temporary memory per game"]
+    isolated --> synthesis["Synthesize typed game and series evidence with an LLM"]
+    inferred --> synthesis
+    synthesis --> guard["Validate rules, roster and numerical narration"]
+    guard --> result["Bo3AnalysisResult: score, game reviews, inference tables and summary"]

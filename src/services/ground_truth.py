@@ -17,6 +17,7 @@ from typing import Any, Callable, Sequence
 from src.domain.bo3_inference.narration import (
     UNVALIDATED_INVESTMENT_NOTICE,
     coaching_context,
+    contains_numerical_attributes,
     contains_numerical_investment,
 )
 from src.domain.champions import (
@@ -270,7 +271,7 @@ def explain_champions_only(
     for attempt in range(2):
         answer = explain(correction)
         foreign = forbidden_references(answer)
-        investment = bo3 and contains_numerical_investment(answer)
+        investment = bo3 and (contains_numerical_investment(answer) or contains_numerical_attributes(answer))
         if not foreign and not investment:
             return answer
         if attempt:
@@ -284,7 +285,8 @@ def explain_champions_only(
         if investment:
             correction += ("\nRemove numerical investment allocations, baseline builds and legacy EV conversions. "
                            "Champions uses native stat points: at most 32 per stat and 66 total; IVs are fixed at 31. "
-                           "The deterministic stat-point tables report all numerical investment. "
+                           "The deterministic tables report all numerical investment and card attributes. "
+                           "Do not claim exact Speed or other attributes from assumed-set projections. "
                            "Explain uncertainty and battle adjustments in prose instead.")
     raise AssertionError("The explanation retry loop must return or raise")
 

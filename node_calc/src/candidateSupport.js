@@ -97,4 +97,40 @@ function project(request) {
   }
 }
 
-module.exports = { rules, moveSupport, project };
+function attributes(request) {
+  try {
+    const { gen } = rulesFor(0, [{ species: request.species }]);
+    if (request.level !== 50) throw new Error('Only level-50 Champions attributes are supported');
+    const axes = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+    const bounds = request.stat_points;
+    if (!bounds || Object.keys(bounds).length !== 6 || axes.some(stat => !bounds[stat]
+        || !Number.isInteger(bounds[stat].minimum) || !Number.isInteger(bounds[stat].maximum)
+        || bounds[stat].minimum < 0 || bounds[stat].maximum > 32
+        || bounds[stat].minimum > bounds[stat].maximum)) throw new Error('Illegal native stat-point bounds');
+    const minimumTotal = axes.reduce((sum, stat) => sum + bounds[stat].minimum, 0);
+    if (minimumTotal > 66) throw new Error('Minimum spread exceeds the native budget');
+    if (!Array.isArray(request.natures) || !request.natures.length || request.natures.length > 25
+        || request.natures.some(nature => !gen.natures.get(toID(nature)))) throw new Error('Unrecognized nature');
+    const result = {};
+    const low = Object.fromEntries(axes.map(stat => [stat, bounds[stat].minimum * 8]));
+    for (const stat of axes) {
+      const maximum = Math.min(bounds[stat].maximum, 66 - minimumTotal + bounds[stat].minimum);
+      const high = { ...low, [stat]: maximum * 8 };
+      const values = [];
+      for (const nature of request.natures) {
+        for (const evs of [low, high]) {
+          // Card attributes: nature applies; item, ability, status and boosts do not.
+          const mon = buildPokemon(gen, { species: request.species, level: 50, nature, evs });
+          values.push(mon.rawStats[stat]);
+        }
+      }
+      result[stat] = { minimum: Math.min(...values), maximum: Math.max(...values) };
+    }
+    return { species: request.species, level: 50, supported: true, attributes: result,
+      engine_version: engineVersion, basis: 'unboosted_outer_bounds', units: 'level_50_attribute_values' };
+  } catch (error) {
+    return { species: request.species || '', supported: false, reason: error.message };
+  }
+}
+
+module.exports = { rules, moveSupport, project, attributes };

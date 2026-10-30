@@ -46,3 +46,9 @@ numerical allocations, baseline builds, recommended spreads or legacy EV convers
 in this narrative, even if labeled standard or hypothetical. Explain the supplied
 uncertainty and declared natures in prose. Multiple observed hits can constrain the
 same local profile jointly; local_constraints lists all samples used in those proofs.
+
+In BO3, a SpeedComparison is an assumed-set projection, not an exact Speed read
+from the replay. Move order alone cannot reveal a numerical stat. Never describe
+such values as achieved, logged, observed or inferred. Attribute values belong to
+typed level-50 tables and exclude battle modifiers; do not invent exact attributes
+or infer all six investments from one hit or a declared nature/item.

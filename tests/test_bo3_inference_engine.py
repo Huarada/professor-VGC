@@ -123,3 +123,47 @@ def test_sauron_real_series_restores_eleven_damage_samples_with_the_actual_worke
         assert not any("Unmodeled turn effect" in reason or "Unmodeled volatile effect" in reason for reason in skipped)
         assert all(declared[key].nature for sample in found for key in (sample.attacker_id, sample.defender_id))
     assert counts == [4, 5, 2]
+
+
+
+def test_all_six_attributes_for_reported_gengar_keep_base_and_observed_mega_separate(engine):
+    from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
+    from tests.test_public_teamsheets import sauron_games
+
+    request = Bo3AnalysisRequest(session_id="sauron-attributes", games=[sauron_games()[0]],
+        inference_options=InferenceOptions(max_assignments=1, max_projections=1))
+    evidence, states = prepare_series(ShowdownReplayParser(), request)
+    result = Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=engine,
+        public_sheets=ShowdownTeamSheetParser(), attributes=engine).analyze(request, evidence, states)
+    before = next(summary for summary in result.checkpoints[0].summaries if summary.species == "Gengar")
+    after = next(summary for summary in result.checkpoints[-1].summaries if summary.species == "Gengar")
+    assert {profile.species for profile in before.attributes} == {"Gengar"}
+    assert {profile.species for profile in after.attributes} == {"Gengar", "Gengar-Mega"}
+    mega = next(profile for profile in after.attributes if profile.species == "Gengar-Mega")
+    assert mega.supported and len(mega.attributes) == 6
+    assert mega.attributes["spe"].minimum == 150 and mega.attributes["spe"].maximum == 182
+    assert after.natures == ("Modest",)
+    assert after.stat_points["spe"].maximum == 32
+    assert result.checkpoints[-1].coverage == "bounded"
+
+
+def test_reported_series_default_budget_finishes_inverse_damage_constraints(engine):
+    from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
+    from tests.test_public_teamsheets import sauron_games
+
+    request = Bo3AnalysisRequest(session_id="sauron-inverse-defaults", games=sauron_games())
+    evidence, states = prepare_series(ShowdownReplayParser(), request)
+    result = Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=engine,
+        public_sheets=ShowdownTeamSheetParser()).analyze(request, evidence, states)
+    final = result.checkpoints[-1]
+    assert final.local_constraints and final.local_evaluated_assignments > 0
+    assert len(final.observation_ids) == 11
+    assert final.outcome == "ambiguous" and final.coverage == "bounded"
+    assert not result.checkpoints[0].local_constraints
+    assert result.projections <= request.inference_options.max_projections
+    for checkpoint in result.checkpoints:
+        assert all(int(identifier.split(":")[0][1:]) <= checkpoint.game
+                   for identifier in checkpoint.local_constraints)
+        for summary in checkpoint.summaries:
+            assert summary.nature_declared and len(summary.natures) == 1
+            assert all(0 <= bound.minimum <= bound.maximum <= 32 for bound in summary.stat_points.values())

@@ -130,6 +130,23 @@ def render_inference(evidence: Bo3InferenceEvidence) -> None:
                 row.update({stat: f"{bound.minimum}–{bound.maximum}" for stat, bound in summary.stat_points.items()})
                 rows.append(row)
             st.dataframe(rows, hide_index=True)
+            attributes = []
+            for summary in checkpoint.summaries:
+                for envelope in summary.attributes:
+                    if not envelope.supported:
+                        st.caption(f"{summary.pokemon_id} {envelope.species}: attributes unavailable ({envelope.reason})")
+                        continue
+                    row = {"Pokemon": summary.pokemon_id, "Form": envelope.species, "Basis": summary.basis}
+                    row.update({stat: str(bound.minimum) if bound.minimum == bound.maximum
+                                else f"{bound.minimum}-{bound.maximum}" for stat, bound in envelope.attributes.items()})
+                    attributes.append(row)
+            if attributes:
+                st.markdown("**All six attributes ? level 50, without battle modifiers**")
+                st.caption("Outer ranges derived from compatible investment bounds and natures. These are not observed "
+                           "exact stats or a complete spread. Items, abilities, boosts and field effects can change "
+                           "effective battle values. Do not combine all extrema into one set. "
+                           "Base and observed Mega forms are listed separately.")
+                st.dataframe(attributes, hide_index=True)
             for reason in checkpoint.unsupported:
                 st.caption(reason)
             with st.expander("Compatible joint examples (not exact complete sets)"):

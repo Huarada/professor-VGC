@@ -36,15 +36,26 @@ def contains_numerical_investment(text: str) -> bool:
     return False
 
 
+_ATTRIBUTE_CLAIM = re.compile(
+    rf"\b{_STAT}(?:\s+(?:stat|value))?(?:\s+(?:of|was|is|de|era))?\s*[:=]?\s+\d+\b"
+    r"(?!\s*(?:stages?\b|%))", re.IGNORECASE,
+)
+
+
+def contains_numerical_attributes(text: str) -> bool:
+    """Card-stat claims belong to typed tables; damage percentages/stages do not."""
+    return _ATTRIBUTE_CLAIM.search(text.replace("*", "").replace("`", "")) is not None
+
+
 UNVALIDATED_INVESTMENT_NOTICE = (
-    "The model's numerical investment claims could not be validated, so its narrative was omitted. "
+    "The model's numerical investment or attribute claims could not be validated, so its narrative was omitted. "
     "Review the deterministic battle evidence and the BO3 inference tables where available. "
     "This narrative does not establish any exact hidden spread."
 )
 
 _INVESTMENT_FIELDS = frozenset({
     "evs", "ivs", "spreads", "top_spreads", "top_spread_evs", "top_spread_nature",
-    "stat_points", "declared_stat_points", "joint_examples",
+    "stat_points", "declared_stat_points", "joint_examples", "attributes",
 })
 
 
@@ -56,10 +67,12 @@ def coaching_context(value: Any) -> Any:
     Damage numbers, causal state, declared traits, provenance and coverage remain.
     """
     if isinstance(value, dict):
+        if "faster_speed" in value or "slower_speed" in value:
+            return {"basis": "assumed_set_speed_projection_not_observed_or_inferred"}
         return {key: entry if key == "question" else coaching_context(entry)
                 for key, entry in value.items() if key not in _INVESTMENT_FIELDS}
     if isinstance(value, (list, tuple)):
         return [coaching_context(entry) for entry in value]
-    if isinstance(value, str) and contains_numerical_investment(value):
+    if isinstance(value, str) and (contains_numerical_investment(value) or contains_numerical_attributes(value)):
         return "[Numerical investment omitted; use the deterministic tables.]"
     return value

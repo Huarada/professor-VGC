@@ -182,9 +182,13 @@ def solve(
     limit = assignment_limit if assignment_limit is not None else budget.options.max_assignments
     components = observation_components(observations)
     factors = []
-    if limit > 0 and observations and space_bound(declarations, relevant_axes(observations), rules) > limit:
+    if limit > 0 and observations and len(components) == 1 and space_bound(declarations, relevant_axes(observations), rules) > limit:
         factors = local_bounds(game=game, phase=phase, declarations=declarations, observations=observations,
                                rules=rules, budget=budget)
+        # Do not spend the entire series budget exploring a huge Cartesian
+        # product once sound local proofs exist. Preserve work for later games.
+        if all(declarations[key].nature for key in relevant_axes(observations)):
+            limit = min(limit, 256) if phase == "after_game" else 0
     if len(components) > 1:
         result = solve_components(game=game, phase=phase, declarations=declarations,
             components=components, unsupported=unsupported, rules=rules, budget=budget, assignment_limit=limit)

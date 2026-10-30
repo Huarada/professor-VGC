@@ -30,8 +30,8 @@ from src.adapters.parsers.showdown_parser import (
     parse_replay_for_viewer,
 )
 from src.adapters.replay_url_fetcher import fetch_replay_json, normalize_replay_json_url
-from src.adapters.showdown_series_gateway import ShowdownSeriesGateway
 from src.adapters.series_replay_index import JsonSeriesReplayIndex
+from src.adapters.showdown_series_gateway import ShowdownSeriesGateway
 from src.adapters.smogon.composite_strategy import CompositeStrategyProvider
 from src.adapters.smogon.semantic_strategy_retriever import SemanticStrategyRetriever
 from src.adapters.smogon.smogon_dex_adapter import SmogonDexAdapter
@@ -367,7 +367,7 @@ class Container:
                 timeout_seconds=self._settings.calc_timeout_seconds,
             ))
         return Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=self._candidate_projection,
-                                       public_sheets=ShowdownTeamSheetParser())
+                                       public_sheets=ShowdownTeamSheetParser(), attributes=self._candidate_projection)
 
     def build_bo3_pipeline(
         self, provider: str | None = None, orchestrator: str | None = None,

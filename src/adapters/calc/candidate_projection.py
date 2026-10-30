@@ -10,6 +10,8 @@ from pydantic import ValidationError
 from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.node_ipc import NodeIpcClient
 from src.domain.bo3_inference.models import (
+    AttributeBoundsRequest,
+    AttributeEnvelope,
     DamageSupport,
     MoveSupport,
     ProjectionRequest,
@@ -66,6 +68,18 @@ class SmogonCandidateProjectionAdapter:
             return [DamageSupport.model_validate(entry) for entry in raw]
         except ValidationError as exc:
             raise CalcEngineError("Malformed candidate damage support") from exc
+
+    def attributes_batch(self, requests: Sequence[AttributeBoundsRequest]) -> list[AttributeEnvelope]:
+        try:
+            raw = self._call("candidateAttributes", requests=[entry.model_dump(mode="json") for entry in requests])
+            if not isinstance(raw, list) or len(raw) != len(requests):
+                raise CalcEngineError("Attribute batch response count mismatch")
+            results = [AttributeEnvelope.model_validate(entry) for entry in raw]
+            if any(result.species != request.species for result, request in zip(results, requests)):
+                raise CalcEngineError("Attribute response species mismatch")
+            return results
+        except ValidationError as exc:
+            raise CalcEngineError("Malformed Champions attribute bounds") from exc
 
     def close(self) -> None:
         self._ipc.close()

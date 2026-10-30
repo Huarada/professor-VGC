@@ -104,7 +104,7 @@ class InferenceOptions(Value):
     max_assignments: int = Field(default=12000, ge=1, le=100000)
     max_projections: int = Field(default=120000, ge=1, le=200000)
     max_cache_entries: int = Field(default=4096, ge=64, le=20000)
-    timeout_seconds: float = Field(default=20, gt=0, le=120)
+    timeout_seconds: float = Field(default=60, gt=0, le=120)
 
 
 class NatureSpec(Value):
@@ -190,6 +190,44 @@ class PointRange(Value):
     maximum: int
 
 
+class AttributeBoundsRequest(Value):
+    species: str = Field(min_length=1)
+    level: Literal[50] = 50
+    stat_points: dict[StatName, PointRange]
+    natures: tuple[str, ...] = Field(min_length=1, max_length=25)
+
+    @model_validator(mode="after")
+    def legal_outer_bounds(self) -> AttributeBoundsRequest:
+        if set(self.stat_points) != set(STATS):
+            raise ValueError("All six native stat-point bounds are required.")
+        if any(not 0 <= b.minimum <= b.maximum <= 32 for b in self.stat_points.values()):
+            raise ValueError("Native point bounds must be ordered within 0-32.")
+        if sum(b.minimum for b in self.stat_points.values()) > 66:
+            raise ValueError("Minimum native investment exceeds the 66-point budget.")
+        return self
+
+
+class AttributeEnvelope(Value):
+    units: Literal["level_50_attribute_values"] = "level_50_attribute_values"
+    species: str
+    level: Literal[50] = 50
+    basis: Literal["unboosted_outer_bounds"] = "unboosted_outer_bounds"
+    supported: bool
+    attributes: dict[StatName, PointRange] = Field(default_factory=dict)
+    reason: str = ""
+    engine_version: str = ""
+
+    @model_validator(mode="after")
+    def complete_attributes(self) -> AttributeEnvelope:
+        if self.supported and (set(self.attributes) != set(STATS) or any(
+            not 0 < b.minimum <= b.maximum for b in self.attributes.values()
+        )):
+            raise ValueError("A supported profile requires six positive, ordered attribute bounds.")
+        if not self.supported and self.attributes:
+            raise ValueError("Unsupported profiles cannot expose attribute values.")
+        return self
+
+
 class CandidateSummary(Value):
     pokemon_id: str
     species: str
@@ -202,6 +240,7 @@ class CandidateSummary(Value):
     declared_item: str | None = None
     declared_ability: str | None = None
     declared_moves: tuple[str, ...] = ()
+    attributes: tuple[AttributeEnvelope, ...] = ()
 
     @field_validator("stat_points")
     @classmethod
@@ -240,6 +279,7 @@ class Bo3InferenceEvidence(Value):
     checkpoints: tuple[InferenceCheckpoint, ...] = ()
     limitations: tuple[str, ...] = ()
     projections: int = 0
+    attribute_projections: int = 0
     conditioned_projections: tuple[ConditionedProjection, ...] = ()
 
 

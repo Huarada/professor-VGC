@@ -32,6 +32,12 @@ accounting for nature, items, abilities, field conditions and HP visibility.
 Multiple hits can constrain the same hidden profile. Independent confrontations
 are solved separately, using the same engine as the forward damage tool.
 
+The BO3 attribute table also derives **all six level-50 attributes** (HP, Atk,
+Def, SpA, SpD and Spe) from compatible native investment bounds and natures.
+These are unboosted outer ranges, separate from effective battle modifiers and
+assumed-set speed projections. Base and previously observed Mega forms are listed
+separately; unrelated range extrema cannot be combined into a single legal set.
+
 Results expose ranges, compatible examples, coverage and unsupported observations.
 A bounded search cannot identify an exact spread. Series constraints carry only
 with verified registered-team continuity; battle HP, boosts and consumption reset
@@ -42,61 +48,72 @@ current delivery. Details: [methodology](docs/bo3-inference/README.md) and
 
 ## Architecture
 
-Runtime interactions are shown below; these arrows are calls, not source-code
-import rules. `Container` wires concrete adapters behind domain-owned ports.
+BO1 and BO3 have separate entry points and result models. `Container` injects
+infrastructure adapters through domain-owned ports (Clean Architecture). These
+arrows show runtime flow, not Python import dependencies.
+
+### BO1: one battle
+
+One replay produces one review. Deterministic damage/speed evidence and labeled
+metagame assumptions ground the explanation; reverse spread inference is BO3-only.
 
 ```mermaid
-flowchart LR
-    subgraph presentation ["Presentation"]
-        ui["Streamlit: BO1, BO3 and battle viewer"]
-    end
-    subgraph application ["Python application"]
-        importer["SeriesReplayImporter"]
-        series["Bo3AnalysisService"]
-        single["BO1 pipelines: ADK, LangChain or native"]
-        evidence["GroundTruthAssembler"]
-        inverse["Bo3InferenceCoordinator"]
-    end
-    subgraph infrastructure ["Adapters and workers"]
-        calc["Forward and candidate calc adapters"]
-        worker["Node: Champions damage and speed engine"]
-        meta["Chaos adapter"]
-        strategy["Strategy adapters and optional Node dex"]
-        provider["LLM provider adapters"]
-    end
-    subgraph external ["External systems"]
-        showdown["Public Showdown replays"]
-        firestore["Google Cloud Firestore"]
-        smogon["Official Smogon data"]
-        llm["Gemini or OpenAI"]
-    end
-    ui --> importer
-    importer --> showdown
-    ui --> single
-    ui --> series
-    importer -->|"validated ordered games"| series
-    series -->|"isolated game reviews"| single
-    series --> inverse
-    single --> evidence
-    evidence --> calc
-    evidence --> meta
-    evidence --> strategy
-    inverse -->|"typed integer damage support"| calc
-    calc -->|"JSON-line IPC"| worker
-    meta --> firestore
-    strategy --> smogon
-    single --> provider
-    series -->|"typed series evidence"| provider
-    provider --> llm
+flowchart TD
+    input["Streamlit BO1: one replay and question"] --> pipeline["AnalysisPipeline: ADK, LangChain or native"]
+    pipeline --> parse["Parse replay and validate Champions regulation"]
+    parse --> selection["Structured matchup selection with deterministic validation"]
+    selection --> truth["GroundTruthAssembler: typed battle evidence"]
+    truth --> calc["CalcEngineAdapter: forward damage and speed"]
+    calc --> worker["Node worker: Champions calculator"]
+    truth --> context["Regulation-scoped Chaos and strategy adapters"]
+    context --> sources["Firestore and official Smogon data"]
+    truth --> explain["LLM explanation with evidence and read-only tools"]
+    explain --> guard["Validate supported rules and roster"]
+    guard --> result["AnalysisResult: answer, evidence and battle viewer"]
 ```
 
-All backends share deterministic evidence. The BO3 coordinator adds inverse
-inference and isolated game reviews before synthesizing typed series evidence;
-generated per-game prose is not the synthesis's source of truth.
+### BO3: series analysis and inverse spread inference
 
-See [architecture and BO3 flow](docs/architecture.md), the
-[browser diagram viewer](docs/architecture-blueprint.html), and
-[Mermaid sources](docs/diagrams/).
+A series contains up to three ordered games and ends at two wins. Import is
+read-only and makes no model call. Analysis first computes inverse constraints,
+then reviews each game through a fresh instance of the shared battle pipeline.
+The series summary uses typed evidence, not generated per-game answers.
+
+```mermaid
+flowchart TD
+    input["Streamlit BO3: ordered replays and optional teamsheet"] --> importer["SeriesReplayImporter: published replay import"]
+    importer --> validate["Validate 1-3 games, players, regulation and score"]
+    validate --> service["Bo3AnalysisService"]
+    service --> inverse["Bo3InferenceCoordinator: before/after-game checkpoints"]
+    inverse --> facts["Public declarations and eligible event-time damage"]
+    facts --> solve["Bounded inverse search: legal stat-point and nature families"]
+    solve --> candidate["CandidateProjectionPort: Champions damage rolls"]
+    candidate --> match["Match HP transitions and intersect compatible constraints"]
+    match --> inferred["Typed ranges, coverage and unsupported observations"]
+    inferred --> attributes["AttributeProjectionPort: all six level-50 attribute ranges"]
+    attributes --> reviews["Fresh per-game AnalysisPipeline: BO1 engine reused"]
+    service --> reviews
+    reviews --> isolated["Independent battle state and temporary memory per game"]
+    isolated --> synthesis["Synthesize typed game and series evidence with an LLM"]
+    inferred --> synthesis
+    synthesis --> guard["Validate rules, roster and numerical narration"]
+    guard --> result["Bo3AnalysisResult: score, game reviews, inference tables and summary"]
+```
+
+Registered-team continuity carries compatible set constraints between games;
+HP, boosts, item consumption and per-game memory remain isolated. Checkpoints
+respect when information became available. Investment uses 0-32 points per stat,
+at most 66 total; IVs are fixed at 31. Bounded search results remain uncertain.
+
+Both flows share the parser, regulation guard, Champions Node calculator,
+Chaos/strategy adapters and Gemini/OpenAI integrations. The BO3 candidate and
+attribute ports use the same calculator engine as forward projections.
+
+See the [shared infrastructure overview](docs/diagrams/architecture.mmd),
+[BO1 Mermaid source](docs/diagrams/bo1-architecture.mmd),
+[BO3 Mermaid source](docs/diagrams/bo3-architecture.mmd),
+[architecture and source map](docs/architecture.md), and
+[browser diagram viewer](docs/architecture-blueprint.html).
 
 ## Run locally
 

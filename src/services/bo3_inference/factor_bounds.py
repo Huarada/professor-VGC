@@ -55,6 +55,10 @@ def local_bounds(
         groups.setdefault(signature, []).append(observation)
     candidates = (list(groups.values()) + [group[:2] for group in groups.values() if len(group) > 2]
                   + [[sample] for group in groups.values() if len(group) > 1 for sample in group])
+    # A complete single-hit proof is useful immediately; an unfinished multi-hit
+    # factor proves nothing. Prefer the cheapest exhaustive damage constraints.
+    candidates.sort(key=lambda samples: space_bound(
+        declarations, relevant_axes(samples), rules) * len(samples) > 48000)
     for samples in candidates:
         axes = relevant_axes(samples)
         local = {key: declarations[key] for key in axes}

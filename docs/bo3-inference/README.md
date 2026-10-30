@@ -25,7 +25,7 @@ Choose percent mode for rounded public HP; exact mode requires actual HP values.
 From Python, pass `teamsheet` (dict or JSON string) and `InferenceOptions` in
 `Bo3AnalysisRequest` to the existing BO3 pipeline. `result.inference` holds typed
 checkpoints; `enabled=False` disables the stage. Default budgets: 12,000 assignments
-per checkpoint, 120,000 projections overall, 20 seconds and 4,096 cached projections.
+per checkpoint, 120,000 projections overall, 60 seconds and 4,096 cached projections.
 Limits are configurable. Exhaustion yields bounded coverage and preserves sound
 prior bounds. Samples never prove uniqueness or an exhaustive damage range.
 
@@ -425,7 +425,7 @@ They neither supply fabricated global joint examples nor prove global feasibilit
 make that distinction visible. Missing nature remains a dimension of either search,
 not a reason to skip otherwise eligible observations.
 
-The default projection budget is 120,000 per request, with the existing 20-second
+The default projection budget is 120,000 per request, with a 60-second
 time limit and 4,096 cache entries. Existing archived synthetic fixtures explicitly
 retain their original 30,000-projection settings. The public-series regression
 uses a 60-second validation budget and has no hidden investment ground truth.
@@ -494,3 +494,58 @@ allocations; full typed results retain all calculated ranges. After one correcti
 repeated allocation prose is replaced wholesale by an explicit notice. The series
 and game evidence are preserved rather than losing the analysis to a narrative
 format error. Foreign mechanics still fail closed. See [troubleshooting and audit](../troubleshooting.md).
+
+
+## 11. All six attributes (ADR-051)
+
+BO3 checkpoints include engine-derived ranges for HP, Attack, Defense, Special
+Attack, Special Defense and Speed. `AttributeProjectionPort` is a separate domain
+port implemented by the candidate worker adapter and injected only in BO3. The
+worker uses Champions Pokemon construction and nature rounding; no Python stat
+formula or historical EV-scale output is introduced.
+
+Each stat endpoint is evaluated across the allowed natures and point bounds,
+respecting the remaining 66-point budget. Marginal endpoints form conservative
+outer ranges; they are not joint profile samples and are never fed back as
+independent observed evidence. A collapsed attribute interval does not necessarily
+identify an exact hidden investment. Units are `level_50_attribute_values`, distinct
+from `champions_stat_points` (0-32 per axis). Results exclude items, abilities,
+status, boosts and field modifiers. Those effects still participate in supported
+causal damage observations, not in card-stat display.
+
+Base and observed Mega forms have separate envelopes using the same point bounds.
+A Mega seen later cannot appear in an earlier checkpoint. Attribute projection is
+cached per request, batched at 64 and capped at 512 profiles; errors are explicit
+unsupported results and cannot erase the damage-inference evidence.
+`attribute_projections` is tracked separately from damage `projections`.
+
+For example, Modest Mega Gengar with unknown native Speed investment has an
+unboosted Speed interval of **150-182** in the installed Champions engine. It does
+not establish the exact value, and it does not justify a narrative claim of
+observed Speed 200. Numeric SpeedComparison fields are assumed-set projections,
+removed from BO3 coaching context. Narrative attribute allocations remain reserved
+for typed tables. Speed-order inverse inference remains outside this delivery.
+
+## 12. Inverse damage scheduling (ADR-052)
+
+Inference calls the deterministic candidate-damage port before any explanation
+model. For each eligible hit it enumerates legal native investments and nature
+effects, runs the Champions calculator with the event-time item, ability, boosts
+and field, and keeps candidates whose possible rolls reproduce the observed HP
+transition. Percent HP rounding and censored KOs remain part of compatibility.
+The model never supplies candidate damage or selects a spread as fact.
+
+Independent observation components own their local proofs; the parent no longer
+enumerates the same local constraints before descending into components. Factors
+costing over 48,000 estimated projections are deferred behind smaller factors,
+preserving affordable repeated-hit intersections. With declared natures and a
+component larger than its assignment budget, joint exploration is capped at 256
+after-game assignments and omitted before games. Completed local proofs are
+reused; partial samples never tighten the reported bounds. The shared default
+deadline is 60 seconds, with the existing 120,000-projection cap.
+
+Completing inverse constraints need not narrow marginal intervals. Unknown attack,
+defense and HP can compensate for each other: individual ranges can remain 0-32
+even after combinations are rejected. This is not an identified complete spread.
+Unmeasured stats remain unknown. Spread recommendation/optimization and speed
+inference are separate from this damage-compatibility stage.

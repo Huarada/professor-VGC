@@ -57,4 +57,6 @@ def build_adk_model(provider: str, settings: Settings) -> "str | BaseLlm":
         ) from exc
     os.environ["OPENAI_API_KEY"] = settings.openai_api_key
     # LiteLLM's own routing convention: "<provider>/<model-id>".
-    return LiteLlm(model=f"openai/{settings.openai_model}")
+    # Only local function tools are exposed. LiteLLM 1.106.4 otherwise imports
+    # its optional MCP proxy for any tools list, even without MCP tools.
+    return LiteLlm(model=f"openai/{settings.openai_model}", _skip_mcp_handler=True)

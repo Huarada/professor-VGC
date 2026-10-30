@@ -12,6 +12,8 @@ from __future__ import annotations
 from typing import Any, Protocol, Sequence, runtime_checkable
 
 from src.domain.bo3_inference.models import (
+    AttributeBoundsRequest,
+    AttributeEnvelope,
     DamageSupport,
     MoveSupport,
     ProjectionRequest,
@@ -345,6 +347,14 @@ class CandidateProjectionPort(Protocol):
         ...
 
     def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
+        ...
+
+
+@runtime_checkable
+class AttributeProjectionPort(Protocol):
+    """Derive six unboosted Champions attributes from necessary investment bounds."""
+
+    def attributes_batch(self, requests: Sequence[AttributeBoundsRequest]) -> list[AttributeEnvelope]:
         ...
 
 

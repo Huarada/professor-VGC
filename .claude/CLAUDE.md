@@ -567,7 +567,7 @@ For large joint searches, one affordable exhaustive local factor after each game
 can supply `necessary_local_bounds`; before-game checkpoints reuse prior proofs.
 Local examples never become global joint evidence, and bounded coverage cannot
 prove uniqueness/global feasibility. Local limits share projection/time budgets;
-default projections 120,000, deadline 20 seconds, cache 4,096. Public-series
+default projections 120,000, deadline 60 seconds, cache 4,096. Public-series
 regression uses 60 seconds and has no hidden investment truth. See ADR-046.
 
 
@@ -652,3 +652,16 @@ Mechanical HP damage and explicitly labeled effective/base speed are not investm
 On Windows use `.venv-windows/Scripts/python.exe`; keep WSL `.venv` separate and do
 not repair unrelated global packages by uninstalling dependencies used elsewhere.
 See `docs/troubleshooting.md` for reproduction and validation commands.
+
+
+## 22. BO3 six-attribute ranges (ADR-051)
+
+`AttributeProjectionPort` and immutable envelopes derive all six raw level-50
+attributes through the existing Champions worker. Bounds are conservative outer
+ranges from native point ranges/natures, with per-endpoint budget legality; they
+are neither observed stats nor joint examples. Keep raw attributes, native points
+and effective battle values in separate units. Only base and already-observed
+Mega forms appear at each checkpoint. The request cache/batch/profile limits bound
+this extra work; engine failures never erase damage-inference results. BO1 does
+not invoke this port. BO3 narrator context excludes numeric speed projections
+and raw attribute envelopes; typed tables own attribute values.

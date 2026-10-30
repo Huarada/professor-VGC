@@ -4736,3 +4736,78 @@ inference, unchanged BO1 context, source immutability, numeric-table preservatio
 legacy-prior exclusion, mechanical quantities, bounded calls, private-text-safe
 logging and continued rejection of foreign mechanics. Full offline validation and
 isolated-environment dependency checks are recorded in troubleshooting guidance.
+
+
+## ADR-051 ? Engine-derived ranges for all six BO3 attributes
+
+**Status:** Accepted. **Date:** 2026-10-26.
+
+### Context
+
+A user interpreted narrated speed projections as accurately inferred attributes
+and requested all six stats. Those values were ordinary assumed-set calculations,
+not numerical observations from move order. A concrete counterexample is Modest
+Mega Gengar: the installed Champions engine produces unboosted Speed 150-182 over
+native investment 0-32, contradicting the quoted narrative's exact 200.
+
+### Decision
+
+Add `AttributeProjectionPort`, typed requests and attribute envelopes. The existing
+Node Champions integration evaluates all six raw level-50 attributes across known
+nature alternatives and necessary point bounds. Respect the 66-point budget for
+each endpoint. Display conservative outer ranges separately from native point
+ranges and effective battle values. Do not recombine marginal extrema into a
+complete set or feed these derived values back as new observed constraints.
+
+The BO3 coordinator enriches immutable checkpoints through a request-scoped cached
+service: batches up to 64 and at most 512 unique profiles. Failure adds unsupported
+attribute envelopes and preserves inference. Track attribute projections separately
+from damage evaluations. Container wires the additional port only in BO3; BO1's
+contracts and calculation path remain independent.
+
+Base and observed Mega formes get separate envelopes. Only forms available before
+a checkpoint are included; runtime fields, ability effects and items never modify
+these raw card attributes. Existing damage observations retain their causal item,
+ability and field semantics. Remove numeric assumed-set speed comparisons from
+BO3 narrator context and instruct the narrator not to call them observed/inferred.
+
+### Consequences and validation
+
+Every supported roster member can show all six legal attribute ranges, even when
+not all are narrowed by battle evidence. This does not infer six exact hidden
+investments or add speed-order inference. Unknown natures and unsupported species
+remain explicit, with no foreign-generation fallback.
+
+Tests cover engine endpoints against native profiles, a fully declared 66-point
+spread, remaining-budget caps, invalid inputs, request caching, engine failure,
+source immutability, public Mega availability and six-column UI rendering. A real
+sauronMobile fixture verifies the 150-182 Mega Gengar interval after transformation
+and absence of that forme in the before-game checkpoint. No paid model evaluation
+or held-out hidden-set accuracy is claimed.
+
+## ADR-052: Prioritize complete inverse damage constraints across BO3 games
+
+**Status:** Accepted (2026-10-26).
+
+**Context:** The reported public BO3 could exhaust its 20-second budget without
+finishing a local constraint. Parent and component searches could repeat local
+work, and large joint searches competed with later games for the same budget.
+
+**Decision:** Keep inverse inference deterministic over the existing calculator
+port. Compute local factors inside independent components only, defer factors
+estimated above 48,000 projections behind cheaper ones, and retain affordable
+repeated-hit intersections. For known natures and an oversized component, cap
+after-game joint sampling at 256 assignments and skip before-game sampling.
+Reuse complete local proofs and preserve causal knowledge boundaries. Raise the
+default request deadline to 60 seconds, retaining the 120,000 projection limit.
+BO1 is unchanged; no LLM inference tool loop or alternate damage formula is added.
+
+**Consequences:** A completed local constraint can reject correlated combinations
+while leaving every marginal point interval at 0-32. Report ambiguity rather than
+inventing a complete spread. Unsupported damage mechanics remain excluded. The
+real public replay regression checks completed inverse work under default limits,
+legal ranges and causal checkpoints, not hidden-set accuracy. Existing planted
+and analytic tests cover actual narrowing, correlations and conflicting samples.
+
+**Files:** Inference models, solver, local-factor scheduler, regression tests and
+BO3 methodology documentation.

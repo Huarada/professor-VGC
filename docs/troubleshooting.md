@@ -81,3 +81,41 @@ No paid model requests or production database writes were used for this audit.
 Live provider narrative quality and current Firestore credentials/IAM were not
 revalidated by making production requests. Synthetic retention remains a
 consistency/search measure, not real-game spread-identification accuracy.
+
+## Gemini internal server errors
+
+`Gemini request failed: 500 Internal error encountered` means a model request
+returned a provider-side error. Successful replay import does not establish that
+the subsequent BO3 analysis completed. This error is distinct from the numerical
+investment narration guard and does not establish interference from another project.
+
+The shared native Gemini adapter (also used for BO3 series synthesis) makes at
+most three attempts on typed 500/503/504 errors, waits one then two seconds, and
+sets a 30-second request timeout with nested SDK retries disabled. Invalid requests
+and permission failures are not retried. Exhaustion still raises `LLMProviderError`;
+the application does not present an invented successful analysis. This change does
+not alter ADK's separate model retry policy or refund a consumed daily slot.
+
+Restart the local application after updating the code. Offline regression tests
+cover transient recovery, persistent failure, permanent failure and empty output;
+they do not prove current live provider availability.
+
+## OpenAI/ADK reports a missing MCP module
+
+With LiteLLM 1.106.4, an OpenAI completion containing ordinary function tools
+imports the optional LiteLLM MCP proxy before checking whether any MCP tool
+exists. Without the optional `mcp` package this becomes
+`APIConnectionError: OpenAIException - No module named 'mcp'`, before the OpenAI
+HTTP request. A clean `pip check` does not detect this optional import path.
+
+The ProfessorVGC ADK OpenAI factory passes `_skip_mcp_handler=True` to LiteLLM:
+this application exposes local function tools, not MCP gateway tools. The private
+LiteLLM option is consumed locally and is not sent to OpenAI. A regression test
+uses the installed LiteLLM dispatcher, blocks MCP imports, and supplies an offline
+HTTP response while verifying that the damage-calculator function declaration
+still reaches the request. Recheck this compatibility option when upgrading LiteLLM.
+
+The inspected source and isolated interpreter paths contain no FinStatement
+references. This reproduction does not require that project or an MCP server.
+Restart Streamlit after the fix to rebuild cached model instances. No global
+Python packages or other project environments need to be changed.
