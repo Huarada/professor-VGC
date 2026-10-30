@@ -82,10 +82,19 @@ def test_real_engine_search_retains_a_hidden_legal_profile(engine):
     assert checkpoint.compatible_families > 0
 
 
-def test_reported_public_bo3_retrieves_natures_and_narrows_investment_without_model_calls(engine):
+def test_reported_public_bo3_retrieves_natures_and_narrows_investment_without_model_calls(engine, monkeypatch):
     from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
+    from src.services.bo3_inference.solver import ProjectionBudget
     from tests.test_public_teamsheets import public_games
 
+    class WorkLimitedBudget(ProjectionBudget):
+        def __init__(self, port, options):
+            super().__init__(port, options)
+            # Assert inference semantics under a fixed work cap, not CPU speed.
+            # Production deadlines and the default-budget regression stay intact.
+            self.deadline = float("inf")
+
+    monkeypatch.setattr("src.services.bo3_inference.coordinator.ProjectionBudget", WorkLimitedBudget)
     request = Bo3AnalysisRequest(session_id="reported-public-series", games=public_games(),
                                  inference_options=InferenceOptions(timeout_seconds=60))
     evidence, states = prepare_series(ShowdownReplayParser(), request)
