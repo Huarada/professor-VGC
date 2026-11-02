@@ -4811,3 +4811,510 @@ and analytic tests cover actual narrowing, correlations and conflicting samples.
 
 **Files:** Inference models, solver, local-factor scheduler, regression tests and
 BO3 methodology documentation.
+
+## ADR-053: Fail explicitly on ambiguous BO3 identity, HP and merged bounds
+
+**Status:** Accepted (2026-10-30).
+
+**Context:** Replay wrappers could evade duplicate detection by changing IDs or
+ratings. Battle order was accepted without checking available protocol clocks.
+Multi-target set-HP updates covered only the first combatant, copied abilities
+could become original-set facts, and independently legal marginal bounds could
+intersect into an impossible total investment.
+
+**Decision:** Carry replay ID and the first protocol battle timestamp in the
+parsed GameState. Check both IDs and semantic battle fingerprints, excluding
+wrapper rating/ID, and reject decreasing known battle clocks. Missing clocks
+remain an explicit ordering limitation; upload time is not battle chronology.
+Update every combatant on a set-HP line. Keep copied abilities as runtime state
+and record the copying source as original only for known copying abilities.
+Qualify faint markers by player as well as species and turn.
+
+Exclude inconsistent direct-hit HP denominators, increasing target HP and zero-HP
+attackers from inverse constraints. Preserve ceiling-rounded public HP and censored
+KO compatibility. Conflicting bound intersections, including minimum investment
+over 66, retain previous valid ranges and discard incompatible joint examples.
+Hypothetical advice gains explicit provenance and future-team-preparation scope;
+the UI explains that 0-32 is unresolved and marginal bounds are not a full spread.
+
+**Consequences:** Some malformed or unverifiable inputs are rejected or reported
+as unsupported instead of producing false conflicts or fabricated precision.
+Logs without clocks cannot prove chronological order. Unsupported mechanics stay
+unsupported; these changes do not establish general LLM factual correctness or
+real-world hidden-spread identification accuracy. Parser fixes also benefit BO1;
+inverse logic and advisory scope remain BO3-specific.
+
+**Validation:** Regression cases cover cross-format duplicates, battle clocks,
+HP healing/residual transitions, two-target set-HP, item exchange/consumption,
+boosts/screens/weather, copied abilities, mirror-species faints, total-budget
+conflicts, censored KOs, percentage rounding and hypothetical advice provenance.
+
+
+## ADR-054: Recover explicitly linked public finished games on replay HTTP 404
+
+**Status:** Accepted (2026-10-30).
+
+**Context:** A reported 2-0 series exposed two valid child battle links, but both
+published replay URLs returned 404. Their public finished battle room logs were
+still available. The importer previously discarded them and emitted a generic
+upload error; the failure was availability, not a missing third game.
+
+**Decision:** Prefer published replay JSON. On a typed HTTP 404 only, read the
+explicit child battle room through the existing bounded guest WebSocket transport.
+Require a recorded result and both player names, then apply the same Champions
+format, official BO3 metadata and series validation. Never upload, log in, guess
+IDs or silently fall back on authentication/server failures. Record acquisition
+provenance and a source URL. Do not index recovered room logs as published public
+replay references. Preserve per-game errors when no games can be imported.
+
+**Consequences:** Completed 2-0 series can import two games while their public
+rooms remain available. Unfinished games remain missing, and expired unpublished
+rooms still require an uploaded replay. UI text explains import versus publication
+and links recovered games to their actual public room source. No model calls or
+analysis quota are used during acquisition.
+
+**Validation:** Offline tests cover two-game completion, no guessed third game,
+disconnected player metadata, unfinished/expired rooms, publication-index exclusion,
+404 recovery and refusal to hide 401/403/500/503 failures. A read-only live check
+of series 2707033960 recovered two games and the recorded 0-2 result.
+
+
+## ADR-055: Admit modeled contextual hits and share the BO3 loading lifecycle
+
+**Status:** Accepted (2026-10-30).
+
+**Context:** A user report showed four eligible damage observations, 256 bounded
+joint samples and two complete local constraints, with declaration-only marginal
+ranges. This establishes that inference ran, not an identified original spread.
+The inverse allowlist excluded some moves whose forward causal inputs were already
+modeled. BO3 also used a different loading indicator from BO1.
+
+**Decision:** Admit observed Weather Ball, Solar Beam, Last Respects and Stone Edge
+hits through the existing engine; compare inverse witnesses against forward rolls
+across weather and ally-faint conditions. Limit Last Respects to modeled bring-four
+counts and exclude global weather-suppression abilities until represented. Preserve
+critical/multi-hit exclusions and uncertainty; do not invent investments to fill a
+declaration-only table. Explain that local constraints need not tighten marginals.
+
+Reuse the monochrome BO1 overlay with task-specific BO3 captions and a shared
+context manager that removes the placeholder in finally. Default BO1 behavior
+remains compatible. Import remains read-only and never calls an analysis model.
+
+**Validation:** Node comparisons cover four moves, five weather states and three
+ally-faint counts, plus causal damage changes and unsupported counts/moves. UI tests
+cover shared markup, escaping, import errors and cleanup on both success and failure.
+No particular spread or use of these moves is asserted for an expired user replay.
+
+
+## ADR-056: Report real BO3 stages using Pokemon terminology
+
+**Status:** Accepted (2026-10-30).
+
+**Context:** A fixed BO3 loading caption used "compatible investments" and did not
+change with the actual stage. Timed caption rotation would not establish progress.
+
+**Decision:** Add a framework-independent ProgressReporter callback port, injected
+per analysis through Container into BO3 review and inference services. Emit stage
+transitions before validation, per-game damage matching, stat-range calculation,
+per-game review, summary generation/revision and final checks. The UI updates the
+same monochrome Pokeball placeholder on each callback and clears it in finally.
+Messages identify the game and total when appropriate. Disabled inference emits
+no false spread-inference stage. Use stat points/stat spreads in visible captions
+and coaching terminology. BO1 default behavior and inference mathematics remain
+unchanged; service/domain layers never import Streamlit.
+
+**Validation:** Tests assert callbacks precede actual engine/model operations,
+distinguish both games, replace prior overlay captions, preserve cleanup and BO1
+markup, and run the BO3 UI end to end without network or paid model calls.
+
+
+## ADR-057: Bridge validated stat findings into coaching and computed commentary
+
+**Status:** Accepted (2026-10-30).
+
+**Context:** Broad numerical-prose protection also removed all native-point and
+attribute bounds from the model context. Reviews could therefore repeat teamsheet
+traits while failing to discuss actual stat constraints. A reported answer also
+assigned a base-form ability to a Mega forme.
+
+**Decision:** Derive immutable, typed findings from validated inference checkpoints:
+declared versus constrained native bounds, unresolved stats, coverage and complete
+spread status, plus separately unit-labeled unboosted attribute envelopes. Inject
+these findings into per-game and series coaching contexts without restoring Chaos
+spread priors or assumed-set Speed. Preserve causal checkpoint/game scope.
+
+Keep the free-form numerical guard. Render an additional deterministic commentary
+alongside each game and series answer, using only computed findings. Explain when
+no original spread was identified and distinguish card stats from native training
+points. Mega forme abilities come from the same installed calculator, never from
+an assumed base ability or a hardcoded species lookup. Improve exclusion messages
+with the actual unsupported mechanism/ability; do not silently enable those cases.
+
+**Validation:** Tests cover context survival, raw-prior exclusion, unchanged source
+DTOs, declaration-only uncertainty, native-range rendering, conflict caveats,
+per-game scope and actual final-model input. UI integration checks both computed
+commentaries; Node verifies Charizard-Mega-Y Drought versus unknown base ability.
+No paid explanation-quality evaluation or hidden-set accuracy claim is made.
+
+## ADR-058: Reverse damage constraints with active auras and measured narrowing
+
+**Status:** Accepted (2026-10-31).
+
+**Context:** Global Fairy Aura was excluded even though the Champions calculator
+supports it. Affordable single-hit factors could consume each game's local-proof
+slot before a cross-game factor could constrain shared stats. Displayed attribute
+ranges did not quantify improvement over the declared-information baseline.
+
+**Decision:** Resolve observed Mega abilities from the installed engine catalog,
+including Floette-Eternal becoming Floette-Mega. Forward active Fairy/Dark Aura
+as global event-time fields, including passive allies, without stacking the effect
+twice. Remove the aura after its holder switches out. Refuse ambiguous multi-target
+aura-holder KO timing and Aura Break, which the Champions backend does not model.
+Enable additional direct/weight/terrain/previous-failure moves only through the
+same native calculator and their explicit causal inputs; keep unsupported mechanics
+excluded. Mega Evolution remains the only permitted special battle mechanic.
+
+Prioritize affordable two-game factors sharing relevant stat axes for registered
+teams, retaining causal checkpoints, proof caching and search caps. Unverified
+continuity resets evidence. Incomplete searches never establish tighter bounds.
+
+Store declaration-only baseline native bounds and natures separately from inferred
+bounds. Project both through the same engine for each base/observed Mega form.
+Report nested integer-interval reductions as `(initial_count-current_count) /
+initial_count`, with inclusive endpoints. Show initial/current native points and
+raw attribute ranges separately. Report zero when unchanged; suppress new reduction
+claims on conflict. This measures outer-interval narrowing, never confidence,
+joint candidate counts, hidden-set accuracy or a recommended complete spread.
+
+**Validation:** A native planted Moonblast case tests passive Floette-Mega Aura,
+switch removal, legal hidden SpD retention and actual narrowing. An independent
+exhaustive arithmetic oracle proves two games narrow HP from 0-32 to 6-18 (60.6%)
+while each alone leaves 0-32; unregistered teams do not share that proof. Native
+Node tests compare contextual inverse rolls with forward rolls and verify aura
+causality/no double stacking. Text tests distinguish native points from raw stats
+and suppress percentage claims on contradictory evidence. No expired replay or
+real hidden spread is reconstructed from summaries alone.
+
+## ADR-059: Validate reverse damage by attack semantics across the Champions catalog
+
+**Status:** Accepted (2026-10-31).
+
+**Context:** An aura-specific fix did not resolve the broader limitation: a short
+direct-move allowlist and category-only search axes excluded common attacks and
+could not model alternate attacking/defending stats, HP or speed-dependent power.
+Flattened multi-hit arrays cannot represent total observed damage.
+
+**Decision:** Keep an explicit audited native-calculator eligibility policy and
+classify the entire installed Champions move catalog. Publish a read-only offline
+audit command, distinguishing catalog eligibility from runtime support and accuracy.
+Each excluded damaging move identifies the missing causal input. Missing state
+never becomes a neutral assumption or a generation fallback.
+
+Extend typed move/observation metadata with offensive stat ownership, attack and
+defense axes, fixed-damage independence, attacker HP, speed and category-dependent
+axes. The solver enumerates those actual dimensions, including Wonder Room; no
+damage formulas or species ability tables are duplicated in Python. Search budgets
+and exhaustive-proof requirements remain unchanged.
+
+Record criticals by side and target and forward them through both calculator ports;
+a critical against one spread target must not affect its other targets. Add
+HP-dependent, fixed-damage, alternate-stat and speed-power attacks. Full-HP Focus
+Sash/Sturdy censor observed single-hit damage only when active, respecting partial
+HP, item suppression and ability bypass. Block unmodeled item counters and reactive
+abilities. Passive Cloud Nine/Air Lock suppress weather at event time. Exclude
+ambiguous global/ally-effect-holder KOs during multi-target attacks.
+
+For audited multi-hit moves, require the observed legal count and stable neutral
+items/abilities. Compose independent per-hit native roll support, with a bounded
+sumset, rejecting prefixes that KO before the final logged hit. Do not reuse the
+BO1 flattened array as a total. Missing counts, critical mixtures, reactive states,
+interleaved healing/residuals and unmodeled item interactions remain unresolved.
+BO1 default forward behavior is preserved; critical input is optional and false
+by default. Mega Evolution remains the only permitted special mechanic.
+
+**Validation:** Whole-catalog classification, five contextual forward/inverse roll
+comparisons for every eligible single-hit move, independent native per-hit sum
+composition, early-KO/count guards, critical boost cancellation, item/ability
+survival and native planted reverse searches across attack classes. Real saved
+series regression now admits 26 eligible hits (7/11/8), including criticals and
+Focus Sash targets, without asserting any original hidden spread is recovered.
+The installed audit has 321 conditionally eligible damage moves out of 345; the
+remaining 24 have explicit unsupported-input reasons. These are eligibility
+counts, not held-out accuracy or complete replay-mechanic coverage.
+
+## ADR-060: Show three real BO3 stages with game-specific calculator progress
+
+**Status:** Accepted (2026-10-31).
+
+**Context:** A generic damage-matching caption could remain visible through a long
+search and did not distinguish calculator work from AI game review or synthesis.
+
+**Decision:** Label real callbacks as stage 1/3 (replay and damage/stat validation),
+stage 2/3 (AI review of each game) and stage 3/3 (series comparison and final checks).
+Keep the current game and actual supplied-game count separate from the three stages.
+During inference, show the attacker, move, target HP comparison and completed native
+projection count; reuse the request-scoped reporter and throttle batch updates to
+once a second. Cache hits do not increase the calculation count. Report checkpoint
+coverage and completed constraints honestly, without a guessed ETA or percentage.
+
+Keep a single real-stage caption continuously visible instead of cycling/fading it.
+Allow long descriptions to wrap at responsive widths with higher contrast. Preserve
+the monochrome Pokeball and finally-based cleanup on success or error. No UI import
+enters calculation/application services and no model or calculation is added merely
+to animate progress.
+
+**Validation:** Tests verify callback ordering for all three stages and all three
+games, actual completed-work counters, throttling/cache behavior, persistent escaped
+captions, cleanup and the end-to-end BO3 Streamlit flow with isolated BO1 results.
+
+## ADR-061: Bounded, deduplicated BO3 explanation contexts
+
+**Status:** Accepted (2026-10-31).
+
+**Context:** A reported three-game review exceeded a 128,000-token provider window
+with 159,126 input tokens. The synthesis serialized full per-game DTOs, raw inverse
+checkpoints and a second full set of interpreted findings. Per-game prompts also
+pretty-printed this evidence. Most attribute-reduction entries were unchanged or
+uninformative. These duplicates are useful in full UI/export data, not in every
+model message. An offline structural reproduction over the saved reported replays
+produced about 433,000 characters for the old synthesis payload.
+
+**Decision:** Introduce a shared BO3-only explanation-context projection used by
+all three backends through the existing common input builder, plus series synthesis.
+Keep full evidence/result DTOs intact. Keep chronological battle text, move rows,
+observed HP/damage, causal conditions, score, knowledge checkpoints, informative
+native bounds, coverage and uncertainty. Do not summarize generated game answers
+as if they were evidence.
+
+Use compact JSON, explicit column headers for repeated turn/damage fields and
+scoped shared-text references for repeated caveats. Null remains unknown. Replace
+unchanged Pokemon findings only with backward references to an earlier supplied
+checkpoint for the same identity. Omit duplicate raw candidate summaries, zero-gain
+reduction details and theoretical uninformative attribute values; retain their
+unresolved status and full calculated tables in results. Synthesis does not resend
+metagame profiles, strategy texts and every alternative from each game review.
+Optional omissions are declared; they never imply no alternatives exist.
+
+Bound serialized context to 100,000 UTF-8 bytes and the rendered explanation body
+to 110,000 bytes, reserving space for question/correction and leaving headroom for
+the reported provider window. These are byte limits, not estimated token counts or
+a guarantee for every model/tool-history configuration. If essential evidence still
+exceeds the budget, raise a local typed error without cutting its chronology or
+calling the explanation provider. BO1 serialization and model choice are unchanged.
+
+**Validation:** Offline saved-three-replay regression uses native inference metadata,
+deterministic fake forward projections and a recording fake LLM. Synthesis is below
+85,000 bytes; each game message below 75,000 bytes. Tests verify all turn identities
+and battle-result text, legal backward references, full result attributes, immutable
+sources, idempotence, optional-omission markers, lossless caveat references and
+UTF-8 limits. No paid model quality/faithfulness evaluation is claimed.
+
+
+## ADR-062 ? Certified marginal boundary search and grounded spread narration
+
+**Date:** 2026-10-31. **Status:** Accepted.
+
+**Problem:** A large joint search could finish one local factor and leave every
+marginal unchanged. The explanation then substituted typical competitive sets for
+known teamsheet facts, obscuring the difference between theoretical bounds and
+inferred evidence.
+
+**Decision:** For affordable known-nature factors, test marginal endpoints by
+searching legal completions. A supported witness establishes endpoint feasibility;
+an endpoint is excluded only after exhaustive rejection of all its completions.
+Preserve certified exclusions on budget exhaustion and resume partial factors at
+later causal checkpoints. Share per-game local budgets across components and
+prioritize compatible cross-game factors. Small factors retain exhaustive joint
+enumeration. Certified marginals never imply an enumerated joint family count or
+an identified complete spread. Unsupported evaluations cannot exclude candidates.
+
+Preserve declared nature, item and moves in compact interpreted findings. BO3
+narration rejects ungrounded typical/maximized original-spread prose, retries once
+and falls back safely. Explicitly label zero reduction as unchanged theoretical
+bounds; separate partial exclusions from completed local constraints.
+
+Rage Fist uses observed direct hits, including individual multi-hit damage events.
+The Champions counter resets on switch (Showdown data/mods/champions/scripts.ts),
+unlike the legacy generation mechanic. Missing history is unknown, never an
+assumed counter. Residual damage does not increment it. The native calculator
+receives this causal counter for both forward and inverse requests.
+
+**Validation:** Independent exhaustive synthetic oracle checks exact marginal
+endpoints, partial-budget soundness and resumed proofs. Parser/forward tests check
+Rage Fist counters and Champions switch resets; native tests check damage power,
+cap and missing-counter rejection. Saved public series tests cover all eligible
+observations without claiming recovery of an original full spread. Unresolved
+stats remain unresolved, including unobserved bench members.
+
+
+**Recorded validation:** 770 Python tests and 32 Node tests passed; mypy checked
+122 source files, Ruff F checks and Vulture passed. Offline benchmark: 26/26
+synthetic series (78 games), 17/17 independent oracle cases, all planted truths
+retained. A saved real three-game run admitted 29 cumulative damage observations;
+game 1 retained its initial marginal ranges. Under the default timed budget the
+final outer bounds narrowed Vivillon Def to 0?23 and Grimmsnarl SpD to 2?32 native
+points. These timed-run endpoints can vary with completed work; they establish
+neither a full original spread nor measured real-world inference accuracy. No
+paid model evaluation was performed.
+
+
+## ADR-063 ? Lossless BO3 evidence encoding before the context guard
+
+**Date:** 2026-10-31. **Status:** Accepted.
+
+**Context:** After inverse-search improvements, the saved three-game series with
+native forward calculations and default inference generated approximately 89 KB
+of synthesis input, close to the 100 KB application guard. The earlier regression
+used fake forward projections and an almost-empty inference budget. Different
+mechanical detail or more informative bounds could exceed that margin.
+
+**Decision:** Keep the existing context/message byte caps. After normal semantic
+projection and explicitly marked optional-advice reductions, use lossless encoding
+before rejecting oversized evidence. Root-scoped dictionaries share repeated JSON
+values and ordered field-name schemas for arrays of objects. Each table row stays
+in its supplied position; every value can be reconstructed. Shared-value references
+are acyclic and backward-only. Equal ordered keys are required for table rows, so
+missing fields never become null. Nested references use the root dictionary while
+game/checkpoint identities and existing scoped references retain their semantics.
+Do not re-project an already compacted context or discard its table metadata.
+Full result DTOs and BO1 serialization remain unchanged. Count partial constraints
+in narrator diagnostics rather than repeating their raw identifiers.
+
+**Alternatives:** Raising the guard only moves the failure toward the provider's
+context window. Truncating turns or shortening the BO3 loses evidence. Additional
+model summarization introduces cost and a new factual-faithfulness boundary; this
+change uses deterministic serialization instead.
+
+**Consequences:** Explanation prompts document dictionary/table expansion for all
+backends. Truly oversized unique evidence still fails locally before an explanation
+call; the error includes actual/allowed bytes and identifies an application context
+limit instead of suggesting API quota exhaustion. This does not guarantee unlimited
+replay lengths or every model window. No paid-model understanding evaluation is
+claimed.
+
+**Validation:** Independent decoder tests reconstruct all values, missing/null,
+empty/zero/false, Unicode, chronological rows, player-side swaps and inferred bounds
+from a >200 KB three-game fixture. The reported-series regression also uses the
+native forward calculator and default inference with a stricter 80 KB test budget,
+in addition to the original fake projection case. Oversized unique evidence and
+message caps retain their fail-before-provider regressions.
+
+**Files:** services/bo3_context_encoding.py, services/bo3_prompt_context.py,
+explanation/series prompts and their offline regression tests.
+
+
+**Recorded checks:** Full suite: 775 passed (two existing dependency warnings).
+Final focused context suite, including nested-context rebasing: 13 passed. Mypy:
+123 source files clean; Ruff F/I on changed Python files, repository F checks,
+Vulture and whitespace checks passed. The synthetic 360-row three-game context
+shrunk from 229,739 to 55,324 UTF-8 bytes with exact independent reconstruction.
+No OpenAI/Gemini generation requests or paid faithfulness evaluation were made.
+
+
+## ADR-064 ? Analysis-local indexed BO3 damage evidence
+
+**Date:** 2026-11-01. **Status:** Accepted.
+
+**Context:** Flat accumulated observations already retained earlier games, but
+local planning selected only one representative per game/dependency group. We need
+exact, inspectable historical queries without conflating same-species Pokemon or
+borrowing spreads from another player's team or analysis.
+
+**Decision:** Introduce the domain SeriesEvidenceIndex, instantiated with a fresh
+scope on each coordinator invocation and reset per game without registered-team
+continuity. Only participant/registered-slot IDs identify combatants. Atomically
+append eligible observations with duplicate/conflict checks and defensive snapshots.
+Query by game/event cutoff, identity, attacker/defender role, move and actual stat
+dependencies. Preserve every observation's full event-time calculator request.
+Dependencies are a shared domain function also used by the solver, including
+Wonder Room, alternate stat ownership, HP/category/speed-dependent damage.
+
+Use indexed retrieval to plan same-dependency cross-game constraints, bounded to
+four representatives per game, 48 exploratory pairs and eight three-game triples
+per group. Preserve existing primary-pair and affordable-factor priorities before
+exploratory pairs, so additional retrieval cannot simply crowd out baseline work.
+Existing proof/projection caches remain per-analysis and all search budgets apply.
+Retrieved evidence is not proof: only supported exhaustive rejections exclude
+candidates, and partial search never establishes a complete original spread.
+
+Store scoped query filters and matched observation IDs in evidence_retrievals for
+result inspection and the BO3 diagnostic expander. Do not repeat raw query traces
+in explanation inputs. No external storage, semantic/vector retrieval, model
+memory, cross-analysis cache or new API request is introduced. BO1 is unchanged.
+
+**Validation:** Exact query tests cover game/event cutoffs, same-species opposing
+players, reused session labels, fresh instances, mutation isolation, atomic
+conflicting duplicates, alternate stats, component boundaries and multi-game
+pairs/triples. The independent cross-game damage oracle still narrows hidden HP
+from 0?32 to 6?18 only with registered continuity; traces remain separated for
+unregistered games. Offline benchmarks preserve all planted truths.
+
+
+**Recorded checks:** Final full suite: 781 passed, with two existing dependency
+warnings. Mypy: 126 source files clean; Ruff F checks, Vulture and whitespace
+checks passed. Offline benchmark: 26/26 synthetic series (78 games), 17/17
+independent oracle cases and all planted truths retained. The independent causal
+cross-game test preserves HP bounds of 6?18 only for registered continuity.
+Retrieval does not guarantee additional narrowing on every real replay or a
+complete original spread. No paid explanation/embedding calls were made.
+
+
+## ADR-065 ? Verified BO3 claim catalog and structured narration boundary
+
+**Date:** 2026-11-01. **Status:** Accepted.
+
+**Problem:** Free-form coaching replaced computed partial bounds with generic set
+lists, conflated base/Mega abilities, denied available information and implied an
+unsupported unique winning decision. Prompt instructions alone did not enforce
+completeness or factual values.
+
+**Decision:** Build an immutable NarrativeClaimPlan from the validated after-game
+checkpoint, separately for each game and the final series summary. Claims carry
+stable IDs, registered participant/slot identity, kind, typed value and a source
+checkpoint/field/basis. Bounds reference the calculated checkpoint field, never
+arbitrary retrieved hits or query counts. The catalog is generated by code; model
+output cannot create or edit a factual value. Reject foreign identity references,
+future/different-checkpoint sources, malformed bound fields and non-native ranges.
+Conflict checkpoints do not credit retained bounds as new findings.
+
+The narrator returns a strict JSON draft with claim_ids and analysis. Validate
+membership, duplicate IDs, required claims, schema and known conflicting prose.
+Required claims include each Pokemon's unresolved/known spread status, informative
+point bounds and observed forme abilities. Set-related questions also require
+available nature/item/move facts. Free analysis is strategic interpretation; trait
+lists, speculative standard sets, original numerical allocations, explicit base/
+Mega ability contradictions and unproven unique-winning/forfeit causation are
+rejected. One bounded correction is allowed. Persistent failure displays a
+code-rendered factual explanation with coverage/limitations instead of invalid
+model prose. Unsupported-rule attempts cannot survive this deterministic fallback.
+
+Render every factual value from the approved catalog after validation. Store the
+full catalog with per-game and series result DTOs for inspection. Explanation
+inputs share the source checkpoint/identity scope and use lossless encoding earlier
+above a 70 KB soft target, retaining the existing 100 KB context and 110 KB rendered
+message hard caps. Do not repeat per-game catalogs in series synthesis. The shared
+GroundTruthAssembler guard covers native, LangChain and ADK; BO1 and BO3 requests
+without an available inference checkpoint retain their existing contracts.
+
+**Limits:** The catalog validates checkpoint-derived facts, not a claim of complete
+spread recovery. Free strategic prose has conservative deterministic checks and is
+labeled interpretation; this is not a general semantic proof of every sentence,
+nor a proof that one move uniquely caused a victory. Paid-model faithfulness and
+format-compliance quality still require separate evaluation. No new paid model
+stage, semantic judge, embedding call or permanent spread memory is introduced.
+
+**Validation:** Domain/source/cutoff tests; valid draft and correction recovery;
+unknown/duplicate IDs, omitted bounds/status, model-supplied values, wrong Mega
+ability, common-set substitution, no-information denial and unique-win claims.
+Native/LangChain/ADK fakes render identical approved facts. Saved three-game context
+regression retains chronology under the stricter 80 KB test budget. Plain BO1 and
+inference-disabled behavior remain covered separately.
+
+
+**Recorded checks:** Final full suite: 796 passed (two existing dependency
+warnings). Mypy checked 129 source files; Ruff F checks, changed-file import checks,
+Vulture and whitespace checks passed. Structured-draft/source tests and the
+three-backend parity regression passed. The saved three-game native damage/default
+inference context case passed with the 80 KB test limit; no chronology or approved
+claim values were truncated. Validation used fake generation models and the native
+calculator, without paid explanation, embedding or semantic-judge requests.

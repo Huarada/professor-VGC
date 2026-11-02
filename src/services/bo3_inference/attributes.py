@@ -35,7 +35,13 @@ class AttributeProjectionService:
                 request = AttributeBoundsRequest(species=species, stat_points=summary.stat_points, natures=summary.natures)
                 key = request.model_dump_json()
                 requests[key] = request
-                entries.append(key)
+                baseline_key = None
+                if summary.baseline_stat_points and summary.baseline_natures and checkpoint.outcome != "conflict":
+                    baseline_request = AttributeBoundsRequest(species=species,
+                        stat_points=summary.baseline_stat_points, natures=summary.baseline_natures)
+                    baseline_key = baseline_request.model_dump_json()
+                    requests[baseline_key] = baseline_request
+                entries.append((key, baseline_key))
             by_mon[summary.pokemon_id] = entries
         missing = [key for key in requests if key not in self._cache]
         for start in range(0, len(missing), 64):
@@ -49,9 +55,15 @@ class AttributeProjectionService:
             except CalcEngineError as exc:
                 results = [AttributeEnvelope(species=requests[key].species, supported=False, reason=str(exc)) for key in keys]
             self._cache.update(zip(keys, results))
-        summaries = tuple(summary.model_copy(update={"attributes": tuple(
-            self._cache.get(key, AttributeEnvelope(species=requests[key].species, supported=False,
-                                                   reason="Attribute projection budget reached"))
-            for key in by_mon[summary.pokemon_id]
-        )}) for summary in checkpoint.summaries)
-        return checkpoint.model_copy(update={"summaries": summaries})
+        summaries = []
+        for summary in checkpoint.summaries:
+            envelopes = []
+            for key, baseline_key in by_mon[summary.pokemon_id]:
+                current = self._cache.get(key, AttributeEnvelope(species=requests[key].species,
+                    supported=False, reason="Attribute projection budget reached"))
+                baseline = self._cache.get(baseline_key) if baseline_key else None
+                if current.supported and baseline and baseline.supported:
+                    current = current.model_copy(update={"baseline_attributes": baseline.attributes})
+                envelopes.append(current)
+            summaries.append(summary.model_copy(update={"attributes": tuple(envelopes)}))
+        return checkpoint.model_copy(update={"summaries": tuple(summaries)})

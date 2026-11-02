@@ -20,6 +20,7 @@ class ParseState:
         self.field = FieldLedger()
         self.combatants = CombatantLedger(self.roster, self.timeline)
         self.format_id: str | None = None
+        self.started_at: int | None = None
         self.frames: list[TurnFrame] = []  # one per turn boundary, for the battle panel
         self.inference_exclusions: set[str] = set()
 
@@ -53,6 +54,7 @@ class ParseState:
                 mons[BattleSnapshot.key(player, key)] = MonState(
                     hp_percent=ledger.hp.get(k), status=ledger.status.get(k, ""),
                     hp_raw=ledger.hp_raw.get(k, ""), ability=ledger.abilities.get(k),
+                    hits_taken=ledger.hits_taken.get(k),
                     boosts=dict(ledger.boosts.get(k, {})),
                     item=ledger.held.get(k), forme=ledger.forme.get(k, ""),
                 )
@@ -78,6 +80,7 @@ class ParseState:
         self.field.close(self.turn)
         self.timeline.finalize_texts()
         state = GameState(
+            started_at=self.started_at,
             inference_exclusions=sorted(self.inference_exclusions),
             turn=self.turn,
             sides=self.roster.sides(),

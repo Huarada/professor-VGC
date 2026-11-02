@@ -2,8 +2,9 @@
 
 Status: **direct-damage core implemented (ADR-044)**. This supporting bounded
 context runs exclusively through the explicit BO3 use case, within the existing
-application. Stages 1-5 below are implemented for eligible direct damage. Speed,
-critical hits, multi-hit inference and held-out accuracy evaluation remain deferred.
+application. Stages 1-5 below are implemented for eligible direct damage, including
+attributed criticals, typed stat dependencies and stable-state logged multi-hit
+totals (ADR-059). Speed-order constraints and held-out accuracy evaluation remain deferred.
 The machine-readable companion is [`semantics.yaml`](semantics.yaml).
 
 ### Usage
@@ -30,8 +31,10 @@ Limits are configurable. Exhaustion yields bounded coverage and preserves sound
 prior bounds. Samples never prove uniqueness or an exhaustive damage range.
 
 Only sufficiently known event-time conditions constrain candidates. Missing
-items/abilities, unmodeled effects, critical hits, multi-hit and variable-power
-moves produce explicit exclusions. A direct-move allowlist is required because
+items/abilities and unmodeled effects produce explicit exclusions. Multi-hit damage
+requires the logged count, neutral held-item state and audited stable abilities;
+critical mixtures and interleaved healing/residual damage remain excluded.
+A direct-move allowlist is required because
 compact Dex metadata omits some dynamic callbacks. Unsupported does not mean
 impossible. Chaos never fills unknown fields. Historical conditioned projections
 use joint examples, marked `sampled` unless all compatible families are covered;
@@ -549,3 +552,251 @@ defense and HP can compensate for each other: individual ranges can remain 0-32
 even after combinations are rejected. This is not an identified complete spread.
 Unmeasured stats remain unknown. Spread recommendation/optimization and speed
 inference are separate from this damage-compatibility stage.
+
+## 13. Priority edge cases (ADR-053)
+
+| Boundary | Behavior |
+|---|---|
+| Duplicate games | Compare parsed battle content as well as replay IDs, across raw/dict/pasted JSON inputs; wrapper ratings and changed IDs cannot hide a duplicate. |
+| Game ordering | Reject decreasing known battle timestamps. Missing clocks explicitly limit verification; never sort by upload time. |
+| HP measurements | Preserve ceiling-rounded HP and overkill KO compatibility. Skip changed denominators, increasing direct-hit HP and zero-HP attackers. |
+| Healing and residuals | Update running HP without adding them to the preceding direct hit; set-HP updates both targets. |
+| Runtime state | Snapshots preserve causal item consumption/exchange, boosts, screens, weather and observed form changes. Unsupported changed/suppressed abilities remain excluded from inverse inference. |
+| Original abilities | Copied runtime abilities do not become permanent registered traits. |
+| Mirror species | Faint bookkeeping includes the owning side, so identical species on opposing teams remain distinct. |
+| Conflicts | An intersection requiring more than 66 total points is contradictory even if each marginal remains within 0-32; retain prior valid ranges and clear invalid joint examples. |
+| Advice | Label improvement suggestions as hypothetical, for future team preparation. Do not present them as original spreads or between-game investment changes. |
+
+Existing tests also cover p1/p2 swaps, nickname changes, incomplete series,
+registered-team inconsistency, before-game information boundaries, bounded searches,
+Mega calculator support and redirection. These are regression guarantees for
+modeled cases, not support for every special move or a general hallucination proof.
+
+
+## 14. Contextual move coverage and unresolved reports
+
+Inverse eligibility now includes Weather Ball, Solar Beam, Last Respects and
+Stone Edge. Their observed direct hits use the same forward calculator: weather
+and prior ally faints are causal inputs, not assumed constant power. Last Respects
+is limited to the modeled zero-to-three ally-faint count for bring-four battles.
+This initial milestone excluded criticals, multi-hit attacks and active Cloud
+Nine/Air Lock. ADR-059 supersedes those exclusions for attributed single-hit
+criticals, stable-state multi-hit totals and passive weather suppression. Unknown
+runtime effects still remain explicit exclusions.
+
+A report with four eligible observations, 256 sampled joint assignments and two
+exhaustive local constraints does not identify an original spread. Complete local
+constraints can remove correlated combinations while all marginal ranges remain
+0-32. The UI explicitly distinguishes this declaration-only case. Coverage changes
+can admit additional real hits, but no claim is made that those four newly enabled
+moves occurred in a particular replay without its log. Expired rooms cannot be
+reconstructed from teamsheet natures and summary counts alone.
+
+BO3 import and analysis reuse the BO1 monochrome Pokeball overlay with task-specific
+captions. A shared context manager removes it on success and failure; default BO1
+markup is preserved. Import captions never claim that an explanation model is being
+called. BO3 captions now update from actual application-stage callbacks rather than a timer; the default BO1 captions remain unchanged (ADR-056).
+
+Analysis callbacks distinguish **stage 1/3** (replays, event-time damage matching,
+stat ranges), **stage 2/3** (AI review per game) and **stage 3/3** (series comparison
+and final validation). Game numbers use the actual one-to-three supplied games.
+During the spread search, callbacks show the attacker, move and defender being
+compared, plus completed native damage calculations across the series. Updates
+are throttled, cache hits do not inflate counts, and captions stay visible during
+long calls. There is no simulated ETA or completion percentage (ADR-060).
+
+
+## 15. Grounded stat-spread interpretation in the final review
+
+The BO3 model receives trusted_stat_spread_findings built only from validated
+checkpoint DTOs. This separates declared native points, compatible inferred
+bounds, unresolved axes and complete-spread status. Form findings retain their
+own level-50 attribute units and calculated-range provenance; they are not EV
+allocations or observed effective Speed. Metagame spread priors and raw assumed-set
+speed values remain excluded from coaching context.
+
+The model discusses implications qualitatively. A separate deterministic computed
+commentary appears beside each game answer and the series answer. It prints only
+validated declared/constrained native-point values, explains incomplete/conflicting
+results and explicitly says when no original spread was identified. It does not
+relabel teamsheet natures/items/moves as a recovered IV/EV spread. Numeric output
+guards still apply to free-form model prose, independently of this computed text.
+
+Observed Mega envelopes also report their engine-derived forme ability. For
+example Charizard-Mega-Y has Drought; Solar Power on a base Charizard teamsheet
+must not be copied to the Mega label. Unobserved Mega forms remain absent from
+earlier checkpoints. Unsupported-hit diagnostics distinguish critical, multi-hit
+and unsupported moves, and name active abilities that require extra modeling.
+This clarifies limitations without claiming the excluded mechanics are implemented.
+
+
+The computed commentary also prints HP / Atk / Def / SpA / SpD / Spe numerically
+for every available base/observed Mega envelope. Collapsed bounds print one value;
+otherwise both endpoints are shown. These are raw level-50 attributes, not training
+point allocations, effective battle stats or a guessed maximized spread. Form and
+player labels keep opposing copies of a species separate. No midpoint or maximum
+is selected as an estimate when the original value remains unresolved.
+
+## 16. Reverse damage narrowing and baseline comparison
+
+Active Fairy Aura and Dark Aura now reach the Champions calculator as global
+event-time fields, including an ally's aura. Observed Mega abilities come from
+the engine catalog; Floette-Eternal -> Floette-Mega is supported. Switching out
+the holder removes its effect. Aura Break and ambiguous aura-holder KOs during
+multi-target attacks remain explicitly unsupported.
+
+Additional eligible moves include Electroweb, Discharge, Icy Wind, Kowtow Cleave,
+Light of Ruin, Low Kick, Heat Crash, Stomping Tantrum and Expanding Force. Weight,
+terrain, spread-hit and prior-failure inputs use the native forward engine.
+
+For registered teams, complete affordable two-game factors get priority over
+independent single-hit proofs. The same legal stats must satisfy compatible damage
+observations across games, despite different boosts and fields. Evidence is never
+borrowed from a future game or across unverified team continuity.
+
+The report compares current intervals with the declaration-only baseline for
+each stat and each observed form. For example, 0-32 -> 6-18 removes 20 of 33
+integer point values: **60.6% interval reduction**. This is a planted independent
+test result, not measured accuracy on the user's replay. Card-stat reductions use
+their own level-50 units. Percentages are neither confidence nor win probabilities;
+unchanged intervals show 0%, and marginal endpoints never form one legal spread.
+Old cached results without baseline fields require a new analysis to show this
+comparison. Contradictory evidence does not earn a new reduction claim.
+
+## 17. Damage-class validation and full catalog audit (ADR-059)
+
+Damage inference applies to eligible attacks generally, not only Fairy Aura.
+The worker classifies every move in its installed Champions catalog. As of the
+2026-10-31 audit: **526 catalog moves**, **345 damaging moves**, **322 conditionally
+eligible** (including **15 multi-hit moves**) and **23 excluded damage moves**.
+These are catalog eligibility counts, not replay coverage, species/move legality
+proofs or damage accuracy. Missing state, unsupported abilities/items and exhausted
+search budgets can prevent an eligible move from constraining any stat.
+
+| Damage class | Native calculation and inverse dependencies |
+|---|---|
+| Physical/special | Correct offensive stat and target defense, nature, item, ability, status, boosts, screens, terrain, weather and spread state |
+| Alternate stats | Body Press uses the user's Def; Foul Play uses target Atk; Psyshock/Psystrike/Secret Sword use Def; Wonder Room dependencies remain causal |
+| Category from stats | Shell Side Arm searches both offensive and defensive axes instead of assuming its nominal category |
+| HP-dependent | Eruption, Water Spout, Flail, Reversal and Final Gambit search attacker HP and enumerate integer HP consistent with the published reading |
+| Fixed damage | Fixed damage constrains HP compatibility without pretending to measure Atk/Def |
+| Speed-dependent power | Electro Ball/Gyro Ball add both Speed axes; this is damage evidence, not an observed move-order constraint |
+| Criticals | Critical protocol tags are side/target-qualified; mixed spread targets retain separate critical flags; native boost/screen/ability rules apply |
+| Full-HP survival | Focus Sash and Sturdy censor the observed single-hit damage at HP-1 only when active; partial HP, Magic Room and Mold Breaker are respected |
+| Multi-hit | Observed legal hit count, independent per-hit roll sums and surviving intermediate prefixes; never flatten one-hit arrays into total damage |
+| Global effects | Active Fairy/Dark Aura, ally-only Friend Guard and passive Cloud Nine/Air Lock use the event-time board |
+
+The 24 excluded damage moves have specific required-context explanations, including
+received-hit counters, observed action order, party-dependent Beat Up, charge-stage
+boost chronology, delayed Future Sight and OHKO attacks. Multi-hit cases with items,
+reactive abilities, critical mixtures or interleaved healing/residuals remain
+unresolved even when their move is catalog-eligible. The solver retains uncertainty
+instead of rejecting a profile using an incomplete projection.
+
+Audit locally without models, replay downloads or API costs:
+
+```powershell
+npm --prefix node_calc run audit:inverse
+node node_calc/scripts/auditInverseCoverage.js --all
+```
+
+Node tests classify the whole installed catalog and compare all supported single-hit
+rolls across five field/HP/critical contexts against the forward engine. Multi-hit
+tests independently compose native per-hit roll arrays and reject early-KO prefixes.
+Python tests plant hidden stats, verify retained truth and actual narrowing for
+different attack classes, and test parser attribution and exclusion conditions.
+This does not replace held-out replay accuracy evaluation.
+
+## 18. Explanation context limits (ADR-061)
+
+BO3 calculation/export data and explanation input are separate views. The narrator
+receives compact ordered evidence, informative spread findings and coverage, while
+full before/after attributes and candidate diagnostics remain in the result tables.
+Identical findings reference earlier checkpoints for the same Pokemon; shared
+caveats and column headers avoid repeatedly sending the same text and field names.
+Null is unknown. Context packing never changes a calculated stat or cuts battle
+chronology. Optional omissions are marked, and unknown ranges do not become zero.
+
+The shared per-game builder covers native, ADK and LangChain. Series synthesis
+uses the same budget policy, without resending every game's metagame and strategy
+data. Context JSON is capped at 100,000 UTF-8 bytes; rendered explanation bodies at
+110,000 bytes. These are byte safeguards rather than exact model-token estimates.
+Essential evidence exceeding the cap produces a local actionable error before the
+explanation call. The model is not switched and no paid retry is used to shrink it.
+
+The regression for replays 2702605273 / 2702606439 / 2702607924 keeps all move rows,
+score and full result tables. In an offline structural reproduction, the old series
+payload was about 433,000 characters; the compact series body is about 80,000 UTF-8
+bytes and individual game bodies about 41,000 / 62,000 / 41,000 bytes. These sizes
+use fake forward projections and native inference metadata, not a live provider
+token measurement or a paid explanation-quality evaluation.
+
+
+## 19. Certified marginal bounds and honest unresolved results (ADR-062)
+
+Large affordable known-nature local factors use endpoint feasibility search.
+Each excluded endpoint requires exhaustive rejection of every legal completion;
+a supported witness preserves the endpoint. Exhausted searches retain only
+certified exclusions and can resume at later checkpoints. Per-game budgets are
+shared across components. Completed local marginal proofs do not enumerate the
+full joint spread space. Partial constraints are reported separately.
+
+A zero interval reduction means the displayed numbers are unchanged theoretical
+bounds, not recovered stats. Compatible attacks across games may narrow some
+attributes while leaving others untouched. No midpoint, common set or assumed
+maximum replaces missing evidence. Declared teamsheet traits remain facts in the
+compact model context and are not rewritten as typical competitive guesses.
+
+Rage Fist is eligible when its causal direct-hit counter is known. Champions
+resets that counter on switching; residual damage does not count and each observed
+multi-hit damage event counts separately. The native engine caps power at 350.
+Unknown counter history remains unsupported. Restart existing workers after an
+engine update before producing a fresh analysis.
+
+
+## 20. Lossless explanation context fallback (ADR-063)
+
+If the normal BO3 prompt projection still exceeds 100,000 UTF-8 bytes, repeated
+values and object-field schemas are shared through bo3_evidence_encoding at the
+context root. bo3_value_ref expands an exact JSON value; bo3_table maps ordered
+rows to its named column schema. Nested encodings use the same root dictionary.
+This preserves all supplied chronological evidence and trusted inference values;
+it neither estimates missing stats nor changes the full UI/export DTOs. The
+110,000-byte rendered-message cap remains. Truly oversized unique evidence fails
+before the explanation request with actual/allowed sizes; this is not API quota
+exhaustion. Restart the app before running a fresh analysis after this update.
+
+
+## 21. Queryable series evidence (ADR-064)
+
+SeriesEvidenceIndex contains eligible damage observations for one analysis only.
+Queries select registered participant/slot IDs, actual attribute dependencies,
+move, role and game/event cutoff. Earlier-game queries cannot use future hits.
+Full causal requests retain HP, item, ability, boosts and field state. Species and
+Dex number never identify a registered combatant. Unregistered games receive a
+fresh index; repeating a session label does not reuse another analysis's data.
+
+The factor planner retrieves multiple cross-game pairs and bounded three-game
+combinations. Additional combinations run after primary pairs and affordable
+baseline factors, sharing the existing time/projection budget. More retrieval is
+not guaranteed interval reduction or a complete spread. Inspect evidence_retrievals
+in the result or Evidence consulted across games in the BO3 UI for query filters
+and exact matched observation IDs. These are considered hits, not certified proofs.
+
+
+## 22. Verified explanation claims (ADR-065)
+
+When an inference checkpoint is available, the BO3 narrator selects IDs from a
+code-built verified_claim_plan and returns strict JSON with claim_ids and analysis.
+It cannot supply alternative factual values. Source references identify the
+checkpoint, registered Pokemon and calculated/declaration field; a query match is
+never substituted for proof. Required claims prevent informative bounds and
+unresolved-spread status from disappearing behind generic team descriptions.
+
+The shared guard validates the draft, retries once with concrete errors, then
+renders approved facts or a deterministic fallback. Strategic commentary is
+explicitly interpretation and cannot claim a proven unique winning move. Full
+source catalogs are retained as bo3_claim_plan in result DTOs; prompt source_ref
+strings share the plan checkpoint/game and each claim's participant/slot scope.
+The numerical UI tables and computed commentary remain complete and independent
+of model compliance. No additional generation stage or paid judge is required.

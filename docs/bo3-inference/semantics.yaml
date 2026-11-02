@@ -1,6 +1,6 @@
 schema: professorvgc.bo3_set_inference.design.v1
 status: implemented_direct_damage_core
-deferred: [speed_constraints, critical_hits, multi_hit_inference, prior_ranking, held_out_evaluation]
+deferred: [speed_order_constraints, reactive_multi_hit_state, unmodeled_move_counters, prior_ranking, held_out_evaluation]
 language: en
 
 bounded_context:
@@ -112,6 +112,10 @@ contracts:
     measurement_kinds: [exact_hp, rounded_percent_hp, censored_ko, eligible_speed_order]
   CandidateCalcRequest:
     required: [joint_assignment, observation_id, runtime_state, rule_version]
+    stat_dependencies: [attack_source, attack_stat, defense_stat, uses_attacker_hp, uses_speed, category_from_stats, stat_independent]
+    critical_attribution: side_qualified_target_only
+    multi_hit_conditions: observed_legal_count_and_stable_item_ability_hp_state
+    multi_hit_roll_composition: independent_native_per_hit_sums_with_surviving_prefixes
   DamageSupport:
     required:
       - supported
@@ -215,9 +219,24 @@ public_sheet_retrieval:
   late_or_chat_exports: excluded_from_earlier_inference
 local_constraint_search:
   purpose: necessary_outer_bounds_when_joint_search_is_bounded
-  maximum_new_factor_attempts_per_after_game: 1
+  maximum_new_exhaustive_enumerations_per_after_game: 1
+  certified_marginal_boundary_search: per_game_time_and_projection_budget
   assignment_cap: min_100000_and_four_times_joint_assignment_limit
   shares_request_time_and_projection_budgets: true
-  partial_factors_can_narrow: false
+  partial_factors_can_narrow: only_fully_certified_endpoint_exclusions
   local_examples_are_global_witnesses: false
   global_feasibility_or_uniqueness_claim: forbidden_without_exhaustive_joint_search
+
+series_evidence_index:
+  lifetime: one_analysis_invocation
+  key: analysis_scope_and_registered_participant_slot
+  species_or_pokedex_identity: forbidden
+  queries: [through_game, through_event, game, pokemon_id, role, stat, move]
+  runtime_state: retain_original_event_time_calculation_request
+  unregistered_continuity: new_index_per_game
+  cross_game_factors:
+    primary_pairs: preserve_existing_priority
+    exploratory_pairs_per_dependency_group: at_most_48
+    three_game_combinations_per_dependency_group: at_most_8
+  query_trace: inference_results_only_not_repeated_in_model_context
+  constraints: necessary_bounds_not_complete_spreads

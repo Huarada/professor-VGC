@@ -7,7 +7,13 @@ every result line (damage, block, effectiveness) belongs to that move.
 from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.roster import Key, Roster
-from src.domain.models import BattleEvent, BattleEventKind, BattleOutcome, KOEvent, TargetHit
+from src.domain.models import (
+    BattleEvent,
+    BattleEventKind,
+    BattleOutcome,
+    KOEvent,
+    TargetHit,
+)
 
 
 class Timeline:
@@ -17,7 +23,7 @@ class Timeline:
         self.turn = 0
         self.events: list[BattleEvent] = []
         self.kos: list[KOEvent] = []
-        self.fainted_in_move: set[tuple[int, str]] = set()
+        self.fainted_in_move: set[tuple[int, str, str]] = set()
         self.current_move: BattleEvent | None = None
         self.helped: set[tuple[int, str, str]] = set()  # (turn, player, key) under Helping Hand
         self.winner_name: str | None = None
@@ -36,7 +42,7 @@ class Timeline:
         """A KO; also a timeline line unless the move that caused it already says so."""
         player, species = key
         self.kos.append(KOEvent(turn=self.turn, fainted=species, player=player))
-        if (self.turn, species) not in self.fainted_in_move:
+        if (self.turn, player, species) not in self.fainted_in_move:
             self.emit("faint", key, f"{species} ({player}) fainted.", [])
 
     def add_effect(self, effect: str) -> None:
@@ -52,7 +58,8 @@ class Timeline:
         player, species = key
         before = move.state.mon(player, species).hp_raw if move.state else ""
         hit = TargetHit(player=player, species=species, hp_after=hp_after, blocked_by=blocked_by,
-                        hp_before_raw=before, hp_after_raw=hp_after_raw)
+                        hp_before_raw=before, hp_after_raw=hp_after_raw,
+                        critical_hit=f"{player}:{species}" in move.critical_targets)
         for i, existing in enumerate(move.hits):
             if (existing.player, existing.species) == key:
                 move.hits[i] = hit  # multi-hit move: keep the final HP

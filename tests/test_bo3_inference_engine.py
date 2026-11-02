@@ -114,7 +114,7 @@ def test_reported_public_bo3_retrieves_natures_and_narrows_investment_without_mo
     assert result.projections <= request.inference_options.max_projections
 
 
-def test_sauron_real_series_restores_eleven_damage_samples_with_the_actual_worker(engine):
+def test_sauron_real_series_restores_twenty_nine_damage_samples_with_the_actual_worker(engine):
     from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
     from src.services.bo3_inference.declarations import identities, visible_declarations
     from src.services.bo3_inference.observations import observations
@@ -131,7 +131,12 @@ def test_sauron_real_series_restores_eleven_damage_samples_with_the_actual_worke
         counts.append(len(found))
         assert not any("Unmodeled turn effect" in reason or "Unmodeled volatile effect" in reason for reason in skipped)
         assert all(declared[key].nature for sample in found for key in (sample.attacker_id, sample.defender_id))
-    assert counts == [4, 5, 2]
+    assert counts == [7, 14, 8]
+    # The two newly admitted hits are Moonblast from observed Floette-Mega.
+    aura_hits = [sample for sample in found if sample.request.field.fairy_aura]
+    assert len(aura_hits) == 2
+    assert all(sample.request.move == "Moonblast" and sample.request.attacker.ability == "Fairy Aura"
+               and sample.request.attacker.battle_formes == ["Floette-Mega"] for sample in aura_hits)
 
 
 
@@ -166,7 +171,7 @@ def test_reported_series_default_budget_finishes_inverse_damage_constraints(engi
         public_sheets=ShowdownTeamSheetParser()).analyze(request, evidence, states)
     final = result.checkpoints[-1]
     assert final.local_constraints and final.local_evaluated_assignments > 0
-    assert len(final.observation_ids) == 11
+    assert len(final.observation_ids) == 29
     assert final.outcome == "ambiguous" and final.coverage == "bounded"
     assert not result.checkpoints[0].local_constraints
     assert result.projections <= request.inference_options.max_projections

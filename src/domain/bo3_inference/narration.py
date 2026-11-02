@@ -47,15 +47,31 @@ def contains_numerical_attributes(text: str) -> bool:
     return _ATTRIBUTE_CLAIM.search(text.replace("*", "").replace("`", "")) is not None
 
 
+def contains_speculative_original_spread(text: str) -> bool:
+    """Reject metagame guesses substituted for the replay's unidentified spread."""
+    pattern = re.compile(
+        rf"\b(?:likely|probably|typically|often|usually|generally|commonly|frequently|normally|provavelmente|geralmente|costuma)\b"
+        rf"[^\n.!?]{{0,120}}(?:\b(?:maxed|maximi[sz]\w*)\b|"
+        rf"\b(?:runs|uses|has|favou?red|seen|with|usa)\b[^\n.!?]{{0,60}}\b(?:nature|natureza)\b|"
+        rf"\b(?:focus\w*|prioriti[sz]\w*)\b[^\n.!?]{{0,40}}\b{_STAT}\b)", re.IGNORECASE,
+    )
+    for paragraph in text.replace("*", "").split("\n\n"):
+        if re.search(r"\b(?:future|recommend|consider|could|suggest|futur[oa]|recomendo|considere)\b", paragraph, re.IGNORECASE):
+            continue
+        if pattern.search(paragraph):
+            return True
+    return False
+
+
 UNVALIDATED_INVESTMENT_NOTICE = (
-    "The model's numerical investment or attribute claims could not be validated, so its narrative was omitted. "
+    "The model's stat-spread or attribute claims could not be validated, so its narrative was omitted. "
     "Review the deterministic battle evidence and the BO3 inference tables where available. "
     "This narrative does not establish any exact hidden spread."
 )
 
 _INVESTMENT_FIELDS = frozenset({
     "evs", "ivs", "spreads", "top_spreads", "top_spread_evs", "top_spread_nature",
-    "stat_points", "declared_stat_points", "joint_examples", "attributes",
+    "stat_points", "declared_stat_points", "joint_examples", "attributes", "baseline_stat_points",
 })
 
 
@@ -69,10 +85,14 @@ def coaching_context(value: Any) -> Any:
     if isinstance(value, dict):
         if "faster_speed" in value or "slower_speed" in value:
             return {"basis": "assumed_set_speed_projection_not_observed_or_inferred"}
-        return {key: entry if key == "question" else coaching_context(entry)
-                for key, entry in value.items() if key not in _INVESTMENT_FIELDS}
+        projected = {key: entry if key == "question" else coaching_context(entry)
+                     for key, entry in value.items() if key not in _INVESTMENT_FIELDS}
+        if projected.get("improvement_suggestions"):
+            projected["suggestion_provenance"] = "hypothetical_advice_not_observed_registered_sets"
+            projected["investment_change_scope"] = "future_team_preparation_not_between_registered_bo3_games"
+        return projected
     if isinstance(value, (list, tuple)):
         return [coaching_context(entry) for entry in value]
     if isinstance(value, str) and (contains_numerical_investment(value) or contains_numerical_attributes(value)):
-        return "[Numerical investment omitted; use the deterministic tables.]"
+        return "[Numerical stat-point allocations omitted; use the deterministic tables.]"
     return value

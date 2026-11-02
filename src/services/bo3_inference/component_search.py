@@ -62,6 +62,7 @@ def solve_components(
             key=lambda sample: (sample.game, sample.event_index, sample.id))),
         unsupported=tuple(sorted(set(unsupported).union(*(result.unsupported for result in results)))),
         local_constraints=tuple(dict.fromkeys(key for result in results for key in result.local_constraints)),
+        partial_local_constraints=tuple(dict.fromkeys(key for result in results for key in result.partial_local_constraints)),
         local_evaluated_assignments=sum(result.local_evaluated_assignments for result in results),
         search_components=len(results),
     )

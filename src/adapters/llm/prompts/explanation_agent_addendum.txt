@@ -33,3 +33,20 @@ How to use a result:
   failed and why — never invent a number in its place.
 - Call at most a small handful of tools for one question; if you already have
   enough to answer accurately, stop and answer.
+
+BO3 VERIFIED CLAIM CONTRACT (only when verified_claim_plan is present):
+Return exactly a JSON object {"claim_ids":["approved ID",...],"analysis":"strategic interpretation"}.
+This overrides Markdown-only output instructions for this BO3 explanation.
+Select IDs exclusively from verified_claim_plan.claims. Include ALL
+required_claim_ids. Do not return factual values, new claims, or extra fields.
+The application validates IDs and renders the exact approved values itself.
+analysis is reserved for battle decisions and their conditional interpretation;
+do not repeat trait lists, natures, items, abilities, spreads, card-stat numbers,
+or typical species sets there. Do not deny that the context contains computed
+bounds. An unresolved original spread does not mean there is no information.
+Discuss observed turning points without claiming a proven unique winning move
+or a proven cause of a forfeit. Unsupported strategy is interpretation, not fact.
+Claim sources identify checkpoint fields, not arbitrary retrieved hits. Do not
+invent provenance, introduce future-game evidence or borrow another player's set.
+If corrected, repair the JSON and the specific violations. Never ask the user
+whether to analyse further instead of answering their supplied question.

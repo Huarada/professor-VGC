@@ -20,11 +20,38 @@ battles. It combines:
 
 The guiding principle: **the LLM explains ground truth; it never invents it.**
 
+**BO3 context budget (ADR-061):** full inference/calculation DTOs belong in results,
+not repeated verbatim in explanation messages. Use the shared BO3 prompt projection
+for every backend and series synthesis. Preserve chronology, actual damage, causal
+conditions, scoped informative bounds and uncertainty. Turn/damage row headers,
+scoped shared caveats and backward-only checkpoint references reduce duplication;
+null remains unknown. Optional omissions must be marked. Context/message caps are
+100,000/110,000 UTF-8 bytes, not token estimates. Fail locally on oversized essential
+evidence instead of truncating battle history or retrying a paid model unchanged.
+
 **Game boundary (ADR-043):** the application supports Pokemon Champions VGC
 regulations only. Mega Evolution is the only permitted special battle mechanic.
 Reject foreign formats/mechanics before any model call; filter external knowledge
 and fail closed if generated text still references unsupported mechanics after
 one correction. Missing Champions calc support never falls back to another game.
+
+**Reverse narrowing (ADR-058):** active Fairy/Dark Aura is an event-time global
+calculator input, including passive allies. Resolve Mega abilities from the engine
+catalog; retain exclusions for Aura Break and ambiguous multi-target aura-holder KO
+timing. Prioritize affordable registered cross-game factors without bypassing budgets
+or causal checkpoints. Compare inferred native bounds and raw attribute envelopes
+with declaration-only baselines using inclusive integer counts. A reduction is
+outer-interval narrowing, never confidence, joint-family count or hidden-set accuracy.
+
+**Attack semantics (ADR-059):** reverse inference is not aura-specific. Native move
+metadata identifies real offensive/defensive axes, stat ownership, HP/speed inputs,
+fixed damage and conditional categories. Criticals are side/target-qualified.
+Stable-state multi-hit support requires a logged legal count, independent native
+roll sums and surviving intermediate prefixes; never use flattened one-hit arrays
+as totals. Reactive items/abilities, critical mixtures, healing/residual interleaving
+and missing causal counters remain explicit exclusions. `npm --prefix node_calc run
+audit:inverse` inventories the installed catalog; eligibility is not accuracy or
+proof of legal species/move combinations. Preserve BO1 default calculator behavior.
 
 **BO3 (ADR-043):** `domain/series.py` and `services/series_analysis.py` define a
 separate use case over the unchanged BO1 pipeline contract. Accept 1–3 ordered
@@ -665,3 +692,38 @@ Mega forms appear at each checkpoint. The request cache/batch/profile limits bou
 this extra work; engine failures never erase damage-inference results. BO1 does
 not invoke this port. BO3 narrator context excludes numeric speed projections
 and raw attribute envelopes; typed tables own attribute values.
+
+## 23. Priority edge-case boundaries (ADR-053)
+
+Parsed GameState carries replay_id and the first protocol started_at clock.
+Series duplicate detection checks IDs and semantic content independently of
+wrapper rating. Known battle clocks must not decrease; missing clocks limit
+order verification, and upload times never establish battle chronology.
+Set-HP updates all targets; faint markers are player-qualified. Copied abilities
+remain runtime facts rather than original registered abilities. Inverse inference
+rejects inconsistent HP transitions and preserves previous valid bounds when a
+combined minimum exceeds 66 points. Recommendation context explicitly identifies
+hypothetical advice for future team preparation, not original or between-game
+registered investments. Never describe unresolved 0-32 marginals as a full spread.
+
+
+## 24. Computed coaching findings (ADR-057)
+
+Keep raw Chaos spreads and assumed-set Speed out of BO3 narration. Validated
+checkpoint bounds may reach the model only through trusted_stat_spread_findings,
+with native-point versus level-50 attribute units and explicit unresolved status.
+Free-form prose remains numerically guarded; deterministic commentary alongside
+answers owns printed stat values. Do not label nature/item lists as identified
+spreads. Preserve game/phase scope and distinguish base declared abilities from
+engine-derived observed Mega forme abilities. Exclusion reasons name unsupported
+mechanisms rather than silently guessing their damage effects.
+
+BO3 marginal endpoint proofs and partial exclusions follow ADR-062. Never treat them as complete joint spreads. Rage Fist uses observed Champions hits since latest switch, not legacy lifetime hits.
+
+BO3 context overflow fallback (ADR-063): use lossless root-scoped shared JSON values and row schemas before rejecting oversized evidence. Preserve existing compacted metadata, chronology, null/empty distinctions and trusted bounds; keep the 100 KB/110 KB guards.
+
+BO3 result display (2026-11-01): keep the loading context open through replay parsing, battlefield rendering, stat tables and series commentary, not only pipeline.analyze(). Existing-result navigation uses a display-only loading phase without rerunning inference or consuming quota. UI regression checks loading remains active inside the result renderers.
+
+Series-local evidence retrieval follows ADR-064: fresh SeriesEvidenceIndex per analysis, participant/slot identity, causal cutoffs, preserved runtime requests, no persistent spread memory. Keep raw evidence_retrievals out of LLM prompts. Query matches are not certified constraints.
+
+BO3 narrative fidelity follows ADR-065: build a verified claim catalog from the causal checkpoint; require strict claim_ids/analysis JSON, enforce required facts, render values in code and allow one correction before deterministic fallback. Keep base/Mega abilities separate, never treat retrieved hits as proof, and never claim the free strategic prose has general semantic verification. BO1 stays unchanged.

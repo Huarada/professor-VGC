@@ -16,6 +16,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from src.domain.champions import validate_champions_input
+from src.domain.narrative_claims import NarrativeClaimPlan
 
 
 class Archetype(str, Enum):
@@ -127,6 +128,7 @@ class TargetHit(BaseModel):
     """Target's HP percent after the hit (0.0 on a faint; None when blocked)."""
     blocked_by: str = ""
     """Protect-family move that blocked this move for this target, if any."""
+    critical_hit: bool = False
 
 
 class MonState(BaseModel):
@@ -136,6 +138,8 @@ class MonState(BaseModel):
 
     hp_percent: float | None = None
     hp_raw: str = ""
+    hits_taken: int | None = Field(default=None, ge=0)
+    """Observed direct hits since the latest Champions switch; None = unknown history."""
     ability: str | None = None
     boosts: dict[str, int] = Field(default_factory=dict)
     status: str = ""  # "par" | "brn" | "psn" | "tox" | "slp" | "frz" | "" (healthy)
@@ -216,7 +220,10 @@ class BattleEvent(BaseModel):
     """The actor's previous move failed (missed, was blocked or had no effect):
     Stomping Tantrum and Temper Flare then have double power."""
     hit_count: int = 0
-    """Hits a multi-hit move landed (``|-hitcount|``); 0 = not reported (single hit)."""
+    """Observed landed hit count; zero means not published in the log."""
+    critical_targets: list[str] = Field(default_factory=list)
+    damage_interleaved: bool = False
+    """Healing or residual damage interleaved before the multi-hit count was published."""
     effects: list[str] = Field(default_factory=list)  # spread / super effective / ...
     results: list[str] = Field(default_factory=list)  # e.g. "Torkoal->43%", "Pyroar fainted"
     blocked: list[str] = Field(default_factory=list)
@@ -299,6 +306,9 @@ class GameState(BaseModel):
     """Typed snapshot of a replay: the Pokemon involved and, with a log, the result."""
 
     format_id: str = "gen9championsvgc"
+    started_at: int | None = Field(default=None, ge=0)
+    """First protocol battle timestamp, never the replay upload time."""
+    replay_id: str | None = None
     inference_exclusions: list[str] = Field(default_factory=list)
     turn: int = 0
     rating: int | None = None
@@ -399,6 +409,9 @@ class CalcField(BaseModel):
     gravity: bool = False
     magic_room: bool = False
     wonder_room: bool = False
+    fairy_aura: bool = False
+    dark_aura: bool = False
+    aura_break: bool = False
     attacker_side: SideField = Field(default_factory=SideField)
     defender_side: SideField = Field(default_factory=SideField)
 
@@ -442,6 +455,7 @@ class CalcRequest(BaseModel):
     Dragon Energy power, Flail / Reversal, pinch abilities such as Blaze."""
     after_failed_move: bool = False
     """The attacker's previous move failed (Stomping Tantrum / Temper Flare)."""
+    critical_hit: bool = False
     spread_hit: bool | None = None
     """Whether a spread move hit more than one target (the log's ``[spread]`` tag):
     the 0.75x reduction applies only then. None = the calc's default (it assumes
@@ -451,6 +465,8 @@ class CalcRequest(BaseModel):
     stop on a miss or roll 2-5); None = the calc's own default."""
     attacker_allies_fainted: int = 0
     """Fainted Pokemon on the attacker's side: Last Respects power, Supreme Overlord."""
+    attacker_hits_taken: int | None = Field(default=None, ge=0)
+    """Observed direct hits since the latest Champions switch; None means unknown."""
 
     @field_validator("move")
     @classmethod
@@ -530,6 +546,7 @@ class AnalysisRequest(BaseModel):
     question: str = ""
     provider: str = "openai"
     series_context: dict[str, Any] | None = None
+    bo3_claim_plan: NarrativeClaimPlan | None = None
     """Prior-game facts supplied by the BO3 use case; never merged into this game's state."""
 
 
@@ -723,6 +740,7 @@ class AnalysisEvidence(BaseModel):
     battle_result: str = ""
     regulation: RegulationInfo | None = None
     series_context: dict[str, Any] | None = None
+    bo3_claim_plan: NarrativeClaimPlan | None = None
 
 
 class AnalysisResult(BaseModel):
@@ -738,6 +756,7 @@ class AnalysisResult(BaseModel):
     protect_reads: list[ProtectRead] = Field(default_factory=list)
     strategies: list[SmogonStrategy] = Field(default_factory=list)
     agent_tool_calls: list[AgentToolInvocation] = Field(default_factory=list)
+    bo3_claim_plan: NarrativeClaimPlan | None = None
     battle_result: str = ""
     provider: str = "openai"
     regulation: RegulationInfo | None = None

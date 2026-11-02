@@ -27,17 +27,28 @@ class ActionHandlers(HandlerGroup):
             "move": self.on_move,
             "-damage": self.on_damage,
             "-heal": self.on_heal,
-            "-sethp": self.on_heal,
+            "-sethp": self.on_sethp,
             "-activate": self.on_activate,
             "-singleturn": self.on_singleturn,
             "-supereffective": lambda parts: self.state.timeline.add_effect("super effective"),
             "-resisted": lambda parts: self.state.timeline.add_effect("resisted"),
             "-immune": lambda parts: self.state.timeline.add_effect("immune"),
-            "-crit": lambda parts: self.state.timeline.add_effect("crit"),
+            "-crit": self.on_critical_hit,
             "-miss": lambda parts: self.state.timeline.add_effect("missed"),
             "-fail": lambda parts: self.state.timeline.add_effect("failed"),
             "-hitcount": self.on_hitcount,
         }
+
+    def on_critical_hit(self, parts: list[str]) -> None:
+        self.state.timeline.add_effect("crit")
+        move = self.state.timeline.current_move
+        key = self.state.roster.resolve(parts[2]) if len(parts) > 2 else None
+        if move is not None and key is not None:
+            target = f"{key[0]}:{key[1]}"
+            if target not in move.critical_targets:
+                move.critical_targets.append(target)
+            move.hits = [hit.model_copy(update={"critical_hit": True})
+                         if (hit.player, hit.species) == key else hit for hit in move.hits]
 
     def on_hitcount(self, parts: list[str]) -> None:
         move = self.state.timeline.current_move
@@ -94,6 +105,8 @@ class ActionHandlers(HandlerGroup):
             combatants.hp_raw[key] = parts[3].strip()
         source = tag_value(parts[4:], "from")
         if source:
+            if timeline.current_move is not None and timeline.current_move.hits and not timeline.current_move.hit_count:
+                timeline.current_move.damage_interleaved = True
             if source.lower().startswith("item:"):
                 holder = roster.resolve(tag_value(parts[4:], "of")) or key
                 combatants.reveal_item(holder, source.split(":", 1)[1].strip())
@@ -101,21 +114,33 @@ class ActionHandlers(HandlerGroup):
         move = timeline.current_move
         if move is None:
             return
+        if key != (move.actor_player, move.actor) and key in combatants.hits_taken:
+            combatants.hits_taken[key] += 1
         _player, species = key
         if species not in move.targets:
             move.targets.append(species)
         if fainted:
             move.results.append(f"{species} fainted")
-            timeline.fainted_in_move.add((timeline.turn, species))
+            timeline.fainted_in_move.add((timeline.turn, key[0], species))
             timeline.record_hit(key, 0.0, hp_after_raw=parts[3].strip())
         else:
             pct = parts[3].strip().split("/")[0]
             move.results.append(f"{species}->{pct}%")
             timeline.record_hit(key, hp, hp_after_raw=parts[3].strip())
 
+    def on_sethp(self, parts: list[str]) -> None:
+        """Pain Split publishes both combatants' new HP in one protocol line."""
+        for index in range(2, len(parts) - 1, 2):
+            if parts[index].startswith("["):
+                break
+            self.on_heal(["", "-heal", parts[index], parts[index + 1]])
+
     def on_heal(self, parts: list[str]) -> None:
         if len(parts) <= 3:
             return
+        move = self.state.timeline.current_move
+        if move is not None and move.hits and not move.hit_count:
+            move.damage_interleaved = True
         key = self.state.roster.resolve(parts[2])
         if key is None:
             return

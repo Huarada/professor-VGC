@@ -3,9 +3,19 @@
 from __future__ import annotations
 
 from src.domain.exceptions import ReplayFetchError, SeriesValidationError
-from src.domain.interfaces import LogParser, ReplayTeamSheetParser, SeriesReplayGateway, SeriesReplayIndex
+from src.domain.interfaces import (
+    LogParser,
+    ReplayTeamSheetParser,
+    SeriesReplayGateway,
+    SeriesReplayIndex,
+)
 from src.domain.series import Bo3AnalysisRequest
-from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesImportResult, SeriesRoomGame
+from src.domain.series_import import (
+    ImportedReplay,
+    ReplayLocation,
+    SeriesImportResult,
+    SeriesRoomGame,
+)
 from src.services.series_analysis import prepare_series
 
 
@@ -92,8 +102,8 @@ class SeriesReplayImporter:
                 if using_index and not replay.publicly_listed and location.id not in {item.location.id for item in explicit}:
                     raise ReplayFetchError("A previously public replay is no longer publicly listed.")
                 self._add(games, replay, series_id, number)
-            except ReplayFetchError:
-                warnings.append(f"Game {number} could not be downloaded. Upload/share its replay in Showdown, then retry.")
+            except ReplayFetchError as exc:
+                warnings.append(f"Game {number} could not be imported: {exc}")
         # Archived games explicitly link forward even if the series room expired.
         for _ in range(3):
             links = {game.next_id: game.number + 1 for game in games.values()
@@ -117,10 +127,16 @@ class SeriesReplayImporter:
         highest = max(set(games) | set(expected), default=1)
         missing = set(range(1, highest + 1)) - games.keys()
         if not games:
-            raise ReplayFetchError("No uploaded games could be imported. Save/share the replays in Showdown and retry.")
+            raise ReplayFetchError("No completed games could be imported. A BO3 ending 2-0 needs only two games. "
+                                   + " ".join(warnings))
         if missing:
             warnings.append("Missing game(s): " + ", ".join(map(str, sorted(missing))) + ". Game numbers have been preserved.")
         ordered = tuple(replay for _, replay in sorted(games.items()))
+        recovered = [str(game.number) for game in ordered if game.acquisition == "public_finished_room"]
+        if recovered:
+            warnings.append("Game(s) " + ", ".join(recovered) + " were read from public finished battle rooms because "
+                            "published replays returned 404. Nothing was uploaded; save/share replays in Showdown "
+                            "to preserve access after the rooms expire.")
         if not missing:
             self._validate(ordered)
         if self._index:

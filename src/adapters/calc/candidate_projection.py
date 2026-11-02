@@ -10,10 +10,12 @@ from pydantic import ValidationError
 from src.adapters.calc.smogon_calc_adapter import SmogonCalcAdapter
 from src.adapters.node_ipc import NodeIpcClient
 from src.domain.bo3_inference.models import (
+    STATS,
     AttributeBoundsRequest,
     AttributeEnvelope,
     DamageSupport,
     MoveSupport,
+    PointRange,
     ProjectionRequest,
     RuleProfile,
 )
@@ -25,6 +27,7 @@ class SmogonCandidateProjectionAdapter:
 
     def __init__(self, *, ipc: NodeIpcClient) -> None:
         self._ipc = ipc
+        self._forme_abilities: dict[str, str | None] = {}
 
     def _call(self, command: str, **values: Any) -> Any:
         response = self._ipc.request({"cmd": command, **values})
@@ -44,6 +47,16 @@ class SmogonCandidateProjectionAdapter:
         except ValidationError as exc:
             raise CalcEngineError("Malformed candidate move support") from exc
 
+    def forme_abilities(self, formes: Sequence[str]) -> dict[str, str]:
+        missing = [name for name in dict.fromkeys(formes) if name not in self._forme_abilities]
+        for offset in range(0, len(missing), 64):
+            requests = [AttributeBoundsRequest(species=name, natures=("Hardy",),
+                stat_points={stat: PointRange(minimum=0, maximum=0) for stat in STATS})
+                for name in missing[offset:offset + 64]]
+            for result in self.attributes_batch(requests):
+                self._forme_abilities[result.species] = result.forme_ability if result.supported else None
+        return {name: ability for name in formes if (ability := self._forme_abilities.get(name)) is not None}
+
     def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
         payload = []
         for entry in requests:
@@ -58,7 +71,10 @@ class SmogonCandidateProjectionAdapter:
                 "attacker": attacker, "defender": defender,
                 "move": request.move, "field": SmogonCalcAdapter._field_payload(request.field),
                 "spreadHit": request.spread_hit, "afterFailedMove": request.after_failed_move,
+                "criticalHit": request.critical_hit,
+                "hits": request.hits,
                 "attackerAlliesFainted": request.attacker_allies_fainted,
+                "attackerHitsTaken": request.attacker_hits_taken,
                 "before": entry.before.model_dump(), "attackerBefore": entry.attacker_before.model_dump(),
             })
         try:

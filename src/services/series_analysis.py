@@ -6,6 +6,7 @@ import json
 import uuid
 from collections.abc import Callable
 
+from src.domain.bo3_inference.interpretation import interpret_checkpoint
 from src.domain.bo3_inference.narration import coaching_context
 from src.domain.champions import forbidden_references, require_champions_format
 from src.domain.exceptions import (
@@ -18,6 +19,7 @@ from src.domain.interfaces import (
     ConversationMemory,
     LLMProvider,
     LogParser,
+    ProgressReporter,
     PromptRepository,
     RegulationCatalog,
 )
@@ -29,7 +31,13 @@ from src.domain.series import (
     Bo3Evidence,
     SeriesGameEvidence,
 )
+from src.services.bo3_claim_plan import build_claim_plan, prompt_claim_plan
 from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
+from src.services.bo3_prompt_context import (
+    checked_bo3_message,
+    compact_bo3_context,
+    encode_context,
+)
 from src.services.ground_truth import explain_champions_only, parse_replay
 from src.services.regulation_guard import RegulationGuard
 
@@ -78,6 +86,8 @@ def prepare_series(
     games: list[SeriesGameEvidence] = []
     regulation: Regulation | None = None
     fingerprints: set[str] = set()
+    replay_ids: set[str] = set()
+    last_started_at: int | None = None
     previews: dict[str, set[str]] = {}
     limitations: list[str] = []
     for number, (source, state) in enumerate(zip(request.games, states), 1):
@@ -88,11 +98,17 @@ def prepare_series(
         regulation = current
         if any(wins >= 2 for wins in score.values()):
             raise SeriesValidationError("A BO3 ends at two wins; a later game cannot belong to this series.")
-        fingerprint = (str(source["id"]) if isinstance(source, dict) and source.get("id")
-                       else json.dumps(state.model_dump(mode="json"), sort_keys=True))
-        if fingerprint in fingerprints:
+        replay_id = state.replay_id or ""
+        fingerprint = json.dumps(state.model_dump(mode="json", exclude={"rating", "replay_id"}), sort_keys=True)
+        if fingerprint in fingerprints or (replay_id and replay_id in replay_ids):
             raise SeriesValidationError("The same game was supplied more than once.")
         fingerprints.add(fingerprint)
+        if replay_id:
+            replay_ids.add(replay_id)
+        if state.started_at is not None:
+            if last_started_at is not None and state.started_at < last_started_at:
+                raise SeriesValidationError("BO3 games are out of chronological order according to battle timestamps.")
+            last_started_at = state.started_at
         if len(state.sides) != 2 or {s.player for s in state.sides} != {"p1", "p2"}:
             raise SeriesValidationError("Each BO3 game must contain p1 and p2.")
         keys = [_identity(s.player_name) for s in state.sides]
@@ -147,6 +163,8 @@ def prepare_series(
     series_winner = next((name for name, wins in score.items() if wins == 2), None)
     if not series_winner:
         limitations.append("Incomplete series: no series winner can be asserted.")
+    if any(state.started_at is None for state in states):
+        limitations.append("Battle timestamps are missing for at least one game; the supplied order cannot be fully verified.")
     return Bo3Evidence(format_id=regulation.format_id, players=players, games=games,
                        score=score, complete=series_winner is not None, winner=series_winner,
                        limitations=limitations), states
@@ -160,7 +178,8 @@ class Bo3AnalysisService:
                  regulation_catalog: RegulationCatalog | None = None,
                  guard: RegulationGuard | None = None,
                  memory: ConversationMemory | None = None,
-                 inference: Bo3InferenceCoordinator | None = None) -> None:
+                 inference: Bo3InferenceCoordinator | None = None,
+                 progress: ProgressReporter | None = None) -> None:
         self._parser = parser
         self._pipeline_factory = pipeline_factory
         self._llm = llm
@@ -170,13 +189,28 @@ class Bo3AnalysisService:
         self._guard = guard or RegulationGuard(None)
         self._memory = memory
         self._inference = inference
+        self._progress = progress
+
+    def _report(self, message: str) -> None:
+        if self._progress is not None:
+            self._progress(message)
 
     def analyze(self, request: Bo3AnalysisRequest) -> Bo3AnalysisResult:
+        self._report("Stage 1 of 3 — Checking replay order, players, regulation and teamsheets...")
         evidence, states = prepare_series(self._parser, request, self._pinned)
+        if self._inference and request.inference_options.enabled:
+            self._report("Stage 1 of 3 — Reconstructing attacks and finding stat spreads compatible with their damage...")
         inferred = self._inference.analyze(request, evidence, states) if self._inference else None
         run_id = uuid.uuid4().hex
         results = []
         for source, game in zip(request.games, evidence.games):
+            focus = {
+                1: "Establishing the opening plan and key turning points.",
+                2: "Checking adjustments using the moves and sets revealed in game 1.",
+                3: "Checking game-three adjustments using evidence from games 1 and 2.",
+            }[game.number]
+            self._report(f"Stage 2 of 3 — Reviewing game {game.number} of {len(evidence.games)}: "
+                         f"AI analysing leads, turn-by-turn decisions and damage evidence with the computed stat ranges. {focus}")
             game_request = AnalysisRequest(
                 session_id=f"{request.session_id}:bo3:{run_id}:{game.number}",
                 replay_json=source if isinstance(source, dict) else None,
@@ -190,6 +224,18 @@ class Bo3AnalysisService:
                                                     if checkpoint.game == game.number],
                                 } if inferred else None},
             )
+            if inferred and game_request.series_context is not None:
+                game_request.series_context["trusted_stat_spread_findings"] = [
+                    interpret_checkpoint(checkpoint).model_dump(mode="json") for checkpoint in inferred.checkpoints
+                    if checkpoint.game == game.number
+                ]
+            if inferred:
+                checkpoint = next((entry for entry in inferred.checkpoints
+                                   if entry.game == game.number and entry.phase == "after_game"), None)
+                if checkpoint is not None:
+                    game_request = game_request.model_copy(update={"bo3_claim_plan": build_claim_plan(checkpoint, request.question)})
+            if game_request.series_context is not None:
+                game_request = game_request.model_copy(update={"series_context": compact_bo3_context(game_request.series_context)})
             try:
                 results.append(self._pipeline_factory().analyze(game_request))
             finally:
@@ -198,30 +244,40 @@ class Bo3AnalysisService:
         payload = {
             "question": request.question, "series": evidence.model_dump(mode="json"),
             "set_inference": inferred.model_dump(mode="json") if inferred else None,
+            "trusted_stat_spread_findings": [interpret_checkpoint(checkpoint).model_dump(mode="json")
+                for checkpoint in inferred.checkpoints] if inferred else [],
             "game_evidence": [result.model_dump(mode="json", exclude={
-                "answer", "session_id", "question", "agent_tool_calls",
+                "answer", "session_id", "question", "agent_tool_calls", "bo3_claim_plan",
             }) for result in results],
         }
+        final_checkpoint = next((entry for entry in reversed(inferred.checkpoints) if entry.phase == "after_game"), None) if inferred else None
+        plan = build_claim_plan(final_checkpoint, request.question) if final_checkpoint is not None else None
+        if plan is not None:
+            payload["verified_claim_plan"] = prompt_claim_plan(plan)
+        compact_payload = compact_bo3_context(dict(coaching_context(payload)))
 
         def explain(correction: str) -> str:
+            self._report("Stage 3 of 3 — Revising the series explanation against the battle evidence..." if correction else
+                         "Stage 3 of 3 — AI comparing games: lead changes, revealed moves, stat-range findings and adaptations...")
             answer = self._llm.complete(
                 system=self._system, messages=[ChatMessage(role="user", content=(
-                    json.dumps(coaching_context(payload), ensure_ascii=False) + "\n" + correction
+                    checked_bo3_message(encode_context(compact_payload) + "\n" + correction)
                 ))], temperature=0.2,
             )
             if not answer.strip():
                 raise LLMProviderError("The BO3 explanation was empty.")
             return answer
 
-        answer = explain_champions_only(explain, bo3=True)
+        answer = explain_champions_only(explain, bo3=True, plan=plan)
+        self._report("Stage 3 of 3 — Checking the final explanation against Champions rules and the registered teams...")
         if self._catalog is not None:
             roster = self._catalog.roster(evidence.format_id)
             violations = self._guard.violations(answer, roster)
             if violations:
                 answer = explain_champions_only(
-                    explain, self._guard.correction_note(violations, evidence.format_id), bo3=True,
+                    explain, self._guard.correction_note(violations, evidence.format_id), bo3=True, plan=plan,
                 )
                 if self._guard.violations(answer, roster):
                     raise SeriesValidationError("The series summary included Pokemon outside its regulation.")
         return Bo3AnalysisResult(session_id=request.session_id,
-                                 answer=answer, evidence=evidence, games=results, inference=inferred)
+                                 answer=answer, evidence=evidence, games=results, inference=inferred, bo3_claim_plan=plan)

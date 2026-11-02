@@ -9,7 +9,7 @@ from src.ui.battle_panel import highlight_answer_by_turn
 from src.ui.icons import PIKACHU_ICON, POKEBALL_ICON, icon_html, icon_md
 
 
-def render_result(result: AnalysisResult, current_turn: int) -> None:
+def render_result(result: AnalysisResult, current_turn: int, *, stat_spread_commentary: str = "") -> None:
     """Render one AnalysisResult; ``current_turn`` is highlighted throughout."""
     st.subheader("Answer")
     if result.regulation is not None:
@@ -21,6 +21,8 @@ def render_result(result: AnalysisResult, current_turn: int) -> None:
     for warning in result.regulation_warnings:
         st.warning(f"{icon_md(PIKACHU_ICON)} {warning}")
     st.markdown(highlight_answer_by_turn(result.answer, current_turn))
+    if stat_spread_commentary:
+        st.markdown(stat_spread_commentary)
     _render_agent_calls(result)
 
     if result.battle_result:

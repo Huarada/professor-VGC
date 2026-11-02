@@ -6,9 +6,10 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from src.domain.bo3_inference.models import Bo3InferenceEvidence, InferenceOptions
 from src.domain.exceptions import SeriesValidationError
 from src.domain.models import AnalysisResult
-from src.domain.bo3_inference.models import Bo3InferenceEvidence, InferenceOptions
+from src.domain.narrative_claims import NarrativeClaimPlan
 
 
 class Bo3AnalysisRequest(BaseModel):
@@ -63,6 +64,7 @@ class Bo3Evidence(BaseModel):
 class Bo3AnalysisResult(BaseModel):
     """UI DTO: deterministic series evidence and independent per-game reviews."""
 
+    bo3_claim_plan: NarrativeClaimPlan | None = None
     session_id: str
     answer: str
     evidence: Bo3Evidence

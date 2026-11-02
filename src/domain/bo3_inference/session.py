@@ -25,12 +25,17 @@ def summarize(
     families = candidates or [CandidateProfile(pokemon_id=pokemon_id, species=declaration.species,
                                              points=declaration.stat_points, natures=names)]
     ranges = {}
+    baseline = {}
     for stat in STATS:
+        fixed = declaration.stat_points.get(stat)
+        baseline[stat] = PointRange(minimum=fixed if fixed is not None else 0,
+            maximum=fixed if fixed is not None else min(rules.stat_cap, rules.total_budget - sum(declaration.stat_points.values())))
         lower = [family.points.get(stat, 0) for family in families]
         upper = [family.points.get(stat, min(rules.stat_cap, rules.total_budget - sum(family.points.values())))
                  for family in families]
         ranges[stat] = PointRange(minimum=min(lower), maximum=max(upper))
     return CandidateSummary(pokemon_id=pokemon_id, species=declaration.species, stat_points=ranges,
+                            baseline_stat_points=baseline, baseline_natures=tuple(sorted(names)),
                             natures=tuple(sorted({n for family in families for n in family.natures})),
                             basis="compatible_assignments" if candidates else "declarations",
                             declared_stat_points=tuple(declaration.stat_points), nature_declared=declaration.nature is not None,
@@ -54,11 +59,13 @@ def retain_known_bounds(current: InferenceCheckpoint, previous: InferenceCheckpo
                                    maximum=min(bound.maximum, old.stat_points[stat].maximum))
                   for stat, bound in summary.stat_points.items()}
         natures = tuple(sorted(set(summary.natures).intersection(old.natures)))
-        if any(bound.minimum > bound.maximum for bound in ranges.values()) or not natures:
+        if (any(bound.minimum > bound.maximum for bound in ranges.values()) or not natures
+                or sum(bound.minimum for bound in ranges.values()) > 66):
             return current.model_copy(update={"outcome": "conflict", "coverage": "exhaustive",
                                               "compatible_families": 0, "summaries": previous.summaries,
+                                              "joint_examples": (),
                                               "unsupported": (*current.unsupported, "New declarations contradict prior compatible bounds")})
-        inferred = ranges != summary.stat_points and old.basis != "declarations"
+        inferred = (ranges != summary.stat_points or natures != summary.natures) and old.basis != "declarations"
         summaries.append(summary.model_copy(update={"stat_points": ranges, "natures": natures,
             "basis": "necessary_local_bounds" if inferred else summary.basis}))
     return current.model_copy(update={"summaries": tuple(summaries)})

@@ -9,7 +9,8 @@
     "start": "node calc_server.js",
     "smoke": "node calc_server.js --smoke",
     "dex": "node smogon_dex_server.js",
-    "test": "node --test"
+    "test": "node --test",
+    "audit:inverse": "node scripts/auditInverseCoverage.js"
   },
   "dependencies": {
     "@pkmn/data": "^0.10.11",

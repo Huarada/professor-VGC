@@ -90,6 +90,7 @@ class ShowdownReplayParser:
                         "format_id": replay.get("formatid") or replay.get("format")
                         or state.format_id,
                         "rating": self._coerce_rating(replay.get("rating")),
+                        "replay_id": str(replay["id"]) if replay.get("id") else None,
                     }
                 )
             return self._parse_json(replay)

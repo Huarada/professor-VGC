@@ -12,7 +12,7 @@ special battle mechanic.** Missing engine support remains an explicit limitation
 |---|---|
 | **BO1 review** | Analyze one battle: observed damage, assumed-set damage projections, speed, KO threats and Protect/switch options. |
 | **BO3 review** | Import up to three ordered games; track players, score, leads and adaptations. Two wins end the series. |
-| **Reverse spread inference, BO3 only** | Use declared nature, item and ability plus eligible observed damage to restrict compatible stat points and natures. |
+| **Reverse spread inference, BO3 only** | Cross compatible damage across registered games using typed attack/stat mechanics; show initial/current intervals and measured reduction. |
 | **Battle viewer** | Review each game's battlefield and move-by-move evidence with separate navigation state. |
 | **Metagame and team advice** | Add regulation-scoped usage data and strategy context; statistical profiles remain assumptions. |
 | **Interchangeable backends** | Google ADK, LangChain or native orchestration; Gemini or OpenAI providers. |
@@ -42,8 +42,13 @@ Results expose ranges, compatible examples, coverage and unsupported observation
 A bounded search cannot identify an exact spread. Series constraints carry only
 with verified registered-team continuity; battle HP, boosts and consumption reset
 between games. Private/future information cannot justify earlier decisions.
-Critical-hit, multi-hit and speed-based inverse inference remain outside the
-current delivery. Details: [methodology](docs/bo3-inference/README.md) and
+Supported damage classes include per-target criticals, HP-dependent power,
+alternative offensive/defensive stats, fixed damage, speed-based power and logged
+multi-hit totals under stable conditions. Attack eligibility never substitutes for
+known runtime state; unsupported effects remain explicit. Speed-order inference
+and some counter/delayed mechanics remain deferred. Audit the entire installed
+move catalog with `npm --prefix node_calc run audit:inverse`.
+Details: [methodology](docs/bo3-inference/README.md) and
 [example teamsheet](docs/bo3-inference/example-teamsheet.json).
 
 ## Architecture
@@ -81,16 +86,18 @@ The series summary uses typed evidence, not generated per-game answers.
 
 ```mermaid
 flowchart TD
-    input["Streamlit BO3: ordered replays and optional teamsheet"] --> importer["SeriesReplayImporter: published replay import"]
+    input["Streamlit BO3: ordered replays and optional teamsheet"] --> importer["SeriesReplayImporter: published or finished-room logs"]
     importer --> validate["Validate 1-3 games, players, regulation and score"]
     validate --> service["Bo3AnalysisService"]
     service --> inverse["Bo3InferenceCoordinator: before/after-game checkpoints"]
-    inverse --> facts["Public declarations and eligible event-time damage"]
+    inverse --> facts["Public declarations and eligible event-time damage, including active auras"]
     facts --> solve["Bounded inverse search: legal stat-point and nature families"]
     solve --> candidate["CandidateProjectionPort: Champions damage rolls"]
-    candidate --> match["Match HP transitions and intersect compatible constraints"]
+    candidate --> match["Match HP transitions and intersect registered cross-game constraints"]
     match --> inferred["Typed ranges, coverage and unsupported observations"]
     inferred --> attributes["AttributeProjectionPort: all six level-50 attribute ranges"]
+    attributes --> reduction["Compare declared baseline and current intervals: integer values ruled out"]
+    reduction --> result
     attributes --> reviews["Fresh per-game AnalysisPipeline: BO1 engine reused"]
     service --> reviews
     reviews --> isolated["Independent battle state and temporary memory per game"]
