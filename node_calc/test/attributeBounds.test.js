@@ -9,6 +9,13 @@ const { attributes } = require('../src/candidateSupport');
 const axes = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
 const open = () => Object.fromEntries(axes.map(stat => [stat, { minimum: 0, maximum: 32 }]));
 
+test('Mega forme abilities come from the engine rather than the declared base ability', () => {
+  const mega = attributes({ species: 'Charizard-Mega-Y', level: 50, natures: ['Timid'], stat_points: open() });
+  assert.equal(mega.forme_ability, 'Drought');
+  const base = attributes({ species: 'Charizard', level: 50, natures: ['Timid'], stat_points: open() });
+  assert.equal(base.forme_ability, null);
+});
+
 test('all six Modest Mega Gengar attributes include every native legal single-axis completion', () => {
   const result = attributes({ species: 'Gengar-Mega', level: 50, natures: ['Modest'], stat_points: open() });
   assert.equal(result.supported, true);

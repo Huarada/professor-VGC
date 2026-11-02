@@ -20,6 +20,7 @@ class CombatantLedger:
         self._timeline = timeline
         self.hp: dict[Key, float] = {}
         self.hp_raw: dict[Key, str] = {}
+        self.hits_taken: dict[Key, int] = {}
         self.abilities: dict[Key, str] = {}
         self.status: dict[Key, str] = {}
         self.held: dict[Key, str] = {}  # current item when determined ("" = none)
@@ -34,6 +35,8 @@ class CombatantLedger:
 
     def enter(self, slot_ref: str, key: Key, appearance: str) -> None:
         self.on_field[slot_ref] = key
+        # Champions clears Rage Fist's counter on switching (unlike Gen 9).
+        self.hits_taken[key] = 0
         self.boosts[key] = {}  # stat stages never survive a switch
         self.abilities.pop(key, None)
         self.set_forme(key, appearance)

@@ -40,6 +40,13 @@ from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesRoomG
 
 
 @runtime_checkable
+class ProgressReporter(Protocol):
+    """Receive an actual application-stage transition without framework coupling."""
+
+    def __call__(self, message: str, /) -> None: ...
+
+
+@runtime_checkable
 class ReplayTeamSheetParser(Protocol):
     """Extract only public, explicitly published team fields from replay protocol."""
 
@@ -344,6 +351,10 @@ class CandidateProjectionPort(Protocol):
         ...
 
     def move_support(self, move: str) -> MoveSupport:
+        ...
+
+    def forme_abilities(self, formes: Sequence[str]) -> dict[str, str]:
+        """Known single-ability Mega formes; omitted keys remain unresolved."""
         ...
 
     def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:

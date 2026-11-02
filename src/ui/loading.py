@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import html
+from collections.abc import Iterator, Sequence
+from contextlib import contextmanager
 
-
+from src.domain.interfaces import ProgressReporter
 from src.ui.battle_panel import PLACEHOLDER_SPRITE
-
 
 # The loading overlay's rotating captions, ported from the Figma design's
 # LoadingScreen component (originally driven by a JS setInterval). Reproduced
@@ -27,7 +28,7 @@ _LOADING_STEPS = [
 _LOADING_STEP_SECONDS = 1.1
 
 
-def loading_overlay_html() -> str:
+def loading_overlay_html(*, title: str = "Analysing your battle", steps: Sequence[str] | None = None) -> str:
     """A big, centered, spinning pokeball covering the whole viewport, with
     a pulsing ring, rotating status captions and progress dots underneath —
     the explicit "still processing" indicator for the full duration of an
@@ -39,7 +40,8 @@ def loading_overlay_html() -> str:
     the CSS-only staggered-animation trick documented on _LOADING_STEPS:
     every span shares one keyframe/duration and differs only by
     animation-delay, so they take turns being visible without any JS."""
-    n = len(_LOADING_STEPS)
+    captions = steps or _LOADING_STEPS
+    n = len(captions)
     total = n * _LOADING_STEP_SECONDS
     window_pct = 100 / n
     caption_spans = "".join(
@@ -47,7 +49,7 @@ def loading_overlay_html() -> str:
         f'justify-content:center;opacity:0;text-align:center;padding:0 12px;'
         f'animation:pvgc-step-fade {total}s ease-in-out {i * _LOADING_STEP_SECONDS}s infinite;">'
         f"{html.escape(step)}</span>"
-        for i, step in enumerate(_LOADING_STEPS)
+        for i, step in enumerate(captions)
     )
     dot_spans = "".join(
         f'<span style="display:inline-block;height:6px;border-radius:999px;'
@@ -55,6 +57,11 @@ def loading_overlay_html() -> str:
         f'animation:pvgc-dot-active {total}s steps(1) {i * _LOADING_STEP_SECONDS}s infinite;"></span>'
         for i in range(n)
     )
+    if n == 1:
+        # Real stage callbacks replace this text; keep it readable throughout
+        # long calculator/model calls instead of blinking a single CSS caption.
+        caption_spans = f'<span data-live-stage="true">{html.escape(captions[0])}</span>'
+        dot_spans = '<span style="display:inline-block;width:22px;height:6px;border-radius:999px;background:#2563a8;"></span>'
     return f"""
 <style>
 @keyframes pvgc-spin {{ from {{ transform: rotate(0deg); }} to {{ transform: rotate(360deg); }} }}
@@ -92,11 +99,12 @@ def loading_overlay_html() -> str:
     <div style="text-align:center;">
       <p style="font-family:'Lora',Georgia,serif;font-style:italic;font-weight:600;
                 font-size:1.25rem;color:#1e3a8a;margin:0 0 10px;">
-        Analysing your battle
+        {html.escape(title)}
       </p>
-      <div style="position:relative;height:1.1rem;min-width:280px;
-                  font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.03em;
-                  color:rgba(30,58,138,.55);">
+      <div role="status" aria-live="polite" style="position:relative;height:{'auto' if n == 1 else '3.3rem'};
+                  min-height:3.3rem;width:min(640px,calc(100vw - 40px));line-height:1.65;overflow-wrap:anywhere;
+                  font-family:'Space Mono',monospace;font-size:.8rem;letter-spacing:.03em;
+                  color:rgba(30,58,138,.8);">
         {caption_spans}
       </div>
     </div>
@@ -104,3 +112,20 @@ def loading_overlay_html() -> str:
   </div>
 </div>
 """
+
+
+@contextmanager
+def loading_overlay(*, title: str, steps: Sequence[str]) -> Iterator[ProgressReporter]:
+    """Reuse the monochrome Pokeball and always remove it after success or error."""
+    import streamlit as st
+
+    placeholder = st.empty()
+
+    def update(message: str) -> None:
+        placeholder.markdown(loading_overlay_html(title=title, steps=(message,)), unsafe_allow_html=True)
+
+    try:
+        placeholder.markdown(loading_overlay_html(title=title, steps=steps), unsafe_allow_html=True)
+        yield update
+    finally:
+        placeholder.empty()

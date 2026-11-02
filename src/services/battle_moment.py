@@ -235,6 +235,8 @@ class MoveMoment:
             defender_hp_percent=self.hp(defender),
             attacker_hp_percent=self.hp(attacker),
             attacker_allies_fainted=self._fainted_count(attacker[0]),
+            attacker_hits_taken=self._state.mon(*attacker).hits_taken
+            if self._state is not None and to_id(move) == "ragefist" else None,
             # Only the move actually used has a known hit count / target count.
             hits=self.event.hit_count or None if used else None,
             spread_hit="spread" in self.event.effects if used else None,

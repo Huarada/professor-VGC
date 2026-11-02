@@ -195,6 +195,9 @@ function buildField(fieldSpec) {
     isGravity: !!spec.gravity,
     isMagicRoom: !!spec.magicRoom,
     isWonderRoom: !!spec.wonderRoom,
+    isFairyAura: !!spec.isFairyAura,
+    isDarkAura: !!spec.isDarkAura,
+    isAuraBreak: !!spec.isAuraBreak,
     attackerSide: buildSide(spec.attackerSide),
     defenderSide: buildSide(spec.defenderSide),
   });
@@ -252,12 +255,12 @@ function buildPokemon(gen, spec) {
 
 function calcDamage(
   genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly = false,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly = false, criticalHit = false, hitsTaken = null,
 ) {
   const { gen, note } = rulesFor(genNum, [attackerSpec, defenderSpec], moveName);
   const result = damageUnder(
     gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-    attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly,
+    attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly, criticalHit, hitsTaken,
   );
   return note ? { ...result, desc: result.desc + note } : result;
 }
@@ -265,16 +268,16 @@ function calcDamage(
 // Inverse inference needs integer support, never narration or repeated KO analysis.
 function calcRolls(
   genNum, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, criticalHit = false, hitsTaken = null,
 ) {
   return calcDamage(genNum, attackerSpec, defenderSpec, moveName, fieldSpec,
     defenderHpPercent, attackerHpPercent, attackerAlliesFainted, hits, spreadHit,
-    afterFailedMove, true).damage;
+    afterFailedMove, true, criticalHit, hitsTaken).damage;
 }
 
 function damageUnder(
   gen, attackerSpec, defenderSpec, moveName, fieldSpec, defenderHpPercent,
-  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly = false,
+  attackerHpPercent, attackerAlliesFainted, hits, spreadHit, afterFailedMove, rollsOnly = false, criticalHit = false, hitsTaken = null,
 ) {
   const fainted = Math.max(0, Math.min(5, attackerAlliesFainted || 0));
   // The attacker's CURRENT HP drives Eruption / Water Spout / Dragon Energy,
@@ -287,9 +290,20 @@ function damageUnder(
   // fainted ally (at most 300). Without it every Last Respects was 50 power.
   const lastRespectsPower = toID(moveName) === 'lastrespects' ? 50 + 50 * fainted : null;
   const moveOptions = lastRespectsPower ? { overrides: { basePower: lastRespectsPower } } : {};
+  if (toID(moveName) === 'ragefist') {
+    if (!Number.isSafeInteger(hitsTaken) || hitsTaken < 0) {
+      throw new Error('Rage Fist requires an observed received-hit counter');
+    }
+    // Showdown data/moves.ts: min(350, 50 + 50 * pokemon.timesAttacked).
+    moveOptions.overrides = { basePower: Math.min(350, 50 + 50 * Math.min(6, hitsTaken)) };
+  }
+  if (criticalHit) moveOptions.isCrit = true;
   // The hits the log shows landing (variable multi-hit moves; ignored by the calc
   // for single-hit and fixed-count moves).
   if (hits) moveOptions.hits = hits;
+  // Fixed-count attacks may stop early on a KO; inverse requests use the logged
+  // count too. The BO1/default forward path retains its original move semantics.
+  if (rollsOnly && hits) moveOptions.overrides = { ...moveOptions.overrides, multihit: hits };
   // A spread move that hit ONE target (the other protected, fainted or absent)
   // takes no 0.75x reduction; the calc applies it to every spread move in Doubles.
   // Stomping Tantrum / Temper Flare double their power after a failed move.
@@ -314,7 +328,24 @@ function damageUnder(
     damage = damage != null ? [damage] : [];
   }
   const flatDamage = damage.flat ? damage.flat(Infinity) : damage;
-  if (rollsOnly) return { damage: flatDamage };
+  if (rollsOnly) {
+    if (!damage.length || !damage.every(Array.isArray)) return { damage: flatDamage };
+    // Independent per-hit rolls: flattening would compare only one hit's damage.
+    // Intermediate prefixes must survive, otherwise the logged hit count is impossible.
+    let totals = new Set([0]);
+    for (let index = 0; index < damage.length; index++) {
+      const next = new Set();
+      for (const prefix of totals) {
+        for (const roll of damage[index]) {
+          const sum = prefix + roll;
+          if (index === damage.length - 1 || sum < defender.curHP()) next.add(sum);
+        }
+      }
+      if (next.size > 20000) throw new Error('Multi-hit roll-composition budget exceeded');
+      totals = next;
+    }
+    return { damage: [...totals] };
+  }
 
   const maxHp = defender.maxHP();
   // A multi-hit move (Triple Axel, Population Bomb, Parental Bond) reports one

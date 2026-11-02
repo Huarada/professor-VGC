@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.handlers.base import Handler, HandlerGroup
-from src.adapters.parsers.showdown_log.roster import Key
 from src.adapters.parsers.showdown_log.protocol import (
     CALC_STATS,
     ITEM_GAINED_FROM,
@@ -11,6 +10,7 @@ from src.adapters.parsers.showdown_log.protocol import (
     tag_value,
     to_id,
 )
+from src.adapters.parsers.showdown_log.roster import Key
 
 
 class ConditionHandlers(HandlerGroup):
@@ -62,7 +62,13 @@ class ConditionHandlers(HandlerGroup):
         self.state.combatants.abilities[key] = ability
         mon = self.state.roster.register(*key)
         if not mon.ability:
-            mon.ability = ability
+            source = tag_value(parts[4:], "from")
+            if not source:
+                mon.ability = ability
+            elif source.lower().startswith("ability:") and to_id(source.split(":", 1)[1]) in {
+                "trace", "receiver", "powerofalchemy",
+            }:
+                mon.ability = source.split(":", 1)[1].strip()
         self.state.timeline.emit(
             "ability", key, f"{key[0]} {key[1]}'s ability {ability} activated.", [ability]
         )

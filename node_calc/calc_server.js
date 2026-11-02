@@ -56,7 +56,10 @@ function handle(request) {
           request.attackerAlliesFainted,
           request.hits,
           request.spreadHit,
-          request.afterFailedMove
+          request.afterFailedMove,
+          false,
+          request.criticalHit,
+          request.attackerHitsTaken
         ),
       };
     case 'speed':

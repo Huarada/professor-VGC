@@ -28,6 +28,8 @@ class ImportedReplay(BaseModel):
     players: tuple[str, ...] = ()
     format_id: str = ""
     publicly_listed: bool = False
+    acquisition: Literal["published_replay", "public_finished_room"] = "published_replay"
+    source_url: str = ""
 
 
 class SeriesRoomGame(BaseModel):

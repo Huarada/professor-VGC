@@ -47,6 +47,10 @@ class ReplayFetchError(ProfessorVGCError):
     """
 
 
+class ReplayNotFoundError(ReplayFetchError):
+    """The published replay endpoint returned 404; a public room may still exist."""
+
+
 class RegulationMismatchError(ProfessorVGCError):
     """The replay belongs to a different regulation than the pinned one; refused
     rather than mixing regulations' data.

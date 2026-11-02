@@ -25,6 +25,8 @@ def _read(text: str) -> ParseState:
         parts = line.split("|")
         if len(parts) < 2:
             continue
+        if parts[1] == "t:" and len(parts) > 2 and parts[2].isdigit() and state.started_at is None:
+            state.started_at = int(parts[2])
         if parts[1] in {"-setboost", "-swapboost", "-invertboost", "-clearboost", "-clearallboost",
                         "-clearpositiveboost", "-clearnegativeboost", "-endability", "-transform"}:
             state.inference_exclusions.add(f"Unmodeled runtime state: {parts[1]}")

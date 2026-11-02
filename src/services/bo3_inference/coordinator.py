@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import re
+import uuid
 from collections.abc import Sequence
 
+from src.domain.bo3_inference.evidence_index import SeriesEvidenceIndex
 from src.domain.bo3_inference.models import (
     Bo3InferenceEvidence,
     DamageObservation,
+    EvidenceQuery,
+    EvidenceRetrieval,
     TeamSheet,
 )
 from src.domain.bo3_inference.session import SeriesInferenceSession, retain_known_bounds
@@ -15,6 +19,7 @@ from src.domain.exceptions import CalcEngineError, SeriesValidationError
 from src.domain.interfaces import (
     AttributeProjectionPort,
     CandidateProjectionPort,
+    ProgressReporter,
     ReplayTeamSheetParser,
     TeamSheetParser,
 )
@@ -39,11 +44,17 @@ class Bo3InferenceCoordinator:
 
     def __init__(self, *, sheets: TeamSheetParser, projection: CandidateProjectionPort,
                  public_sheets: ReplayTeamSheetParser | None = None,
-                 attributes: AttributeProjectionPort | None = None) -> None:
+                 attributes: AttributeProjectionPort | None = None,
+                 progress: ProgressReporter | None = None) -> None:
         self._sheets = sheets
         self._projection = projection
         self._public_sheets = public_sheets
         self._attributes = attributes
+        self._progress = progress
+
+    def _report(self, message: str) -> None:
+        if self._progress is not None:
+            self._progress(message)
 
     def validate(self, request: Bo3AnalysisRequest, evidence: Bo3Evidence, games: Sequence[GameState]) -> TeamSheet:
         sheet = self._sheets.parse(request.teamsheet)
@@ -55,6 +66,7 @@ class Bo3InferenceCoordinator:
             raise SeriesValidationError("Inference perspective must be public, analyst or a series player's name.")
         traits: dict[str, dict[str, tuple[str, int]]] = {}
         for number, (game, mapping) in enumerate(zip(games, maps), 1):
+            self._report(f"Stage 1 of 3 — Game {number} of {len(games)}: checking declared natures, items and abilities...")
             if not sheet.registered_team:
                 traits = {}
             current = visible_declarations(initial, sheet, number, perspective)
@@ -79,6 +91,11 @@ class Bo3InferenceCoordinator:
         initial, maps = identities(evidence, games, sheet)
         session = SeriesInferenceSession(rules=rules)
         budget = ProjectionBudget(self._projection, request.inference_options)
+        budget.progress = self._progress
+        budget.game_count = len(games)
+        index = SeriesEvidenceIndex(scope=uuid.uuid4().hex, pokemon_ids=initial)
+        budget.evidence_index = index
+        retrievals: list[EvidenceRetrieval] = []
         prior: list[DamageObservation] = []
         excluded: list[str] = []
         prior_traits: dict[str, dict[str, tuple[str, int]]] = {}
@@ -86,12 +103,19 @@ class Bo3InferenceCoordinator:
         attribute_service = AttributeProjectionService(engine=self._attributes) if self._attributes else None
         known_forms: dict[str, set[str]] = {}
         for number, (game, mapping) in enumerate(zip(games, maps), 1):
+            scope = f"Stage 1 of 3 — Game {number} of {len(games)}"
+            budget.progress_context = scope
             current = visible_declarations(initial, sheet, number, request.inference_options.perspective)
             if not sheet.registered_team:
+                retrievals.extend(index.retrievals)
+                index = SeriesEvidenceIndex(scope=uuid.uuid4().hex, pokemon_ids=initial)
+                budget.evidence_index = index
                 prior, excluded = [], []
                 known_forms = {}
             else:
                 current = with_reveals(current, prior_traits)
+            self._report(f"{scope}: carrying forward compatible stat ranges from earlier games..."
+                         if prior else f"{scope}: establishing initial stat ranges from the teamsheet...")
             before = solve(game=number, phase="before_game", declarations=current,
                            observations=prior, unsupported=excluded, rules=rules, budget=budget)
             if sheet.registered_team and session.checkpoints:
@@ -99,19 +123,24 @@ class Bo3InferenceCoordinator:
             if attribute_service:
                 before = attribute_service.enrich(before, known_forms)
             session.append(before)
+            self._report(f"{scope}: reconstructing HP, items, abilities and field effects at each attack...")
             try:
                 found, skipped = observations(game, number, current, mapping, self._projection,
                                               request.inference_options.hp_mode)
             except CalcEngineError as exc:
                 found, skipped = [], [f"g{number}: engine metadata unavailable: {exc}"]
-            prior.extend(found)
+            index.append(found)
+            prior = list(index.query(EvidenceQuery(through_game=number)))
             excluded.extend(skipped)
+            self._report(f"{scope}: matching {len(found)} eligible hits against legal stat-point spreads; "
+                         f"{len(prior)} hits available across the series...")
             checkpoint = solve(game=number, phase="after_game", declarations=current,
                                observations=prior, unsupported=excluded, rules=rules, budget=budget)
             checkpoint = retain_known_bounds(checkpoint, before)
             if checkpoint.outcome == "conflict":
                 checkpoint = checkpoint.model_copy(update={"summaries": session.last_valid(current)})
             if attribute_service:
+                self._report(f"{scope}: calculating HP, Atk, Def, SpA, SpD and Spe ranges for base and observed Mega forms...")
                 for side in game.sides:
                     for mon in side.team:
                         known_forms.setdefault(mapping[(side.player, mon.species)], set()).update(
@@ -119,11 +148,17 @@ class Bo3InferenceCoordinator:
                         )
                 checkpoint = attribute_service.enrich(checkpoint, known_forms)
             session.append(checkpoint)
+            self._report(f"{scope}: checking damage ranges against the compatible spread examples...")
             projected.extend(Bo3ProjectionService.describe(checkpoint, prior, budget))
+            coverage_note = {"exhaustive": "all candidate spreads checked",
+                             "bounded": "some spreads remain unresolved",
+                             "unsupported": "not enough supported damage evidence"}[checkpoint.coverage]
+            self._report(f"{scope}: damage validation finished — {coverage_note}. "
+                         f"{len(checkpoint.local_constraints)} fully checked damage comparisons.")
             if sheet.registered_team:
                 self._remember_initial_traits(game, mapping, prior_traits, number + 1)
         limitations = ["IVs are fixed at 31; results infer stat points and nature, never IVs.",
-                       "Only modeled direct damage is used; speed, critical and multi-hit inference are excluded.",
+                       "Only modeled direct damage is used; attributed critical hits and stable-state logged multi-hit counts are supported. Speed inference is excluded.",
                        "Joint examples are profile families with unmeasured legal completions, not exact complete spreads.",
                        "Attribute tables show unboosted level-50 outer ranges, not logged or item-modified battle stats."]
         if not sheet.registered_team:
@@ -133,7 +168,8 @@ class Bo3InferenceCoordinator:
                                      continuity="registered_team" if sheet.registered_team else "per_game",
                                      checkpoints=tuple(session.checkpoints), limitations=tuple(limitations),
                                      projections=budget.projections, conditioned_projections=tuple(projected),
-                                     attribute_projections=attribute_service.projections if attribute_service else 0)
+                                     attribute_projections=attribute_service.projections if attribute_service else 0,
+                                     evidence_retrievals=tuple(retrievals) + index.retrievals)
 
     @staticmethod
     def _remember_initial_traits(

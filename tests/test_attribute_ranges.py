@@ -80,9 +80,33 @@ render_inference(Bo3InferenceEvidence(continuity="registered_team", checkpoints=
 '''
     app = AppTest.from_string(script, default_timeout=60).run()
     assert not app.exception
+    assert any("0-32 interval means stat points remain unknown" in entry.value for entry in app.caption)
     assert len(app.dataframe) == 2
     assert set(STATS).issubset(app.dataframe[1].value.columns)
     assert app.dataframe[1].value.iloc[0]["spe"] == "100-132"
+
+
+def test_ui_shows_initial_current_and_measured_native_range_reduction():
+    from streamlit.testing.v1 import AppTest
+
+    original = checkpoint()
+    summary = original.summaries[0]
+    current = original.model_copy(update={"summaries": (summary.model_copy(update={
+        "basis": "necessary_local_bounds", "baseline_stat_points": summary.stat_points,
+        "stat_points": {**summary.stat_points, "hp": PointRange(minimum=6, maximum=18)}}),)})
+    script = f'''
+from src.domain.bo3_inference.models import Bo3InferenceEvidence, InferenceCheckpoint
+from src.ui.series import render_inference
+checkpoint = InferenceCheckpoint.model_validate_json({current.model_dump_json()!r})
+render_inference(Bo3InferenceEvidence(continuity="registered_team", checkpoints=(checkpoint,)))
+'''
+    app = AppTest.from_string(script, default_timeout=60).run()
+    assert not app.exception
+    reductions = app.dataframe[1].value
+    assert reductions.iloc[0]["Initial points"] == "0-32"
+    assert reductions.iloc[0]["Current points"] == "6-18"
+    assert reductions.iloc[0]["Range reduction (%)"] == 60.6
+    assert any("not confidence" in entry.value for entry in app.caption)
 
 
 

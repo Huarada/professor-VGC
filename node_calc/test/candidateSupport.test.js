@@ -44,13 +44,14 @@ test('exact maximum HP is a candidate constraint, not an assumed percent', () =>
   assert.deepEqual(support.project(input).witnesses, []);
 });
 
-test('uncertain multi-hit, survival and variable-power damage are explicitly unsupported', () => {
-  for (const move of ['Triple Axel', 'Counter', 'Eruption', 'Body Press', 'Flower Trick']) {
+test('unresolved per-hit, reaction and counter mechanics are explicitly unsupported', () => {
+  for (const move of ['Beat Up', 'Counter', 'Future Sight', 'Payback', 'Meteor Beam']) {
     assert.equal(support.moveSupport(move).supported, false, move);
   }
   const input = request();
-  input.defender.item = 'Focus Sash';
+  input.defender.item = 'Focus Band';
   assert.equal(support.project(input).supported, false);
+  assert.equal(support.project({ ...request(), move: 'Triple Axel' }).supported, false);
 });
 
 test('missing or invalid declared mechanics never silently become a neutral set', () => {

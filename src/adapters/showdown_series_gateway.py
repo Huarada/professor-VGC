@@ -12,7 +12,11 @@ from urllib.parse import urlsplit
 import requests
 
 from src.domain.champions import require_champions_format
-from src.domain.exceptions import ReplayFetchError, SeriesValidationError
+from src.domain.exceptions import (
+    ReplayFetchError,
+    ReplayNotFoundError,
+    SeriesValidationError,
+)
 from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesRoomGame
 
 _REPLAY = re.compile(r"gen9championsvgc[0-9a-z-]+-[0-9]+(?:-[a-z0-9]+)?", re.I)
@@ -81,6 +85,8 @@ class ShowdownSeriesGateway:
     def _get(self, url: str, *, params: dict[str, str] | None = None) -> Any:
         try:
             response = requests.get(url, params=params, timeout=self._remaining(), allow_redirects=False)
+            if response.status_code == 404:
+                raise ReplayNotFoundError("Showdown returned HTTP 404; the replay is not available at this published URL.")
             if response.status_code != 200:
                 raise ReplayFetchError(f"Showdown returned HTTP {response.status_code}; the replay may not be uploaded or public.")
             if len(response.content) > 2_000_000:
@@ -93,12 +99,18 @@ class ShowdownSeriesGateway:
         canonical = self.locate(location.url)
         if canonical.kind != "replay" or canonical.id != location.id:
             raise SeriesValidationError("A replay reference must identify a Champions battle.")
-        data = self._get(canonical.url + ".json")
+        from_room = False
+        try:
+            data = self._get(canonical.url + ".json")
+        except ReplayNotFoundError:
+            data = self._finished_room_payload(canonical)
+            from_room = True
         if not isinstance(data, dict) or not isinstance(data.get("log"), str) or not data["log"].strip():
             raise ReplayFetchError("Showdown returned no readable battle log.")
         format_id = str(data.get("formatid", ""))
         if not format_id:
             format_id = next((line.split("|", 2)[2] for line in data["log"].splitlines() if line.startswith("|tier|")), "")
+            format_id = re.sub(r"[^a-z0-9]", "", format_id.lower())
         require_champions_format(format_id)
         number, series_id, next_id = None, None, None
         for line in data["log"].splitlines():
@@ -123,7 +135,33 @@ class ShowdownSeriesGateway:
             raise ReplayFetchError("Showdown returned invalid player metadata.")
         return ImportedReplay(location=canonical, payload=json.dumps(data), number=number, series_id=series_id,
                               next_id=next_id, players=tuple(str(p) for p in players), format_id=format_id,
-                              publicly_listed=data.get("private") == 0 and not data.get("password"))
+                              publicly_listed=not from_room and data.get("private") == 0 and not data.get("password"),
+                              acquisition="public_finished_room" if from_room else "published_replay",
+                              source_url="https://play.pokemonshowdown.com/battle-" + canonical.id if from_room else canonical.url)
+
+    def _finished_room_payload(self, location: ReplayLocation) -> dict[str, Any]:
+        """Read an explicitly referenced finished room; never upload or infer IDs."""
+        try:
+            log = self._room_log("battle-" + location.id)
+        except ReplayFetchError as exc:
+            raise ReplayFetchError(
+                f"{location.url}: published replay returned 404 and the public battle room is unavailable. "
+                "Save/share that game's replay in Showdown, then retry."
+            ) from exc
+        lines = log.splitlines()
+        if not any((line.startswith("|win|") and line.removeprefix("|win|").strip()) or line == "|tie|" for line in lines):
+            raise ReplayFetchError(
+                f"{location.url}: published replay returned 404 and the public battle has no recorded result yet. "
+                "Finish the game, then retry or save/share its replay."
+            )
+        players: dict[str, str] = {}
+        for line in lines:
+            parts = line.split("|")
+            if len(parts) > 3 and parts[1] == "player" and parts[2] in {"p1", "p2"} and parts[3].strip():
+                players.setdefault(parts[2], parts[3].strip())
+        if set(players) != {"p1", "p2"}:
+            raise ReplayFetchError("The public battle room contains no complete player metadata. Save/share its replay.")
+        return {"id": location.id, "log": log, "players": [players["p1"], players["p2"]]}
 
     def _room_log(self, series_id: str) -> str:
         # Lazy import keeps BO1 and ordinary replay fetching independent of WebSockets.

@@ -19,6 +19,7 @@ from src.domain.bo3_inference.narration import (
     coaching_context,
     contains_numerical_attributes,
     contains_numerical_investment,
+    contains_speculative_original_spread,
 )
 from src.domain.champions import (
     clean_champions_knowledge,
@@ -49,11 +50,19 @@ from src.domain.models import (
     SelectionPlan,
     SmogonStrategy,
 )
+from src.domain.narrative_claims import NarrativeClaimPlan
 from src.domain.regulation import RegulationRoster, RegulationScope
 from src.services.battle_context import (
     candidate_species,
     context_species,
     outcome_summary,
+)
+from src.services.bo3_claim_plan import prompt_claim_plan, render_claim_plan
+from src.services.bo3_narrative_validation import validate_draft
+from src.services.bo3_prompt_context import (
+    checked_bo3_message,
+    compact_bo3_context,
+    encode_context,
 )
 from src.services.concept_tracking import recurring_concepts
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
@@ -170,6 +179,7 @@ class GroundTruthAssembler:
             battle_result=outcome_summary(game_state),
             regulation=self._regulation_info(roster),
             series_context=clean_champions_knowledge(request.series_context),
+            bo3_claim_plan=request.bo3_claim_plan,
         )
 
     def _improvements(
@@ -193,7 +203,7 @@ class GroundTruthAssembler:
         correction note. Returns the answer and any remaining warnings.
         """
         def checked_explain(correction: str) -> str:
-            return explain_champions_only(explain, correction, bo3=evidence.series_context is not None)
+            return explain_champions_only(explain, correction, bo3=evidence.series_context is not None, plan=evidence.bo3_claim_plan)
 
         answer = checked_explain("")
         roster = self._roster()
@@ -266,19 +276,33 @@ def parse_replay(parser: LogParser, request: AnalysisRequest) -> GameState:
 
 def explain_champions_only(
     explain: Callable[[str], str], correction: str = "", *, bo3: bool = False,
+    plan: NarrativeClaimPlan | None = None,
 ) -> str:
     """Correct once; reject foreign mechanics and safely omit unvalidated BO3 prose."""
     for attempt in range(2):
         answer = explain(correction)
+        draft = None
+        issues: tuple[str, ...] = ()
+        if bo3 and plan is not None:
+            draft, issues = validate_draft(answer, plan)
+            if draft is not None:
+                answer = draft.analysis
         foreign = forbidden_references(answer)
         investment = bo3 and (contains_numerical_investment(answer) or contains_numerical_attributes(answer))
-        if not foreign and not investment:
+        speculative = bo3 and contains_speculative_original_spread(answer)
+        if not foreign and not investment and not speculative and not issues:
+            if plan is not None and draft is not None:
+                return render_claim_plan(plan, draft.claim_ids, answer)
             return answer
         if attempt:
+            if plan is not None:
+                return render_claim_plan(plan, tuple(claim.id for claim in plan.claims), fallback=True)
             if foreign:
                 raise UnsupportedRulesError("The explanation included unsupported rules. Please retry the analysis.")
-            _LOGGER.warning("BO3 numerical investment narrative omitted after the bounded correction")
+            _LOGGER.warning("BO3 unvalidated stat-spread narrative omitted after the bounded correction")
             return UNVALIDATED_INVESTMENT_NOTICE
+        if issues:
+            correction += "\nCorrect the structured BO3 draft: " + " ".join(issues)
         if foreign:
             correction += ("\nRewrite using Pokemon Champions rules only. Mega Evolution is the "
                            "only permitted special battle mechanic. Remove all references to other games' mechanics.")
@@ -288,6 +312,10 @@ def explain_champions_only(
                            "The deterministic tables report all numerical investment and card attributes. "
                            "Do not claim exact Speed or other attributes from assumed-set projections. "
                            "Explain uncertainty and battle adjustments in prose instead.")
+        if speculative:
+            correction += ("\nDo not substitute typical species spreads or likely maximized stats for unknown original values. "
+                           "Declared natures/items/abilities are facts, not typical guesses. Use the trusted computed bounds; "
+                           "explain unchanged intervals honestly. Keep hypothetical future team preparation clearly separate.")
     raise AssertionError("The explanation retry loop must return or raise")
 
 
@@ -310,21 +338,29 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
     }
     if evidence.regulation is not None:
         context["regulation"] = evidence.regulation.model_dump(mode="json")
+    if evidence.bo3_claim_plan is not None:
+        context["verified_claim_plan"] = prompt_claim_plan(evidence.bo3_claim_plan)
     if evidence.series_context is not None:
         context["series_context"] = evidence.series_context
-    return dict(coaching_context(context)) if evidence.series_context is not None else context
+    if evidence.series_context is not None:
+        return compact_bo3_context(dict(coaching_context(context)))
+    return context
 
 
 def build_explanation_input(question: str, evidence: AnalysisEvidence, correction: str = "") -> str:
     """Render the human-turn text for the explanation stage (shared wording)."""
     context = build_explanation_context(evidence)
+    serialized = encode_context(context) if evidence.series_context is not None else json.dumps(context, ensure_ascii=False, indent=2)
     text = (
         f"User question: {question or '(general analysis)'}\n\n"
         "Trusted context (JSON):\n"
-        f"{json.dumps(context, ensure_ascii=False, indent=2)}\n\n"
+        f"{serialized}\n\n"
         "Write the final ProfessorVGC explanation."
     )
-    return f"{text}\n\n{correction}" if correction else text
+    rendered = f"{text}\n\n{correction}" if correction else text
+    if evidence.series_context is not None:
+        return checked_bo3_message(rendered)
+    return rendered
 
 
 def remember_turn(memory: ConversationMemory, request: AnalysisRequest, answer: str) -> None:
@@ -359,6 +395,7 @@ def build_result(
         turn_checks=evidence.turn_checks,
         protect_reads=evidence.protect_reads,
         agent_tool_calls=list(agent_tool_calls),
+        bo3_claim_plan=evidence.bo3_claim_plan,
         battle_result=evidence.battle_result,
         provider=provider,
         regulation=evidence.regulation,

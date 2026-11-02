@@ -45,6 +45,10 @@ class AnalyticProjection:
     def move_support(self, move):
         return MoveSupport(supported=move != "Protect", category="Physical")
 
+    def forme_abilities(self, formes):
+        # This oracle models arithmetic only; real forme biology is tested with Node.
+        return {forme: "No Ability" for forme in formes}
+
     def project_batch(self, requests):
         self.requests.extend(requests)
         result = []

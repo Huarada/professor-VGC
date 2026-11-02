@@ -146,12 +146,29 @@ class DamageObservation(Value):
     after: HPReading
     attacker_before: HPReading
     reason: str = ""
+    attack_source: Literal["attacker", "defender"] = "attacker"
+    attack_stat: StatName | None = None
+    defense_stat: StatName | None = None
+    uses_attacker_hp: bool = False
+    stat_independent: bool = False
+    uses_speed: bool = False
+    category_from_stats: bool = False
 
 
 class MoveSupport(Value):
     supported: bool
     reason: str = ""
     category: str = ""
+    critical_hits: bool = False
+    attack_source: Literal["attacker", "defender"] = "attacker"
+    attack_stat: StatName | None = None
+    defense_stat: StatName | None = None
+    uses_attacker_hp: bool = False
+    stat_independent: bool = False
+    multi_hit: bool = False
+    uses_speed: bool = False
+    category_from_stats: bool = False
+    requires_hit_counter: bool = False
 
 
 class CandidateProfile(Value):
@@ -190,6 +207,13 @@ class PointRange(Value):
     maximum: int
 
 
+class RangeReduction(Value):
+    baseline: PointRange
+    current: PointRange
+    removed_integer_values: int = Field(ge=0)
+    reduction_percent: float = Field(ge=0, le=100)
+
+
 class AttributeBoundsRequest(Value):
     species: str = Field(min_length=1)
     level: Literal[50] = 50
@@ -216,6 +240,8 @@ class AttributeEnvelope(Value):
     attributes: dict[StatName, PointRange] = Field(default_factory=dict)
     reason: str = ""
     engine_version: str = ""
+    forme_ability: str | None = None
+    baseline_attributes: dict[StatName, PointRange] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def complete_attributes(self) -> AttributeEnvelope:
@@ -225,6 +251,10 @@ class AttributeEnvelope(Value):
             raise ValueError("A supported profile requires six positive, ordered attribute bounds.")
         if not self.supported and self.attributes:
             raise ValueError("Unsupported profiles cannot expose attribute values.")
+        if self.baseline_attributes and (set(self.baseline_attributes) != set(STATS) or any(
+            not 0 < bound.minimum <= bound.maximum for bound in self.baseline_attributes.values()
+        )):
+            raise ValueError("A baseline requires six positive, ordered attribute ranges.")
         return self
 
 
@@ -241,8 +271,10 @@ class CandidateSummary(Value):
     declared_ability: str | None = None
     declared_moves: tuple[str, ...] = ()
     attributes: tuple[AttributeEnvelope, ...] = ()
+    baseline_stat_points: dict[StatName, PointRange] = Field(default_factory=dict)
+    baseline_natures: tuple[str, ...] = ()
 
-    @field_validator("stat_points")
+    @field_validator("stat_points", "baseline_stat_points")
     @classmethod
     def native_summary_bounds(cls, value: dict[StatName, PointRange]) -> dict[StatName, PointRange]:
         if any(not 0 <= bound.minimum <= bound.maximum <= 32 for bound in value.values()):
@@ -267,6 +299,24 @@ class InferenceCheckpoint(Value):
     local_constraints: tuple[str, ...] = ()
     local_evaluated_assignments: int = 0
     search_components: int = Field(default=1, ge=1)
+    marginal_bounds_complete: bool = Field(default=False, exclude=True)
+    partial_local_constraints: tuple[str, ...] = ()
+
+
+class EvidenceQuery(Value):
+    through_game: int = Field(ge=1, le=3)
+    through_event: int | None = Field(default=None, ge=0)
+    game: int | None = Field(default=None, ge=1, le=3)
+    pokemon_id: str | None = None
+    role: Literal["any", "attacker", "defender"] = "any"
+    stat: StatName | None = None
+    move: str | None = None
+
+
+class EvidenceRetrieval(Value):
+    scope: str
+    query: EvidenceQuery
+    observation_ids: tuple[str, ...]
 
 
 class Bo3InferenceEvidence(Value):
@@ -281,6 +331,7 @@ class Bo3InferenceEvidence(Value):
     projections: int = 0
     attribute_projections: int = 0
     conditioned_projections: tuple[ConditionedProjection, ...] = ()
+    evidence_retrievals: tuple[EvidenceRetrieval, ...] = ()
 
 
 class ConditionedProjection(Value):

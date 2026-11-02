@@ -21,7 +21,10 @@ original slot empty; game 2 is never renamed game 1 to hide missing history.
 The public series room contains numbered `game1`, `game2`, `game3` links in the
 Showdown room protocol. A short-lived guest WebSocket connection joins only that
 room, reads its existing public log, and closes. There is no login, battle action,
-chat message or upload. Each child replay is then downloaded from the replay host.
+chat message or upload. Each child replay is first requested from the replay host.
+On HTTP 404 only, the importer may read the explicitly referenced public battle
+room. It accepts that log only with a recorded win/tie and complete player metadata;
+unfinished games remain missing. It never guesses battle IDs or uploads a replay.
 
 Replay protocol entries also carry `bestof` metadata (series room and game number)
 and optional `next` links. If the live room expired, the importer follows available
@@ -47,8 +50,10 @@ Every Analyze submission still validates the final edited inputs before quota us
 - A series room is live server state and can expire. Previously verified public
   links are recovered from the local index and re-fetched. For a room never seen
   on this installation, paste any uploaded replay once to establish the index.
-- A room link does not publish battle replays. Games without an accessible uploaded
-  replay are reported unavailable. Save/share them in Showdown, then import again.
+- A room link does not publish battle replays. If a published URL returns 404,
+  an available public finished battle log can be recovered read-only. Recovered
+  games are labeled with their source and are not saved as public replay index
+  entries. Once those rooms expire, an uploaded replay is still needed.
 - If the room is unavailable and no local index or seed replay is known, the
   application cannot recover the series from the room URL alone. It preserves the
   original failure and asks for one uploaded game rather than guessing identifiers.
@@ -56,6 +61,15 @@ Every Analyze submission still validates the final edited inputs before quota us
   order and show a warning; they are not automatically grouped by player names.
 - Two imported games do not automatically mean a complete series. The existing
   BO3 score validation determines completeness after analysis.
+
+### Two-game recovery verified 2026-10-30
+
+The room `game-bestof3-gen9championsvgc2026regmcbo3-2707033960` exposed games
+`2707033961` and `2707034665`. Both published replay endpoints returned HTTP 404,
+but the corresponding public finished battle rooms remained readable. Read-only
+import recovered both games, public teamsheets and the result **abcde0 0-2
+Glucosa-6P**, with no missing game 3. Availability is transient; no login, model
+request or replay upload was performed.
 
 ## User-reported example, verified 2026-10-22
 

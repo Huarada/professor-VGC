@@ -85,6 +85,9 @@ def test_idle_page_renders():
 
 
 def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch):
+    from contextlib import contextmanager
+
+    from src.ui import series as series_ui
     from src.domain.series import Bo3AnalysisRequest
     from src.services.series_analysis import Bo3AnalysisService
     from tests.test_bo3_analysis import game
@@ -92,15 +95,54 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
     from tests.test_bo3_inference import AnalyticProjection
 
+    lifecycle = []
+    captions = []
+    active = False
+    overlay = series_ui.loading_overlay
+
+    @contextmanager
+    def tracked_overlay(**kwargs):
+        nonlocal active
+        with overlay(**kwargs) as report:
+            active = True
+            lifecycle.append("opened")
+            try:
+                def progress(message):
+                    captions.append(message)
+                    report(message)
+                yield progress
+            finally:
+                active = False
+                lifecycle.append("closed")
+
+    def track_renderer(name, renderer):
+        def render(*args, **kwargs):
+            assert active, f"Loading ended before {name} was rendered"
+            lifecycle.append(name)
+            return renderer(*args, **kwargs)
+        return render
+
+    monkeypatch.setattr(series_ui, "loading_overlay", tracked_overlay)
+    for name in ("render_battle_panel", "render_result", "render_inference"):
+        monkeypatch.setattr(series_ui, name, track_renderer(name, getattr(series_ui, name)))
+
     class SeriesContainer(_FakeContainer):
         def validate_series(self, request: Bo3AnalysisRequest, regulation=None):
             return Container(self.settings).validate_series(request, regulation)
 
-        def build_bo3_pipeline(self, provider=None, orchestrator=None, regulation=None):
+        def build_bo3_pipeline(self, provider=None, orchestrator=None, regulation=None, *, progress=None):
+            self.progress_events = []
+
+            def report(message):
+                self.progress_events.append(message)
+                if progress is not None:
+                    progress(message)
+
             return Bo3AnalysisService(
                 parser=ShowdownReplayParser(), pipeline_factory=self.build_pipeline,
                 llm=FakeLLM("{}", "Alice won the series 2-0."), prompts=PROMPTS,
-                inference=Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=AnalyticProjection()),
+                inference=Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=AnalyticProjection(), progress=report),
+                progress=report,
             )
 
     monkeypatch.setattr("src.ui.battle_panel.http_head_ok", lambda url, timeout=2.0: False)
@@ -121,6 +163,15 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     assert not at.exception
     assert at.session_state["bo3_result"].evidence.score == {"Alice": 2, "Bob": 0}
     assert at.session_state["bo3_result"].inference is not None
+    assert any(entry.label == "Evidence consulted across games" for entry in at.expander)
+    assert lifecycle[-1] == "closed" and not active
+    assert all(name in lifecycle for name in ("render_battle_panel", "render_result", "render_inference"))
+    assert any("Preparing stat ranges" in message for message in captions)
+    assert any("Reviewing game 1 of 2" in message for message in container.progress_events)
+    assert any("Reviewing game 2 of 2" in message for message in container.progress_events)
+    assert any("Stage 3 of 3 — AI comparing games" in message for message in container.progress_events)
+    assert sum("Computed stat-spread findings" in entry.value for entry in at.markdown) >= 2
+    assert not any("investment" in message.lower() for message in container.progress_events)
     assert any(heading.value == "Stat-point inference (BO3)" for heading in at.subheader)
     assert at.session_state["last_result"] == original
     assert any(slider.key.startswith("bo3_game_") for slider in at.slider)

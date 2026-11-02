@@ -198,6 +198,9 @@ class SmogonCalcAdapter:
             "gravity": field.gravity,
             "magicRoom": field.magic_room,
             "wonderRoom": field.wonder_room,
+            "isFairyAura": field.fairy_aura,
+            "isDarkAura": field.dark_aura,
+            "isAuraBreak": field.aura_break,
             "attackerSide": cls._side_payload(field.attacker_side),
             "defenderSide": cls._side_payload(field.defender_side),
         }
@@ -225,6 +228,10 @@ class SmogonCalcAdapter:
             payload["hits"] = request.hits
         if request.after_failed_move:
             payload["afterFailedMove"] = True
+        if request.critical_hit:
+            payload["criticalHit"] = True
+        if request.attacker_hits_taken is not None:
+            payload["attackerHitsTaken"] = request.attacker_hits_taken
         if request.spread_hit is not None:
             payload["spreadHit"] = request.spread_hit
         if request.attacker_allies_fainted:

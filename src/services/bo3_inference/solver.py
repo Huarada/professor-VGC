@@ -10,6 +10,8 @@ from typing import Literal
 
 from src.domain.bo3_inference.candidate_space import joint_assignments
 from src.domain.bo3_inference.constraints import agrees
+from src.domain.bo3_inference.dependencies import relevant_axes as relevant_axes
+from src.domain.bo3_inference.evidence_index import SeriesEvidenceIndex
 from src.domain.bo3_inference.models import (
     CandidateProfile,
     DamageObservation,
@@ -19,12 +21,10 @@ from src.domain.bo3_inference.models import (
     InferenceOptions,
     ProjectionRequest,
     RuleProfile,
-    StatName,
 )
 from src.domain.bo3_inference.session import retain_known_bounds, summarize
 from src.domain.exceptions import CalcEngineError
-from src.domain.interfaces import CandidateProjectionPort
-from src.domain.names import to_id
+from src.domain.interfaces import CandidateProjectionPort, ProgressReporter
 
 
 class SearchLimit(Exception):
@@ -38,9 +38,32 @@ class ProjectionBudget:
         self.deadline = time.monotonic() + options.timeout_seconds
         self.cache: OrderedDict[str, DamageSupport] = OrderedDict()
         self.projections = 0
+        self.completed_checks = 0
+        self.game_count = 1
+        self.evidence_index: SeriesEvidenceIndex | None = None
+        self.factor_limit_reasons: dict[int, set[str]] = {}
+        self.factor_phase_starts: dict[int, int] = {}
+        self.factor_deadlines: dict[int, float] = {}
         self.factor_checkpoints: dict[str, InferenceCheckpoint] = {}
+        self.progress: ProgressReporter | None = None
+        self.progress_context = ""
+        self._last_progress = float("-inf")
+
+    def report_batch(self, requests: Sequence[ProjectionRequest]) -> None:
+        """Report real work at most once a second, without exposing a guessed ETA."""
+        if self.progress is None or not requests:
+            return
+        now = time.monotonic()
+        if now - self._last_progress < 1:
+            return
+        self._last_progress = now
+        request = requests[0].calc
+        self.progress(f"{self.progress_context}: comparing {request.attacker.species}'s {request.move} "
+                      f"against {request.defender.species}'s observed HP. "
+                      f"Completed damage checks: {self.completed_checks:,} (series total).")
 
     def project(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
+        self.report_batch(requests)
         keys = [request.model_dump_json() for request in requests]
         resolved = {key: self.cache[key] for key in keys if key in self.cache}
         missing = {key: request for key, request in zip(keys, requests) if key not in self.cache}
@@ -57,25 +80,12 @@ class ProjectionBudget:
             except CalcEngineError as exc:
                 results = [DamageSupport(supported=False, reason=str(exc)) for _ in missing]
             self.projections += len(missing)
+            self.completed_checks += sum(result.supported for result in results)
             resolved.update(zip(missing, results))
             self.cache.update(zip(missing, results))
             while len(self.cache) > self.options.max_cache_entries:
                 self.cache.popitem(last=False)
         return [resolved[key] for key in keys]
-
-
-def relevant_axes(observations: Sequence[DamageObservation]) -> dict[str, set[StatName]]:
-    result: dict[str, set[StatName]] = {}
-    for observation in observations:
-        attack: StatName = "atk" if observation.category == "Physical" else "spa"
-        defense: StatName = "def" if observation.category == "Physical" else "spd"
-        result.setdefault(observation.attacker_id, set()).add(attack)
-        result.setdefault(observation.defender_id, set()).update(("hp", defense))
-        if observation.attacker_before.mode == "exact" or to_id(observation.request.attacker.ability) in {
-            "blaze", "torrent", "overgrow", "swarm", "defeatist",
-        }:
-            result[observation.attacker_id].add("hp")
-    return result
 
 
 def projection_request(observation: DamageObservation, assignment: Mapping[str, CandidateProfile]) -> ProjectionRequest:
@@ -195,6 +205,9 @@ def solve(
     else:
         result = enumerate_constraints(game=game, phase=phase, declarations=declarations,
             observations=observations, unsupported=unsupported, rules=rules, budget=budget, assignment_limit=limit)
+    if budget.factor_limit_reasons.get(game):
+        result = result.model_copy(update={"unsupported": tuple(dict.fromkeys(
+            (*result.unsupported, *sorted(budget.factor_limit_reasons[game]))))})
     for proof in factors:
         if proof.outcome == "conflict":
             result = result.model_copy(update={"outcome": "conflict", "compatible_families": 0,
@@ -203,9 +216,13 @@ def solve(
         result = retain_known_bounds(result, proof)
     if factors:
         result = result.model_copy(update={
-            "local_constraints": tuple(dict.fromkeys((*result.local_constraints, *(identifier for proof in factors for identifier in proof.observation_ids)))),
+            "local_constraints": tuple(dict.fromkeys((*result.local_constraints, *(identifier for proof in factors
+                if proof.coverage == "exhaustive" or proof.marginal_bounds_complete for identifier in proof.observation_ids)))),
+            "partial_local_constraints": tuple(dict.fromkeys((*result.partial_local_constraints, *(identifier for proof in factors
+                if proof.coverage != "exhaustive" and not proof.marginal_bounds_complete for identifier in proof.observation_ids)))),
             "local_evaluated_assignments": result.local_evaluated_assignments + sum(proof.evaluated_assignments for proof in factors),
         })
-        if result.outcome == "not_informative" and any(proof.compatible_families for proof in factors):
+        if result.outcome == "not_informative" and any(proof.compatible_families or proof.marginal_bounds_complete
+                or any(summary.basis == "necessary_local_bounds" for summary in proof.summaries) for proof in factors):
             result = result.model_copy(update={"outcome": "ambiguous"})
     return result

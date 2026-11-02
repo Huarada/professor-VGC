@@ -31,6 +31,9 @@ class AnalyticOracle:
     def move_support(self, move: str) -> MoveSupport:
         return MoveSupport(supported=True, category="Physical")
 
+    def forme_abilities(self, formes: Sequence[str]) -> dict[str, str]:
+        return {}
+
     def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
         return [DamageSupport(supported=True, maximum_hp=100, witnesses=(DamageWitness(
             hp_before=100, damage=40 + request.attacker_points.get("atk", 0)

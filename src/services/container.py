@@ -48,6 +48,7 @@ from src.domain.interfaces import (
     ConversationMemory,
     EmbeddingProvider,
     LLMProvider,
+    ProgressReporter,
     PromptRepository,
     StrategyKnowledgeProvider,
 )
@@ -359,7 +360,7 @@ class Container:
             self.bo3_inference().validate(request, evidence, games)
         return evidence
 
-    def bo3_inference(self) -> Bo3InferenceCoordinator:
+    def bo3_inference(self, *, progress: ProgressReporter | None = None) -> Bo3InferenceCoordinator:
         """The separate deterministic inference stage; never wired into BO1."""
         if self._candidate_projection is None:
             self._candidate_projection = SmogonCandidateProjectionAdapter(ipc=NodeIpcClient(
@@ -367,11 +368,12 @@ class Container:
                 timeout_seconds=self._settings.calc_timeout_seconds,
             ))
         return Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=self._candidate_projection,
-                                       public_sheets=ShowdownTeamSheetParser(), attributes=self._candidate_projection)
+                                       public_sheets=ShowdownTeamSheetParser(), attributes=self._candidate_projection,
+                                       progress=progress)
 
     def build_bo3_pipeline(
         self, provider: str | None = None, orchestrator: str | None = None,
-        regulation: str | None = None,
+        regulation: str | None = None, *, progress: ProgressReporter | None = None,
     ) -> Bo3AnalysisPipeline:
         """BO3 is a separate use case composed over fresh BO1 pipelines."""
         return Bo3AnalysisService(
@@ -381,7 +383,7 @@ class Container:
             regulation_catalog=self.chaos(strict=self.regulation(regulation) is not None),
             guard=RegulationGuard(self.calc_engine()),
             memory=self.memory(),
-            inference=self.bo3_inference(),
+            inference=self.bo3_inference(progress=progress), progress=progress,
         )
 
     def usage_quota(self) -> UsageQuotaService:

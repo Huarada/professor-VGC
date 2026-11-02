@@ -32,8 +32,8 @@ _EVIDENCE_FIELDS = (
 )
 
 
-def _native(chaos_path, request: AnalysisRequest) -> AnalysisResult:
-    llm = FakeLLM(selection_json=_SELECTION, explanation="native answer")
+def _native(chaos_path, request: AnalysisRequest, explanation="native answer") -> AnalysisResult:
+    llm = FakeLLM(selection_json=_SELECTION, explanation=explanation)
     return AnalysisService(
         parser=ShowdownReplayParser(), selector=LLMSelectionService(llm, prompts=PROMPTS),
         evidence=build_evidence(chaos_path), llm=llm, memory=InMemoryConversationMemory(),
@@ -41,27 +41,27 @@ def _native(chaos_path, request: AnalysisRequest) -> AnalysisResult:
     ).analyze(request)
 
 
-def _langchain(chaos_path, request: AnalysisRequest) -> AnalysisResult:
+def _langchain(chaos_path, request: AnalysisRequest, explanation="lc answer") -> AnalysisResult:
     pytest.importorskip("langchain_core")
     from src.adapters.llm.langchain_tools import build_langchain_tools
     from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
     from tests.test_langchain_orchestrator import _fake_model
 
     return LangChainAnalysisOrchestrator(
-        parser=ShowdownReplayParser(), chat_model=_fake_model(_SELECTION, "lc answer"),
+        parser=ShowdownReplayParser(), chat_model=_fake_model(_SELECTION, explanation),
         evidence=build_evidence(chaos_path), memory=InMemoryConversationMemory(),
         prompts=PROMPTS, tools=build_langchain_tools(build_tools(chaos_path)),
     ).analyze(request)
 
 
-def _adk(chaos_path, request: AnalysisRequest) -> AnalysisResult:
+def _adk(chaos_path, request: AnalysisRequest, explanation="adk answer") -> AnalysisResult:
     pytest.importorskip("google.adk")
     from src.adapters.llm.adk_tools import build_adk_tools
     from src.services.adk_orchestrator import AdkAnalysisOrchestrator
     from tests.test_adk_orchestrator import _FakeAdkModel
 
     return AdkAnalysisOrchestrator(
-        parser=ShowdownReplayParser(), model=_FakeAdkModel([_SELECTION, "adk answer"]),
+        parser=ShowdownReplayParser(), model=_FakeAdkModel([_SELECTION, explanation]),
         evidence=build_evidence(chaos_path), memory=InMemoryConversationMemory(),
         prompts=PROMPTS, tools=build_adk_tools(build_tools(chaos_path)),
     ).analyze(request)
@@ -78,3 +78,25 @@ def test_all_backends_produce_identical_evidence(sample_chaos_path):
     for other in (_langchain(sample_chaos_path, request), _adk(sample_chaos_path, request)):
         for name in _EVIDENCE_FIELDS:
             assert getattr(other, name) == getattr(native, name), name
+
+
+def test_all_backends_render_the_same_verified_bo3_claims(sample_chaos_path):
+    from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
+    from src.domain.series import Bo3AnalysisRequest
+    from src.services.bo3_claim_plan import build_claim_plan
+    from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
+    from src.services.series_analysis import prepare_series
+    from tests.test_bo3_claim_plan import draft
+    from tests.test_bo3_inference import AnalyticProjection, log, sheet
+
+    series = Bo3AnalysisRequest(session_id="claims-parity", games=[log()], teamsheet=sheet())
+    evidence, states = prepare_series(ShowdownReplayParser(), series)
+    inferred = Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=AnalyticProjection()).analyze(series, evidence, states)
+    plan = build_claim_plan(inferred.checkpoints[-1], "EV spreads")
+    request = AnalysisRequest(session_id="claims-parity", replay_raw_text=log(),
+        question="EV spreads", series_context={"game": 1}, bo3_claim_plan=plan)
+    response = draft(plan)
+    results = [factory(sample_chaos_path, request, response) for factory in (_native, _langchain, _adk)]
+    assert "Verified teamsheet and spread findings" in results[0].answer
+    assert "did not pass" not in results[0].answer
+    assert all(result.answer == results[0].answer and result.bo3_claim_plan == plan for result in results)

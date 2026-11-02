@@ -66,7 +66,9 @@ def test_invented_baseline_is_retried_once_with_a_concrete_correction():
 def test_repeated_allocation_prose_is_omitted_without_aborting_the_series():
     llm = FakeLLM("{}", "Baseline build: 32 HP / 32 SpD.")
     result = service(llm).analyze(request(game()))
-    assert result.answer == UNVALIDATED_INVESTMENT_NOTICE
+    assert "did not pass evidence validation" in result.answer
+    assert "Verified teamsheet and spread findings" in result.answer
+    assert result.bo3_claim_plan is not None
     assert result.inference is not None and result.games
     assert not contains_numerical_investment(result.answer)
     assert len(llm.calls) == 2
@@ -87,6 +89,7 @@ def test_summary_rejects_allocations_even_when_inference_is_disabled():
     llm = FakeLLM("{}", "Suggested investment: 252 SpA / 252 Spe.")
     result = service(llm).analyze(req)
     assert result.answer == UNVALIDATED_INVESTMENT_NOTICE
+    assert result.bo3_claim_plan is None
     assert result.inference is None
     assert len(llm.calls) == 2
 
@@ -189,8 +192,9 @@ def test_summary_context_is_sanitized_but_returned_inference_retains_numeric_tab
     content = llm.calls[-1]["messages"][-1].content
     payload = json.loads(content[:content.rfind("}") + 1])
     for checkpoint in payload["set_inference"]["checkpoints"]:
-        assert all("stat_points" not in summary for summary in checkpoint["summaries"])
+        assert "summaries" not in checkpoint  # duplicate raw summaries stay in the full result only
         assert "joint_examples" not in checkpoint
+    assert payload["trusted_stat_spread_findings"]
 
 
 def test_foreign_mechanics_still_fail_closed_after_the_single_correction():

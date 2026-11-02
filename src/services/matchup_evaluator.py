@@ -20,6 +20,7 @@ from src.domain.models import (
     SmogonStrategy,
     SpeedComparison,
 )
+from src.domain.names import to_id
 from src.domain.regulation import calc_generation
 
 SetIndex = dict[tuple[str, str], PokemonSet]
@@ -159,6 +160,7 @@ class MatchupEvaluator:
                     CalcRequest(
                         gen=self._gen, attacker=attacker, defender=defender,
                         move=move, field=field,
+                        attacker_hits_taken=0 if to_id(move) == "ragefist" else None,
                     )
                 )
             except CalcEngineError:
