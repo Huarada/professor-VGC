@@ -6,7 +6,7 @@ pydantic-settings>=2.2,<3
 streamlit>=1.33
 requests>=2.31
 truststore>=0.10,<1; sys_platform == "win32"  # verified operator-installed Windows roots
-websockets>=15,<16  # public Showdown BO3 room discovery; read-only, no login
+websockets>=15,<17  # public Showdown BO3 room discovery; read-only, no login
 
 # Orchestration
 langchain>=1.0
