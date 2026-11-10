@@ -89,6 +89,9 @@ class Settings(BaseSettings):
     openai_model: str = "gpt-4o-mini"
     gemini_api_key: str | None = None
     gemini_model: str = "gemini-3.5-flash"
+    # Direct Gemini SDK calls, including BO3 synthesis for every backend.
+    gemini_request_timeout_seconds: float = Field(default=90.0, gt=0, allow_inf_nan=False)
+    gemini_total_timeout_seconds: float = Field(default=180.0, gt=0, allow_inf_nan=False)
     llm_temperature: float = 0.2
     # Per ADK agent turn; a Cloud Run session's first call also pays cold
     # starts (Node workers, gRPC channel, model client).

@@ -5,7 +5,11 @@ import json
 import pytest
 
 from src.adapters.parsers.showdown_parser import ShowdownReplayParser
-from src.domain.exceptions import SeriesValidationError, UnsupportedRulesError
+from src.domain.exceptions import (
+    LLMProviderError,
+    SeriesValidationError,
+    UnsupportedRulesError,
+)
 from src.domain.models import (
     AnalysisRequest,
     AnalysisResult,
@@ -124,6 +128,25 @@ def test_invalid_later_game_never_reaches_a_pipeline():
     with pytest.raises(UnsupportedRulesError):
         service.analyze(request(game(), game("Bob", "Tera Blast")))
     assert not llm.calls
+
+
+@pytest.mark.parametrize("phase,label", [("game", "BO3 game 1 review"), ("summary", "BO3 series summary")])
+def test_provider_failures_identify_the_bo3_stage_without_new_model_calls(phase, label):
+    from unittest.mock import Mock
+
+    class Pipeline:
+        def analyze(self, req):
+            if phase == "game":
+                raise LLMProviderError("Gemini request timed out")
+            return AnalysisResult(session_id=req.session_id, question=req.question, answer="Verified game facts",
+                                  selection=SelectionPlan(), meta_context=MetaContext())
+
+    llm = Mock()
+    llm.complete.side_effect = LLMProviderError("Gemini request timed out")
+    service = Bo3AnalysisService(parser=ShowdownReplayParser(), pipeline_factory=Pipeline, llm=llm, prompts=PROMPTS)
+    with pytest.raises(LLMProviderError, match=label):
+        service.analyze(request(game()))
+    assert llm.complete.call_count == (1 if phase == "summary" else 0)
 
 
 @pytest.mark.parametrize("backend", ["native", "langchain", "adk"])

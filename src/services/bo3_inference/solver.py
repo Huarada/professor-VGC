@@ -45,9 +45,21 @@ class ProjectionBudget:
         self.factor_phase_starts: dict[int, int] = {}
         self.factor_deadlines: dict[int, float] = {}
         self.factor_checkpoints: dict[str, InferenceCheckpoint] = {}
+        self._game_deadline: float | None = None
+        self._game_projection_ceiling = options.max_projections
         self.progress: ProgressReporter | None = None
         self.progress_context = ""
         self._last_progress = float("-inf")
+
+    def start_game(self, game: int) -> None:
+        """Reserve time and projections for later games across every search route."""
+        remaining_games = max(1, self.game_count - game + 1)
+        now = time.monotonic()
+        self._game_deadline = now + max(0.0, self.deadline - now) / remaining_games
+        remaining = max(0, self.options.max_projections - self.projections)
+        self._game_projection_ceiling = self.projections + max(1, remaining // remaining_games)
+        self.factor_phase_starts[game] = self.projections
+        self.factor_deadlines[game] = self._game_deadline
 
     def report_batch(self, requests: Sequence[ProjectionRequest]) -> None:
         """Report real work at most once a second, without exposing a guessed ETA."""
@@ -72,6 +84,9 @@ class ProjectionBudget:
                 self.cache.move_to_end(key)
         if time.monotonic() >= self.deadline or self.projections + len(missing) > self.options.max_projections:
             raise SearchLimit("Projection/time budget reached")
+        if ((self._game_deadline is not None and time.monotonic() >= self._game_deadline)
+                or self.projections + len(missing) > self._game_projection_ceiling):
+            raise SearchLimit("Per-game search budget reached; remaining work is reserved for later games")
         if missing:
             try:
                 results = self.port.project_batch(list(missing.values()))

@@ -294,6 +294,11 @@ def explain_champions_only(
             if plan is not None and draft is not None:
                 return render_claim_plan(plan, draft.claim_ids, answer)
             return answer
+        if bo3 and plan is not None:
+            reasons = (*issues, *(('unsupported rules',) if foreign else ()),
+                       *(('unvalidated numerical attributes',) if investment else ()),
+                       *(('speculative original spread',) if speculative else ()))
+            _LOGGER.warning("BO3 narrative validation attempt %s rejected: %s", attempt + 1, "; ".join(reasons))
         if attempt:
             if plan is not None:
                 return render_claim_plan(plan, tuple(claim.id for claim in plan.claims), fallback=True)

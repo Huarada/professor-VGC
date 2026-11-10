@@ -126,11 +126,15 @@ class HPReading(Value):
     numerator: int = Field(ge=0)
     denominator: int = Field(gt=0)
     mode: Literal["percent", "exact"]
+    color: Literal["g", "y", "r"] | None = None
 
     @model_validator(mode="after")
     def valid_ratio(self) -> HPReading:
         if self.numerator > self.denominator:
             raise ValueError("HP cannot exceed its denominator.")
+        if self.color is not None and (self.mode != "percent" or self.denominator != 100
+                or (self.numerator, self.color) not in {(20, "y"), (20, "r"), (50, "g"), (50, "y")}):
+            raise ValueError("Champions HP colors qualify the 20% and 50% boundaries only.")
         return self
 
 

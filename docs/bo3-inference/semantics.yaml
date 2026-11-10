@@ -240,3 +240,15 @@ series_evidence_index:
     three_game_combinations_per_dependency_group: at_most_8
   query_trace: inference_results_only_not_repeated_in_model_context
   constraints: necessary_bounds_not_complete_spreads
+
+champions_hp_display:
+  public_rounding: floor
+  living_minimum_percent: 1
+  full_hp_percent: 100
+  color_20: {yellow: strictly_above_20_percent, red: at_or_below_20_percent}
+  color_50: {green: strictly_above_50_percent, yellow: at_or_below_50_percent}
+  exact_mode: unchanged
+search_game_reservation:
+  enforced_at: every_projection_route
+  shared_between: [before_game, local_boundary_search, fallback_joint_enumeration, after_game]
+  redistribution: remaining_resources_divided_by_remaining_games

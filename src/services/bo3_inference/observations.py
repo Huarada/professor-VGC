@@ -34,8 +34,9 @@ def reading(raw: str, mode: Literal["percent", "exact"], previous: HPReading | N
     try:
         if raw.strip() in {"0", "0 fnt"} and previous:
             return HPReading(numerator=0, denominator=previous.denominator, mode=mode)
-        match = re.match(r"^(\d+)/(\d+)(?:\s|$)", raw.strip())
-        return HPReading(numerator=int(match[1]), denominator=int(match[2]), mode=mode) if match else None
+        match = re.match(r"^(\d+)/(\d+)([gyr])?(?:\s|$)", raw.strip())
+        return HPReading.model_validate({"numerator": int(match[1]), "denominator": int(match[2]),
+                                        "mode": mode, "color": match[3]}) if match else None
     except ValueError:
         return None
 

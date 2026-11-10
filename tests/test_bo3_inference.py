@@ -66,7 +66,7 @@ class AnalyticProjection:
                 values = [before.numerator] if before.denominator == maximum else []
             else:
                 values = [hp for hp in range(1, maximum + 1)
-                          if (hp * before.denominator + maximum - 1) // maximum == before.numerator]
+                          if max(1, hp * before.denominator // maximum) == before.numerator]
             result.append(DamageSupport(supported=True, maximum_hp=maximum,
                                         witnesses=tuple(DamageWitness(hp_before=hp, damage=damage) for hp in values)))
         return result
@@ -302,9 +302,18 @@ def test_consumed_item_does_not_carry_as_runtime_state_between_games():
     assert "" in items and "Life Orb" in items
 
 
-def test_budget_exhaustion_in_a_later_game_does_not_erase_known_bounds():
+def test_budget_exhaustion_in_a_later_game_does_not_erase_known_bounds(monkeypatch):
+    from src.services.bo3_inference.solver import ProjectionBudget
+
+    class ExhaustedLater(ProjectionBudget):
+        def start_game(self, game):
+            super().start_game(game)
+            if game == 2:
+                self.deadline = 0
+
+    monkeypatch.setattr("src.services.bo3_inference.coordinator.ProjectionBudget", ExhaustedLater)
     second = log(turn=2).replace("|turn|2", "|-weather|RainDance\n|turn|2")
-    result = run(log(), second, teamsheet=sheet(), max_projections=33)
+    result = run(log(), second, teamsheet=sheet(), max_projections=66)
     assert result.checkpoints[1].coverage == "exhaustive"
     assert result.checkpoints[-1].coverage == "bounded"
     assert summary(result.checkpoints[-1], "Bob:slot1").stat_points["def"].minimum == 20

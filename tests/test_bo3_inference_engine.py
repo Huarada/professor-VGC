@@ -107,14 +107,16 @@ def test_reported_public_bo3_retrieves_natures_and_narrows_investment_without_mo
     assert len(final.observation_ids) >= 18
     assert len(final.local_constraints) >= 1
     assert all(summary.nature_declared and len(summary.natures) == 1 for summary in final.summaries)
-    narrowed = next(summary for summary in final.summaries if summary.species == "Incineroar")
-    assert narrowed.stat_points["hp"].minimum > 0
+    # Correct Champions floor rounding no longer proves the historical
+    # Incineroar HP lower bound. Check a surviving certified exclusion instead.
+    narrowed = next(summary for summary in final.summaries if summary.species == "Annihilape")
+    assert narrowed.stat_points["def"].maximum == 17
     assert narrowed.basis == "necessary_local_bounds"
     assert not any("Protect" in reason or "Grassy Surge" in reason for reason in final.unsupported)
     assert result.projections <= request.inference_options.max_projections
 
 
-def test_sauron_real_series_restores_twenty_nine_damage_samples_with_the_actual_worker(engine):
+def test_sauron_real_series_restores_thirty_eight_damage_samples_with_the_actual_worker(engine):
     from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
     from src.services.bo3_inference.declarations import identities, visible_declarations
     from src.services.bo3_inference.observations import observations
@@ -131,12 +133,15 @@ def test_sauron_real_series_restores_twenty_nine_damage_samples_with_the_actual_
         counts.append(len(found))
         assert not any("Unmodeled turn effect" in reason or "Unmodeled volatile effect" in reason for reason in skipped)
         assert all(declared[key].nature for sample in found for key in (sample.attacker_id, sample.defender_id))
-    assert counts == [7, 14, 8]
-    # The two newly admitted hits are Moonblast from observed Floette-Mega.
+    assert counts == [9, 16, 13]
+    # Aura is global event-time state, including restored colored-HP hits
+    # whose non-Fairy moves receive no aura damage multiplier.
     aura_hits = [sample for sample in found if sample.request.field.fairy_aura]
-    assert len(aura_hits) == 2
-    assert all(sample.request.move == "Moonblast" and sample.request.attacker.ability == "Fairy Aura"
-               and sample.request.attacker.battle_formes == ["Floette-Mega"] for sample in aura_hits)
+    assert len(aura_hits) == 5
+    moonblasts = [sample for sample in aura_hits if sample.request.move == "Moonblast"]
+    assert len(moonblasts) == 2
+    assert all(sample.request.attacker.ability == "Fairy Aura"
+               and sample.request.attacker.battle_formes == ["Floette-Mega"] for sample in moonblasts)
 
 
 
@@ -171,7 +176,7 @@ def test_reported_series_default_budget_finishes_inverse_damage_constraints(engi
         public_sheets=ShowdownTeamSheetParser()).analyze(request, evidence, states)
     final = result.checkpoints[-1]
     assert final.local_constraints and final.local_evaluated_assignments > 0
-    assert len(final.observation_ids) == 29
+    assert len(final.observation_ids) == 38
     assert final.outcome == "ambiguous" and final.coverage == "bounded"
     assert not result.checkpoints[0].local_constraints
     assert result.projections <= request.inference_options.max_projections

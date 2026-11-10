@@ -62,7 +62,7 @@ def replay(damage: int, hp: int, mode: str, number: int) -> str:
     """Render HP independently from the production parser/display constraint code."""
     maximum = hp if mode == "exact" else 100
     remaining = max(0, hp - damage)
-    shown = remaining if mode == "exact" else math.ceil(100 * remaining / hp)
+    shown = remaining if mode == "exact" else (max(1, math.floor(100 * remaining / hp)) if remaining else 0)
     return "\n".join([
         "|tier|[Gen 9 Champions] VGC 2026 Reg M-B (Bo3)",
         "|player|p1|Alice|", "|player|p2|Bob|",

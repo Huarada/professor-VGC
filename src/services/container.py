@@ -236,7 +236,9 @@ class Container:
                 api_key=self._settings.openai_api_key, model=self._settings.openai_model
             )
         return GeminiProvider(
-            api_key=self._settings.gemini_api_key, model=self._settings.gemini_model
+            api_key=self._settings.gemini_api_key, model=self._settings.gemini_model,
+            timeout_seconds=self._settings.gemini_request_timeout_seconds,
+            total_timeout_seconds=self._settings.gemini_total_timeout_seconds,
         )
 
     def build_chat_model(self, provider: str | None = None) -> BaseChatModel:

@@ -238,6 +238,8 @@ class Bo3AnalysisService:
                 game_request = game_request.model_copy(update={"series_context": compact_bo3_context(game_request.series_context)})
             try:
                 results.append(self._pipeline_factory().analyze(game_request))
+            except LLMProviderError as exc:
+                raise LLMProviderError(f"BO3 game {game.number} review: {exc}") from exc
             finally:
                 if self._memory is not None:
                     self._memory.clear(game_request.session_id)
@@ -259,11 +261,14 @@ class Bo3AnalysisService:
         def explain(correction: str) -> str:
             self._report("Stage 3 of 3 — Revising the series explanation against the battle evidence..." if correction else
                          "Stage 3 of 3 — AI comparing games: lead changes, revealed moves, stat-range findings and adaptations...")
-            answer = self._llm.complete(
-                system=self._system, messages=[ChatMessage(role="user", content=(
-                    checked_bo3_message(encode_context(compact_payload) + "\n" + correction)
-                ))], temperature=0.2,
-            )
+            try:
+                answer = self._llm.complete(
+                    system=self._system, messages=[ChatMessage(role="user", content=(
+                        checked_bo3_message(encode_context(compact_payload) + "\n" + correction)
+                    ))], temperature=0.2,
+                )
+            except LLMProviderError as exc:
+                raise LLMProviderError(f"BO3 series summary: {exc}") from exc
             if not answer.strip():
                 raise LLMProviderError("The BO3 explanation was empty.")
             return answer

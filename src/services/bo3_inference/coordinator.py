@@ -103,6 +103,7 @@ class Bo3InferenceCoordinator:
         attribute_service = AttributeProjectionService(engine=self._attributes) if self._attributes else None
         known_forms: dict[str, set[str]] = {}
         for number, (game, mapping) in enumerate(zip(games, maps), 1):
+            budget.start_game(number)
             scope = f"Stage 1 of 3 — Game {number} of {len(games)}"
             budget.progress_context = scope
             current = visible_declarations(initial, sheet, number, request.inference_options.perspective)
