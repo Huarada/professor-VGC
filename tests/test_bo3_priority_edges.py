@@ -145,10 +145,10 @@ def test_advice_is_labeled_hypothetical_without_mutating_evidence():
     assert text["damage"] == 62 and evidence == original
 
 
-def test_ceiling_rounding_is_consistent_for_every_integer_hp_and_censored_ko():
+def test_champions_floor_rounding_preserves_one_percent_and_censored_ko():
     for maximum in (101, 137, 202):
         for hp in range(maximum + 1):
-            percent = (hp * 100 + maximum - 1) // maximum
+            percent = max(1, hp * 100 // maximum) if hp > 0 else 0
             assert displays(hp, maximum, HPReading(numerator=percent, denominator=100, mode="percent"))
             if percent:
                 assert not displays(hp, maximum, HPReading(numerator=percent - 1, denominator=100, mode="percent"))

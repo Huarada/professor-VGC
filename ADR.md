@@ -5318,3 +5318,165 @@ three-backend parity regression passed. The saved three-game native damage/defau
 inference context case passed with the 80 KB test limit; no chronology or approved
 claim values were truncated. Validation used fake generation models and the native
 calculator, without paid explanation, embedding or semantic-judge requests.
+
+
+## ADR-066 - Correct Champions HP witnesses and reserve search for later games
+
+**Date:** 2026-11-04. **Status:** Accepted. Supersedes earlier ceil-display assumptions.
+
+**Context:** Known-spread user testing showed little interval reduction and no
+Floette bounds despite repeated appearances. The three real games reproduced
+8/26/42 eligible observations and search exhaustion before game 3. One of those
+42 hits disagreed with the supplied spreads. The inverse HP reader also discarded
+two genuine direct hits adjacent to a 20/100y measurement.
+
+**Decision:** Match the Champions public HP protocol: floor rather than ceil,
+minimum one percent while alive, exact full HP at 100%, and zero only when fainted.
+Preserve y/r at 20% and g/y at 50% as strict boundary qualifiers. Exact mode remains
+exact. Apply the same semantics in native before-HP witness generation and Python
+after-HP checks. Version the inference rules as v2-floor-hp and regenerate synthetic
+percent fixtures from the corrected independent display renderer. Earlier results
+require a fresh analysis; do not silently reuse their constraints.
+
+Enforce per-game reservations in ProjectionBudget.project(), not merely local
+factor planning: fallback enumeration must not consume all later games' allowance.
+Allocate remaining projections/time across remaining games, retain certified bounds
+when a local reservation expires, and keep the global caps. Cache reuse and existing
+conservative proof rules remain. Report the per-game limit as incomplete work.
+
+Save the public logs and user-provided spreads in separate fixture files. Only
+public logs/declarations enter blind inference; known hidden points are used solely
+for native damage calibration and checking retention in resulting bounds. Source:
+https://raw.githubusercontent.com/smogon/pokemon-showdown/master/sim/pokemon.ts
+(getHealth, Champions branch); the native species catalog matches the relevant
+Showdown Mega species, so no guessed base-stat adjustment was applied.
+
+**Validation:** All 44 direct damage observations now match the supplied profiles,
+including 15 involving Floette; no observations are excluded in this saved series.
+A held-out conditional oracle with other attributes fixed allows Floette SpA 27-32,
+so even this stronger information does not uniquely establish 32. This conditional
+result is not reported as the public inferred range. A second legal profile with
+Floette Atk 5 / SpA 27 / SpD 2 / Spe 32 (other axes zero) also matches all 44
+modeled direct hits while the other Pokemon retain their supplied values. This
+is a counterexample to unique identification from these local damage constraints,
+not a proof of full replay timeline feasibility. The default public search still
+leaves Floette at 0-32; do not substitute the conditional oracle for public bounds.
+Unit/native tests cover 100%,
+minimum alive HP, boundary colors, censored KOs, resource reservations and blind
+truth retention. The corrected independent cross-game HP case is 9-14, replacing
+its historical ceil-based 6-18. Synthetic fixtures are regenerated explicitly.
+
+Log static narrative-validation reasons on rejected attempts without raw generated
+text, to distinguish explanation fallback from inference failures. No paid model
+calls or persistent spread memory are introduced.
+
+
+**Recorded checks (2026-11-10):** Full Python suite: 804 passed, with two existing
+dependency warnings. The five held-out real-series tests also passed separately
+with an independent after-HP oracle that checks the color qualifiers. Node: 33
+passed. Strict mypy checked 129 source files; Ruff F, changed-file import ordering,
+Vulture and whitespace checks passed. Regenerated synthetic testbench: 26/26 series
+(78 games), plus 17/17 analytic oracle cases. These synthetic checks measure solver
+consistency, not real-game spread recovery accuracy. No paid model calls were made.
+
+
+**Expanded recorded-series testbench (2026-11-10):** Added 64 real-data
+regressions and an offline JSON report runner, separate from the synthetic corpus.
+Each of the 44 recorded direct hits is checked individually; controls exercise
+side/nickname invariance, seven native causal effects, integer-HP continuity for
+two consecutive attack pairs, healing/recoil/burn, Mega abilities, stage resets,
+causal checkpoints and owner-scoped identity. Wrong-reference and unsupported
+projection controls fail visibly. Missing native support remains unresolved,
+never a certified rejection of a candidate.
+
+The runner performs public inference before opening the held-out truth fixture.
+Its 12,000-projection / 12,000-assignment work cap produces Gholdengo HP bounds
+0-30, 2-30 and 4-30 after successive games, retaining the known 27 points.
+Floette's public bounds remain 0-32. The separate conditional sweep, fixing
+other known attributes, yields SpA 17-32 / 27-32 / 27-32. Reports include source
+hashes, engine/rule provenance, per-hit witnesses, explicit unsupported results,
+KO censoring, candidate exclusions and unresolved candidates. No paid models,
+embeddings or permanent spread memory are involved. See bo3-inference README
+section 24 and validation/real-series-2709311277.json for commands and caveats.
+
+
+Expanded-suite checks: 868 Python tests passed (two existing dependency warnings).
+Strict mypy passed for 130 files including the real-series runner. Ruff F checks,
+new-file import ordering and whitespace checks passed. The recorded report passed
+44/44 direct observations without exclusions; all checks were offline.
+
+
+**Deterministic acceptance review (2026-11-10):** Report schema v2 adds named
+coverage, nature, chronology/completeness, resource, truth-retention and certified
+narrowing gates. Lost/duplicate/empty damage collections can no longer pass merely
+because the remaining rows match. The independent HP oracle checks before and
+after readings and rejects out-of-range integer HP. Twenty-three additional
+regressions cover these gaps, repeatability and reference-load ordering: the
+real-series matrix now has 87 cases. Full suite: 891 passed (two existing warnings);
+Node: 33 passed; strict mypy: 130 files; Ruff F/import and whitespace checks passed.
+The regenerated recorded report passes all 12 named gates and all 44 damage rows.
+Manual app/model checks were not run. The reproducible test plan is documented in
+docs/bo3-inference/TEST_PLAN.md, including the distinction between public bounds,
+conditional validation and exact hidden-spread identification.
+
+
+**Local gRPC trust correction (2026-11-10):** The local launcher previously set
+GRPC_DEFAULT_SSL_ROOTS_FILE_PATH from its optional bundle before the application
+could honor its configured CA. After a local inspection-root rotation, this
+shadowed the valid application bundle and caused Firestore certificate failures.
+Resolve inherited transport overrides first, then the application's inherited or
+.env setting, then the optional local fallback, before loading SDKs. Python's
+Windows trust-store integration remains separate from native gRPC trust. No TLS
+verification, global environment, credentials or cloud data is modified.
+
+Checks: seven launcher tests passed; full suite 893 passed with two existing
+warnings; strict mypy and changed-file Ruff/import checks passed. A bounded,
+read-only Firestore query succeeded with certificate verification enabled, and
+the local Streamlit server was restarted on port 8502 with a healthy response.
+
+
+## ADR-067 - Bound direct Gemini completion time across transient retries
+
+**Date:** 2026-11-10. **Status:** Accepted.
+
+**Context:** The BO3 final summary uses the direct provider even when per-game
+reviews use ADK. That provider hard-coded a 30-second RPC deadline, independent
+of the ADK agent's 240-second ceiling. A reported 504 surfaced without indicating
+which BO3 stage failed. The error establishes a missed deadline, not its precise
+remote cause. Google documents DEADLINE_EXCEEDED as an unfinished timed request:
+https://ai.google.dev/gemini-api/docs/api-errors.
+
+**Decision:** Configure direct calls with GEMINI_REQUEST_TIMEOUT_SECONDS (90 by
+default) and GEMINI_TOTAL_TIMEOUT_SECONDS (180), both under the PROFESSORVGC_
+prefix. Validate finite positive values before SDK calls. Each completion has one
+monotonic budget, including retry delays and SDK request time. Clip each attempt
+to the smaller of its configured timeout and remaining time. Keep at most three
+attempts for the existing transient 500/503/504 classes and disable nested SDK
+retries. Do not retry permanent request/auth errors or accept an already-late
+response. Report model, attempts and configured budget on timeout; log static
+metadata without prompt or remote exception payloads. BO3 failures identify the
+game review or final series summary. Do not silently truncate chronology or
+substitute invented analysis after a transport failure.
+
+**Consequences:** More headroom for direct BO3 synthesis; no change to the ADK
+agent ceiling, inference rules, context caps, model choice or maximum attempt
+count. Each complete() call owns its budget; this is not a whole-series deadline.
+Remote server deadlines may still expire. Failed analyses are not automatically
+resumed or represented as completed coaching. The existing legacy Gemini SDK is
+retained; migration is separate from this timeout correction.
+
+**Validation:** Fake-clock tests cover shared deadlines (90s + 1s backoff + 89s),
+short total budgets, rejected late responses, transient recovery, permanent-error
+no-retry, invalid settings, factory wiring, metadata-only logs and stage labels.
+No paid Gemini calls are used for these checks.
+
+
+**Alternatives considered:** Raising only the ADK agent ceiling would leave the
+direct synthesis RPC deadline unchanged. Unbounded retries and shortening the
+recorded chronology were rejected. A legacy-SDK migration is a separate change.
+**Files:** src/config.py, adapters/llm/gemini_provider.py, services/container.py,
+services/series_analysis.py, .env.example and the Gemini/BO3 regression tests.
+**Recorded checks:** 904 Python tests passed (two existing dependency warnings),
+strict mypy passed for 129 source files, and Ruff F/import, Vulture and whitespace
+checks passed. The restarted local app is healthy on port 8502. Provider behavior
+was checked with mocks/fake clocks; no paid validation call was requested.

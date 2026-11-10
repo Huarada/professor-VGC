@@ -45,3 +45,21 @@ docker run --rm -p 8080:8080 --env-file .env \
 fetcher); `SSL_CERT_FILE` covers anything going through Python's stdlib
 `ssl` module directly. Both are no-ops when unset, so this is exactly as
 optional at runtime as the build-time mechanism above is at build time.
+
+
+## Local launcher and Firestore trust
+
+`scripts/run_local.py` configures only its child process. For the native gRPC
+trust bundle, precedence is:
+
+1. Inherited `GRPC_DEFAULT_SSL_ROOTS_FILE_PATH`.
+2. `PROFESSORVGC_FIRESTORE_GRPC_CA_BUNDLE_PATH` from the inherited environment.
+3. That application setting from the repository `.env`.
+4. Optional `docker/extra-ca-certs/local-avast-bundle.pem` fallback.
+
+Resolve this before loading SDKs: Python's Windows trust-store integration does
+not configure gRPC's separate native certificate store. The fallback must not
+shadow an explicit current CA bundle, particularly when local TLS inspection
+software rotates its root certificate. Restart the local server after changing
+trust configuration; existing gRPC channels retain their original configuration.
+TLS verification remains enabled. No global environment or trust store is changed.

@@ -31,11 +31,24 @@ test('projection returns integer roll witnesses and the candidate maximum HP', (
   assert.ok(result.witnesses.every(witness => witness.hp_before === 170 && Number.isInteger(witness.damage)));
 });
 
-test('public 100 percent HP retains multiple integer HP values', () => {
+test('Champions public 100 percent HP means exact full HP', () => {
   const input = request();
   input.before = { numerator: 100, denominator: 100, mode: 'percent' };
   const result = support.project(input);
-  assert.deepEqual(new Set(result.witnesses.map(witness => witness.hp_before)), new Set([169, 170]));
+  assert.deepEqual(new Set(result.witnesses.map(witness => witness.hp_before)), new Set([170]));
+});
+
+test('Champions floor HP preserves living 1 percent and boundary colors', () => {
+  for (const [numerator, color, expected] of [
+    [1, null, [1, 2, 3]], [20, 'y', [35]], [20, 'r', [34]],
+    [50, 'g', [86]], [50, 'y', [85]],
+  ]) {
+    const input = request();
+    input.before = { numerator, denominator: 100, mode: 'percent', color };
+    const result = support.project(input);
+    assert.equal(result.supported, true);
+    assert.deepEqual([...new Set(result.witnesses.map(witness => witness.hp_before))], expected);
+  }
 });
 
 test('exact maximum HP is a candidate constraint, not an assumed percent', () => {

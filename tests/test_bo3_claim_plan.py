@@ -123,3 +123,12 @@ def test_conflict_does_not_credit_retained_bounds_and_plain_bo1_is_unchanged():
     plan = build_claim_plan(source, "spread")
     assert not any(claim.kind == "bounds" for claim in plan.claims)
     assert explain_champions_only(lambda correction: "Ordinary BO1 review.") == "Ordinary BO1 review."
+
+
+def test_fallback_logs_validation_reasons_without_logging_generated_text(caplog):
+    plan = build_claim_plan(checkpoint(), "spread")
+    text = "Ability: Cursed Body. Private generated prose sentinel."
+    explain_champions_only(lambda correction: draft(plan, text), bo3=True, plan=plan)
+    assert "attempt 1 rejected" in caplog.text and "attempt 2 rejected" in caplog.text
+    assert "Do not restate trait lists" in caplog.text
+    assert "Private generated prose sentinel" not in caplog.text

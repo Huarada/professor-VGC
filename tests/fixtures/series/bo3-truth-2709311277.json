@@ -1,0 +1,143 @@
+{
+  "source": "User supplied native Champions spreads, 2026-11-04; validation only, never inference input",
+  "level": 50,
+  "ivs": 31,
+  "teams": {
+    "Huarada": {
+      "Whimsicott": {
+        "nature": "Timid",
+        "points": {
+          "hp": 2,
+          "atk": 0,
+          "def": 0,
+          "spa": 32,
+          "spd": 0,
+          "spe": 32
+        }
+      },
+      "Basculegion": {
+        "nature": "Adamant",
+        "points": {
+          "hp": 32,
+          "atk": 32,
+          "def": 0,
+          "spa": 0,
+          "spd": 2,
+          "spe": 0
+        }
+      },
+      "Floette-Eternal": {
+        "nature": "Timid",
+        "points": {
+          "hp": 0,
+          "atk": 0,
+          "def": 0,
+          "spa": 32,
+          "spd": 2,
+          "spe": 32
+        }
+      },
+      "Kingambit": {
+        "nature": "Adamant",
+        "points": {
+          "hp": 32,
+          "atk": 32,
+          "def": 0,
+          "spa": 0,
+          "spd": 2,
+          "spe": 0
+        }
+      },
+      "Charizard": {
+        "nature": "Modest",
+        "points": {
+          "hp": 32,
+          "atk": 0,
+          "def": 2,
+          "spa": 32,
+          "spd": 0,
+          "spe": 0
+        }
+      },
+      "Garchomp": {
+        "nature": "Jolly",
+        "points": {
+          "hp": 2,
+          "atk": 32,
+          "def": 0,
+          "spa": 0,
+          "spd": 0,
+          "spe": 32
+        }
+      }
+    },
+    "testProfessor": {
+      "Gholdengo": {
+        "nature": "Modest",
+        "points": {
+          "hp": 27,
+          "atk": 0,
+          "def": 0,
+          "spa": 7,
+          "spd": 19,
+          "spe": 13
+        }
+      },
+      "Volcarona": {
+        "nature": "Timid",
+        "points": {
+          "hp": 21,
+          "atk": 0,
+          "def": 22,
+          "spa": 0,
+          "spd": 0,
+          "spe": 23
+        }
+      },
+      "Garchomp": {
+        "nature": "Modest",
+        "points": {
+          "hp": 2,
+          "atk": 0,
+          "def": 0,
+          "spa": 32,
+          "spd": 0,
+          "spe": 32
+        }
+      },
+      "Incineroar": {
+        "nature": "Impish",
+        "points": {
+          "hp": 32,
+          "atk": 0,
+          "def": 20,
+          "spa": 0,
+          "spd": 9,
+          "spe": 5
+        }
+      },
+      "Rillaboom": {
+        "nature": "Adamant",
+        "points": {
+          "hp": 24,
+          "atk": 25,
+          "def": 0,
+          "spa": 0,
+          "spd": 4,
+          "spe": 13
+        }
+      },
+      "Raichu": {
+        "nature": "Timid",
+        "points": {
+          "hp": 32,
+          "atk": 0,
+          "def": 0,
+          "spa": 0,
+          "spd": 7,
+          "spe": 27
+        }
+      }
+    }
+  }
+}

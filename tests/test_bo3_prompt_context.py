@@ -76,7 +76,7 @@ def test_reported_three_game_series_fits_context_without_losing_order_or_stat_ev
     payload = expand_evidence(encoded_payload)
     if native_forward:
         assert "bo3_evidence_encoding" in encoded_payload
-        assert payload["trusted_stat_spread_findings"][-1]["eligible_damage_observations"] == 29
+        assert payload["trusted_stat_spread_findings"][-1]["eligible_damage_observations"] == 38
     legacy = coaching_context({"question": req.question, "series": result.evidence.model_dump(mode="json"),
         "set_inference": result.inference.model_dump(mode="json"),
         "trusted_stat_spread_findings": [interpret_checkpoint(checkpoint).model_dump(mode="json")

@@ -1,0 +1,3616 @@
+{
+  "schema_version": 2,
+  "passed": true,
+  "checks": {
+    "recorded_coverage": true,
+    "floette_coverage": true,
+    "no_exclusions": true,
+    "all_damage_matches": true,
+    "complete_checkpoints": true,
+    "truth_retained": true,
+    "no_public_conflict": true,
+    "certified_narrowing": true,
+    "projection_budget": true,
+    "declared_natures": true,
+    "reference_spa_retained": true,
+    "recorded_series_result": true
+  },
+  "provenance": {
+    "public_sha256": "fe08aab57df76fa86e8b6503e48bb982b18a9f61bb124cc74e0a61011779baf3",
+    "truth_sha256": "2bf6eeab1913f133a4d12121d93c204dc544005eb907b3fac15c08f7177e9390",
+    "replays": [
+      "gen9championsvgc2026regmcbo3-2709311277",
+      "gen9championsvgc2026regmcbo3-2709313348",
+      "gen9championsvgc2026regmcbo3-2709316498"
+    ],
+    "engine": {
+      "version": "champions-stat-points-66-32-v2-floor-hp",
+      "engine_version": "0.12.0",
+      "stat_cap": 32,
+      "total_budget": 66,
+      "fixed_iv": 31,
+      "natures": [
+        {
+          "name": "Adamant",
+          "plus": "atk",
+          "minus": "spa"
+        },
+        {
+          "name": "Bashful",
+          "plus": "spa",
+          "minus": "spa"
+        },
+        {
+          "name": "Bold",
+          "plus": "def",
+          "minus": "atk"
+        },
+        {
+          "name": "Brave",
+          "plus": "atk",
+          "minus": "spe"
+        },
+        {
+          "name": "Calm",
+          "plus": "spd",
+          "minus": "atk"
+        },
+        {
+          "name": "Careful",
+          "plus": "spd",
+          "minus": "spa"
+        },
+        {
+          "name": "Docile",
+          "plus": "def",
+          "minus": "def"
+        },
+        {
+          "name": "Gentle",
+          "plus": "spd",
+          "minus": "def"
+        },
+        {
+          "name": "Hardy",
+          "plus": "atk",
+          "minus": "atk"
+        },
+        {
+          "name": "Hasty",
+          "plus": "spe",
+          "minus": "def"
+        },
+        {
+          "name": "Impish",
+          "plus": "def",
+          "minus": "spa"
+        },
+        {
+          "name": "Jolly",
+          "plus": "spe",
+          "minus": "spa"
+        },
+        {
+          "name": "Lax",
+          "plus": "def",
+          "minus": "spd"
+        },
+        {
+          "name": "Lonely",
+          "plus": "atk",
+          "minus": "def"
+        },
+        {
+          "name": "Mild",
+          "plus": "spa",
+          "minus": "def"
+        },
+        {
+          "name": "Modest",
+          "plus": "spa",
+          "minus": "atk"
+        },
+        {
+          "name": "Naive",
+          "plus": "spe",
+          "minus": "spd"
+        },
+        {
+          "name": "Naughty",
+          "plus": "atk",
+          "minus": "spd"
+        },
+        {
+          "name": "Quiet",
+          "plus": "spa",
+          "minus": "spe"
+        },
+        {
+          "name": "Quirky",
+          "plus": "spd",
+          "minus": "spd"
+        },
+        {
+          "name": "Rash",
+          "plus": "spa",
+          "minus": "spd"
+        },
+        {
+          "name": "Relaxed",
+          "plus": "def",
+          "minus": "spe"
+        },
+        {
+          "name": "Sassy",
+          "plus": "spd",
+          "minus": "spe"
+        },
+        {
+          "name": "Serious",
+          "plus": "spe",
+          "minus": "spe"
+        },
+        {
+          "name": "Timid",
+          "plus": "spe",
+          "minus": "atk"
+        }
+      ]
+    }
+  },
+  "summary": {
+    "games": 3,
+    "observations": 44,
+    "observations_per_game": [
+      10,
+      18,
+      16
+    ],
+    "passed_observations": 44,
+    "floette_observations": 15,
+    "exclusions": []
+  },
+  "damage": [
+    {
+      "id": "g1:e12:p2:Whimsicott",
+      "game": 1,
+      "attacker": "testProfessor:slot6",
+      "defender": "Huarada:slot1",
+      "move": "Zap Cannon",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 51,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 137,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 137,
+          "damage": 66,
+          "hp_after": 71
+        },
+        {
+          "hp_before": 137,
+          "damage": 67,
+          "hp_after": 70
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e18:p1:Rillaboom",
+      "game": 1,
+      "attacker": "Huarada:slot1",
+      "defender": "testProfessor:slot5",
+      "move": "Moonblast",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 47,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 199,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 199,
+          "damage": 105,
+          "hp_after": 94
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e19:p1:Rillaboom",
+      "game": 1,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot5",
+      "move": "Dazzling Gleam",
+      "before": {
+        "numerator": 47,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 199,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 94,
+          "damage": 99,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 100,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 102,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 103,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 105,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 106,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 108,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 109,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 111,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 112,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 114,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 115,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 94,
+          "damage": 117,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 99,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 100,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 102,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 103,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 105,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 106,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 108,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 109,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 111,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 112,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 114,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 115,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 95,
+          "damage": 117,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e19:p1:Incineroar",
+      "game": 1,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot4",
+      "move": "Dazzling Gleam",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 56,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 202,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 202,
+          "damage": 87,
+          "hp_after": 115
+        },
+        {
+          "hp_before": 202,
+          "damage": 88,
+          "hp_after": 114
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e28:p1:Raichu",
+      "game": 1,
+      "attacker": "Huarada:slot1",
+      "defender": "testProfessor:slot6",
+      "move": "Moonblast",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 49,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 167,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 167,
+          "damage": 85,
+          "hp_after": 82
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e29:p1:Raichu",
+      "game": 1,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot6",
+      "move": "Moonblast",
+      "before": {
+        "numerator": 49,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 167,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 82,
+          "damage": 93,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 94,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 96,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 97,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 99,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 100,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 102,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 103,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 105,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 106,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 108,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 82,
+          "damage": 109,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 93,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 94,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 96,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 97,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 99,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 100,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 102,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 103,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 105,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 106,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 108,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 83,
+          "damage": 109,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e30:p2:Whimsicott",
+      "game": 1,
+      "attacker": "testProfessor:slot4",
+      "defender": "Huarada:slot1",
+      "move": "Flare Blitz",
+      "before": {
+        "numerator": 57,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 137,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 79,
+          "damage": 174,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 176,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 180,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 182,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 186,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 188,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 192,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 194,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 198,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 200,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 204,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 79,
+          "damage": 206,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e36:p1:Incineroar",
+      "game": 1,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot4",
+      "move": "Light of Ruin",
+      "before": {
+        "numerator": 74,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 202,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 150,
+          "damage": 274,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 277,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 280,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 285,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 288,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 291,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 294,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 297,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 300,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 304,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 307,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 310,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 313,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 316,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 319,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 150,
+          "damage": 324,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 274,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 277,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 280,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 285,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 288,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 291,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 294,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 297,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 300,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 304,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 307,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 310,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 313,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 316,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 319,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 151,
+          "damage": 324,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e40:p1:Gholdengo",
+      "game": 1,
+      "attacker": "Huarada:slot4",
+      "defender": "testProfessor:slot1",
+      "move": "Sucker Punch",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 20,
+        "denominator": 100,
+        "mode": "percent",
+        "color": "y"
+      },
+      "maximum_hp": 189,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 189,
+          "damage": 150,
+          "hp_after": 39
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g1:e41:p1:Gholdengo",
+      "game": 1,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot1",
+      "move": "Light of Ruin",
+      "before": {
+        "numerator": 20,
+        "denominator": 100,
+        "mode": "percent",
+        "color": "y"
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 189,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 38,
+          "damage": 55,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 56,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 57,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 58,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 59,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 60,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 61,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 62,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 63,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 64,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 65,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 38,
+          "damage": 66,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 55,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 56,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 57,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 58,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 59,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 60,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 61,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 62,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 63,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 64,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 65,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 39,
+          "damage": 66,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e12:p2:Floette-Eternal",
+      "game": 2,
+      "attacker": "testProfessor:slot4",
+      "defender": "Huarada:slot3",
+      "move": "Fake Out",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 85,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 149,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 149,
+          "damage": 21,
+          "hp_after": 128
+        },
+        {
+          "hp_before": 149,
+          "damage": 22,
+          "hp_after": 127
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e13:p1:Garchomp",
+      "game": 2,
+      "attacker": "Huarada:slot6",
+      "defender": "testProfessor:slot3",
+      "move": "Dragon Claw",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 31,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 185,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 185,
+          "damage": 126,
+          "hp_after": 59
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e14:p2:Garchomp",
+      "game": 2,
+      "attacker": "testProfessor:slot3",
+      "defender": "Huarada:slot6",
+      "move": "Dragon Pulse",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 185,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 185,
+          "damage": 194,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 198,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 200,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 204,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 206,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 210,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 212,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 216,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 218,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 222,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 224,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 228,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 230,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e17:p1:Gholdengo",
+      "game": 2,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot1",
+      "move": "Dazzling Gleam",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 80,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 189,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 189,
+          "damage": 36,
+          "hp_after": 153
+        },
+        {
+          "hp_before": 189,
+          "damage": 37,
+          "hp_after": 152
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e17:p1:Incineroar",
+      "game": 2,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot4",
+      "move": "Dazzling Gleam",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 54,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 202,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 202,
+          "damage": 91,
+          "hp_after": 111
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e23:p1:Rillaboom",
+      "game": 2,
+      "attacker": "Huarada:slot4",
+      "defender": "testProfessor:slot5",
+      "move": "Low Kick",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 66,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 199,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 199,
+          "damage": 66,
+          "hp_after": 133
+        },
+        {
+          "hp_before": 199,
+          "damage": 67,
+          "hp_after": 132
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e30:p2:Kingambit",
+      "game": 2,
+      "attacker": "testProfessor:slot5",
+      "defender": "Huarada:slot4",
+      "move": "Grassy Glide",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 81,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 207,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 207,
+          "damage": 38,
+          "hp_after": 169
+        },
+        {
+          "hp_before": 207,
+          "damage": 39,
+          "hp_after": 168
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e31:p1:Gholdengo",
+      "game": 2,
+      "attacker": "Huarada:slot4",
+      "defender": "testProfessor:slot1",
+      "move": "Sucker Punch",
+      "before": {
+        "numerator": 92,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 15,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 189,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 174,
+          "damage": 144,
+          "hp_after": 30
+        },
+        {
+          "hp_before": 175,
+          "damage": 146,
+          "hp_after": 29
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e32:p2:Basculegion",
+      "game": 2,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot2",
+      "move": "Make It Rain",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 42,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 227,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 227,
+          "damage": 130,
+          "hp_after": 97
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e32:p2:Kingambit",
+      "game": 2,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot4",
+      "move": "Make It Rain",
+      "before": {
+        "numerator": 81,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 21,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 207,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 168,
+          "damage": 123,
+          "hp_after": 45
+        },
+        {
+          "hp_before": 169,
+          "damage": 125,
+          "hp_after": 44
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e43:p2:Floette-Eternal",
+      "game": 2,
+      "attacker": "testProfessor:slot5",
+      "defender": "Huarada:slot3",
+      "move": "Grassy Glide",
+      "before": {
+        "numerator": 97,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 32,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 149,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 145,
+          "damage": 96,
+          "hp_after": 49
+        },
+        {
+          "hp_before": 145,
+          "damage": 97,
+          "hp_after": 48
+        },
+        {
+          "hp_before": 146,
+          "damage": 97,
+          "hp_after": 49
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e44:p2:Floette-Eternal",
+      "game": 2,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot3",
+      "move": "Shadow Ball",
+      "before": {
+        "numerator": 32,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 149,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 48,
+          "damage": 62,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 48,
+          "damage": 64,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 48,
+          "damage": 66,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 48,
+          "damage": 68,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 48,
+          "damage": 70,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 48,
+          "damage": 71,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 48,
+          "damage": 74,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 49,
+          "damage": 62,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 49,
+          "damage": 64,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 49,
+          "damage": 66,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 49,
+          "damage": 68,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 49,
+          "damage": 70,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 49,
+          "damage": 71,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 49,
+          "damage": 74,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e45:p1:Rillaboom",
+      "game": 2,
+      "attacker": "Huarada:slot4",
+      "defender": "testProfessor:slot5",
+      "move": "Kowtow Cleave",
+      "before": {
+        "numerator": 90,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 43,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 199,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 180,
+          "damage": 93,
+          "hp_after": 87
+        },
+        {
+          "hp_before": 180,
+          "damage": 94,
+          "hp_after": 86
+        },
+        {
+          "hp_before": 181,
+          "damage": 94,
+          "hp_after": 87
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e51:p1:Rillaboom",
+      "game": 2,
+      "attacker": "Huarada:slot4",
+      "defender": "testProfessor:slot5",
+      "move": "Kowtow Cleave",
+      "before": {
+        "numerator": 49,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 199,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 98,
+          "damage": 99,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 98,
+          "damage": 100,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 98,
+          "damage": 102,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 98,
+          "damage": 103,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 98,
+          "damage": 105,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 98,
+          "damage": 106,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 99,
+          "damage": 99,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 99,
+          "damage": 100,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 99,
+          "damage": 102,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 99,
+          "damage": 103,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 99,
+          "damage": 105,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 99,
+          "damage": 106,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e58:p2:Kingambit",
+      "game": 2,
+      "attacker": "testProfessor:slot4",
+      "defender": "Huarada:slot4",
+      "move": "Fake Out",
+      "before": {
+        "numerator": 39,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 35,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 207,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 81,
+          "damage": 7,
+          "hp_after": 74
+        },
+        {
+          "hp_before": 81,
+          "damage": 8,
+          "hp_after": 73
+        },
+        {
+          "hp_before": 82,
+          "damage": 8,
+          "hp_after": 74
+        },
+        {
+          "hp_before": 82,
+          "damage": 9,
+          "hp_after": 73
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e59:p2:Basculegion",
+      "game": 2,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot2",
+      "move": "Shadow Ball",
+      "before": {
+        "numerator": 79,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 227,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 180,
+          "damage": 213,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 218,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 221,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 226,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 229,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 234,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 237,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 242,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 244,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 250,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 180,
+          "damage": 252,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 213,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 218,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 221,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 226,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 229,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 234,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 237,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 242,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 244,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 250,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 181,
+          "damage": 252,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e70:p1:Garchomp",
+      "game": 2,
+      "attacker": "Huarada:slot4",
+      "defender": "testProfessor:slot3",
+      "move": "Low Kick",
+      "before": {
+        "numerator": 31,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 185,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 58,
+          "damage": 176,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 178,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 180,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 183,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 185,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 187,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 189,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 191,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 193,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 195,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 197,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 199,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 201,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 203,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 205,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 58,
+          "damage": 208,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 176,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 178,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 180,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 183,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 185,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 187,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 189,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 191,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 193,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 195,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 197,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 199,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 201,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 203,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 205,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 59,
+          "damage": 208,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g2:e76:p2:Kingambit",
+      "game": 2,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot4",
+      "move": "Make It Rain",
+      "before": {
+        "numerator": 35,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 207,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 73,
+          "damage": 144,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 146,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 148,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 149,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 151,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 152,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 155,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 156,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 157,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 160,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 161,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 164,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 166,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 168,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 73,
+          "damage": 170,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 144,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 146,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 148,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 149,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 151,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 152,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 155,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 156,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 157,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 160,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 161,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 164,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 166,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 168,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 74,
+          "damage": 170,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e9:p2:Floette-Eternal",
+      "game": 3,
+      "attacker": "testProfessor:slot4",
+      "defender": "Huarada:slot3",
+      "move": "Fake Out",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 85,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 149,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 149,
+          "damage": 21,
+          "hp_after": 128
+        },
+        {
+          "hp_before": 149,
+          "damage": 22,
+          "hp_after": 127
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e16:p1:Volcarona",
+      "game": 3,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot2",
+      "move": "Moonblast",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 65,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 181,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 181,
+          "damage": 62,
+          "hp_after": 119
+        },
+        {
+          "hp_before": 181,
+          "damage": 63,
+          "hp_after": 118
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e25:p2:Basculegion",
+      "game": 3,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot2",
+      "move": "Make It Rain",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 71,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 227,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 227,
+          "damage": 64,
+          "hp_after": 163
+        },
+        {
+          "hp_before": 227,
+          "damage": 65,
+          "hp_after": 162
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e25:p2:Kingambit",
+      "game": 3,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot4",
+      "move": "Make It Rain",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 54,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 207,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 207,
+          "damage": 94,
+          "hp_after": 113
+        },
+        {
+          "hp_before": 207,
+          "damage": 95,
+          "hp_after": 112
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e28:p1:Volcarona",
+      "game": 3,
+      "attacker": "Huarada:slot2",
+      "defender": "testProfessor:slot2",
+      "move": "Aqua Jet",
+      "before": {
+        "numerator": 65,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 5,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 181,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 118,
+          "damage": 108,
+          "hp_after": 10
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e31:p2:Kingambit",
+      "game": 3,
+      "attacker": "testProfessor:slot2",
+      "defender": "Huarada:slot4",
+      "move": "Overheat",
+      "before": {
+        "numerator": 54,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 207,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 112,
+          "damage": 144,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 146,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 150,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 152,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 156,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 158,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 162,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 164,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 168,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 112,
+          "damage": 170,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 144,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 146,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 150,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 152,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 156,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 158,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 162,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 164,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 168,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 113,
+          "damage": 170,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e42:p1:Gholdengo",
+      "game": 3,
+      "attacker": "Huarada:slot2",
+      "defender": "testProfessor:slot1",
+      "move": "Last Respects",
+      "before": {
+        "numerator": 90,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 19,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 189,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 171,
+          "damage": 134,
+          "hp_after": 37
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e43:p2:Whimsicott",
+      "game": 3,
+      "attacker": "testProfessor:slot2",
+      "defender": "Huarada:slot1",
+      "move": "Overheat",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 21,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 137,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 137,
+          "damage": 108,
+          "hp_after": 29
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e45:p2:Basculegion",
+      "game": 3,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot2",
+      "move": "Make It Rain",
+      "before": {
+        "numerator": 73,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 42,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 227,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 166,
+          "damage": 69,
+          "hp_after": 97
+        },
+        {
+          "hp_before": 166,
+          "damage": 70,
+          "hp_after": 96
+        },
+        {
+          "hp_before": 167,
+          "damage": 70,
+          "hp_after": 97
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e45:p2:Whimsicott",
+      "game": 3,
+      "attacker": "testProfessor:slot1",
+      "defender": "Huarada:slot1",
+      "move": "Make It Rain",
+      "before": {
+        "numerator": 21,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 137,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 29,
+          "damage": 242,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 244,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 250,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 252,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 257,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 260,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 265,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 268,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 273,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 276,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 281,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 283,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 29,
+          "damage": 289,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 242,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 244,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 250,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 252,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 257,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 260,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 265,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 268,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 273,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 276,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 281,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 283,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 30,
+          "damage": 289,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e49:p1:Gholdengo",
+      "game": 3,
+      "attacker": "Huarada:slot2",
+      "defender": "testProfessor:slot1",
+      "move": "Aqua Jet",
+      "before": {
+        "numerator": 10,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 189,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 19,
+          "damage": 24,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 19,
+          "damage": 25,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 19,
+          "damage": 26,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 19,
+          "damage": 27,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 19,
+          "damage": 28,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 19,
+          "damage": 29,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 20,
+          "damage": 24,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 20,
+          "damage": 25,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 20,
+          "damage": 26,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 20,
+          "damage": 27,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 20,
+          "damage": 28,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 20,
+          "damage": 29,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e50:p1:Volcarona",
+      "game": 3,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot2",
+      "move": "Dazzling Gleam",
+      "before": {
+        "numerator": 5,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 181,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 10,
+          "damage": 50,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 51,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 52,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 53,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 54,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 55,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 56,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 57,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 58,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 10,
+          "damage": 59,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e58:p1:Garchomp",
+      "game": 3,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot3",
+      "move": "Moonblast",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 185,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 185,
+          "damage": 282,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 284,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 288,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 290,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 294,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 296,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 302,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 306,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 308,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 312,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 314,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 318,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 320,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 324,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 326,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 185,
+          "damage": 332,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e59:p1:Incineroar",
+      "game": 3,
+      "attacker": "Huarada:slot2",
+      "defender": "testProfessor:slot4",
+      "move": "Wave Crash",
+      "before": {
+        "numerator": 100,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 59,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 202,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 202,
+          "damage": 82,
+          "hp_after": 120
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e63:p1:Incineroar",
+      "game": 3,
+      "attacker": "Huarada:slot3",
+      "defender": "testProfessor:slot4",
+      "move": "Moonblast",
+      "before": {
+        "numerator": 59,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 12,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 202,
+      "censored_ko": false,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 120,
+          "damage": 94,
+          "hp_after": 26
+        },
+        {
+          "hp_before": 121,
+          "damage": 96,
+          "hp_after": 25
+        }
+      ],
+      "passed": true
+    },
+    {
+      "id": "g3:e66:p1:Incineroar",
+      "game": 3,
+      "attacker": "Huarada:slot2",
+      "defender": "testProfessor:slot4",
+      "move": "Wave Crash",
+      "before": {
+        "numerator": 37,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "after": {
+        "numerator": 0,
+        "denominator": 100,
+        "mode": "percent",
+        "color": null
+      },
+      "maximum_hp": 202,
+      "censored_ko": true,
+      "supported": true,
+      "reason": "",
+      "matching_witnesses": [
+        {
+          "hp_before": 75,
+          "damage": 78,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 75,
+          "damage": 80,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 75,
+          "damage": 82,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 75,
+          "damage": 84,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 75,
+          "damage": 86,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 75,
+          "damage": 88,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 75,
+          "damage": 90,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 75,
+          "damage": 92,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 78,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 80,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 82,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 84,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 86,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 88,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 90,
+          "hp_after": 0
+        },
+        {
+          "hp_before": 76,
+          "damage": 92,
+          "hp_after": 0
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "conditional_floette_spa": [
+    {
+      "game": 1,
+      "new_observation_ids": [
+        "g1:e19:p1:Rillaboom",
+        "g1:e19:p1:Incineroar",
+        "g1:e29:p1:Raichu",
+        "g1:e36:p1:Incineroar",
+        "g1:e41:p1:Gholdengo"
+      ],
+      "compatible_spa": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "not_ruled_out_spa": [
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "unresolved_spa": [],
+      "rejected_by": {
+        "0": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "1": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "2": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "3": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "4": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "5": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "6": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "7": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "8": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "9": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "10": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "11": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "12": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "13": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "14": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "15": [
+          "g1:e19:p1:Incineroar"
+        ],
+        "16": [
+          "g1:e19:p1:Incineroar"
+        ]
+      },
+      "unresolved_by": {}
+    },
+    {
+      "game": 2,
+      "new_observation_ids": [
+        "g2:e17:p1:Gholdengo",
+        "g2:e17:p1:Incineroar"
+      ],
+      "compatible_spa": [
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "not_ruled_out_spa": [
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "unresolved_spa": [],
+      "rejected_by": {
+        "17": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "18": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "19": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "20": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "21": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "22": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "23": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "24": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "25": [
+          "g2:e17:p1:Incineroar"
+        ],
+        "26": [
+          "g2:e17:p1:Incineroar"
+        ]
+      },
+      "unresolved_by": {}
+    },
+    {
+      "game": 3,
+      "new_observation_ids": [
+        "g3:e16:p1:Volcarona",
+        "g3:e50:p1:Volcarona",
+        "g3:e58:p1:Garchomp",
+        "g3:e63:p1:Incineroar"
+      ],
+      "compatible_spa": [
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "not_ruled_out_spa": [
+        27,
+        28,
+        29,
+        30,
+        31,
+        32
+      ],
+      "unresolved_spa": [],
+      "rejected_by": {},
+      "unresolved_by": {}
+    }
+  ],
+  "blind_public_search": {
+    "options": {
+      "enabled": true,
+      "perspective": "public",
+      "hp_mode": "percent",
+      "max_assignments": 12000,
+      "max_projections": 12000,
+      "max_cache_entries": 4096,
+      "timeout_seconds": 60.0
+    },
+    "projections": 11962,
+    "checkpoints": [
+      {
+        "game": 1,
+        "outcome": "ambiguous",
+        "coverage": "bounded",
+        "observations": 10,
+        "certified_constraints": 1,
+        "truth_retained": true,
+        "floette_public_bounds": {
+          "hp": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "atk": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "def": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spa": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spd": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spe": {
+            "minimum": 0,
+            "maximum": 32
+          }
+        },
+        "narrowed": {
+          "testProfessor:slot1": {
+            "hp": {
+              "minimum": 0,
+              "maximum": 30
+            }
+          }
+        },
+        "limitations": [
+          "Per-game search budget reached; remaining work is reserved for later games",
+          "Marginal-boundary projection budget reached"
+        ]
+      },
+      {
+        "game": 2,
+        "outcome": "ambiguous",
+        "coverage": "bounded",
+        "observations": 28,
+        "certified_constraints": 1,
+        "truth_retained": true,
+        "floette_public_bounds": {
+          "hp": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "atk": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "def": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spa": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spd": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spe": {
+            "minimum": 0,
+            "maximum": 32
+          }
+        },
+        "narrowed": {
+          "testProfessor:slot1": {
+            "hp": {
+              "minimum": 2,
+              "maximum": 30
+            }
+          }
+        },
+        "limitations": [
+          "Per-game search budget reached; remaining work is reserved for later games",
+          "Marginal-boundary projection budget reached"
+        ]
+      },
+      {
+        "game": 3,
+        "outcome": "ambiguous",
+        "coverage": "bounded",
+        "observations": 44,
+        "certified_constraints": 1,
+        "truth_retained": true,
+        "floette_public_bounds": {
+          "hp": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "atk": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "def": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spa": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spd": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spe": {
+            "minimum": 0,
+            "maximum": 32
+          }
+        },
+        "narrowed": {
+          "testProfessor:slot1": {
+            "hp": {
+              "minimum": 4,
+              "maximum": 30
+            }
+          }
+        },
+        "limitations": [
+          "Projection/time budget reached",
+          "Marginal-boundary projection budget reached"
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Known spreads score damage; they are not inputs to public inference.",
+    "The conditional sweep fixes every other supplied value, including target spreads.",
+    "Matching local HP witnesses does not prove one globally consistent HP timeline.",
+    "A KO censors damage; matching it does not identify the actual random roll.",
+    "One recorded BO3 cannot establish general inference accuracy."
+  ]
+}

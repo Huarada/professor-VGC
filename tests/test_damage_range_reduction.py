@@ -49,7 +49,7 @@ def test_only_registered_cross_game_damage_narrows_hidden_hp(monkeypatch):
     monkeypatch.setattr("src.services.bo3_inference.coordinator.ProjectionBudget", WorkLimitedBudget)
     games = [log(hp=100, damage=45), log(hp=100, damage=72, winner="Bob", turn=2).replace(
         "|turn|2", "|-boost|p1a: Garchomp|atk|1\n|turn|2")]
-    # Independent exhaustive oracle: ceil-percent damage at 100->55 and 100->28.
+    # Independent exhaustive oracle: Champions floor-percent damage at 100->55 and 100->28.
     compatible_hp = set()
     for hp in range(33):
         maximum = 100 + hp
@@ -58,13 +58,13 @@ def test_only_registered_cross_game_damage_narrows_hidden_hp(monkeypatch):
                 damage = 50 + attack - defense
                 matches = []
                 for observed, extra in [(55, 0), (28, 30)]:
-                    matches.append(any((remaining * 100 + maximum - 1) // maximum == observed
+                    matches.append(any(max(1, remaining * 100 // maximum) == observed
                         for before in range(1, maximum + 1)
-                        if (before * 100 + maximum - 1) // maximum == 100
+                        if max(1, before * 100 // maximum) == 100
                         and (remaining := before - damage - extra) > 0))
                 if all(matches):
                     compatible_hp.add(hp)
-    assert (min(compatible_hp), max(compatible_hp)) == (6, 18)
+    assert (min(compatible_hp), max(compatible_hp)) == (9, 14)
     for registered in [True, False]:
         source = sheet(registered=registered, known_attack=False)
         del source["pokemon"][1]["stat_points"]["hp"]
@@ -86,7 +86,7 @@ def test_only_registered_cross_game_damage_narrows_hidden_hp(monkeypatch):
         assert (first.stat_points["hp"].minimum, first.stat_points["hp"].maximum) == (0, 32)
         final = summary(result.checkpoints[-1], "Bob:slot1")
         bound = final.stat_points["hp"]
-        assert (bound.minimum, bound.maximum) == ((6, 18) if registered else (0, 32))
+        assert (bound.minimum, bound.maximum) == ((9, 14) if registered else (0, 32))
         change = compare_ranges(final.baseline_stat_points["hp"], bound)
-        assert change.reduction_percent == (60.6 if registered else 0)
+        assert change.reduction_percent == (81.8 if registered else 0)
         assert bound.minimum <= 10 <= bound.maximum  # planted truth retained

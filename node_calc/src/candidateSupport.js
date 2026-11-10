@@ -114,7 +114,7 @@ const REQUIRED_CONTEXT = {
 
 function rules() {
   return {
-    version: 'champions-stat-points-66-32-v1', engine_version: engineVersion,
+    version: 'champions-stat-points-66-32-v2-floor-hp', engine_version: engineVersion,
     stat_cap: 32, total_budget: 66, fixed_iv: 31,
     natures: Array.from(Generations.get(0).natures, n => ({
       name: n.name, plus: n.plus || '', minus: n.minus || '',
@@ -161,7 +161,12 @@ function possibleHP(reading, maximum) {
   }
   const values = [];
   for (let hp = 1; hp <= maximum; hp++) {
-    if (Math.ceil(hp * reading.denominator / maximum) === reading.numerator) values.push(hp);
+    // Champions differs from the mainline public HP display: floor, with a
+    // minimum of one for a living Pokemon. 100% therefore means full HP.
+    if (Math.max(1, Math.floor(hp * reading.denominator / maximum)) !== reading.numerator) continue;
+    if (reading.color && reading.numerator === 20 && (hp * 5 > maximum) !== (reading.color === 'y')) continue;
+    if (reading.color && reading.numerator === 50 && (hp * 2 > maximum) !== (reading.color === 'g')) continue;
+    values.push(hp);
   }
   return values;
 }

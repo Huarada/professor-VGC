@@ -727,3 +727,7 @@ BO3 result display (2026-11-01): keep the loading context open through replay pa
 Series-local evidence retrieval follows ADR-064: fresh SeriesEvidenceIndex per analysis, participant/slot identity, causal cutoffs, preserved runtime requests, no persistent spread memory. Keep raw evidence_retrievals out of LLM prompts. Query matches are not certified constraints.
 
 BO3 narrative fidelity follows ADR-065: build a verified claim catalog from the causal checkpoint; require strict claim_ids/analysis JSON, enforce required facts, render values in code and allow one correction before deterministic fallback. Keep base/Mega abilities separate, never treat retrieved hits as proof, and never claim the free strategic prose has general semantic verification. BO1 stays unchanged.
+
+Champions HP and search fairness follow ADR-066: public HP floors, clamps alive values to 1%, treats 100% as full, and preserves 20/50 boundary color suffixes. Never apply generic ceil witnesses. Enforce per-game reservations at ProjectionBudget.project so fallback search cannot exhaust later games. Known-spread fixtures are validation-only; blind inference reads public logs, not their truth file.
+
+Direct Gemini completion deadlines follow ADR-067: configurable 90s per attempt / 180s total per complete(), shared monotonic budget including backoff, at most three transient attempts, SDK retries disabled. BO3 synthesis uses this provider independently of the ADK per-agent ceiling. Preserve stage-specific transport errors and never silently shorten causal evidence to work around timeouts.

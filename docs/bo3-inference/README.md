@@ -559,7 +559,7 @@ inference are separate from this damage-compatibility stage.
 |---|---|
 | Duplicate games | Compare parsed battle content as well as replay IDs, across raw/dict/pasted JSON inputs; wrapper ratings and changed IDs cannot hide a duplicate. |
 | Game ordering | Reject decreasing known battle timestamps. Missing clocks explicitly limit verification; never sort by upload time. |
-| HP measurements | Preserve ceiling-rounded HP and overkill KO compatibility. Skip changed denominators, increasing direct-hit HP and zero-HP attackers. |
+| HP measurements | Preserve Champions floor-rounded HP (minimum 1% alive), boundary color qualifiers and overkill KO compatibility. Skip changed denominators, increasing direct-hit HP and zero-HP attackers. |
 | Healing and residuals | Update running HP without adding them to the preceding direct hit; set-HP updates both targets. |
 | Runtime state | Snapshots preserve causal item consumption/exchange, boosts, screens, weather and observed form changes. Unsupported changed/suppressed abilities remain excluded from inverse inference. |
 | Original abilities | Copied runtime abilities do not become permanent registered traits. |
@@ -655,8 +655,8 @@ observations across games, despite different boosts and fields. Evidence is neve
 borrowed from a future game or across unverified team continuity.
 
 The report compares current intervals with the declaration-only baseline for
-each stat and each observed form. For example, 0-32 -> 6-18 removes 20 of 33
-integer point values: **60.6% interval reduction**. This is a planted independent
+each stat and each observed form. For example, 0-32 -> 9-14 removes 27 of 33
+integer point values: **81.8% interval reduction**. This is a planted independent
 test result, not measured accuracy on the user's replay. Card-stat reductions use
 their own level-50 units. Percentages are neither confidence nor win probabilities;
 unchanged intervals show 0%, and marginal endpoints never form one legal spread.
@@ -800,3 +800,97 @@ source catalogs are retained as bo3_claim_plan in result DTOs; prompt source_ref
 strings share the plan checkpoint/game and each claim's participant/slot scope.
 The numerical UI tables and computed commentary remain complete and independent
 of model compliance. No additional generation stage or paid judge is required.
+
+
+## 23. Champions HP and per-game search reservations (ADR-066)
+
+Champions public HP uses floor(100 * HP / maxHP), clamped to 1 for living Pokemon.
+100% means full HP; 0 means fainted. Exact/private HP still fixes the denominator.
+This differs from the generic mainline ceil display. Suffixes 20/100y and 20/100r
+resolve the true 20% boundary; 50/100g and 50/100y resolve the 50% boundary. Preserve
+these qualifiers in both native witness generation and Python compatibility checks.
+The native inference rule version is v2-floor-hp. Re-run older analyses; ranges
+computed with the previous rounding policy are not automatically revalidated.
+
+Every projection route, including fallback joint enumeration, shares an enforced
+per-game time/projection reservation. Exhausting a game's allowance retains sound
+bounds and leaves resources for later games. It never justifies excluding untested
+profiles. Unused allocations are redistributed among remaining games.
+
+The user-reported testProfessor/Huarada BO3 (2709311277, 2709313348, 2709316498)
+is saved separately from its known spreads. All 44 eligible hits, 15 involving
+Floette, agree with the supplied profiles. Blind inference never receives those
+hidden values. A separate validation oracle fixing the OTHER known values leaves
+Floette SpA 27-32; this is conditional evidence, not a public inferred interval or
+an exact recovered original spread. An alternative legal Floette spread with
+Atk 5 / SpA 27 / SpD 2 / Spe 32 also matches all 44 modeled direct hits with the
+other supplied profiles unchanged. This does not certify the full HP timeline.
+Default public inference still leaves Floette at 0-32; the conditional result must
+not replace those bounds. More appearances do not guarantee identification.
+The deterministic cross-game synthetic HP example is now 9-14 under floor HP;
+historical 6-18 results used the superseded ceil policy.
+
+Narrative fallback now logs static validation reasons and attempt numbers without
+logging generated prose, so rejected explanation format can be diagnosed separately
+from damage inference.
+
+## 24. Recorded BO3 testbench with held-out spreads
+
+Run from the repository root, with Node dependencies and the Python environment
+installed. No network, generation model, embeddings or persistent database is used:
+
+```powershell
+.venv-windows\Scripts\python.exe -m pytest tests/test_real_series_testbench.py -q
+.venv-windows\Scripts\python.exe -m scripts.bo3_real_series_benchmark --out real-series-report.json
+```
+
+The recorded inputs are the three testProfessor/Huarada replays listed in section
+23. Their user-supplied native spreads live in a separate truth fixture. The public
+inference test receives neither that fixture nor its points. The report scores
+damage using the held-out values and labels the conditional sweep separately.
+
+The 87-case regression matrix covers:
+
+- Each of the 44 direct hits individually, including 15 involving Floette.
+- All-game and middle-game side swaps, nickname changes, and combined changes:
+  causal requests and registered owner/slot identities must stay equivalent.
+- Seven counterfactual controls removing real aura, burn, Last Respects faint
+  count, spread damage, boosts, Life Orb or terrain inputs; native rolls must
+  change in the expected direction. These controls are not claims of alternate
+  battle outcomes.
+- Mega abilities, stat-stage resets between games, Sitrus healing and the correct
+  pre-attack HP after recoil/burn. Two consecutive-attack pairs also require a
+  shared integer HP witness across both attacks.
+- Earlier-game cutoffs, progressive bounds, known-spread retention, separation of
+  the two Garchomp, and unresolved bounds for the unplayed Charizard.
+- Negative controls: an intentionally wrong legal reference spread or unavailable
+  native projection must fail the report without silently dropping damage rows.
+  Unsupported candidates remain unresolved rather than being certified excluded.
+
+The saved [real-series report](validation/real-series-2709311277.json) contains input
+SHA-256 digests, engine/rule metadata, per-hit support/failure, integer HP witnesses,
+KO censoring, exclusions, and the exact hits rejecting each Floette SpA candidate.
+It also runs a separate public search before loading the reference spreads and
+records its per-game bounds, coverage, truth retention and resource limits
+(12,000 projections / 12,000 assignments). These limits make the benchmark quick;
+they are not the application's default search budget. Time-limited bounds can
+vary with execution conditions. Regenerate the report when reviewing calculator
+changes using the command above.
+
+With every other supplied attribute fixed for validation, Floette's cumulative
+compatible SpA points are 17-32 after game 1, 27-32 after game 2, and 27-32 after
+game 3. These are conditional results, not public inferred bounds. The separate
+12,000-projection public run narrows Gholdengo HP points from 0-32 to 0-30, 2-30
+and 4-30 across the three games, retaining the true 27; Floette remains unresolved
+at 0-32. Regression checks require actual certified narrowing, not merely keeping
+the truth inside unchanged intervals. Seventeen of
+the 44 damage observations end in KOs, which reveal only a lower damage threshold.
+Local witness agreement and the two joined pairs do not certify a full consistent
+HP trajectory for the entire battle. One known-spread series is a regression
+corpus, not a general accuracy estimate.
+
+
+Follow the [deterministic validation plan](TEST_PLAN.md) for acceptance gates,
+expected per-game values, commands and the optional manual application check.
+The real-series report schema is version 2; every named acceptance check must pass,
+including complete coverage, declared natures and certified public narrowing.
