@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import uuid
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 
 from src.domain.bo3_inference.interpretation import interpret_checkpoint
 from src.domain.bo3_inference.narration import coaching_context
@@ -23,7 +24,7 @@ from src.domain.interfaces import (
     PromptRepository,
     RegulationCatalog,
 )
-from src.domain.models import AnalysisRequest, ChatMessage, GameState
+from src.domain.models import AnalysisRequest, AnalysisResult, ChatMessage, GameState
 from src.domain.regulation import Regulation, RegulationScope, normalize_species
 from src.domain.series import (
     Bo3AnalysisRequest,
@@ -179,8 +180,11 @@ class Bo3AnalysisService:
                  guard: RegulationGuard | None = None,
                  memory: ConversationMemory | None = None,
                  inference: Bo3InferenceCoordinator | None = None,
-                 progress: ProgressReporter | None = None) -> None:
+                 progress: ProgressReporter | None = None, parallel_reviews: int = 1) -> None:
         self._parser = parser
+        # Game reviews are isolated (own request, session and pipeline), so they
+        # may run concurrently; 1 keeps the sequential order and per-game progress.
+        self._parallel_reviews = max(1, parallel_reviews)
         self._pipeline_factory = pipeline_factory
         self._llm = llm
         self._system = prompts.get("series_system")
@@ -202,15 +206,8 @@ class Bo3AnalysisService:
             self._report("Stage 1 of 3 — Reconstructing attacks and finding stat spreads compatible with their damage...")
         inferred = self._inference.analyze(request, evidence, states) if self._inference else None
         run_id = uuid.uuid4().hex
-        results = []
+        prepared: list[tuple[int, AnalysisRequest]] = []
         for source, game in zip(request.games, evidence.games):
-            focus = {
-                1: "Establishing the opening plan and key turning points.",
-                2: "Checking adjustments using the moves and sets revealed in game 1.",
-                3: "Checking game-three adjustments using evidence from games 1 and 2.",
-            }[game.number]
-            self._report(f"Stage 2 of 3 — Reviewing game {game.number} of {len(evidence.games)}: "
-                         f"AI analysing leads, turn-by-turn decisions and damage evidence with the computed stat ranges. {focus}")
             game_request = AnalysisRequest(
                 session_id=f"{request.session_id}:bo3:{run_id}:{game.number}",
                 replay_json=source if isinstance(source, dict) else None,
@@ -236,13 +233,37 @@ class Bo3AnalysisService:
                     game_request = game_request.model_copy(update={"bo3_claim_plan": build_claim_plan(checkpoint, request.question)})
             if game_request.series_context is not None:
                 game_request = game_request.model_copy(update={"series_context": compact_bo3_context(game_request.series_context)})
+            prepared.append((game.number, game_request))
+
+        def review(item: tuple[int, AnalysisRequest]) -> AnalysisResult:
+            number, game_request = item
             try:
-                results.append(self._pipeline_factory().analyze(game_request))
+                return self._pipeline_factory().analyze(game_request)
             except LLMProviderError as exc:
-                raise LLMProviderError(f"BO3 game {game.number} review: {exc}") from exc
+                raise LLMProviderError(f"BO3 game {number} review: {exc}") from exc
             finally:
                 if self._memory is not None:
                     self._memory.clear(game_request.session_id)
+
+        count = len(prepared)
+        workers = min(self._parallel_reviews, count)
+        if workers == 1:
+            results = []
+            for item in prepared:
+                focus = {
+                    1: "Establishing the opening plan and key turning points.",
+                    2: "Checking adjustments using the moves and sets revealed in game 1.",
+                    3: "Checking game-three adjustments using evidence from games 1 and 2.",
+                }[item[0]]
+                self._report(f"Stage 2 of 3 — Reviewing game {item[0]} of {count}: "
+                             f"AI analysing leads, turn-by-turn decisions and damage evidence with the computed stat ranges. {focus}")
+                results.append(review(item))
+        else:
+            # Progress stays on the calling thread; Streamlit cannot be updated from workers.
+            self._report(f"Stage 2 of 3 — Reviewing games 1-{count} of {count} in parallel: "
+                         "AI analysing leads, turn-by-turn decisions and damage evidence with the computed stat ranges.")
+            with ThreadPoolExecutor(max_workers=workers) as pool:
+                results = list(pool.map(review, prepared))  # game order is preserved
         payload = {
             "question": request.question, "series": evidence.model_dump(mode="json"),
             "set_inference": inferred.model_dump(mode="json") if inferred else None,

@@ -386,6 +386,7 @@ class Container:
             guard=RegulationGuard(self.calc_engine()),
             memory=self.memory(),
             inference=self.bo3_inference(progress=progress), progress=progress,
+            parallel_reviews=self._settings.bo3_parallel_reviews,
         )
 
     def usage_quota(self) -> UsageQuotaService:

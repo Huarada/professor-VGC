@@ -5540,3 +5540,37 @@ src/domain/bo3_inference/{models,session,candidate_space,dependencies}.py, domai
 adapters/calc/candidate_projection.py, services/bo3_inference/{propagation,solver,
 component_search}.py, services/bo3_inference/legacy/, ui/spread_summary.py,
 scripts/bo3_real_series_benchmark.py, tests and docs/bo3-inference.
+
+
+## ADR-069 - Run isolated BO3 game reviews concurrently
+
+**Date:** 2026-11-10. **Status:** Accepted.
+
+**Context:** After inference, the BO3 service reviewed games one after another,
+each through a fresh BO1 pipeline with its own request, session id and memory.
+No review reads another game's generated answer: each receives only typed
+evidence and its own inference checkpoints. Sequential calls therefore added
+latency without adding information.
+
+**Decision:** Build all game requests first, then review them in a thread pool
+of `PROFESSORVGC_BO3_PARALLEL_REVIEWS` workers (default 3, range 1-3). Results keep
+game order; each session is still cleared after its review; a failure keeps its
+"BO3 game N review" label. Progress is emitted only from the calling thread
+(Streamlit cannot be updated from workers): one message announces the parallel
+stage. With 1 worker, the previous sequential loop and per-game messages remain.
+The per-visitor quota is consumed once per BO3 analysis, before this stage, so it
+is unaffected. ADK runs `asyncio.run` per call, and Node IPC and memory are locked.
+
+**Alternatives considered:** asyncio across backends (the native and LangChain
+paths are synchronous); starting game reviews while later games are still being
+inferred (reviews need their checkpoints; gains would be small and ordering
+riskier); parallelizing the series summary (it needs every review).
+
+**Consequences:** Stage 2 takes roughly the longest single review instead of the
+sum (not measured with a paid model). Three simultaneous model requests can hit a
+provider rate limit; HTTP 429 is not retried, so the analysis fails with the game
+named and operators can set the variable to 1. Shared Node calls are serialized by
+their lock. Generated text, evidence and inference are unchanged.
+
+**Files:** src/services/series_analysis.py, src/config.py, src/services/container.py,
+.env.example, tests/test_bo3_parallel_reviews.py.
