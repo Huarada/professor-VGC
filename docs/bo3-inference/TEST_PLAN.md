@@ -47,7 +47,7 @@ embeddings, database writes or live replay downloads.
 | D09 | Identity invariance | Swapping every game's sides, swapping only game 2, renaming actors, and combining swaps/renames preserve canonical causal requests and series score. |
 | D10 | Public truth retention | Every reported bound contains the supplied true point value. A wrong known spread, unsupported projection or uncertified narrowing fails the report. |
 | D11 | Useful public inference | At least one certified bound narrows. Under the saved 12,000-projection work cap, Gholdengo HP points narrow 0-30 / 2-30 / 4-30, retaining the true 27. |
-| D12 | Honest uncertainty | Public Floette remains unresolved; unplayed Charizard stays at 0-32. Unsupported candidates are unresolved, not certified exclusions. |
+| D12 | Honest uncertainty | Public Floette SpA remains unresolved (HP 0-13 and Def 0-11 after game 2); unplayed Charizard stays at 0-32. Unsupported candidates are unresolved, not certified exclusions. |
 | D13 | Conditional Floette oracle | Fixing other supplied attributes for validation gives SpA 17-32 / 27-32 / 27-32. True 32 survives; no exact identification is claimed. |
 | D14 | Repetition / resources | Two identical native batches produce identical support. Projection caps are respected; a game cannot consume later games' reserved budget. |
 
@@ -79,12 +79,12 @@ damage ID; never delete a failed row to obtain a passing result. The checked-in
 | Checkpoint | Cumulative usable hits | Floette SpA, conditional oracle | Gholdengo HP points, public benchmark |
 |---|---:|---|---|
 | After game 1 | 10 | 17-32 | 0-30 |
-| After game 2 | 28 | 27-32 | 2-30 |
-| After game 3 | 44 | 27-32 | 4-30 |
+| After game 2 | 28 | 27-32 | 4-29 |
+| After game 3 | 44 | 27-32 | 4-29 |
 
 These columns use different knowledge. The Floette oracle fixes the other hidden
 attributes to their supplied values. Public inference never receives them and
-still leaves Floette at 0-32. Do not replace public bounds with conditional ones.
+leaves Floette SpA at 0-32 (per-hit tables, ADR-068, narrow only its HP to 0-13 and Def to 0-11). Do not replace public bounds with conditional ones.
 All numbers above are **native points**, not the resulting level-50 stat values.
 
 The benchmark uses 12,000 projections / 12,000 assignments, not the application's

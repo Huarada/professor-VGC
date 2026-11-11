@@ -122,7 +122,15 @@ function rules() {
   };
 }
 
+const MOVE_SUPPORT = new Map();
+
 function moveSupport(name) {
+  // The catalog is static, so support is a pure function of the move name.
+  if (!MOVE_SUPPORT.has(name)) MOVE_SUPPORT.set(name, moveSupportUncached(name));
+  return MOVE_SUPPORT.get(name);
+}
+
+function moveSupportUncached(name) {
   const move = Dex.moves.get(name);
   const native = Generations.get(0).moves.get(toID(name));
   if (!native || move.isZ || move.isMax) {
@@ -155,23 +163,30 @@ function moveSupport(name) {
     uses_attacker_hp: HP_POWER.has(toID(name)) || toID(name) === 'finalgambit' };
 }
 
+// Mirrors src/domain/bo3_inference/constraints.displays (parity-tested).
+function shows(hp, maximum, reading) {
+  if (reading.mode === 'exact') return reading.denominator === maximum && reading.numerator === hp;
+  // Champions differs from the mainline public HP display: floor, with a
+  // minimum of one for a living Pokemon. 100% therefore means full HP.
+  const displayed = hp > 0 ? Math.max(1, Math.floor(hp * reading.denominator / maximum)) : 0;
+  if (displayed !== reading.numerator) return false;
+  if (reading.color && reading.numerator === 20) return (hp * 5 > maximum) === (reading.color === 'y');
+  if (reading.color && reading.numerator === 50) return (hp * 2 > maximum) === (reading.color === 'g');
+  return true;
+}
+
 function possibleHP(reading, maximum) {
   if (reading.mode === 'exact') {
     return reading.denominator === maximum ? [reading.numerator] : [];
   }
   const values = [];
   for (let hp = 1; hp <= maximum; hp++) {
-    // Champions differs from the mainline public HP display: floor, with a
-    // minimum of one for a living Pokemon. 100% therefore means full HP.
-    if (Math.max(1, Math.floor(hp * reading.denominator / maximum)) !== reading.numerator) continue;
-    if (reading.color && reading.numerator === 20 && (hp * 5 > maximum) !== (reading.color === 'y')) continue;
-    if (reading.color && reading.numerator === 50 && (hp * 2 > maximum) !== (reading.color === 'g')) continue;
-    values.push(hp);
+    if (shows(hp, maximum, reading)) values.push(hp);
   }
   return values;
 }
 
-function project(request) {
+function project(request, rolls = calcRolls, build = buildPokemon) {
   try {
     const support = moveSupport(request.move);
     if (!support.supported) return { supported: false, reason: support.reason };
@@ -193,8 +208,8 @@ function project(request) {
         return { supported: false, reason: 'Illegal Champions investment' };
       }
     }
-    const attacker = buildPokemon(gen, request.attacker);
-    const defender = buildPokemon(gen, request.defender);
+    const attacker = build(gen, request.attacker);
+    const defender = build(gen, request.defender);
     if (support.multi_hit) {
       const data = Dex.moves.get(request.move);
       const maximumHits = Array.isArray(data.multihit) ? data.multihit[1] : data.multihit;
@@ -216,7 +231,7 @@ function project(request) {
     const witnesses = new Map();
     for (const before of possibleHP(request.before, maximum)) {
       for (const attackerHP of possibleHP(request.attackerBefore, attacker.maxHP())) {
-        const damageRolls = calcRolls(0, request.attacker, request.defender, request.move, request.field,
+        const damageRolls = rolls(0, request.attacker, request.defender, request.move, request.field,
           before / maximum * 100, attackerHP / attacker.maxHP() * 100,
           request.attackerAlliesFainted, request.hits, request.spreadHit, request.afterFailedMove, request.criticalHit, request.attackerHitsTaken);
         for (const damage of damageRolls) {
@@ -235,6 +250,62 @@ function project(request) {
   } catch (error) {
     return { supported: false, reason: `Champions projection unavailable: ${error.message}` };
   }
+}
+
+const TABLE_STATS = ['hp', 'atk', 'def', 'spa', 'spd', 'spe'];
+
+// Every 0-32 combination of up to three investment axes for one observed hit,
+// first axis most significant. '1' agrees with the observed after-HP, '0' does
+// not or is an illegal spread, '?' is unsupported and must never exclude.
+function table(request) {
+  const axes = request.axes;
+  if (!Array.isArray(axes) || axes.length < 1 || axes.length > 3
+      || axes.some(axis => !['attacker', 'defender'].includes(axis.side) || !TABLE_STATS.includes(axis.stat))
+      || new Set(axes.map(axis => `${axis.side}:${axis.stat}`)).size !== axes.length) {
+    throw new Error('Tables require one to three distinct attacker/defender stat axes');
+  }
+  const base = request.base;
+  const size = 33 ** axes.length;
+  // Champions damage reads the defender's HP only through Multiscale (full HP),
+  // Hard Press, Pain Split and fixed damage (mechanics/champions.js); elsewhere
+  // its HP investment changes only the witnesses, so rolls are shared across it.
+  const hpSensitive = ['hardpress', 'painsplit'].includes(toID(base.move)) || FIXED_DAMAGE.has(toID(base.move));
+  // Within one table only the evs and HP percentages vary, so they are the keys.
+  const evsKey = (evs, skip) => TABLE_STATS.map(stat => (stat === skip ? '' : evs[stat] ?? '')).join(',');
+  const memo = new Map();
+  const shared = (gen, attacker, defender, move, field, defenderPercent, attackerPercent, ...rest) => {
+    const key = `${evsKey(attacker.evs)}|${attackerPercent}|${evsKey(defender.evs, hpSensitive ? '' : 'hp')}|`
+      + `${hpSensitive ? defenderPercent : defenderPercent === 100}`;
+    if (!memo.has(key)) memo.set(key, calcRolls(gen, attacker, defender, move, field, defenderPercent, attackerPercent, ...rest));
+    return memo.get(key);
+  };
+  // Read-only within project(): one Pokemon object per role and spread.
+  const built = { attacker: new Map(), defender: new Map() };
+  let input;
+  const cachedBuild = (gen, spec) => {
+    const cache = built[spec === input.attacker ? 'attacker' : 'defender'];
+    const key = evsKey(spec.evs);
+    if (!cache.has(key)) cache.set(key, buildPokemon(gen, spec));
+    return cache.get(key);
+  };
+  const cells = new Array(size);
+  for (let index = 0; index < size; index++) {
+    input = { ...base, attacker: { ...base.attacker, evs: { ...base.attacker.evs } },
+      defender: { ...base.defender, evs: { ...base.defender.evs } } };
+    let rest = index;
+    for (let position = axes.length - 1; position >= 0; position--) {
+      input[axes[position].side].evs[axes[position].stat] = (rest % 33) * 8;
+      rest = Math.floor(rest / 33);
+    }
+    if ([input.attacker, input.defender].some(spec => Object.values(spec.evs).reduce((sum, ev) => sum + ev, 0) > 66 * 8)) {
+      cells[index] = '0';
+      continue;
+    }
+    const result = project(input, shared, cachedBuild);
+    cells[index] = !result.supported ? '?' : result.witnesses.some(witness =>
+      shows(Math.max(0, witness.hp_before - witness.damage), result.maximum_hp, request.after)) ? '1' : '0';
+  }
+  return { cells: cells.join('') };
 }
 
 function attributes(request) {
@@ -279,4 +350,4 @@ function coverage() {
   return Array.from(Generations.get(0).moves, move => ({ move: move.name, ...moveSupport(move.name) }));
 }
 
-module.exports = { rules, moveSupport, project, attributes, coverage };
+module.exports = { rules, moveSupport, project, table, shows, attributes, coverage };

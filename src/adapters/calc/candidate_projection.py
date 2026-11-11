@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections import OrderedDict
 from collections.abc import Sequence
 from typing import Any
 
@@ -18,6 +19,8 @@ from src.domain.bo3_inference.models import (
     PointRange,
     ProjectionRequest,
     RuleProfile,
+    TableRequest,
+    TableSupport,
 )
 from src.domain.exceptions import CalcEngineError
 
@@ -28,6 +31,8 @@ class SmogonCandidateProjectionAdapter:
     def __init__(self, *, ipc: NodeIpcClient) -> None:
         self._ipc = ipc
         self._forme_abilities: dict[str, str | None] = {}
+        # Engine results only (a pure function of the request), never inference state.
+        self._tables: OrderedDict[str, TableSupport] = OrderedDict()
 
     def _call(self, command: str, **values: Any) -> Any:
         response = self._ipc.request({"cmd": command, **values})
@@ -57,33 +62,52 @@ class SmogonCandidateProjectionAdapter:
                 self._forme_abilities[result.species] = result.forme_ability if result.supported else None
         return {name: ability for name in formes if (ability := self._forme_abilities.get(name)) is not None}
 
+    @staticmethod
+    def _payload(entry: ProjectionRequest) -> dict[str, Any]:
+        request = entry.calc
+        attacker = SmogonCalcAdapter._mon_payload(request.attacker)
+        defender = SmogonCalcAdapter._mon_payload(request.defender)
+        attacker.update({"evs": {stat: points * 8 for stat, points in entry.attacker_points.items()},
+                         "nature": entry.attacker_nature})
+        defender.update({"evs": {stat: points * 8 for stat, points in entry.defender_points.items()},
+                         "nature": entry.defender_nature})
+        return {
+            "attacker": attacker, "defender": defender,
+            "move": request.move, "field": SmogonCalcAdapter._field_payload(request.field),
+            "spreadHit": request.spread_hit, "afterFailedMove": request.after_failed_move,
+            "criticalHit": request.critical_hit,
+            "hits": request.hits,
+            "attackerAlliesFainted": request.attacker_allies_fainted,
+            "attackerHitsTaken": request.attacker_hits_taken,
+            "before": entry.before.model_dump(), "attackerBefore": entry.attacker_before.model_dump(),
+        }
+
     def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
-        payload = []
-        for entry in requests:
-            request = entry.calc
-            attacker = SmogonCalcAdapter._mon_payload(request.attacker)
-            defender = SmogonCalcAdapter._mon_payload(request.defender)
-            attacker.update({"evs": {stat: points * 8 for stat, points in entry.attacker_points.items()},
-                             "nature": entry.attacker_nature})
-            defender.update({"evs": {stat: points * 8 for stat, points in entry.defender_points.items()},
-                             "nature": entry.defender_nature})
-            payload.append({
-                "attacker": attacker, "defender": defender,
-                "move": request.move, "field": SmogonCalcAdapter._field_payload(request.field),
-                "spreadHit": request.spread_hit, "afterFailedMove": request.after_failed_move,
-                "criticalHit": request.critical_hit,
-                "hits": request.hits,
-                "attackerAlliesFainted": request.attacker_allies_fainted,
-                "attackerHitsTaken": request.attacker_hits_taken,
-                "before": entry.before.model_dump(), "attackerBefore": entry.attacker_before.model_dump(),
-            })
         try:
-            raw = self._call("candidateBatch", requests=payload)
+            raw = self._call("candidateBatch", requests=[self._payload(entry) for entry in requests])
             if not isinstance(raw, list) or len(raw) != len(requests):
                 raise CalcEngineError("Candidate batch response count mismatch")
             return [DamageSupport.model_validate(entry) for entry in raw]
         except ValidationError as exc:
             raise CalcEngineError("Malformed candidate damage support") from exc
+
+    def project_table(self, request: TableRequest) -> TableSupport:
+        key = request.model_dump_json()
+        if key in self._tables:
+            self._tables.move_to_end(key)
+            return self._tables[key]
+        try:
+            result = TableSupport.model_validate(self._call("candidateTable", request={
+                "base": self._payload(request.base), "axes": [axis.model_dump() for axis in request.axes],
+                "after": request.after.model_dump()}))
+        except ValidationError as exc:
+            raise CalcEngineError("Malformed candidate table") from exc
+        if len(result.cells) != 33 ** len(request.axes):
+            raise CalcEngineError("Candidate table size mismatch")
+        self._tables[key] = result
+        if len(self._tables) > 256:
+            self._tables.popitem(last=False)
+        return result
 
     def attributes_batch(self, requests: Sequence[AttributeBoundsRequest]) -> list[AttributeEnvelope]:
         try:

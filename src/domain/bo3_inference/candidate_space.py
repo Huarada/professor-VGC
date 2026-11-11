@@ -58,3 +58,19 @@ def joint_assignments(
         assigned.pop(key, None)
 
     yield from visit(0, {})
+
+
+def space_bound(
+    declarations: Mapping[str, DeclaredSet], axes: Mapping[str, set[StatName]], rules: RuleProfile,
+) -> int:
+    """Conservative size bound; do not enumerate profiles simply to count them."""
+    count = 1
+    for key, relevant in axes.items():
+        entry = declarations[key]
+        count *= 1 if entry.nature else len(rules.natures)
+        for axis in relevant:
+            if axis not in entry.stat_points:
+                count *= rules.stat_cap + 1
+        if count > 100000:
+            return count
+    return count

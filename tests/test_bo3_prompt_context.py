@@ -53,7 +53,8 @@ def test_reported_three_game_series_fits_context_without_losing_order_or_stat_ev
     if native_forward:
         # Exercise lossless fallback with the real damage engine and actual
         # default-budget inference, rather than only metadata and fake rolls.
-        monkeypatch.setattr("src.services.bo3_prompt_context.CONTEXT_BYTES", 80_000)
+        # ADR-068 per-hit tables certify more bounds, so findings grew past 80 KB.
+        monkeypatch.setattr("src.services.bo3_prompt_context.CONTEXT_BYTES", 90_000)
     assembler = build_evidence(SAMPLE_DIR / "gen9championsvgc2026regmb.json",
                               calc_engine=native_forward_calc if native_forward else None)
     per_game_messages = []
@@ -85,7 +86,7 @@ def test_reported_three_game_series_fits_context_without_losing_order_or_stat_ev
             for game in result.games]})
     assert len(json.dumps(legacy, ensure_ascii=False).encode("utf-8")) > 300_000
     assert len(text.encode("utf-8")) < MESSAGE_BYTES
-    assert len(text.encode("utf-8")) < 85_000  # regression ceiling, independent of the safety guard
+    assert len(text.encode("utf-8")) < 90_000  # regression ceiling, independent of the safety guard
     assert all(len(message.encode("utf-8")) < MESSAGE_BYTES for message in per_game_messages)
     assert all(len(message.encode("utf-8")) < 75_000 for message in per_game_messages)
     assert len(per_game_messages) == 3 and result.evidence.score == {"sauronMobile": 1, "miro kart ds": 2}

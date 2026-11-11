@@ -3462,16 +3462,17 @@
       "max_assignments": 12000,
       "max_projections": 12000,
       "max_cache_entries": 4096,
-      "timeout_seconds": 60.0
+      "timeout_seconds": 120.0,
+      "search": "propagation"
     },
-    "projections": 11962,
+    "projections": 258,
     "checkpoints": [
       {
         "game": 1,
         "outcome": "ambiguous",
         "coverage": "bounded",
         "observations": 10,
-        "certified_constraints": 1,
+        "certified_constraints": 10,
         "truth_retained": true,
         "floette_public_bounds": {
           "hp": {
@@ -3505,24 +3506,144 @@
               "minimum": 0,
               "maximum": 30
             }
+          },
+          "testProfessor:slot4": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "testProfessor:slot5": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 32
+            },
+            "spd": {
+              "minimum": 0,
+              "maximum": 29
+            }
+          },
+          "testProfessor:slot6": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "Huarada:slot1": {
+            "spa": {
+              "minimum": 1,
+              "maximum": 32
+            }
           }
         },
-        "limitations": [
-          "Per-game search budget reached; remaining work is reserved for later games",
-          "Marginal-boundary projection budget reached"
-        ]
+        "excluded_points": {
+          "testProfessor:slot1": {
+            "hp": [
+              1,
+              2,
+              3,
+              8,
+              9,
+              10,
+              13,
+              16,
+              17,
+              18,
+              23,
+              24,
+              25,
+              28
+            ]
+          },
+          "testProfessor:slot4": {
+            "hp": [
+              7,
+              14
+            ]
+          },
+          "testProfessor:slot5": {
+            "hp": [
+              6
+            ]
+          },
+          "testProfessor:slot6": {
+            "hp": [
+              5,
+              6,
+              11,
+              12,
+              17,
+              23,
+              29
+            ]
+          }
+        },
+        "single_observation_bounds": {
+          "testProfessor:slot1": {
+            "def": [
+              "g1:e40:p1:Gholdengo"
+            ],
+            "hp": [
+              "g1:e40:p1:Gholdengo"
+            ],
+            "spd": [
+              "g1:e41:p1:Gholdengo"
+            ]
+          },
+          "testProfessor:slot4": {
+            "hp": [
+              "g1:e19:p1:Incineroar"
+            ],
+            "atk": [
+              "g1:e30:p2:Whimsicott"
+            ]
+          },
+          "testProfessor:slot5": {
+            "hp": [
+              "g1:e18:p1:Rillaboom"
+            ],
+            "spd": [
+              "g1:e18:p1:Rillaboom"
+            ]
+          },
+          "testProfessor:slot6": {
+            "spa": [
+              "g1:e12:p2:Whimsicott"
+            ],
+            "hp": [
+              "g1:e28:p1:Raichu"
+            ]
+          },
+          "Huarada:slot1": {
+            "spd": [
+              "g1:e12:p2:Whimsicott"
+            ],
+            "spa": [
+              "g1:e18:p1:Rillaboom"
+            ],
+            "def": [
+              "g1:e30:p2:Whimsicott"
+            ]
+          },
+          "Huarada:slot4": {
+            "atk": [
+              "g1:e40:p1:Gholdengo"
+            ]
+          }
+        },
+        "limitations": []
       },
       {
         "game": 2,
         "outcome": "ambiguous",
         "coverage": "bounded",
         "observations": 28,
-        "certified_constraints": 1,
+        "certified_constraints": 28,
         "truth_retained": true,
         "floette_public_bounds": {
           "hp": {
             "minimum": 0,
-            "maximum": 32
+            "maximum": 13
           },
           "atk": {
             "minimum": 0,
@@ -3530,53 +3651,7 @@
           },
           "def": {
             "minimum": 0,
-            "maximum": 32
-          },
-          "spa": {
-            "minimum": 0,
-            "maximum": 32
-          },
-          "spd": {
-            "minimum": 0,
-            "maximum": 32
-          },
-          "spe": {
-            "minimum": 0,
-            "maximum": 32
-          }
-        },
-        "narrowed": {
-          "testProfessor:slot1": {
-            "hp": {
-              "minimum": 2,
-              "maximum": 30
-            }
-          }
-        },
-        "limitations": [
-          "Per-game search budget reached; remaining work is reserved for later games",
-          "Marginal-boundary projection budget reached"
-        ]
-      },
-      {
-        "game": 3,
-        "outcome": "ambiguous",
-        "coverage": "bounded",
-        "observations": 44,
-        "certified_constraints": 1,
-        "truth_retained": true,
-        "floette_public_bounds": {
-          "hp": {
-            "minimum": 0,
-            "maximum": 32
-          },
-          "atk": {
-            "minimum": 0,
-            "maximum": 32
-          },
-          "def": {
-            "minimum": 0,
-            "maximum": 32
+            "maximum": 11
           },
           "spa": {
             "minimum": 0,
@@ -3595,14 +3670,581 @@
           "testProfessor:slot1": {
             "hp": {
               "minimum": 4,
-              "maximum": 30
+              "maximum": 29
+            }
+          },
+          "testProfessor:slot3": {
+            "hp": {
+              "minimum": 0,
+              "maximum": 2
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "testProfessor:slot4": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "testProfessor:slot5": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 28
+            },
+            "atk": {
+              "minimum": 15,
+              "maximum": 32
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 16
+            },
+            "spd": {
+              "minimum": 0,
+              "maximum": 29
+            }
+          },
+          "testProfessor:slot6": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "Huarada:slot1": {
+            "spa": {
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "Huarada:slot3": {
+            "hp": {
+              "minimum": 0,
+              "maximum": 13
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 11
+            }
+          },
+          "Huarada:slot4": {
+            "atk": {
+              "minimum": 8,
+              "maximum": 32
+            }
+          },
+          "Huarada:slot6": {
+            "atk": {
+              "minimum": 30,
+              "maximum": 32
+            },
+            "spd": {
+              "minimum": 0,
+              "maximum": 27
             }
           }
         },
-        "limitations": [
-          "Projection/time budget reached",
-          "Marginal-boundary projection budget reached"
-        ]
+        "excluded_points": {
+          "testProfessor:slot1": {
+            "hp": [
+              6,
+              7,
+              8,
+              9,
+              10,
+              13,
+              15,
+              16,
+              17,
+              18,
+              22,
+              23,
+              24,
+              25,
+              28
+            ]
+          },
+          "testProfessor:slot4": {
+            "hp": [
+              6,
+              7,
+              14,
+              19
+            ]
+          },
+          "testProfessor:slot5": {
+            "hp": [
+              6
+            ]
+          },
+          "testProfessor:slot6": {
+            "hp": [
+              5,
+              6,
+              11,
+              12,
+              17,
+              23,
+              29
+            ]
+          },
+          "Huarada:slot3": {
+            "hp": [
+              2,
+              11
+            ]
+          }
+        },
+        "single_observation_bounds": {
+          "testProfessor:slot1": {
+            "def": [
+              "g1:e40:p1:Gholdengo"
+            ],
+            "hp": [
+              "g1:e40:p1:Gholdengo",
+              "g2:e31:p1:Gholdengo"
+            ],
+            "spd": [
+              "g1:e41:p1:Gholdengo"
+            ]
+          },
+          "testProfessor:slot3": {
+            "def": [
+              "g2:e13:p1:Garchomp"
+            ],
+            "hp": [
+              "g2:e13:p1:Garchomp"
+            ],
+            "spa": [
+              "g2:e14:p2:Garchomp"
+            ]
+          },
+          "testProfessor:slot4": {
+            "hp": [
+              "g1:e19:p1:Incineroar",
+              "g2:e17:p1:Incineroar"
+            ],
+            "atk": [
+              "g1:e30:p2:Whimsicott"
+            ]
+          },
+          "testProfessor:slot5": {
+            "hp": [
+              "g1:e18:p1:Rillaboom",
+              "g2:e23:p1:Rillaboom"
+            ],
+            "spd": [
+              "g1:e18:p1:Rillaboom"
+            ],
+            "def": [
+              "g1:e18:p1:Rillaboom",
+              "g2:e23:p1:Rillaboom"
+            ],
+            "atk": [
+              "g2:e43:p2:Floette-Eternal"
+            ]
+          },
+          "testProfessor:slot6": {
+            "spa": [
+              "g1:e12:p2:Whimsicott"
+            ],
+            "hp": [
+              "g1:e28:p1:Raichu"
+            ]
+          },
+          "Huarada:slot1": {
+            "spd": [
+              "g1:e12:p2:Whimsicott"
+            ],
+            "spa": [
+              "g1:e18:p1:Rillaboom"
+            ],
+            "def": [
+              "g1:e30:p2:Whimsicott"
+            ]
+          },
+          "Huarada:slot3": {
+            "def": [
+              "g2:e43:p2:Floette-Eternal"
+            ],
+            "hp": [
+              "g2:e43:p2:Floette-Eternal"
+            ],
+            "spd": [
+              "g2:e44:p2:Floette-Eternal"
+            ]
+          },
+          "Huarada:slot4": {
+            "atk": [
+              "g1:e18:p1:Rillaboom",
+              "g2:e23:p1:Rillaboom"
+            ]
+          },
+          "Huarada:slot6": {
+            "atk": [
+              "g2:e13:p1:Garchomp"
+            ],
+            "hp": [
+              "g2:e14:p2:Garchomp"
+            ],
+            "spd": [
+              "g2:e14:p2:Garchomp"
+            ]
+          }
+        },
+        "limitations": []
+      },
+      {
+        "game": 3,
+        "outcome": "ambiguous",
+        "coverage": "bounded",
+        "observations": 44,
+        "certified_constraints": 44,
+        "truth_retained": true,
+        "floette_public_bounds": {
+          "hp": {
+            "minimum": 0,
+            "maximum": 13
+          },
+          "atk": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "def": {
+            "minimum": 0,
+            "maximum": 11
+          },
+          "spa": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spd": {
+            "minimum": 0,
+            "maximum": 32
+          },
+          "spe": {
+            "minimum": 0,
+            "maximum": 32
+          }
+        },
+        "narrowed": {
+          "testProfessor:slot1": {
+            "hp": {
+              "minimum": 4,
+              "maximum": 29
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 23
+            }
+          },
+          "testProfessor:slot3": {
+            "hp": {
+              "minimum": 0,
+              "maximum": 2
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 1
+            }
+          },
+          "testProfessor:slot4": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "testProfessor:slot5": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 28
+            },
+            "atk": {
+              "minimum": 15,
+              "maximum": 32
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 16
+            },
+            "spd": {
+              "minimum": 0,
+              "maximum": 29
+            }
+          },
+          "testProfessor:slot6": {
+            "hp": {
+              "minimum": 1,
+              "maximum": 32
+            }
+          },
+          "Huarada:slot1": {
+            "hp": {
+              "minimum": 2,
+              "maximum": 29
+            },
+            "spa": {
+              "minimum": 1,
+              "maximum": 32
+            },
+            "spd": {
+              "minimum": 0,
+              "maximum": 29
+            }
+          },
+          "Huarada:slot2": {
+            "atk": {
+              "minimum": 4,
+              "maximum": 32
+            }
+          },
+          "Huarada:slot3": {
+            "hp": {
+              "minimum": 0,
+              "maximum": 13
+            },
+            "def": {
+              "minimum": 0,
+              "maximum": 11
+            }
+          },
+          "Huarada:slot4": {
+            "atk": {
+              "minimum": 8,
+              "maximum": 32
+            }
+          },
+          "Huarada:slot6": {
+            "atk": {
+              "minimum": 30,
+              "maximum": 32
+            },
+            "spd": {
+              "minimum": 0,
+              "maximum": 27
+            }
+          }
+        },
+        "excluded_points": {
+          "testProfessor:slot1": {
+            "hp": [
+              6,
+              7,
+              8,
+              9,
+              10,
+              13,
+              15,
+              16,
+              17,
+              18,
+              22,
+              23,
+              24,
+              25,
+              28
+            ]
+          },
+          "testProfessor:slot2": {
+            "hp": [
+              2,
+              3,
+              4,
+              5,
+              10,
+              11,
+              16,
+              17,
+              22,
+              23,
+              24,
+              30
+            ]
+          },
+          "testProfessor:slot4": {
+            "hp": [
+              5,
+              6,
+              7,
+              10,
+              14,
+              15,
+              19,
+              20,
+              25
+            ]
+          },
+          "testProfessor:slot5": {
+            "hp": [
+              6
+            ]
+          },
+          "testProfessor:slot6": {
+            "hp": [
+              5,
+              6,
+              11,
+              12,
+              17,
+              23,
+              29
+            ]
+          },
+          "Huarada:slot1": {
+            "hp": [
+              4,
+              7,
+              8,
+              9,
+              14,
+              15,
+              16,
+              19,
+              22,
+              23,
+              24,
+              27
+            ]
+          },
+          "Huarada:slot3": {
+            "hp": [
+              2,
+              11
+            ]
+          },
+          "Huarada:slot4": {
+            "hp": [
+              1
+            ]
+          }
+        },
+        "single_observation_bounds": {
+          "testProfessor:slot1": {
+            "def": [
+              "g1:e40:p1:Gholdengo",
+              "g2:e31:p1:Gholdengo",
+              "g3:e42:p1:Gholdengo"
+            ],
+            "hp": [
+              "g1:e40:p1:Gholdengo",
+              "g2:e31:p1:Gholdengo"
+            ],
+            "spd": [
+              "g1:e41:p1:Gholdengo"
+            ]
+          },
+          "testProfessor:slot2": {
+            "hp": [
+              "g3:e28:p1:Volcarona"
+            ],
+            "def": [
+              "g3:e28:p1:Volcarona"
+            ]
+          },
+          "testProfessor:slot3": {
+            "def": [
+              "g2:e13:p1:Garchomp"
+            ],
+            "hp": [
+              "g2:e13:p1:Garchomp"
+            ],
+            "spa": [
+              "g2:e14:p2:Garchomp"
+            ],
+            "spd": [
+              "g3:e58:p1:Garchomp"
+            ]
+          },
+          "testProfessor:slot4": {
+            "hp": [
+              "g1:e19:p1:Incineroar",
+              "g2:e17:p1:Incineroar",
+              "g3:e59:p1:Incineroar"
+            ],
+            "atk": [
+              "g1:e30:p2:Whimsicott"
+            ]
+          },
+          "testProfessor:slot5": {
+            "hp": [
+              "g1:e18:p1:Rillaboom",
+              "g2:e23:p1:Rillaboom"
+            ],
+            "spd": [
+              "g1:e18:p1:Rillaboom"
+            ],
+            "def": [
+              "g1:e18:p1:Rillaboom",
+              "g2:e23:p1:Rillaboom"
+            ],
+            "atk": [
+              "g2:e43:p2:Floette-Eternal"
+            ]
+          },
+          "testProfessor:slot6": {
+            "spa": [
+              "g1:e12:p2:Whimsicott"
+            ],
+            "hp": [
+              "g1:e28:p1:Raichu"
+            ]
+          },
+          "Huarada:slot1": {
+            "spd": [
+              "g3:e43:p2:Whimsicott"
+            ],
+            "spa": [
+              "g1:e18:p1:Rillaboom"
+            ],
+            "def": [
+              "g1:e30:p2:Whimsicott"
+            ],
+            "hp": [
+              "g3:e43:p2:Whimsicott"
+            ]
+          },
+          "Huarada:slot2": {
+            "atk": [
+              "g1:e40:p1:Gholdengo",
+              "g2:e31:p1:Gholdengo",
+              "g3:e42:p1:Gholdengo"
+            ]
+          },
+          "Huarada:slot3": {
+            "def": [
+              "g2:e43:p2:Floette-Eternal"
+            ],
+            "hp": [
+              "g2:e43:p2:Floette-Eternal"
+            ],
+            "spd": [
+              "g2:e44:p2:Floette-Eternal"
+            ]
+          },
+          "Huarada:slot4": {
+            "atk": [
+              "g1:e18:p1:Rillaboom",
+              "g2:e23:p1:Rillaboom"
+            ],
+            "hp": [
+              "g3:e25:p2:Kingambit"
+            ]
+          },
+          "Huarada:slot6": {
+            "atk": [
+              "g2:e13:p1:Garchomp"
+            ],
+            "hp": [
+              "g2:e14:p2:Garchomp"
+            ],
+            "spd": [
+              "g2:e14:p2:Garchomp"
+            ]
+          }
+        },
+        "limitations": []
       }
     ]
   },

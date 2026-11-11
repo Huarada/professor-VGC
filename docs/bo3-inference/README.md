@@ -880,9 +880,9 @@ changes using the command above.
 With every other supplied attribute fixed for validation, Floette's cumulative
 compatible SpA points are 17-32 after game 1, 27-32 after game 2, and 27-32 after
 game 3. These are conditional results, not public inferred bounds. The separate
-12,000-projection public run narrows Gholdengo HP points from 0-32 to 0-30, 2-30
-and 4-30 across the three games, retaining the true 27; Floette remains unresolved
-at 0-32. Regression checks require actual certified narrowing, not merely keeping
+12,000-projection public run (per-hit tables, ADR-068) narrows Gholdengo HP points
+from 0-32 to 0-30, 4-29 and 4-29 across the three games, retaining the true 27;
+Floette SpA remains unresolved at 0-32 while its HP and Def narrow to 0-13 and 0-11. Regression checks require actual certified narrowing, not merely keeping
 the truth inside unchanged intervals. Seventeen of
 the 44 damage observations end in KOs, which reveal only a lower damage threshold.
 Local witness agreement and the two joined pairs do not certify a full consistent
@@ -894,3 +894,36 @@ Follow the [deterministic validation plan](TEST_PLAN.md) for acceptance gates,
 expected per-game values, commands and the optional manual application check.
 The real-series report schema is version 2; every named acceptance check must pass,
 including complete coverage, declared natures and certified public narrowing.
+
+
+## 25. Per-hit feasibility tables and arc consistency (ADR-068)
+
+Every eligible hit depends on at most three undeclared investment axes (normally
+the attack stat of its source and the target's HP and defense). The Node worker
+evaluates all 33^k native-point combinations of those axes in one `candidateTable`
+call, using the same `project` semantics as `candidateBatch`: `1` agrees with the
+observed after-HP, `0` does not or is an illegal spread, `?` is unsupported and
+never excludes anything. Damage rolls are shared across the target's HP investment
+except for mechanics that read its HP (Multiscale's full-HP flag, Hard Press,
+Pain Split, fixed damage); a per-cell oracle test pins this equivalence.
+
+Python intersects tables over identical axes cell by cell, then removes a value
+only when one table (or the 66-point budget) has no supporting combination left.
+These are sound outer bounds of a relaxation: they never claim joint families,
+uniqueness or a globally consistent HP timeline. Values inside a range that no
+table supports are reported as `excluded_points`. Re-running propagation without
+each hit lists, per stat, the hits whose individual removal loosens that bound
+(`single_observation_bounds`); the findings text names them, because one
+mis-modeled hit could make such a bound wrong.
+
+Hits with undeclared natures, more than three axes or no table support keep the
+ADR-062 marginal-endpoint search, which also remains selectable through
+`InferenceOptions.search = "legacy"` (`services/bo3_inference/legacy/`). Compare
+both with `python -m scripts.bo3_real_series_benchmark --search legacy --out PATH`.
+On the recorded series at the same 12,000-projection cap, tables certify 10/28/44
+hits and narrow 6/15/19 stats after games 1-3; the legacy search certifies one
+hit per game and narrows one stat. All true values stay inside every range and
+outside every excluded value. Table time is roughly 0.5-3 s per hit depending on
+machine load, so the 60-second default can leave later hits without tables;
+those hits are skipped explicitly, never counted as evidence.
+
