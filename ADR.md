@@ -5542,6 +5542,21 @@ component_search}.py, services/bo3_inference/legacy/, ui/spread_summary.py,
 scripts/bo3_real_series_benchmark.py, tests and docs/bo3-inference.
 
 
+**Also fixed:** `candidateBatch` mapped `project` directly, so `Array.map` passed its
+index and array into the new optional `rolls`/`build` parameters and every batch
+projection failed; dispatch now passes only the request (Node regression test).
+The prompt-context regression test's artificial limit rose from 80 KB to 90 KB:
+more certified bounds reach `trusted_stat_spread_findings` (85,153 bytes on the
+Sauron series). The 100 KB production context and 110 KB message caps are unchanged.
+
+**Recorded checks (2026-11-10):** Python 914 passed, 1 skipped (two existing
+warnings); Node 40 passed; strict mypy 131 files; Ruff F and Vulture clean; CI green
+on Python 3.10/3.12 (PR #78). Per-cell oracle tests compare tables with uncached
+`project`; a deliberate mutation removing fixed damage from the HP-sensitive key
+fails the Super Fang case. The adapter table cache cut the real-series module from
+about 10 to 2.4 minutes.
+
+
 ## ADR-069 - Run isolated BO3 game reviews concurrently
 
 **Date:** 2026-11-10. **Status:** Accepted.
@@ -5574,3 +5589,37 @@ their lock. Generated text, evidence and inference are unchanged.
 
 **Files:** src/services/series_analysis.py, src/config.py, src/services/container.py,
 .env.example, tests/test_bo3_parallel_reviews.py.
+
+**Recorded checks (2026-11-10):** Python 917 passed, 1 skipped; strict mypy and
+Ruff F/Vulture clean; CI green (PR #79). A `threading.Barrier(3)` test only passes
+when the three reviews overlap; run with one worker it fails with
+`BrokenBarrierError`.
+
+**Interface validation (2026-11-11):** `src/ui/app.py` was driven through Streamlit
+`AppTest` (BO3 mode, three replay links, the spread question, Analyze BO3) with the
+real container, Node worker, Firestore and Gemini 3.5 Flash through ADK. Measured
+critical path: inference 20.8 s (44/44 tables certified, no time cut), three
+concurrent reviews 51.6/54.7/56.1 s, series synthesis 24.1 s, total 101.7 s
+(about 110 s including rendering). Summing the measured reviews estimates about
+207 s sequentially; that baseline was not run. No narrative correction attempt was
+needed. Final findings equalled the deterministic run, and every held-out true
+value stayed inside its range and outside the excluded values. The generated
+strategic text matched the logs (game 1 Tailwind, game 2 Garchomp KO, game 3
+Basculegion priority); "proved decisive" remains interpretation, not a proven cause.
+
+Gaps found: the findings text lists only narrowed stats (unresolved ones appear in
+the tables, not as explicit 0-32 lines); dependencies cite game and event, not the
+move or attacker; Pokemon with interior exclusions but no narrowed interval
+(Volcarona) do not show them. Environment issues, not code: the local Avast CA
+bundle used for `REQUESTS_CA_BUNDLE` had expired (BO3 import fails; the configured
+`combined-ca-bundle.pem` works with verification on), a Windows clock three hours
+ahead made Google reject Firestore JWTs (`invalid_grant`), and a harness must call
+`configure_trust` as `scripts/local_runtime.py` does or ADK TLS fails.
+
+Next latency steps, by risk: instrument review internals (selection, explanation
+agent calls, tools); run tables on several Node workers (inference about 21 s to
+6-8 s on four cores, results identical); then consider fewer agent calls or the
+native orchestrator for BO3 reviews only after a faithfulness benchmark. Starting
+reviews before inference finishes would not shorten the path: game 3's review
+needs the full inference.
+
