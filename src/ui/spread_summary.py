@@ -6,6 +6,11 @@ from src.domain.bo3_inference.models import InferenceCheckpoint, StatName
 _LABELS: dict[StatName, str] = {"hp": "HP", "atk": "Atk", "def": "Def", "spa": "SpA", "spd": "SpD", "spe": "Spe"}
 
 
+def _hit(observation_id: str) -> str:
+    game, event = observation_id.split(":")[:2]
+    return f"game {game[1:]} event {event[1:]}"
+
+
 def stat_spread_commentary(checkpoint: InferenceCheckpoint | None) -> str:
     """Show proven ranges or a clear unresolved result, never an invented set."""
     if checkpoint is None:
@@ -21,6 +26,7 @@ def stat_spread_commentary(checkpoint: InferenceCheckpoint | None) -> str:
         lines.append("No original stat-point spread was identified at this checkpoint. Known natures, items, "
                      "abilities and moves are teamsheet facts, not an identified IV/EV spread.")
     else:
+        summaries = {summary.pokemon_id: summary for summary in checkpoint.summaries}
         for entry in informative:
             player = entry.pokemon_id.rsplit(":slot", 1)[0]
             for label, bounds in (("declared native points", entry.declared_native_bounds),
@@ -33,6 +39,18 @@ def stat_spread_commentary(checkpoint: InferenceCheckpoint | None) -> str:
                 lines.append(f"- **{entry.species} ({player})** — {label}: {values}. "
                              + ("The complete spread is known within the supplied model."
                                 if entry.complete_spread_known else "This does not identify a complete spread."))
+            summary = summaries.get(entry.pokemon_id)
+            if summary is None or not entry.constrained_native_bounds:
+                continue
+            if summary.excluded_points:
+                lines.append("  Also impossible inside these ranges: " + "; ".join(
+                    f"{_LABELS[stat]} {', '.join(map(str, values))}" for stat, values in summary.excluded_points.items()) + ".")
+            fragile = {stat: hits for stat, hits in summary.single_observation_bounds.items()
+                       if stat in entry.constrained_native_bounds}
+            if fragile:
+                lines.append("  **Single-observation dependency:** " + "; ".join(
+                    f"{_LABELS[stat]} ({', '.join(map(_hit, hits))})" for stat, hits in fragile.items())
+                    + ". Removing any one listed hit loosens that bound, so one mis-modeled hit could make it wrong.")
     lines.append(f"The calculation used {findings.eligible_damage_observations} eligible damage observations and "
                  f"{findings.complete_local_constraints} certified damage constraints. "
                  "Local constraints can reject joint combinations without narrowing every individual stat.")

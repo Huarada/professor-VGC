@@ -12,7 +12,7 @@ import hashlib
 import json
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 from src.adapters.calc.candidate_projection import SmogonCandidateProjectionAdapter
 from src.adapters.node_ipc import NodeIpcClient
@@ -139,13 +139,13 @@ def conditional_spa_sweep(adapter: SmogonCandidateProjectionAdapter, hits: Seque
     return checkpoints
 
 
-def report(adapter: SmogonCandidateProjectionAdapter) -> dict[str, Any]:
+def report(adapter: SmogonCandidateProjectionAdapter, search: Literal["propagation", "legacy"] = "propagation") -> dict[str, Any]:
     request, evidence, states, sheet, initial, hits, exclusions = collect(adapter)
     if request.teamsheet is not None or any(entry.stat_points for entry in sheet.pokemon):
         raise ValueError("Public input unexpectedly exposes hidden native points")
     # Run the public search BEFORE loading reference spreads, under a fixed
     # work cap. Wall-clock exhaustion is still explicit in checkpoint coverage.
-    options = InferenceOptions(max_projections=12000, max_assignments=12000)
+    options = InferenceOptions(max_projections=12000, max_assignments=12000, timeout_seconds=120, search=search)
     public_result = Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(),
         public_sheets=ShowdownTeamSheetParser(), projection=adapter).analyze(
             request.model_copy(update={"inference_options": options}), evidence, states)
@@ -169,6 +169,10 @@ def report(adapter: SmogonCandidateProjectionAdapter) -> dict[str, Any]:
                 if (bound.minimum, bound.maximum) != (0, 32)}
                 for summary in checkpoint.summaries
                 if any((bound.minimum, bound.maximum) != (0, 32) for bound in summary.stat_points.values())},
+            "excluded_points": {summary.pokemon_id: summary.excluded_points
+                                for summary in checkpoint.summaries if summary.excluded_points},
+            "single_observation_bounds": {summary.pokemon_id: summary.single_observation_bounds
+                                          for summary in checkpoint.summaries if summary.single_observation_bounds},
             "limitations": list(checkpoint.unsupported)})
     projected = adapter.project_batch([projection_request(hit, profiles) for hit in hits])
     rows = []
@@ -222,11 +226,12 @@ def report(adapter: SmogonCandidateProjectionAdapter) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--search", choices=("propagation", "legacy"), default="propagation")
     args = parser.parse_args()
     adapter = SmogonCandidateProjectionAdapter(ipc=NodeIpcClient(
         server_script=ROOT / "node_calc" / "calc_server.js", timeout_seconds=15))
     try:
-        result = report(adapter)
+        result = report(adapter, args.search)
         args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
         print(json.dumps({"passed": result["passed"], **result["summary"]}, indent=2))

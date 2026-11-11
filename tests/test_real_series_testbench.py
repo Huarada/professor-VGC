@@ -1,5 +1,6 @@
 """Recorded BO3 regression matrix, with known spreads held out from inference."""
 
+import random
 import re
 
 import pytest
@@ -16,6 +17,7 @@ from scripts.bo3_real_series_benchmark import (
 )
 from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
 from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
+from src.domain.bo3_inference.constraints import agrees
 from src.domain.bo3_inference.models import (
     DamageSupport,
     DamageWitness,
@@ -23,6 +25,8 @@ from src.domain.bo3_inference.models import (
     InferenceOptions,
 )
 from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
+from src.services.bo3_inference.declarations import visible_declarations
+from src.services.bo3_inference.propagation import table_request
 from src.services.bo3_inference.solver import projection_request
 from tests.test_bo3_inference_engine import engine  # noqa: F401
 
@@ -230,7 +234,8 @@ def test_real_report_fails_visibly_instead_of_dropping_bad_damage(real_case, eng
 def test_real_public_checkpoints_preserve_truth_and_never_consult_future_games(real_case, engine):  # noqa: F811
     request, evidence, states, sheet, initial, hits, _ = real_case[0]
     assert request.teamsheet is None and all(not entry.stat_points for entry in sheet.pokemon)
-    options = InferenceOptions(max_projections=12000, max_assignments=12000)
+    # The longest allowed deadline keeps table coverage independent of machine load.
+    options = InferenceOptions(max_projections=12000, max_assignments=12000, timeout_seconds=120)
     request = request.model_copy(update={"inference_options": options})
     result = Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), public_sheets=ShowdownTeamSheetParser(),
         projection=engine).analyze(request, evidence, states)
@@ -242,6 +247,7 @@ def test_real_public_checkpoints_preserve_truth_and_never_consult_future_games(r
         for summary in checkpoint.summaries:
             for stat, bound in summary.stat_points.items():
                 assert bound.minimum <= real_case[1][summary.pokemon_id].points[stat] <= bound.maximum
+                assert real_case[1][summary.pokemon_id].points[stat] not in summary.excluded_points.get(stat, ())
                 if previous:
                     old = previous[summary.pokemon_id].stat_points[stat]
                     assert old.minimum <= bound.minimum <= bound.maximum <= old.maximum
@@ -261,6 +267,35 @@ def test_real_public_checkpoints_preserve_truth_and_never_consult_future_games(r
     unobserved = previous[charizard]
     assert unobserved.basis == "declarations"
     assert all((bound.minimum, bound.maximum) == (0, 32) for bound in unobserved.stat_points.values())
+    # ADR-068 per-hit tables: 19 narrowed stats on this series (legacy at this cap: 1).
+    narrowed = [(key, stat) for key, summary in previous.items() for stat, bound in summary.stat_points.items()
+                if (bound.minimum, bound.maximum) != (0, 32)]
+    assert len(narrowed) >= 19
+    whimsicott = previous["Huarada:slot1"]
+    assert (whimsicott.stat_points["hp"].minimum, whimsicott.stat_points["hp"].maximum) == (2, 29)
+    assert whimsicott.single_observation_bounds["hp"] == ("g3:e43:p2:Whimsicott",)
+
+
+def test_real_hit_tables_match_the_batch_path_on_sampled_cells(real_case, engine):  # noqa: F811
+    _, _, _, sheet, initial, _, _ = real_case[0]
+    declarations = visible_declarations(initial, sheet, 3, "public")
+    hit = find(real_case, "g3:e43:p2:Whimsicott")
+    built = table_request(hit, declarations)
+    assert built is not None
+    variables, request = built
+    cells = engine.project_table(request).cells
+    assert len(cells) == 33 ** len(variables) and set(cells) <= {"0", "1"}
+    sample = random.Random(68).sample(range(len(cells)), 256)
+    requests = []
+    for index in sample:
+        points = {"attacker": dict(request.base.attacker_points), "defender": dict(request.base.defender_points)}
+        for position, axis in enumerate(request.axes):
+            points[axis.side][axis.stat] = index // 33 ** (len(request.axes) - 1 - position) % 33
+        requests.append(request.base.model_copy(update={"attacker_points": points["attacker"],
+                                                        "defender_points": points["defender"]}))
+    supports = [support for offset in range(0, len(requests), 64)
+                for support in engine.project_batch(requests[offset:offset + 64])]
+    assert [cells[index] for index in sample] == ["1" if agrees(hit, support) else "0" for support in supports]
 
 
 def test_real_benchmark_report_exposes_provenance_ambiguity_and_all_failed_hits(engine):  # noqa: F811

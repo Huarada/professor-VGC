@@ -5480,3 +5480,63 @@ services/series_analysis.py, .env.example and the Gemini/BO3 regression tests.
 strict mypy passed for 129 source files, and Ruff F/import, Vulture and whitespace
 checks passed. The restarted local app is healthy on port 8502. Provider behavior
 was checked with mocks/fake clocks; no paid validation call was requested.
+
+
+## ADR-068 - Exact per-hit tables with arc consistency; legacy search kept selectable
+
+**Date:** 2026-11-10. **Status:** Accepted. Replaces ADR-062's endpoint search as the default.
+
+**Context:** On the recorded testProfessor/Huarada series the ADR-062 search
+enumerated whole joint products per endpoint, so its budget certified one hit per
+game and narrowed one stat at the 12,000-projection benchmark cap (eleven in the
+app). A user-reported Whimsicott HP lower bound equal to the true value (2) looked
+suspicious. An independent brute-force oracle showed it is correct: Overheat is
+1.5x STAB then 2x effective, so damage 106/107 (needed for 0/1 HP points) is never
+produced while 108 is. It also showed that almost every bound rests on one hit.
+
+**Decision:** Every eligible hit depends on at most three undeclared axes, so the
+Node worker evaluates all 33^k combinations in one `candidateTable` call reusing
+`project` ('1' agrees, '0' rejected or illegal, '?' unsupported and never
+excluding). Rolls are memoized across the target's HP investment except where the
+Champions mechanics read its HP (Multiscale full-HP flag, Hard Press, Pain Split,
+fixed damage). Python intersects tables over identical axes, then applies arc
+consistency plus the 66-point budget. Removed values are sound outer-bound
+exclusions of that relaxation. Interior unsupported values are published as
+`excluded_points`; a leave-one-out rerun publishes `single_observation_bounds`,
+and the findings text names those hits. `CandidateTablePort` is optional: ports
+without it, undeclared natures, more than three axes or `search="legacy"` keep the
+ADR-062 search, moved unchanged to `services/bo3_inference/legacy/`.
+
+**Alternatives considered:** Faster IPC alone (measured: the calculator, not the
+pipe, dominated); monotonic band pruning (rounding creates holes, so pruning on
+damage envelopes needs separate proofs); a numpy dependency in the domain
+(Python `int` bitmasks propagate 44 tables in 0.03 s); deleting the legacy search
+(kept so a regression can be compared directly, as requested).
+
+**Consequences:** Same cap: 10/28/44 certified hits and 6/15/19 narrowed stats
+after games 1-3, versus 1/1/1 and 1/1/1. Floette HP/Def narrow to 0-13/0-11; SpA
+stays 0-32. Every true value stays inside every range and outside every excluded
+value. Tables cost about 0.5-3 s per hit with load, so under the 60-second default
+later hits can be skipped (explicitly reported, sound). The adapter caches up to
+256 tables as pure engine results, not spread memory. Arc consistency can be
+weaker than an exhaustive joint search when hits share some but not all axes; the
+exhaustive enumeration still runs whenever its space fits. Bounds remain only as
+trustworthy as the per-hit model: a single-observation bound is flagged, not hidden.
+BO1 is unchanged.
+
+**Found by the complete tables:** on the public Sauron series, three Mega Garchomp-Z
+Earth Power hits in game 3 were impossible under every spread, producing a false
+conflict. The attacker read 50%y, which is exactly half HP and needs an even
+maximum; its HP points were not a variable, so zero points (odd maximum) rejected
+every candidate for a reason unrelated to damage. `relevant_axes` now treats a
+color-qualified attacker reading like an exact one (both algorithms). Those hits
+have four axes and are skipped by tables; the series no longer conflicts.
+Residual: an uncolored attacker reading is always representable only when its
+maximum HP is at least 100, which holds for Champions level-50 species except a
+few with very low base HP.
+
+**Files:** node_calc/src/candidateSupport.js, node_calc/calc_server.js,
+src/domain/bo3_inference/{models,session,candidate_space,dependencies}.py, domain/interfaces.py,
+adapters/calc/candidate_projection.py, services/bo3_inference/{propagation,solver,
+component_search}.py, services/bo3_inference/legacy/, ui/spread_summary.py,
+scripts/bo3_real_series_benchmark.py, tests and docs/bo3-inference.

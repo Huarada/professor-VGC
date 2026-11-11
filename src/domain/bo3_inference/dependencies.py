@@ -25,7 +25,10 @@ def relevant_axes(observations: Sequence[DamageObservation]) -> dict[str, set[St
         if observation.category_from_stats:
             result[observation.attacker_id].update(("atk", "spa"))
             result[observation.defender_id].update(("def", "spd"))
-        if observation.uses_attacker_hp or observation.attacker_before.mode == "exact" or to_id(observation.request.attacker.ability) in {
+        # Exact and color-qualified readings constrain the attacker's maximum HP
+        # (50%y needs an even maximum), so its HP points cannot be left at zero.
+        if (observation.uses_attacker_hp or observation.attacker_before.mode == "exact"
+                or observation.attacker_before.color is not None) or to_id(observation.request.attacker.ability) in {
             "blaze", "torrent", "overgrow", "swarm", "defeatist",
         }:
             result[observation.attacker_id].add("hp")

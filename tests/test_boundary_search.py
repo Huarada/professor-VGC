@@ -9,7 +9,7 @@ from src.domain.bo3_inference.models import (
     InferenceOptions,
 )
 from src.domain.models import CalcRequest, PokemonSet
-from src.services.bo3_inference.boundary_search import boundary_bounds
+from src.services.bo3_inference.legacy.boundary_search import boundary_bounds
 from src.services.bo3_inference.solver import ProjectionBudget
 from tests.test_bo3_inference import AnalyticProjection, sheet
 

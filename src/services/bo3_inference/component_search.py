@@ -26,7 +26,7 @@ def solve_components(
     results = []
     remaining = assignment_limit
     # Small components yield useful proofs even when later components hit a limit.
-    from src.services.bo3_inference.factor_bounds import space_bound
+    from src.domain.bo3_inference.candidate_space import space_bound
 
     ordered = sorted(components, key=lambda samples: space_bound(declarations, relevant_axes(samples), rules))
     for samples in ordered:

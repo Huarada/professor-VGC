@@ -66,8 +66,14 @@ def retain_known_bounds(current: InferenceCheckpoint, previous: InferenceCheckpo
                                               "joint_examples": (),
                                               "unsupported": (*current.unsupported, "New declarations contradict prior compatible bounds")})
         inferred = (ranges != summary.stat_points or natures != summary.natures) and old.basis != "declarations"
+        # Both sources are sound, so their interior exclusions combine.
+        excluded = {stat: holes for stat in ranges if (holes := tuple(sorted(
+            value for value in {*summary.excluded_points.get(stat, ()), *old.excluded_points.get(stat, ())}
+            if ranges[stat].minimum < value < ranges[stat].maximum)))}
         summaries.append(summary.model_copy(update={"stat_points": ranges, "natures": natures,
-            "basis": "necessary_local_bounds" if inferred else summary.basis}))
+            "excluded_points": excluded,
+            "single_observation_bounds": {**old.single_observation_bounds, **summary.single_observation_bounds},
+            "basis": "necessary_local_bounds" if inferred or excluded != summary.excluded_points else summary.basis}))
     return current.model_copy(update={"summaries": tuple(summaries)})
 
 

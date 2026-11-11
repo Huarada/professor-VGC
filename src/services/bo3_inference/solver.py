@@ -46,6 +46,8 @@ class ProjectionBudget:
         self.factor_deadlines: dict[int, float] = {}
         self.factor_checkpoints: dict[str, InferenceCheckpoint] = {}
         self._game_deadline: float | None = None
+        # Series-local feasibility masks keyed by TableRequest JSON (ADR-068).
+        self.tables: dict[str, int] = {}
         self._game_projection_ceiling = options.max_projections
         self.progress: ProgressReporter | None = None
         self.progress_context = ""
@@ -60,6 +62,11 @@ class ProjectionBudget:
         self._game_projection_ceiling = self.projections + max(1, remaining // remaining_games)
         self.factor_phase_starts[game] = self.projections
         self.factor_deadlines[game] = self._game_deadline
+
+    def expired(self) -> bool:
+        """True once the series deadline or this game's reserved time has passed."""
+        now = time.monotonic()
+        return now >= self.deadline or (self._game_deadline is not None and now >= self._game_deadline)
 
     def report_batch(self, requests: Sequence[ProjectionRequest]) -> None:
         """Report real work at most once a second, without exposing a guessed ETA."""
@@ -200,16 +207,21 @@ def solve(
     budget: ProjectionBudget, assignment_limit: int | None = None,
 ) -> InferenceCheckpoint:
     """Use exact necessary local bounds when a full-series Cartesian search is huge."""
+    from src.domain.bo3_inference.candidate_space import space_bound
     from src.domain.bo3_inference.components import observation_components
     from src.services.bo3_inference.component_search import solve_components
-    from src.services.bo3_inference.factor_bounds import local_bounds, space_bound
+    from src.services.bo3_inference.legacy.factor_bounds import local_bounds
+    from src.services.bo3_inference.propagation import propagated_bounds
 
     limit = assignment_limit if assignment_limit is not None else budget.options.max_assignments
     components = observation_components(observations)
     factors = []
     if limit > 0 and observations and len(components) == 1 and space_bound(declarations, relevant_axes(observations), rules) > limit:
-        factors = local_bounds(game=game, phase=phase, declarations=declarations, observations=observations,
-                               rules=rules, budget=budget)
+        proof = propagated_bounds(game=game, phase=phase, declarations=declarations, observations=observations,
+            rules=rules, budget=budget) if budget.options.search == "propagation" else None
+        # Ports without table support (and undeclared natures) keep the legacy search.
+        factors = [proof] if proof is not None else local_bounds(game=game, phase=phase, declarations=declarations,
+            observations=observations, rules=rules, budget=budget)
         # Do not spend the entire series budget exploring a huge Cartesian
         # product once sound local proofs exist. Preserve work for later games.
         if all(declarations[key].nature for key in relevant_axes(observations)):

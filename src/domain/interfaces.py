@@ -18,6 +18,8 @@ from src.domain.bo3_inference.models import (
     MoveSupport,
     ProjectionRequest,
     RuleProfile,
+    TableRequest,
+    TableSupport,
     TeamSheet,
 )
 from src.domain.models import (
@@ -358,6 +360,14 @@ class CandidateProjectionPort(Protocol):
         ...
 
     def project_batch(self, requests: Sequence[ProjectionRequest]) -> list[DamageSupport]:
+        ...
+
+
+@runtime_checkable
+class CandidateTablePort(Protocol):
+    """Optional bulk evaluation of one hit over its investment axes (ADR-068)."""
+
+    def project_table(self, request: TableRequest) -> TableSupport:
         ...
 
 

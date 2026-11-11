@@ -39,7 +39,9 @@ function handle(request) {
       if (!Array.isArray(request.requests) || request.requests.length > 64) {
         throw new Error('Candidate batches require at most 64 requests');
       }
-      return { ok: true, result: request.requests.map(candidateSupport.project) };
+      return { ok: true, result: request.requests.map(entry => candidateSupport.project(entry)) };
+    case 'candidateTable':
+      return { ok: true, result: candidateSupport.table(request.request || {}) };
     case 'ping':
       return { ok: true, result: { pong: true } };
     case 'calc':

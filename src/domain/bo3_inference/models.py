@@ -105,6 +105,8 @@ class InferenceOptions(Value):
     max_projections: int = Field(default=120000, ge=1, le=200000)
     max_cache_entries: int = Field(default=4096, ge=64, le=20000)
     timeout_seconds: float = Field(default=60, gt=0, le=120)
+    # "legacy" keeps the ADR-062 marginal-endpoint search for comparison (ADR-068).
+    search: Literal["propagation", "legacy"] = "propagation"
 
 
 class NatureSpec(Value):
@@ -206,6 +208,25 @@ class DamageSupport(Value):
     witnesses: tuple[DamageWitness, ...] = ()
 
 
+class TableAxis(Value):
+    side: Literal["attacker", "defender"]
+    stat: StatName
+
+
+class TableRequest(Value):
+    """One hit evaluated at every 0-32 value of up to three investment axes."""
+
+    base: ProjectionRequest
+    axes: tuple[TableAxis, ...] = Field(min_length=1, max_length=3)
+    after: HPReading
+
+
+class TableSupport(Value):
+    """Cells in axis order, first axis most significant: 1 agrees, 0 rejected, ? unsupported."""
+
+    cells: str = Field(pattern=r"^[01?]+$")
+
+
 class PointRange(Value):
     minimum: int
     maximum: int
@@ -277,6 +298,10 @@ class CandidateSummary(Value):
     attributes: tuple[AttributeEnvelope, ...] = ()
     baseline_stat_points: dict[StatName, PointRange] = Field(default_factory=dict)
     baseline_natures: tuple[str, ...] = ()
+    # Values inside the outer range that no compatible assignment can take.
+    excluded_points: dict[StatName, tuple[int, ...]] = Field(default_factory=dict)
+    # Observations whose individual removal loosens this stat's bound (ADR-068).
+    single_observation_bounds: dict[StatName, tuple[str, ...]] = Field(default_factory=dict)
 
     @field_validator("stat_points", "baseline_stat_points")
     @classmethod

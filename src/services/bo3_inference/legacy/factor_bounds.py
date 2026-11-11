@@ -7,37 +7,21 @@ import time
 from collections.abc import Mapping, Sequence
 from typing import Literal
 
+from src.domain.bo3_inference.candidate_space import space_bound
 from src.domain.bo3_inference.evidence_index import SeriesEvidenceIndex
 from src.domain.bo3_inference.models import (
     DamageObservation,
     DeclaredSet,
     InferenceCheckpoint,
     RuleProfile,
-    StatName,
 )
-from src.services.bo3_inference.boundary_search import boundary_bounds
 from src.services.bo3_inference.evidence_retrieval import damage_factors
+from src.services.bo3_inference.legacy.boundary_search import boundary_bounds
 from src.services.bo3_inference.solver import (
     ProjectionBudget,
     enumerate_constraints,
     relevant_axes,
 )
-
-
-def space_bound(
-    declarations: Mapping[str, DeclaredSet], axes: Mapping[str, set[StatName]], rules: RuleProfile,
-) -> int:
-    """Conservative size bound; do not enumerate profiles simply to count them."""
-    count = 1
-    for key, relevant in axes.items():
-        entry = declarations[key]
-        count *= 1 if entry.nature else len(rules.natures)
-        for axis in relevant:
-            if axis not in entry.stat_points:
-                count *= rules.stat_cap + 1
-        if count > 100000:
-            return count
-    return count
 
 
 def local_bounds(
