@@ -13,7 +13,7 @@
     "audit:inverse": "node scripts/auditInverseCoverage.js"
   },
   "dependencies": {
-    "@pkmn/data": "^0.10.11",
+    "@pkmn/data": "^0.10.15",
     "@pkmn/dex": "^0.10.11",
     "@pkmn/smogon": "^0.6.0",
     "@smogon/calc": "^0.12.0"
