@@ -224,6 +224,7 @@ Read by `src/config.py` (`Settings`, pydantic-settings; `.env` supported).
 | `PROFESSORVGC_DEFAULT_PROVIDER` | `gemini` | `openai` or `gemini` (BYOK). |
 | `PROFESSORVGC_OPENAI_API_KEY` / `PROFESSORVGC_GEMINI_API_KEY` | — | Bring your own key. |
 | `PROFESSORVGC_OPENAI_MODEL` / `PROFESSORVGC_GEMINI_MODEL` | gpt-4o-mini / gemini-3.5-flash | Model ids. Gemini model is validated at Settings CONSTRUCTION time (a `field_validator`, `src/config.py`) — this project requires 3.5+; an older id fails immediately at app startup, not lazily on first Gemini call. `require_modern_gemini_model` (`src/adapters/llm/base.py`, reusing the same parser) re-checks at every point-of-use as defense in depth against an already-running process holding a stale cached `Settings`. |
+| `PROFESSORVGC_BO3_PARALLEL_REVIEWS` | `3` | Concurrent BO3 game reviews (1-3, ADR-069); `1` restores sequential calls if the provider rate-limits. |
 | `PROFESSORVGC_REGULATION` | `auto` | Regulation controller: `auto` (the replay's own), `mb`, `mc`, or a full format id — pinned = that regulation's data and Pokemon only (ADR-035). |
 | `PROFESSORVGC_REGULATION_FORMAT_PREFIX` | `gen9championsvgc2026reg` | Prefix that turns a short code (`mb`) into a format id. |
 | `PROFESSORVGC_REG_FALLBACK_DEPTH` | `3` | Max previous regulations to search (auto mode only; pinned = 0). |
@@ -733,3 +734,5 @@ Champions HP and search fairness follow ADR-066: public HP floors, clamps alive 
 Direct Gemini completion deadlines follow ADR-067: configurable 90s per attempt / 180s total per complete(), shared monotonic budget including backoff, at most three transient attempts, SDK retries disabled. BO3 synthesis uses this provider independently of the ADK per-agent ceiling. Preserve stage-specific transport errors and never silently shorten causal evidence to work around timeouts.
 
 Spread search follows ADR-068: exact per-hit Node tables (`candidateTable`, at most three axes) intersected by arc consistency and the 66-point budget. Unsupported cells never exclude; interior exclusions and single-hit dependencies are published, never hidden. The ADR-062 search lives in `services/bo3_inference/legacy/` and stays selectable (`InferenceOptions.search="legacy"`, benchmark `--search legacy`); keep both sound and comparable.
+
+BO3 game reviews run concurrently (ADR-069): each already has its own request, session and pipeline, results keep game order, progress is reported only from the calling thread, and the series summary still waits for all reviews. Never let a review depend on another game's generated answer.

@@ -92,6 +92,8 @@ class Settings(BaseSettings):
     # Direct Gemini SDK calls, including BO3 synthesis for every backend.
     gemini_request_timeout_seconds: float = Field(default=90.0, gt=0, allow_inf_nan=False)
     gemini_total_timeout_seconds: float = Field(default=180.0, gt=0, allow_inf_nan=False)
+    # Concurrent BO3 game reviews; 1 restores sequential calls (e.g. on provider 429s).
+    bo3_parallel_reviews: int = Field(default=3, ge=1, le=3)
     llm_temperature: float = 0.2
     # Per ADK agent turn; a Cloud Run session's first call also pays cold
     # starts (Node workers, gRPC channel, model client).
