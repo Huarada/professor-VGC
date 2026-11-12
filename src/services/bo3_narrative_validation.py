@@ -18,7 +18,7 @@ def validate_draft(text: str, plan: NarrativeClaimPlan) -> tuple[NarrativeDraft 
     if candidate.startswith("```json") and candidate.endswith("```"):
         candidate = candidate[7:-3].strip()
     try:
-        draft = NarrativeDraft.model_validate(json.loads(candidate))
+        draft = NarrativeDraft.model_validate(json.loads(candidate, strict=False))  # raw newlines inside strings are harmless
     except (ValueError, ValidationError):
         return None, ("Return one JSON object with claim_ids and analysis; no factual values or extra fields.",)
     issues = []
@@ -47,7 +47,7 @@ def validate_draft(text: str, plan: NarrativeClaimPlan) -> tuple[NarrativeDraft 
         issues.append("Discuss observed turning points as strategic interpretations, not a proven unique cause of victory.")
     # Sets and numerical card stats are rendered from catalog facts. The free
     # prose must not attach a base ability to an explicitly named Mega forme.
-    abilities = {str(claim.value) for claim in plan.claims if claim.kind in {"base_ability", "forme_ability"}}
+    owned = {(claim.pokemon_id, str(claim.value)) for claim in plan.claims if claim.kind in {"base_ability", "forme_ability"}}
     def normalize(value: str) -> str:
         return re.sub(r"[^a-z0-9]", "", value.lower())
     for sentence in re.split(r"[.!?\n]+", prose):
@@ -57,6 +57,8 @@ def validate_draft(text: str, plan: NarrativeClaimPlan) -> tuple[NarrativeDraft 
                 continue
             aliases = {normalize(claim.form), normalize(claim.species) + "mega", "mega" + normalize(claim.species)}
             if any(alias in normalized for alias in aliases):
-                if any(normalize(ability) in normalized and normalize(ability) != normalize(str(claim.value)) for ability in abilities):
+                # Only this Pokemon's own other ability counts; a sentence may name several Megas.
+                if any(normalize(ability) in normalized and normalize(ability) != normalize(str(claim.value))
+                       for pokemon_id, ability in owned if pokemon_id == claim.pokemon_id):
                     issues.append("A Mega forme must not be assigned a different/base-form ability.")
     return draft, tuple(dict.fromkeys(issues))

@@ -38,6 +38,49 @@ def test_observed_hp_and_general_policy_are_valid_coaching(text):
     assert not contains_numerical_investment(text)
 
 
+@pytest.mark.parametrize("text", [
+    "Gholdengo used Nasty Plot (+2 Special Attack).", "Raichu is at -1 Speed after Icy Wind.",
+])
+def test_signed_stat_stages_are_battle_boosts_not_allocations(text):
+    assert not contains_numerical_investment(text)
+
+
+@pytest.mark.parametrize("text", ["2 Special Attack", "+32 Atk", "Used +2 Special Attack and 32 Spe."])
+def test_unsigned_or_oversized_notation_is_still_allocation(text):
+    assert contains_numerical_investment(text)
+
+
+def _forme_plan():
+    from src.domain.narrative_claims import ClaimSource, NarrativeClaim, NarrativeClaimPlan
+
+    def claim(identifier, owner, species, kind, value, form=None):
+        basis = "engine_form_ability" if kind == "forme_ability" else "checkpoint_declaration"
+        return NarrativeClaim(id=identifier, pokemon_id=owner, species=species, kind=kind, value=value, form=form,
+                              source=ClaimSource(checkpoint_id="g1", game=1, pokemon_id=owner, field="x", basis=basis))
+    claims = (claim("a", "P1:slot1", "Raichu", "forme_ability", "No Guard", "Raichu-Mega-Y"),
+              claim("b", "P2:slot1", "Floette", "forme_ability", "Fairy Aura", "Floette-Mega"),
+              claim("c", "P2:slot1", "Floette", "base_ability", "Flower Veil"))
+    return NarrativeClaimPlan(game=1, checkpoint_id="g1", coverage="exhaustive", claims=claims,
+                              required_claim_ids=("a",))
+
+
+def test_validator_accepts_raw_newlines_and_two_megas_in_one_sentence():
+    from src.services.bo3_narrative_validation import validate_draft
+
+    text = ('{"claim_ids": ["a"], "analysis": "Mega Raichu Y gained No Guard while Mega Floette brought Fairy Aura.' + chr(10)
+            + 'Both Megas acted."}')
+    draft, issues = validate_draft(text, _forme_plan())
+    assert draft is not None and not issues
+
+
+def test_validator_still_rejects_a_megas_own_base_ability():
+    from src.services.bo3_narrative_validation import validate_draft
+
+    text = '{"claim_ids": ["a"], "analysis": "Mega Floette used Flower Veil to hold on."}'
+    _, issues = validate_draft(text, _forme_plan())
+    assert "A Mega forme must not be assigned a different/base-form ability." in issues
+
+
 def service(llm):
     class Pipeline:
         def analyze(self, req):
