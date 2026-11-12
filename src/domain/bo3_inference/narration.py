@@ -20,6 +20,8 @@ def contains_numerical_investment(text: str) -> bool:
     Numerical investment belongs to the renderer of typed inference evidence.
     """
     plain = text.replace("*", "").replace("`", "")
+    # A signed 1-6 stat stage ("+2 Special Attack") is a battle boost, not an allocation.
+    plain = re.sub(rf"(?<![\w+-])[+-][1-6]\s+{_STAT}\b", "", plain, flags=re.IGNORECASE)
     # Mechanical quantities are not investment, even in an assumed-set paragraph.
     plain = re.sub(r"\b(?:dealt|removed|lost|healed|recovered|causou|perdeu|curou)\s+\d+\s*HP\b",
                    "", plain, flags=re.IGNORECASE)
