@@ -5590,6 +5590,44 @@ their lock. Generated text, evidence and inference are unchanged.
 **Files:** src/services/series_analysis.py, src/config.py, src/services/container.py,
 .env.example, tests/test_bo3_parallel_reviews.py.
 
+
+## ADR-070 - Measure BO3 game reviews before changing agent behavior
+
+**Date:** 2026-11-11. **Status:** Accepted.
+
+**Context:** An ADK + Gemini 3.5 Flash BO3 run took 20.8 s for inverse tables,
+56.1 s for three game reviews already running in parallel, and 24.1 s for the
+series summary. The review wall time did not reveal how much was model waiting,
+tool use, selection, or deterministic evidence assembly. LangChain is an
+alternative review backend and needs the same diagnostic coverage.
+
+**Decision:** A review-local profiler records selection, evidence assembly and
+explanation durations, model round trips, and tool calls with durations and
+counts by tool name. ADK uses its model/tool callbacks; LangChain uses a
+request-local callback handler. BO3 owns and clears the profiler separately for
+each concurrent game. The result includes per-game and stage wall times, shown
+in a diagnostic expander. No prompt, tool arguments, response text, player name
+or hidden spread is recorded. BO1 has no active profiler. Existing agent step
+limits and tool availability remain unchanged until a measured candidate passes
+the fidelity benchmark.
+
+**Validation:** Fake ADK and LangChain model/tool loops both report three model
+round trips and one damage tool call without changing the returned answer.
+Parallel review tests retain game order and memory isolation; static checks and
+the full offline suite remain required. A paid real-provider comparison is a
+separate measurement and is not inferred from fake-model timings.
+
+**Measured follow-up:** On the recorded 3-game public BO3 with Gemini 3.5 Flash,
+ADK used two model calls and zero tools per review; review wall time was 58.3 s.
+LangChain initially used three model calls and zero tools per review, because
+each explanation failed the BO3 JSON contract once; review wall time was 92.4 s.
+The LangChain adapter had converted Gemini text-block content to Python's list
+representation instead of extracting its text. Using `AIMessage.text` preserved
+the JSON response. A repeat LangChain run used two model calls and zero tools
+per review, with no narration fallback; review wall time was 63.8 s. These are
+single-run observations with provider variance, not portable latency promises.
+No ADK tool-loop budget was reduced, since no review called a tool in this run.
+
 **Recorded checks (2026-11-10):** Python 917 passed, 1 skipped; strict mypy and
 Ruff F/Vulture clean; CI green (PR #79). A `threading.Barrier(3)` test only passes
 when the three reviews overlap; run with one worker it fails with
@@ -5622,4 +5660,268 @@ agent calls, tools); run tables on several Node workers (inference about 21 s to
 native orchestrator for BO3 reviews only after a faithfulness benchmark. Starting
 reviews before inference finishes would not shorten the path: game 3's review
 needs the full inference.
+
+## ADR-071 - Parallelize independent BO3 hit tables
+
+**Date:** 2026-11-11. **Status:** Accepted.
+
+**Context:** Review telemetry identifies explanation model waiting as the largest
+per-game cost (roughly 28-45 s in the measured runs, with zero tool calls). Before
+those reviews, 44 independent per-hit feasibility tables occupied about 21 s on
+one Node worker. Each table is a pure result of a single Champions calculator
+request. The series-level arc consistency and causal checkpoints depend on all
+completed tables but not on their computation order.
+
+**Decision:** Add an optional batch table port. The BO3 propagation service
+collects distinct uncached requests at each checkpoint, checks the existing
+deadline before admitting them, and associates returned results with their
+original observation IDs. The calculator adapter evaluates up to four tables
+concurrently on separate Node IPC workers and returns results in request order.
+Its bounded engine-result cache and worker initialization are synchronized.
+`PROFESSORVGC_BO3_TABLE_WORKERS` controls capacity from one to four; default
+four, with one available for CPU-constrained deployments. Capacity one uses the
+existing per-table deadline checks rather than queuing a whole batch.
+The single-table port remains available to fakes and older adapters. BO1 and
+the deterministic inference rules are unchanged.
+
+**Alternatives considered:** Python threads over one IPC client serialize at
+its request lock; increasing the model's speed cannot shorten deterministic
+table work; changing table mathematics or search budgets risks unsound bounds.
+
+**Consequences:** A cold, controlled local comparison on the same three public
+replays took 21.47 s with one worker and 7.90 s with four workers: 13.57 s saved
+(2.72x) in the deterministic inference stage. All six checkpoint signatures,
+native-point bounds, exclusions, and projection counts matched exactly. This
+measures the inference stage on one machine, not end-to-end provider latency.
+Each analysis can launch four Node workers, increasing peak CPU and memory.
+The explanation model remains the main latency source; a change to its calls
+requires separate fidelity validation.
+
+**Application measurement:** The same recorded BO3 with ADK and Gemini 3.5
+Flash completed in 107.14 s: inference 7.71 s, three parallel reviews 56.86 s,
+series synthesis 40.11 s. Each review still used two model calls and no tools.
+The earlier ADK run took 122.7 s (inference 21.30, reviews 58.28, synthesis
+40.61), but the provider timings vary between runs. The controlled local
+inference comparison above is the evidence for the deterministic speedup.
+The matching LangChain/Gemini run completed in 108.01 s (inference 7.88,
+reviews 51.11, synthesis 46.65); it also used two model calls and zero tools
+per game. The earlier LangChain run took 116.46 s (inference 20.79, reviews
+63.79, synthesis 29.40). The summary time increased between these two runs,
+showing why a single end-to-end model run cannot establish a stable speedup.
+
+**Files:** src/domain/interfaces.py, src/services/bo3_inference/propagation.py,
+src/adapters/calc/candidate_projection.py, src/adapters/node_ipc.py,
+src/config.py, src/services/container.py, .env.example,
+tests/test_parallel_candidate_tables.py.
+
+## ADR-072 - Overlap BO3 series synthesis with game narration
+
+**Date:** 2026-11-11. **Status:** Accepted.
+
+**Context:** After parallelizing hit tables, the BO3 critical path is dominated
+by model requests: three game explanations run concurrently, then the series
+summary starts. The summary payload deliberately excludes generated game
+answers and consumes typed game evidence. Waiting for the answers creates an
+unnecessary serial dependency of roughly 30-40 seconds in measured runs.
+
+**Decision:** The shared GroundTruthAssembler publishes an immutable
+AnalysisEvidence when it completes, through a request-scoped observer. BO3
+registers one observer per isolated review. Once all supplied games publish,
+the coordinator builds the same ordered series evidence payload and starts the
+summary while per-game explanations continue. It still awaits all reviews
+before returning the final result. A pipeline that does not publish evidence
+uses the former sequential summary path. BO1 has no observer. No model call,
+damage calculation, game narration input or inference rule is removed.
+Summary input excludes regulation warnings and the review backend name; neither
+is game evidence. An exact-payload test compares overlapped and sequential
+summary inputs. `PROFESSORVGC_BO3_OVERLAP_SYNTHESIS=false`
+restores the former dependency if a provider cannot handle the extra concurrent
+model request. Review wall time is measured from its own completions, separately
+from summary time.
+
+**Alternatives considered:** Removing the selection model or replacing game
+explanations with templates changes coaching behavior and needs a separate
+fidelity study; reducing prompt evidence risks losing causal or stat citations;
+changing models would alter quality and provider requirements.
+
+**Consequences:** Peak model concurrency can rise from three to four requests,
+so a rate-limited provider may need the opt-out. The final UI result still
+contains all game reviews and the checked series answer. The observer carries
+no cross-series memory and is reset at the end of each review. A barrier test
+proves the summary starts while all three game narratives are still pending.
+If a game explanation later fails, a summary request may already have been
+made; the overall analysis still fails rather than returning a partial result.
+End-to-end provider latency must be measured separately because concurrent
+requests may contend for provider capacity.
+
+**Measured ADK run:** On the recorded three-game BO3 with Gemini 3.5 Flash,
+wall time was 88.56 s: inference 19.73 s, reviews wall 65.58 s, series summary
+26.23 s. The summary overlapped the reviews; summing these stage durations
+would count roughly 23 s twice. Every game still used two model calls and no
+tools, and all 82 after-game local constraints were retained. The immediately
+preceding non-overlapped run took 107.14 s (inference 7.71, reviews 56.86,
+summary 40.11). These single provider runs have substantial variation, so
+their 18.58 s wall-time difference is an observation, not a controlled speedup.
+The same-run overlap is the causal scheduling gain.
+
+**Measured LangChain run:** The same replay series and question with Gemini
+completed in 68.57 s: inference 7.82 s, reviews wall 58.16 s, summary 28.82 s.
+The stage durations sum to 94.80 s because roughly 26.23 s overlapped. The
+preceding non-overlapped LangChain run took 108.01 s (inference 7.88, reviews
+51.11, summary 46.65). Both runs used two model calls and zero tools per game,
+with 82 after-game local constraints. This supports the scheduling improvement
+on both orchestration backends but remains a single-run provider comparison.
+
+**Repeat validation (2026-11-11):** The complete offline suite passed: 930
+Python tests, one skipped, 40 Node tests; strict mypy, Ruff F and diff checks
+passed. The Python suite itself took 61.16 s, separate from product latency.
+On the same three public replays and question, a fresh ADK/Gemini run took
+70.52 s (inference 7.83, reviews 60.19, summary 38.34; 35.83 s overlapped).
+A fresh LangChain/Gemini run took 62.44 s (inference 7.85, reviews 52.15,
+summary 18.71; 16.27 s overlapped). Both completed the series with 82 local
+constraints, two model calls and no tool calls per game. The prior overlapped
+runs took 88.56 s and 68.57 s respectively. This spread across single runs
+shows provider and machine variance; it does not establish a stable percentile
+or a causal speedup from the wall-time comparisons alone.
+
+**Files:** src/services/bo3_evidence_publication.py,
+src/services/ground_truth.py, src/services/series_analysis.py, src/config.py,
+src/services/container.py, .env.example, tests/test_bo3_parallel_reviews.py.
+
+## ADR-073 - Prefetch BO3 metagame and strategy context during matchup selection
+
+**Date:** 2026-11-11. **Status:** Accepted.
+
+**Context:** Once table inference and game/summary overlap were optimized, a
+game review still spent roughly 5-9 seconds selecting cross-side matchups,
+followed by 9-12 seconds assembling evidence. Metagame and strategy lookups
+within assembly do not depend on the selected matchup: `context_species`
+already includes every brought Pokemon and observed Mega forme, while all
+three selection implementations sanitize their focus to the game's roster.
+This independent work previously waited for the selection model response.
+
+**Decision:** After replay parsing and regulation binding, BO3 reviews start
+one request-local task that loads the regulation roster, full-roster metagame
+context and strategy passages through the existing ports. The selection model
+runs on the caller thread at the same time. The shared `GroundTruthAssembler`
+then joins the validated selection with this typed context and runs the same
+turn simulator, matchup evaluator, suggestion builder and explanation path.
+If the selected focus or bound format differs from the prefetched input, the
+assembler recomputes the context sequentially. BO1 remains sequential. ADK,
+LangChain and native use one shared prefetch helper; no model/tool call is
+removed and no game evidence is truncated. Set
+`PROFESSORVGC_BO3_PREFETCH_CONTEXT=false` to restore the former order.
+
+**Alternatives considered:** Eliminating the selection model changes matchup
+focus; shortening explanation context risks losing causal/stat evidence; doing
+metagame and strategy lookups on more independent workers increases thread and
+external-service concurrency without an established benefit. The single
+prefetch worker only overlaps those lookups with selection.
+
+**Consequences:** The same ports are called with the same species, format,
+rating and question; their result is reused once. Peak work per game adds one
+local task during selection but no additional remote request in the normal
+path. A mismatched focus can waste one prefetch and then fall back safely.
+Typed-evidence parity and backend parity are tested without a paid model.
+Provider latency remains variable and must be measured separately before
+claiming an end-to-end speedup.
+
+**Measured on the recorded three-game BO3 (2026-11-11):** With Gemini 3.5
+Flash, the same question and ADK backend, one prefetch-enabled run took 60.99 s
+end to end; the three evidence stages took 4.81, 4.68 and 4.87 s. A run with
+prefetch disabled took 77.23 s; its evidence stages took 10.87, 9.66 and
+9.17 s. The mean evidence-stage duration fell from 9.90 to 4.79 s in these
+runs. Review wall time was 50.65 s with prefetch and 42.37 s without, because
+individual explanation calls also varied. The series-summary calls took
+36.80 and 51.15 s respectively, so the 16.24 s end-to-end difference cannot
+be attributed solely to prefetch. A separate LangChain run with prefetch
+enabled took 51.62 s end to end, with evidence stages of 2.08, 3.25 and
+1.22 s. All three runs retained 82 after-game local constraints and used two
+model calls and zero tool calls per game. These are individual provider runs,
+not a latency distribution or an accuracy benchmark; the deterministic tests
+cover typed-evidence parity.
+
+**Files:** src/services/evidence_prefetch.py, src/services/ground_truth.py,
+src/services/{adk_orchestrator,langchain_orchestrator,analysis_service}.py,
+src/config.py, src/services/container.py, .env.example,
+tests/test_evidence_prefetch.py, tests/test_backend_parity.py,
+README.md, docs/architecture.md, docs/diagrams/review-prefetch.mmd.
+
+## ADR-074 - Let BO3 users choose Gemini analysis depth
+
+**Date:** 2026-11-11. **Status:** Accepted.
+
+**Context:** The BO3 critical path is dominated by model calls. Gemini 3.5 Flash
+supports Low and Medium thinking levels; its provider default is Medium. A
+global reduction would change the quality of every explanation without a user
+choice. The reverse damage and stat-point solver is deterministic and does not
+depend on Gemini thinking depth.
+
+**Decision:** Show a required Low/Medium control in the Gemini BO3 form, with
+Low selected by default. Pass that setting to both ADK agents, the LangChain
+game model, the native game model and the direct Gemini series-summary call.
+Use the current Google Gen AI SDK for BO3 direct calls because the older direct
+SDK does not expose `thinking_level`. Leave BO1 and OpenAI model construction
+unchanged. Validate the choice before consuming an analysis slot.
+
+**Consequences:** Low may reduce provider latency, while Medium remains
+available for deeper narrative reasoning. Neither option changes the replay,
+teamsheet, calculator output or inferred bounds. The existing narrative guards
+still apply. A lower thinking level is not a guarantee of faster or equally
+faithful answers; compare both choices on the same BO3 questions before
+claiming a latency or quality result. Native BO3 Gemini now requires
+`google-genai>=1.51` directly.
+
+**Recorded comparison (2026-11-11):** `scripts/bo3_depth_benchmark.py`, 8 full BO3 runs on public
+series 2709311277. Verified bounds were identical across depths. Mean wall time Low 44.7 s vs Medium
+58.4 s. Damage claims correct against the log: Low 81.6% (40/49) vs Medium 88.6% (39/44), Fisher p = 0.40
+(not significant). Low needed the narrative correction loop in 3 of 4 runs, Medium in none, and no run
+fell back. Small sample; see README "BO3 analysis depth".
+
+**Files:** src/ui/series.py, src/services/container.py,
+src/services/adk_orchestrator.py, src/adapters/llm/gemini_provider.py,
+src/adapters/llm/langchain_provider.py, requirements.txt, pyproject.toml,
+tests/test_bo3_thinking_level.py, tests/test_ui_smoke.py,
+tests/test_adk_orchestrator.py, README.md, docs/architecture.md.
+
+## ADR-075 - Publish deterministic BO3 evidence before AI narration
+
+**Date:** 2026-11-11. **Status:** Accepted.
+
+**Context:** A complete BO3 analysis waits for three model-backed game reviews
+and a model-backed series summary. The reverse calculator already finishes
+first and has a validated score, native-point bounds, level-50 attribute ranges
+and damage citations. Keeping a full-screen loader over those results makes the
+application appear idle during the longer narration stage.
+
+**Decision:** `Bo3AnalysisService` invokes one optional request-local callback
+after deterministic inference and before constructing any game-review pipeline.
+The Streamlit caller renders only the typed score and inference tables on its
+script thread, closes the full-screen loader, and shows an inline status while
+the model work continues. The complete per-game and series explanations appear
+when the existing single submission finishes. If narration fails, the verified
+preview remains visible for that attempt. The callback is absent for non-UI
+callers; BO1 is unchanged.
+
+**Consequences:** Time to first useful result is bounded by import, validation,
+and inverse inference rather than the full AI path. Total computation time and
+the one-slot quota are unchanged. Rendering the tables before model calls adds
+some main-thread UI work; end-to-end latency may rise slightly. No Streamlit
+operation occurs in the parallel review threads. The preview retains the same
+uncertainty labels as the final inference view and never contains speculative
+model text.
+
+**Single live check (2026-11-11):** On the recorded three-game BO3 with Gemini
+3.5 Flash at Low depth and ADK, the deterministic callback fired at 11.76 s;
+the complete service result arrived at 41.96 s. The preview contained 44
+eligible damage citations, and the final inference retained 82 after-game
+local constraints. The timer included service construction and analysis over
+already available replay payloads; it excluded Streamlit rendering and any
+network replay import or extra UI validation. This validates the publication
+order and does not guarantee a 15 s browser result or a stable percentile.
+
+**Files:** src/services/series_analysis.py, src/services/container.py,
+src/ui/series.py, tests/test_bo3_progress.py, tests/test_ui_smoke.py,
+README.md, docs/architecture.md, docs/diagrams/bo3-architecture.mmd,
+docs/architecture-blueprint.html.
 

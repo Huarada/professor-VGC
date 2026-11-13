@@ -18,6 +18,8 @@ from scripts.bo3_real_series_benchmark import (
 from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
 from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
 from src.domain.bo3_inference.constraints import agrees
+from src.domain.bo3_inference.citations import cite_observation, describe_hit
+from src.domain.bo3_inference.dependencies import relevant_axes
 from src.domain.bo3_inference.models import (
     DamageSupport,
     DamageWitness,
@@ -58,6 +60,17 @@ HIT_IDS = [
 
 def find(real_case, identifier):
     return next(hit for hit in real_case[0][5] if hit.id == identifier)
+
+
+def test_real_hit_citation_preserves_move_owner_target_and_displayed_hp(real_case):
+    hit = find(real_case, "g2:e43:p2:Floette-Eternal")
+    citation = cite_observation(hit, relevant_axes([hit]))
+    assert citation.attacker_id == "testProfessor:slot5"
+    assert citation.defender_id == "Huarada:slot3"
+    assert describe_hit(citation) == (
+        "game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%"
+    )
+    assert "hp" in citation.dependent_axes["Huarada:slot3"]
 
 
 @pytest.mark.parametrize("identifier", HIT_IDS)

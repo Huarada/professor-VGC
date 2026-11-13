@@ -3,10 +3,12 @@
 import hashlib
 import json
 import re
+from collections.abc import Sequence
 from typing import Any, cast
 
+from src.domain.bo3_inference.citations import bound_evidence, describe_hit
 from src.domain.bo3_inference.interpretation import interpret_checkpoint
-from src.domain.bo3_inference.models import InferenceCheckpoint
+from src.domain.bo3_inference.models import DamageCitation, InferenceCheckpoint
 from src.domain.narrative_claims import NarrativeClaim, NarrativeClaimPlan
 
 
@@ -20,17 +22,22 @@ def prompt_claim_plan(plan: NarrativeClaimPlan) -> dict[str, Any]:
     return result
 
 
-def build_claim_plan(checkpoint: InferenceCheckpoint, question: str) -> NarrativeClaimPlan:
+def build_claim_plan(checkpoint: InferenceCheckpoint, question: str,
+                     citations: Sequence[DamageCitation] = ()) -> NarrativeClaimPlan:
     """Anchor facts to calculated checkpoint fields, never retrieved-hit counts."""
     claims: list[NarrativeClaim] = []
     required: list[str] = []
     findings = interpret_checkpoint(checkpoint)
     wants_traits = any(word in question.lower() for word in ("spread", "nature", "ivs", "evs", "each pokemon"))
+    summaries = {summary.pokemon_id: summary for summary in checkpoint.summaries}
     for mon in findings.pokemon:
         def add(kind: str, value: object, field: str, *, stat: str | None = None, form: str | None = None,
-                mandatory: bool = False, basis: str = "checkpoint_declaration") -> None:
+                mandatory: bool = False, basis: str = "checkpoint_declaration",
+                baseline: tuple[int, int] | None = None, evidence: tuple[str, ...] = (),
+                evidence_label: str = "") -> None:
             payload = {"pokemon_id": mon.pokemon_id, "species": mon.species, "kind": kind, "value": value,
-                       "stat": stat, "form": form,
+                       "stat": stat, "form": form, "baseline": baseline, "evidence": evidence,
+                       "evidence_label": evidence_label,
                        "source": {"checkpoint_id": checkpoint.id, "game": checkpoint.game,
                            "pokemon_id": mon.pokemon_id, "field": field, "basis": basis}}
             identifier = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()[:16]
@@ -53,9 +60,17 @@ def build_claim_plan(checkpoint: InferenceCheckpoint, question: str) -> Narrativ
                     mandatory=True, basis="engine_form_ability")
         if checkpoint.outcome != "conflict":
             for stat, bounds in {**mon.declared_native_bounds, **mon.constrained_native_bounds}.items():
+                reduction = mon.range_reductions.get(stat)
+                summary = summaries.get(mon.pokemon_id)
+                label, hits = bound_evidence(checkpoint, summary, stat, citations, limit=3) if summary and reduction and reduction.removed_integer_values else ("", ())
                 add("bounds", (bounds.minimum, bounds.maximum), f"summary.stat_points.{stat}", stat=stat,
-                    mandatory=True, basis="checkpoint_result")
-        status = ("known_within_supplied_model" if mon.complete_spread_known else "original_spread_unresolved")
+                    mandatory=True, basis="checkpoint_result",
+                    baseline=(reduction.baseline.minimum, reduction.baseline.maximum)
+                    if reduction and reduction.removed_integer_values else None,
+                    evidence=tuple(describe_hit(hit) for hit in hits), evidence_label=label)
+        narrowed = any(change.removed_integer_values for change in mon.range_reductions.values())
+        status = ("known_within_supplied_model" if mon.complete_spread_known else
+                  "partially_narrowed" if narrowed else "original_spread_unresolved")
         add("spread_status", status, "summary.stat_points_and_checkpoint.coverage", mandatory=True, basis="checkpoint_result")
     limitations = ["IVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.",
                    "Independent attribute endpoints do not form one complete legal spread.",
@@ -87,10 +102,18 @@ def render_claim_plan(plan: NarrativeClaimPlan, selected: tuple[str, ...], analy
         names[claim.pokemon_id] = claim.species
         if claim.kind == "bounds":
             low, high = cast(tuple[int, int], claim.value)
-            detail = f"{str(claim.stat).upper()} compatible native points: {low}-{high}; this is not a complete spread"
+            detail = f"{str(claim.stat).upper()} compatible native points: {low}-{high}"
+            if claim.baseline is not None:
+                initial_count = claim.baseline[1] - claim.baseline[0] + 1
+                remaining = high - low + 1
+                reduction = round(100 * (initial_count - remaining) / initial_count, 1)
+                detail += f" (initial {claim.baseline[0]}-{claim.baseline[1]}; {reduction}% fewer possibilities)"
+            if claim.evidence:
+                detail += "; " + claim.evidence_label.lower() + ": " + "; ".join(claim.evidence)
         elif claim.kind == "spread_status":
-            detail = ("the complete spread remains unresolved" if claim.value == "original_spread_unresolved"
-                      else "the spread is fixed within the supplied model")
+            detail = {"original_spread_unresolved": "no original stat-point interval narrowed here; the full spread remains unresolved",
+                      "partially_narrowed": "some stat-point intervals narrowed; other values and the joint spread remain open",
+                      "known_within_supplied_model": "the spread is fixed within the supplied model"}[str(claim.value)]
         elif claim.kind == "forme_ability":
             detail = f"{claim.form} ability: {claim.value}"
         elif claim.kind == "moves":

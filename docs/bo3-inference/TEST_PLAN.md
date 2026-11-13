@@ -161,3 +161,40 @@ attempt receives only the remaining time; resetting the whole budget on retry
 must fail the tests. Permanent errors must not be retried. Deadline messages
 identify either the BO3 game review or series summary. These checks validate
 client policy, not remote service availability or model answer quality.
+
+## 7. BO3 review latency diagnostics (ADK and LangChain)
+
+The BO3 results contain a **BO3 timing diagnostics** expander. It records stage-1
+inference, the wall-clock duration of the parallel game reviews, and series
+synthesis. Each game also records selection, evidence assembly, explanation,
+model round trips, and tool calls with durations and counts by tool name. The
+three game totals overlap; do not add them to obtain review wall time. Model
+and tool callback durations can overlap with their parent stage. The record
+contains no prompts, arguments, answers, player names or hidden spreads. BO1
+does not collect these diagnostics.
+
+Run the same three recorded games in order with one fixed question, provider,
+inference options and warmed local application. Repeat once with ADK and once
+with LangChain; note that backend comparisons can have provider and cache noise.
+For each run record the three review totals, selection/explanation duration,
+model call counts, tool counts, and synthesis duration. The observed reference
+before further optimization was 20.8 s inference, 56.1 s parallel reviews and
+24.1 s synthesis with ADK + Gemini 3.5 Flash; those are one run, not a service
+level guarantee.
+
+Before changing default tool availability or agent step budgets, compare a
+candidate against the current backend on the same inputs using the existing
+faithfulness checks: score/order, factual claims, damage and stat-point bounds,
+Mega abilities, legal Champions mechanics, and absence of invented spreads.
+Watch especially for extra correction calls or deterministic fallbacks. Do not
+infer that a tool call is redundant from its name alone: a hypothetical or
+changed battle state may require a fresh calculation.
+
+On the recorded real-provider comparison, ADK used 2 model calls and 0 tools
+per game. The initial LangChain run used 3 and 0 because Gemini text blocks
+were converted to a Python list string, causing the structured BO3 narration
+check to reject the first response. After extracting `AIMessage.text`, the
+repeat LangChain run used 2 and 0 with no fallback. Parallel review wall times
+were 58.3 s (ADK), 92.4 s (initial LangChain), and 63.8 s (fixed LangChain).
+Treat these as individual observations; compare distributions across repeated
+runs before claiming a stable percentage latency improvement.

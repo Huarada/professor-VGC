@@ -420,6 +420,13 @@ unknown. A species/nature attribute envelope alone does not establish training
 points or an observed battle stat. Do not claim a KO/speed guarantee from independent
 range endpoints or treat bounded local constraints as a complete registered set.
 
+For narrowed BO3 bounds, use any verified_claim_plan damage citations to describe
+the actual move, attacker, defender and before/after HP display, with game and
+event. A related certified hit can be one of several joint constraints; only a
+leave-one-out dependency is individually necessary. Do not turn HP displays into
+exact damage or these bounds into a unique spread. Highlight the observed
+narrowing before briefly stating which axes remain open.
+
 Keep numerical allocations/card-stat claims in the computed commentary and tables;
 explain their implications qualitatively in the model narrative. Distinguish
 base-form declared abilities from each supplied Mega forme_ability (for example,

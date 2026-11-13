@@ -78,9 +78,11 @@ def test_overlay_updates_the_existing_placeholder_and_removes_previous_caption()
 
 def test_three_stage_progress_covers_all_three_games_and_matches_completed_engine_work():
     progress = []
+    ready = []
 
     class Pipeline:
         def analyze(self, req):
+            assert ready and ready[0][1] is not None
             assert progress[-1].startswith(f"Stage 2 of 3 — Reviewing game {req.series_context['game']} of 3:")
             return AnalysisResult(session_id=req.session_id, question=req.question,
                 answer="Game review", selection=SelectionPlan(), meta_context=MetaContext())
@@ -90,8 +92,10 @@ def test_three_stage_progress_covers_all_three_games_and_matches_completed_engin
     result = Bo3AnalysisService(parser=ShowdownReplayParser(), pipeline_factory=Pipeline,
         llm=FakeLLM("{}", "Alice won the series."), prompts=PROMPTS,
         inference=Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=AnalyticProjection(), progress=progress.append),
-        progress=progress.append).analyze(req)
+        progress=progress.append,
+        on_deterministic_ready=lambda evidence, inferred: ready.append((evidence, inferred))).analyze(req)
     assert len(result.games) == 3
+    assert ready[0][0] == result.evidence and ready[0][1] == result.inference
     for number in (1, 2, 3):
         assert any(f"Stage 1 of 3 — Game {number} of 3: matching" in message for message in progress)
         assert any(f"Stage 2 of 3 — Reviewing game {number} of 3:" in message for message in progress)

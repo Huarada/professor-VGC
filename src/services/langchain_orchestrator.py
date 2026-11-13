@@ -11,6 +11,7 @@ contain literal ``{ }`` that a template parser would break on.
 from __future__ import annotations
 
 import json
+from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any, Sequence
 
 from src.domain.exceptions import LLMProviderError
@@ -25,6 +26,8 @@ from src.domain.models import (
     SelectionPlan,
 )
 from src.services.battle_context import candidate_species, outcome_summary, rosters
+from src.services.bo3_review_telemetry import current_review, langchain_handler
+from src.services.evidence_prefetch import prefetch_during_selection
 from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
@@ -108,12 +111,18 @@ class LangChainAnalysisOrchestrator:
         ]
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
+        profile = current_review()
         history = load_champions_history(self._memory, request.session_id)
-        game_state = self._evidence.prepare(self._parser, request)
-        selection = self._select(request, game_state, history)
-        evidence = self._evidence.assemble(
-            request=request, game_state=game_state, selection=selection, history=history
-        )
+        with profile.stage("selection") if profile else nullcontext():
+            game_state = self._evidence.prepare(self._parser, request)
+        with prefetch_during_selection(self._evidence, request, game_state) as pending:
+            with profile.stage("selection") if profile else nullcontext():
+                selection = self._select(request, game_state, history)
+            with profile.stage("evidence") if profile else nullcontext():
+                prefetched = pending.result() if pending is not None else None
+                evidence = self._evidence.assemble(
+                    request=request, game_state=game_state, selection=selection,
+                    history=history, prefetched=prefetched)
         tool_calls: list[AgentToolInvocation] = []
 
         def explain(correction: str) -> str:
@@ -121,7 +130,8 @@ class LangChainAnalysisOrchestrator:
             tool_calls.extend(calls)
             return answer
 
-        answer, warnings = self._evidence.explain_within_regulation(explain, evidence, game_state)
+        with profile.stage("explanation") if profile else nullcontext():
+            answer, warnings = self._evidence.explain_within_regulation(explain, evidence, game_state)
         remember_turn(self._memory, request, answer)
         return build_result(
             request=request,
@@ -146,9 +156,11 @@ class LangChainAnalysisOrchestrator:
             {"role": "user", "content": build_explanation_input(request.question, evidence, correction)},
         ]
         try:
+            profile = current_review()
             agent_result = self._explanation_agent.invoke(
                 {"messages": messages},
-                config={"recursion_limit": self._agent_max_steps},
+                config={"recursion_limit": self._agent_max_steps,
+                        **({"callbacks": [langchain_handler(profile)]} if profile else {})},
             )
         except Exception as exc:  # noqa: BLE001 - many SDK exception types
             raise LLMProviderError(
@@ -156,8 +168,16 @@ class LangChainAnalysisOrchestrator:
             ) from exc
 
         agent_messages = agent_result.get("messages", [])
-        final_content = agent_messages[-1].content if agent_messages else ""
-        answer = final_content if isinstance(final_content, str) else str(final_content)
+        from langchain_core.messages import AIMessage
+
+        final_message = agent_messages[-1] if agent_messages else None
+        if isinstance(final_message, AIMessage):
+            # Gemini may return text blocks. str(list) is Python repr, not the
+            # JSON object required by the BO3 verified narration contract.
+            answer = str(final_message.text)
+        else:
+            final_content = final_message.content if final_message else ""
+            answer = final_content if isinstance(final_content, str) else str(final_content)
         return answer, _extract_tool_invocations(agent_messages)
 
     def _select(
@@ -169,6 +189,7 @@ class LangChainAnalysisOrchestrator:
         species = candidate_species(game_state)
         side_of = game_state.side_of()
         try:
+            profile = current_review()
             raw = self._selection_chain.invoke(
                 {
                     "history": history,
@@ -178,7 +199,7 @@ class LangChainAnalysisOrchestrator:
                         request.question,
                         outcome_summary(game_state),
                     ),
-                }
+                }, config={"callbacks": [langchain_handler(profile)]} if profile else None
             )
         except Exception:  # noqa: BLE001 - parser/model failure -> deterministic fallback
             raw = "{}"

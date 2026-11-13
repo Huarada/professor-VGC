@@ -17,6 +17,7 @@ litellm>=1.84  # google-adk's own documented path to non-Gemini models (BYOK Ope
 # LLM providers (bring-your-own-key; optional at runtime)
 langchain-openai>=0.2
 langchain-google-genai>=2.0
+google-genai>=1.51  # BO3 Gemini thinking-level control
 openai>=1.30
 google-generativeai>=0.7
 

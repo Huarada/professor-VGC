@@ -44,7 +44,7 @@ def _checks(value: Any) -> Any:
 
 def _inference(value: dict[str, Any]) -> dict[str, Any]:
     result = {key: entry for key, entry in value.items()
-              if key not in {"checkpoints", "conditioned_projections", "evidence_retrievals"}}
+              if key not in {"checkpoints", "conditioned_projections", "evidence_retrievals", "damage_citations"}}
     checkpoints = []
     for checkpoint in value.get("checkpoints", []):
         entry = {key: item for key, item in checkpoint.items()

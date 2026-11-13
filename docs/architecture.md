@@ -1,6 +1,6 @@
 # Architecture
 
-Current source view: 2026-10-25. ProfessorVGC is a modular Python application with
+Current source view: 2026-11-11. ProfessorVGC is a modular Python application with
 Node subprocesses, packaged together for deployment. BO3 inference is a supporting
 bounded context inside that application, not a separate deployed service.
 
@@ -24,7 +24,7 @@ flowchart LR
     end
     subgraph infrastructure ["Adapters and workers"]
         calc["Forward and candidate calc adapters"]
-        worker["Node: Champions damage and speed engine"]
+        worker["Node workers: Champions damage and speed engine"]
         meta["Chaos adapter"]
         strategy["Strategy adapters and optional Node dex"]
         provider["LLM provider adapters"]
@@ -58,11 +58,48 @@ flowchart LR
 BO1 pipelines share `GroundTruthAssembler` for deterministic evidence. Selection
 and explanation are separate model stages; ADK/LangChain explanation agents can
 use read-only `damage_calc`, `chaos_meta_stats` and `smogon_strategy` tools.
-The native backend calls the provider directly. BO3 runs its inference stage,
-creates fresh game pipelines, and synthesizes typed evidence through `LLMProvider`.
-Neither its final summary nor its numeric tables are inferred from generated prose.
+The native backend calls the provider directly. BO3 first runs inverse inference,
+including up to four independent Champions table workers, then starts isolated
+game reviews in parallel. Each BO3 review prefetches full-roster metagame and
+strategy data during model selection. The assembler joins that context with the
+validated selection, calculates the same turn evidence and publishes it to the
+series coordinator. The series summary can run while the game explanations
+continue; the complete result waits for all of them. Neither the summary nor
+numeric tables are inferred from generated game prose.
+Immediately after inverse inference, an optional application callback publishes
+the typed series evidence and stat-point results on the Streamlit script thread.
+The full-screen import/calculation loader closes, the verified tables render,
+and an inline status follows the later AI work. The callback never runs inside
+parallel game-review workers; a model failure leaves the published deterministic
+result visible in that UI attempt. The series still consumes one analysis slot
+and returns one complete result only after all game reviews and synthesis finish.
+In Gemini BO3, the presentation passes a request-local Low or Medium thinking
+choice into the composition root. The ADK and LangChain game models and the
+direct Gemini series-summary provider receive the same setting; Low is the
+default. The deterministic inverse solver and BO1 model configuration do not
+read this choice. OpenAI keeps its own provider behavior.
 
-The worker hosts both the forward calculator and candidate-support commands.
+## BO3 game-review scheduling
+
+The arrows below are data dependencies. The two branches from a validated game
+run concurrently. A selected focus outside the prefetched species causes a
+sequential recomputation, preserving the previous evidence semantics. BO1 keeps
+the sequential selection-then-evidence path.
+
+```mermaid
+flowchart LR
+    replay["Validated BO3 game"] --> selection["LLM matchup selection"]
+    replay --> prefetch["Metagame and strategy prefetch"]
+    selection --> evidence["GroundTruthAssembler: same typed evidence"]
+    prefetch --> evidence
+    evidence --> explanation["Per-game explanation"]
+    evidence --> publication["Publish ordered game evidence"]
+    publication --> summary["Series summary while explanations continue"]
+    explanation --> result["Complete BO3 result"]
+    summary --> result
+```
+
+The worker pool hosts both the forward calculator and candidate-support commands.
 Reverse inference reuses the same Champions engine through `CandidateProjectionPort`.
 `calcRolls` skips description and KO-analysis overhead. A separate Node dex worker
 can retrieve optional official Smogon data. Chaos usage and enabled quota storage
@@ -85,7 +122,8 @@ flowchart LR
 | Game/series contracts, Champions rules and ports | `src/domain/models.py`, `series.py`, `champions.py`, `interfaces.py` |
 | Inference contracts, legal families, HP compatibility and graph components | `src/domain/bo3_inference/` |
 | BO1 evidence and interchangeable orchestration | `src/services/ground_truth.py`, `analysis_service.py`, `adk_orchestrator.py`, `langchain_orchestrator.py` |
-| BO3 orchestration and isolated game sessions | `src/services/series_analysis.py` |
+| BO3 context prefetch and isolated game sessions | `src/services/evidence_prefetch.py`, `series_analysis.py`, `bo3_evidence_publication.py` |
+| Progressive deterministic BO3 presentation | `src/services/series_analysis.py`, `src/ui/series.py`, `src/ui/loading.py` |
 | Reverse search, local proofs, component solving and checkpoints | `src/services/bo3_inference/` |
 | Public series acquisition and remembered public links | `src/services/series_import.py`, `src/adapters/showdown_series_gateway.py`, `src/adapters/series_replay_index.py` |
 | Replay parsing and viewer snapshots | `src/adapters/parsers/showdown_log/` |
@@ -132,8 +170,9 @@ flowchart LR
    Samples are not exact full spreads. Carry constraints only under registered-set
    continuity; reset runtime state and exclude future/private knowledge.
 
-BO1 does not invoke this inference context. Speed, critical-hit and multi-hit
-inverse inference remain deferred. Numerical BO3 investment belongs to typed
+BO1 does not invoke this inference context. Speed inference remains deferred;
+attributed critical hits and stable-state logged multi-hit totals have modeled
+support, while unsupported mechanics remain explicit. Numerical BO3 investment belongs to typed
 tables; explanation guards omit repeatedly unvalidated allocation prose while
 preserving computed results. Unsupported mechanics still fail closed.
 Full methodology and limitations: [BO3 inference](bo3-inference/README.md).
@@ -141,8 +180,9 @@ Full methodology and limitations: [BO3 inference](bo3-inference/README.md).
 ## Diagram maintenance and validation
 
 Canonical Mermaid sources: [runtime](diagrams/architecture.mmd),
-[dependency direction](diagrams/dependencies.mmd) and [BO3 flow](diagrams/bo3-inference.mmd).
-The README embeds the runtime diagram; this document embeds all three. Keep those
+[dependency direction](diagrams/dependencies.mmd), [BO3 flow](diagrams/bo3-inference.mmd),
+and [game-review scheduling](diagrams/review-prefetch.mmd).
+The README and this document embed the review-scheduling diagram. Keep those
 blocks and the [HTML viewer](architecture-blueprint.html) synchronized when wiring
 or responsibilities change. The HTML viewer needs network access to load Mermaid;
 Markdown and `.mmd` sources remain readable offline.
