@@ -22,6 +22,7 @@ from src.domain.bo3_inference.models import (
     TableSupport,
     TeamSheet,
 )
+from src.domain.exceptions import CalcEngineError
 from src.domain.models import (
     AnalysisRequest,
     AnalysisResult,
@@ -368,6 +369,18 @@ class CandidateTablePort(Protocol):
     """Optional bulk evaluation of one hit over its investment axes (ADR-068)."""
 
     def project_table(self, request: TableRequest) -> TableSupport:
+        ...
+
+
+@runtime_checkable
+class CandidateTableBatchPort(Protocol):
+    """Optional independent table projections with per-request failures."""
+
+    @property
+    def parallel_table_capacity(self) -> int:
+        ...
+
+    def project_tables(self, requests: Sequence[TableRequest]) -> list[TableSupport | CalcEngineError]:
         ...
 
 

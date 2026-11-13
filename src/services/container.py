@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING
 
 from src.adapters.calc.candidate_projection import SmogonCandidateProjectionAdapter
@@ -40,6 +41,7 @@ from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
 from src.adapters.teamsheet.showdown_teamsheet import ShowdownTeamSheetParser
 from src.adapters.usage.firestore_usage_quota import FirestoreUsageQuotaStore
 from src.config import Settings, load_settings
+from src.domain.bo3_inference.models import Bo3InferenceEvidence
 from src.domain.champions import forbidden_references, require_champions_format
 from src.domain.exceptions import ConfigurationError, UnsupportedRulesError
 from src.domain.interfaces import (
@@ -228,7 +230,7 @@ class Container:
             return CompositeStrategyProvider(primary=primary, fallback=chaos)
         return chaos
 
-    def build_llm(self, provider: str | None = None) -> LLMProvider:
+    def build_llm(self, provider: str | None = None, *, thinking_level: str | None = None) -> LLMProvider:
         """Instantiate the requested BYOK provider (direct SDK, native path)."""
         name = self._resolve_provider(provider)
         if name == "openai":
@@ -239,11 +241,12 @@ class Container:
             api_key=self._settings.gemini_api_key, model=self._settings.gemini_model,
             timeout_seconds=self._settings.gemini_request_timeout_seconds,
             total_timeout_seconds=self._settings.gemini_total_timeout_seconds,
+            thinking_level=thinking_level,
         )
 
-    def build_chat_model(self, provider: str | None = None) -> BaseChatModel:
+    def build_chat_model(self, provider: str | None = None, *, thinking_level: str | None = None) -> BaseChatModel:
         """Instantiate the requested BYOK provider as a LangChain chat model."""
-        return build_chat_model(self._resolve_provider(provider), self._settings)
+        return build_chat_model(self._resolve_provider(provider), self._settings, thinking_level=thinking_level)
 
     def build_adk_model(self, provider: str | None = None) -> "str | BaseLlm":
         """Instantiate the requested BYOK provider as a Google ADK model."""
@@ -282,14 +285,16 @@ class Container:
             scope=scope,
             regulation_catalog=chaos,
             guard=RegulationGuard(calc, self._settings.calc_gen),
+            prefetch_enabled=self._settings.bo3_prefetch_context,
         )
 
     def build_native_pipeline(
-        self, provider: str | None = None, regulation: str | None = None
+        self, provider: str | None = None, regulation: str | None = None,
+        *, thinking_level: str | None = None,
     ) -> AnalysisPipeline:
         """Assemble the hand-rolled :class:`AnalysisService`."""
         name = self._resolve_provider(provider)
-        llm = self.build_llm(name)
+        llm = self.build_llm(name, thinking_level=thinking_level)
         prompts = self.prompts()
         return AnalysisService(
             parser=ShowdownReplayParser(),
@@ -301,14 +306,15 @@ class Container:
         )
 
     def build_langchain_pipeline(
-        self, provider: str | None = None, regulation: str | None = None
+        self, provider: str | None = None, regulation: str | None = None,
+        *, thinking_level: str | None = None,
     ) -> AnalysisPipeline:
         """Assemble the LangChain LCEL orchestrator."""
         name = self._resolve_provider(provider)
         scope = RegulationScope(self.regulation(regulation))
         return LangChainAnalysisOrchestrator(
             parser=ShowdownReplayParser(),
-            chat_model=self.build_chat_model(name),
+            chat_model=self.build_chat_model(name, thinking_level=thinking_level),
             evidence=self.ground_truth(name, scope),
             memory=self.memory(),
             prompts=self.prompts(),
@@ -317,7 +323,8 @@ class Container:
         )
 
     def build_adk_pipeline(
-        self, provider: str | None = None, regulation: str | None = None
+        self, provider: str | None = None, regulation: str | None = None,
+        *, thinking_level: str | None = None,
     ) -> AnalysisPipeline:
         """Assemble the Google ADK orchestrator (default backend)."""
         name = self._resolve_provider(provider)
@@ -331,6 +338,7 @@ class Container:
             tools=build_adk_tools(self.evidence_tools(name, scope)),
             provider_name=f"adk:{name}",
             agent_timeout_seconds=self._settings.agent_timeout_seconds,
+            thinking_level=thinking_level,
         )
 
     def build_pipeline(
@@ -338,6 +346,7 @@ class Container:
         provider: str | None = None,
         orchestrator: str | None = None,
         regulation: str | None = None,
+        *, thinking_level: str | None = None,
     ) -> AnalysisPipeline:
         """Assemble the configured pipeline (orchestrator-agnostic entrypoint).
 
@@ -350,10 +359,10 @@ class Container:
                 f"Unknown orchestrator '{backend}'. Available: {sorted(_ORCHESTRATORS)}"
             )
         if backend == "adk":
-            return self.build_adk_pipeline(provider, regulation)
+            return self.build_adk_pipeline(provider, regulation, thinking_level=thinking_level)
         if backend == "langchain":
-            return self.build_langchain_pipeline(provider, regulation)
-        return self.build_native_pipeline(provider, regulation)
+            return self.build_langchain_pipeline(provider, regulation, thinking_level=thinking_level)
+        return self.build_native_pipeline(provider, regulation, thinking_level=thinking_level)
 
     def validate_series(self, request: Bo3AnalysisRequest, regulation: str | None = None) -> Bo3Evidence:
         """Validate the entire ordered series before consuming quota or calling an LLM."""
@@ -368,7 +377,7 @@ class Container:
             self._candidate_projection = SmogonCandidateProjectionAdapter(ipc=NodeIpcClient(
                 server_script=self._settings.calc_server_script, node_binary=self._settings.node_binary,
                 timeout_seconds=self._settings.calc_timeout_seconds,
-            ))
+            ), table_workers=self._settings.bo3_table_workers)
         return Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=self._candidate_projection,
                                        public_sheets=ShowdownTeamSheetParser(), attributes=self._candidate_projection,
                                        progress=progress)
@@ -376,17 +385,26 @@ class Container:
     def build_bo3_pipeline(
         self, provider: str | None = None, orchestrator: str | None = None,
         regulation: str | None = None, *, progress: ProgressReporter | None = None,
+        thinking_level: str = "low",
+        on_deterministic_ready: Callable[[Bo3Evidence, Bo3InferenceEvidence | None], None] | None = None,
     ) -> Bo3AnalysisPipeline:
         """BO3 is a separate use case composed over fresh BO1 pipelines."""
+        if thinking_level not in ("low", "medium"):
+            raise ConfigurationError("BO3 Gemini thinking level must be low or medium.")
+        level = thinking_level if self._resolve_provider(provider) == "gemini" else None
         return Bo3AnalysisService(
             parser=ShowdownReplayParser(),
-            pipeline_factory=lambda: self.build_pipeline(provider, orchestrator, regulation),
-            llm=self.build_llm(provider), prompts=self.prompts(), pinned=self.regulation(regulation),
+            pipeline_factory=lambda: self.build_pipeline(provider, orchestrator, regulation,
+                                                         thinking_level=level),
+            llm=self.build_llm(provider, thinking_level=level), prompts=self.prompts(),
+            pinned=self.regulation(regulation),
             regulation_catalog=self.chaos(strict=self.regulation(regulation) is not None),
             guard=RegulationGuard(self.calc_engine()),
             memory=self.memory(),
             inference=self.bo3_inference(progress=progress), progress=progress,
             parallel_reviews=self._settings.bo3_parallel_reviews,
+            overlap_synthesis=self._settings.bo3_overlap_synthesis,
+            on_deterministic_ready=on_deterministic_ready,
         )
 
     def usage_quota(self) -> UsageQuotaService:

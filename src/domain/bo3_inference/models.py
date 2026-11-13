@@ -161,6 +161,22 @@ class DamageObservation(Value):
     category_from_stats: bool = False
 
 
+class DamageCitation(Value):
+    """Small, event-time hit record for explaining a certified point bound."""
+
+    id: str
+    game: int
+    event_index: int
+    attacker_id: str
+    defender_id: str
+    attacker_species: str
+    defender_species: str
+    move: str
+    before: HPReading
+    after: HPReading
+    dependent_axes: dict[str, tuple[StatName, ...]]
+
+
 class MoveSupport(Value):
     supported: bool
     reason: str = ""
@@ -361,6 +377,7 @@ class Bo3InferenceEvidence(Value):
     attribute_projections: int = 0
     conditioned_projections: tuple[ConditionedProjection, ...] = ()
     evidence_retrievals: tuple[EvidenceRetrieval, ...] = ()
+    damage_citations: tuple[DamageCitation, ...] = ()
 
 
 class ConditionedProjection(Value):

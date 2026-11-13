@@ -25,7 +25,7 @@ from src.domain.bo3_inference.models import (
 )
 from src.domain.bo3_inference.session import summarize
 from src.domain.exceptions import CalcEngineError
-from src.domain.interfaces import CandidateTablePort
+from src.domain.interfaces import CandidateTableBatchPort, CandidateTablePort
 from src.services.bo3_inference.solver import ProjectionBudget
 
 Var = tuple[str, StatName]
@@ -119,27 +119,52 @@ def propagated_bounds(
     if not isinstance(port, CandidateTablePort):
         return None
     tables: dict[str, Table] = {}
+    pending: dict[str, TableRequest] = {}
+    pending_source: dict[str, str] = {}
+    observed: list[tuple[str, tuple[Var, ...], str]] = []
     for observation in observations:
         built = table_request(observation, declarations)
         if built is None:
             continue
         variables, request = built
         key = request.model_dump_json()
-        if key not in budget.tables:
+        if key not in budget.tables and key not in pending:
             if budget.expired():
                 budget.factor_limit_reasons.setdefault(game, set()).add(
                     "Per-hit table time budget reached; remaining hits did not narrow bounds")
                 continue
-            budget.report_batch([request.base])
-            try:
-                cells = port.project_table(request).cells
-            except CalcEngineError as exc:
-                budget.factor_limit_reasons.setdefault(game, set()).add(f"{observation.id}: {exc}")
+            pending[key] = request
+            pending_source[key] = observation.id
+        observed.append((observation.id, variables, key))
+    if pending:
+        budget.report_batch([next(iter(pending.values())).base])
+        if isinstance(port, CandidateTableBatchPort) and port.parallel_table_capacity > 1:
+            results = port.project_tables(list(pending.values()))
+        else:
+            results = []
+            for request in pending.values():
+                if budget.expired():
+                    results.append(CalcEngineError("Per-hit table time budget reached"))
+                    budget.factor_limit_reasons.setdefault(game, set()).add(
+                        "Per-hit table time budget reached; remaining hits did not narrow bounds")
+                    continue
+                try:
+                    results.append(port.project_table(request))
+                except CalcEngineError as exc:
+                    results.append(exc)
+        if len(results) != len(pending):
+            raise CalcEngineError("Candidate table batch response count mismatch")
+        for (key, request), result in zip(pending.items(), results):
+            if isinstance(result, CalcEngineError):
+                budget.factor_limit_reasons.setdefault(game, set()).add(f"{pending_source[key]}: {result}")
                 continue
+            cells = result.cells
             budget.completed_checks += len(cells)
             # Unsupported cells stay feasible: they can never exclude a value.
             budget.tables[key] = int(cells[::-1].replace("?", "1"), 2)  # bit i is cell i
-        tables[observation.id] = (variables, budget.tables[key])
+    for identifier, variables, key in observed:
+        if key in budget.tables:
+            tables[identifier] = (variables, budget.tables[key])
     if not tables:
         return None
     domains = propagate(list(tables.values()), declarations, rules)

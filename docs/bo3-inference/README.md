@@ -916,6 +916,16 @@ each hit lists, per stat, the hits whose individual removal loosens that bound
 (`single_observation_bounds`); the findings text names them, because one
 mis-modeled hit could make such a bound wrong.
 
+The BO3 result also retains a compact, analysis-local citation for each eligible
+hit: game, event, move, attacker, target and the logged before/after HP display.
+The results table and verified narration show these details beside narrowed
+native-point intervals. A certified hit linked to an axis is labeled as related
+evidence, since several hits can constrain it jointly; it is not presented as
+a standalone proof or exact damage value. The narration leads with the numerical
+interval reduction when one exists and still states that other axes may remain
+unresolved. Citations are excluded from duplicated raw context sent to the model;
+only bounded, verified claim citations enter the explanation input.
+
 Hits with undeclared natures, more than three axes or no table support keep the
 ADR-062 marginal-endpoint search, which also remains selectable through
 `InferenceOptions.search = "legacy"` (`services/bo3_inference/legacy/`). Compare
@@ -926,4 +936,41 @@ hit per game and narrows one stat. All true values stay inside every range and
 outside every excluded value. Table time is roughly 0.5-3 s per hit depending on
 machine load, so the 60-second default can leave later hits without tables;
 those hits are skipped explicitly, never counted as evidence.
+
+## 26. Independent table workers (ADR-071)
+
+At each causal checkpoint, the solver collects distinct uncached hit tables.
+The adapter evaluates up to four tables concurrently on separate Champions
+Node workers, then returns results in the original request order before arc
+consistency runs. The table math, unsupported-cell semantics, 66-point budget,
+and BO1 calculator are unchanged. `PROFESSORVGC_BO3_TABLE_WORKERS=1` selects
+the sequential capacity on CPU-constrained deployments; the default is 4.
+
+A cold comparison on the recorded three-game series measured 21.47 s with one
+worker and 7.90 s with four, with identical checkpoints, point bounds,
+exclusions and projection counts. This is an inference-stage measurement on
+one local machine. Game-review explanation calls and the series summary remain
+separate model-latency costs.
+
+## 27. Series synthesis overlaps game narration (ADR-072)
+
+Each review publishes its typed, calculated evidence as soon as its ground-truth
+stage finishes. Once all games have published, the series coordinator can ask
+the model for a summary while the three per-game explanation calls are still
+running. It awaits every explanation before returning the complete result.
+
+```mermaid
+flowchart LR
+    I[BO3 inference] --> R[Parallel game evidence assembly]
+    R --> P[Ordered evidence publication]
+    P --> S[Series summary model call]
+    R --> E[Parallel game explanation calls]
+    S --> J[Complete result]
+    E --> J
+```
+
+The summary consumes the same ordered battle and stat evidence, never generated
+game answers. BO1 has no publication subscriber. Set
+`PROFESSORVGC_BO3_OVERLAP_SYNTHESIS=false` if a model provider cannot sustain
+the extra concurrent request; this restores summary-after-reviews execution.
 

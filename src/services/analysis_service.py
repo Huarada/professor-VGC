@@ -23,6 +23,7 @@ from src.domain.models import (
     AnalysisResult,
     ChatMessage,
 )
+from src.services.evidence_prefetch import prefetch_during_selection
 from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
@@ -56,12 +57,15 @@ class AnalysisService:
         """Run one full analysis turn and return the UI DTO."""
         history = load_champions_history(self._memory, request.session_id)
         game_state = self._evidence.prepare(self._parser, request)
-        selection = self._selector.select(
-            request=request, game_state=game_state, history=history
-        )
-        evidence = self._evidence.assemble(
-            request=request, game_state=game_state, selection=selection, history=history
-        )
+        with prefetch_during_selection(self._evidence, request, game_state) as pending:
+            selection = self._selector.select(
+                request=request, game_state=game_state, history=history
+            )
+            prefetched = pending.result() if pending is not None else None
+            evidence = self._evidence.assemble(
+                request=request, game_state=game_state, selection=selection,
+                history=history, prefetched=prefetched,
+            )
         answer, warnings = self._evidence.explain_within_regulation(
             lambda correction: self._explain(request, history, evidence, correction),
             evidence, game_state,
