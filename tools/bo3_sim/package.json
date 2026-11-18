@@ -1,0 +1,6 @@
+{
+  "name": "bo3-sim-corpus",
+  "private": true,
+  "description": "Generates full-information Champions BO3 series with the official Showdown simulator (benchmark only).",
+  "dependencies": { "pokemon-showdown": "0.11.11" }
+}

@@ -4,6 +4,7 @@ import pytest
 
 from scripts.bo3_truth_corpus import (
     discover,
+    guarded,
     nature_misses,
     run_series,
     score_checkpoint,
@@ -106,6 +107,22 @@ def test_summary_uses_only_the_last_checkpoint_of_each_series():
     early = [vars(s) for s in score_checkpoint("s", 1, [summary(0, 31)], profile())]
     late = [vars(s) | {"game": 2} for s in score_checkpoint("s", 1, [summary(20, 32)], profile())]
     assert summarize([{"scores": early + late}])["unsound"] == []
+
+
+def test_one_failing_series_is_reported_and_does_not_hide_the_rest(monkeypatch):
+    import scripts.bo3_truth_corpus as corpus
+    from src.domain.exceptions import SeriesValidationError
+
+    def boom(*args):
+        raise SeriesValidationError("contradicts a replay reveal")
+
+    monkeypatch.setattr(corpus, "run_series", boom)
+    failed = guarded(None, "s9", None, None, "propagation")
+    assert failed == {"series": "s9", "error": "SeriesValidationError: contradicts a replay reveal"}
+    good = [vars(s) for s in score_checkpoint("s1", 1, [summary(20, 32)], profile())]
+    result = summarize([failed, {"scores": good}])
+    assert result["errors"] == ["s9: SeriesValidationError: contradicts a replay reveal"]
+    assert result["soundness"]["of"] == 6 and result["unsound"] == []
 
 
 def test_recorded_series_is_sound_and_propagation_narrows_where_legacy_does_not(engine):  # noqa: F811

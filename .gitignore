@@ -38,3 +38,6 @@ scripts/faithfulness_benchmark/out/
 
 # Windows-specific environment; keep WSL environments separate.
 .venv-windows/
+
+# BO3 simulator corpus (tools/bo3_sim)
+tools/bo3_sim/node_modules/
