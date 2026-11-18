@@ -15,6 +15,8 @@ from src.domain.models import BattleSnapshot, GameState, MonState
 _ABSORBING_ABILITIES = frozenset({
     "waterabsorb", "voltabsorb", "dryskin", "sapsipper", "stormdrain", "lightningrod", "motordrive",
     "eartheater", "wellbakedbody", "windrider", "flashfire"})
+# Pickpocket/Magician: [of] is the victim, the ability belongs to the thief.
+_THIEF_ABILITIES = frozenset({"pickpocket", "magician"})
 
 
 class ParseState:
@@ -29,6 +31,7 @@ class ParseState:
         self.started_at: int | None = None
         self.frames: list[TurnFrame] = []  # one per turn boundary, for the battle panel
         self.inference_exclusions: set[str] = set()
+        self.swapped: set[tuple[str, str]] = set()  # abilities exchanged mid-battle: later reveals are not originals
 
     @property
     def turn(self) -> int:
@@ -45,13 +48,32 @@ class ParseState:
         if not source.lower().startswith("ability:"):
             return
         ability = source.split(":", 1)[1].strip()
+        if to_id(ability) in _THIEF_ABILITIES:
+            # The thief is the subject of the -item line; the -enditem line only shows the victim.
+            if parts[1] != "-item":
+                return
+            holder = parts[2]
+            self._credit_ability(holder, ability)
+            return
         # Absorbing abilities name the ATTACKER in [of]; the Pokemon on the line absorbed the hit.
         holder = parts[2] if to_id(ability) in _ABSORBING_ABILITIES else tag_value(parts[3:], "of") or parts[2]
+        self._credit_ability(holder, ability)
+
+    def _credit_ability(self, holder: str, ability: str) -> None:
         key = self.roster.resolve(holder)
         if key is not None:
             mon = self.roster.register(*key)
-            mon.ability = mon.ability or ability
+            if key not in self.swapped:
+                mon.ability = mon.ability or ability
             self.combatants.abilities[key] = ability
+
+    def mark_swapped(self, parts: list[str]) -> None:
+        """Skill Swap / Wandering Spirit: both Pokemon now hold the other's ability."""
+        for ref in (parts[2], tag_value(parts[4:], "of")):
+            key = self.roster.resolve(ref) if ref else None
+            if key is not None:
+                self.swapped.add(key)
+        self.inference_exclusions.add("Copied or changed ability needs initial-set attribution")
 
     def snapshot(self) -> BattleSnapshot:
         """The battle state right now — stamped on every move event."""
