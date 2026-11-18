@@ -160,7 +160,9 @@ class ActionHandlers(HandlerGroup):
         if key is None:
             return
         if reason.lower().startswith("item:"):
-            self.state.combatants.reveal_item(key, reason.split(":", 1)[1].strip())
+            # A flung berry eaten by the target ([consumed]) was never the target's own item.
+            if not any(part.strip() == "[consumed]" for part in parts[4:]):
+                self.state.combatants.reveal_item(key, reason.split(":", 1)[1].strip())
             return
         # A Protect-family block: the blocker gets no -damage line, so record that
         # the move was aimed at it.

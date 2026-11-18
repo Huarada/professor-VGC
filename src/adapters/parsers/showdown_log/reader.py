@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.handlers import dispatch_table
 from src.adapters.parsers.showdown_log.illusion import unmask_illusions
+from src.adapters.parsers.showdown_log.protocol import to_id
 from src.adapters.parsers.showdown_log.replay_frames import build_battle_replay
 from src.adapters.parsers.showdown_log.state import ParseState
 from src.domain.exceptions import LogParsingError
@@ -50,6 +51,8 @@ def _read(text: str) -> ParseState:
             name = parts[effect_index].replace("move:", "").strip().lower().replace(" ", "")
             if name not in known:
                 state.inference_exclusions.add(f"Unmodeled field effect: {parts[effect_index]}")
+        if parts[1] == "-activate" and len(parts) > 3 and to_id(parts[3]).removeprefix("move") == "skillswap":
+            state.mark_swapped(parts)
         state.reveal_ability_from(parts)
         handler = handlers.get(parts[1])
         if handler is not None:

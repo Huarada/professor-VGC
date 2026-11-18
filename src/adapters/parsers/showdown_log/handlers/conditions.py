@@ -61,7 +61,7 @@ class ConditionHandlers(HandlerGroup):
         ability = parts[3].strip()
         self.state.combatants.abilities[key] = ability
         mon = self.state.roster.register(*key)
-        if not mon.ability:
+        if not mon.ability and key not in self.state.swapped:
             source = tag_value(parts[4:], "from")
             if not source:
                 mon.ability = ability

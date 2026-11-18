@@ -33,3 +33,30 @@ def test_the_of_pokemon_is_still_the_holder_where_the_holder_acts():
     )
     assert known["Pelipper"] == "Drizzle" and known["Araquanid"] == "Rough Skin"
     assert known["Quaquaval"] is None
+
+
+def items_and_abilities(*lines: str):
+    state = ShowdownReplayParser().parse("\n".join(HEADER + list(lines)))
+    return {mon.species: (mon.ability, mon.item) for side in state.sides for mon in side.team}
+
+
+def test_pickpocket_belongs_to_the_thief_not_the_victim():
+    known = abilities(
+        "|-enditem|p2b: Pelipper|Lum Berry|[silent]|[from] ability: Pickpocket|[of] p2b: Pelipper",
+        "|-item|p1a: Quaquaval|Lum Berry|[from] ability: Pickpocket|[of] p2b: Pelipper",
+    )
+    assert known["Quaquaval"] == "Pickpocket" and known["Pelipper"] is None
+
+
+def test_an_ability_swapped_by_skill_swap_is_not_the_original():
+    known = abilities(
+        "|-activate|p1a: Quaquaval|Skill Swap|Wandering Spirit|Drought|[of] p2a: Araquanid",
+        "|-ability|p2a: Araquanid|Wandering Spirit",
+        "|-weather|SunnyDay|[from] ability: Drought|[of] p2a: Araquanid",
+    )
+    assert known["Araquanid"] is None and known["Quaquaval"] is None
+
+
+def test_a_flung_berry_eaten_by_the_target_is_not_the_targets_item():
+    known = items_and_abilities("|-activate|p2a: Araquanid|item: Leppa Berry|Surf|[consumed]")
+    assert known["Araquanid"][1] is None
