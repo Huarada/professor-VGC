@@ -4,11 +4,17 @@ from __future__ import annotations
 
 from src.adapters.parsers.showdown_log.combatants import CombatantLedger
 from src.adapters.parsers.showdown_log.field_ledger import FieldLedger
-from src.adapters.parsers.showdown_log.protocol import tag_value
+from src.adapters.parsers.showdown_log.protocol import tag_value, to_id
 from src.adapters.parsers.showdown_log.replay_frames import TurnFrame
 from src.adapters.parsers.showdown_log.roster import Roster
 from src.adapters.parsers.showdown_log.timeline import Timeline
 from src.domain.models import BattleSnapshot, GameState, MonState
+
+
+# Their `-heal`/`-immune`/`-boost` lines carry the attacker (the effect source) in [of].
+_ABSORBING_ABILITIES = frozenset({
+    "waterabsorb", "voltabsorb", "dryskin", "sapsipper", "stormdrain", "lightningrod", "motordrive",
+    "eartheater", "wellbakedbody", "windrider", "flashfire"})
 
 
 class ParseState:
@@ -38,11 +44,14 @@ class ParseState:
         source = tag_value(parts[3:], "from")
         if not source.lower().startswith("ability:"):
             return
-        key = self.roster.resolve(tag_value(parts[3:], "of") or parts[2])
+        ability = source.split(":", 1)[1].strip()
+        # Absorbing abilities name the ATTACKER in [of]; the Pokemon on the line absorbed the hit.
+        holder = parts[2] if to_id(ability) in _ABSORBING_ABILITIES else tag_value(parts[3:], "of") or parts[2]
+        key = self.roster.resolve(holder)
         if key is not None:
             mon = self.roster.register(*key)
-            mon.ability = mon.ability or source.split(":", 1)[1].strip()
-            self.combatants.abilities[key] = source.split(":", 1)[1].strip()
+            mon.ability = mon.ability or ability
+            self.combatants.abilities[key] = ability
 
     def snapshot(self) -> BattleSnapshot:
         """The battle state right now — stamped on every move event."""
