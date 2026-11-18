@@ -138,6 +138,15 @@ def run_series(adapter: SmogonCandidateProjectionAdapter, series: str, public: P
             "scores": [asdict(s) for s in scores], "nature_misses": natures}
 
 
+def guarded(adapter: SmogonCandidateProjectionAdapter, series: str, public: Path, truth_path: Path,
+            search: Literal["propagation", "legacy"]) -> dict[str, Any]:
+    """One series that fails is reported and counted, never allowed to hide the rest of the corpus."""
+    try:
+        return run_series(adapter, series, public, truth_path, search)
+    except Exception as exc:  # noqa: BLE001 - a benchmark must record every failure kind
+        return {"series": series, "error": f"{type(exc).__name__}: {exc}"}
+
+
 def _rate(rows: Sequence[Mapping[str, Any]], key: str) -> dict[str, Any]:
     hits = sum(bool(r[key]) for r in rows)
     low, high = wilson_interval(hits, len(rows))
@@ -174,6 +183,7 @@ def summarize(runs: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
                     f'{r["low"]}-{r["high"]} minus {list(r["excluded"])}' for r in final if not r["sound"]],
         "nature_misses": [m for run in runs for m in run.get("nature_misses", [])],
         "invalid_truth": [p for run in runs for p in run.get("invalid_truth", [])],
+        "errors": [f'{run["series"]}: {run["error"]}' for run in runs if "error" in run],
         "per_stat": {stat: _group(rows) for stat, rows in by_stat.items()},
         "per_participant": {name: _group(rows) for name, rows in by_player.items()},
     }
@@ -184,14 +194,18 @@ def main() -> int:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--search", choices=("propagation", "legacy"), default="propagation")
     parser.add_argument("--series", action="append", help="limit to these series ids")
+    parser.add_argument("--dir", type=Path, default=FIXTURES, help="folder with bo3-public/bo3-truth pairs")
+    parser.add_argument("--limit", type=int, default=0, help="run at most N series (0 = all)")
     args = parser.parse_args()
-    corpus = {k: v for k, v in discover().items() if not args.series or k in args.series}
+    corpus = {k: v for k, v in discover(args.dir).items() if not args.series or k in args.series}
+    if args.limit:
+        corpus = dict(list(corpus.items())[:args.limit])
     if not corpus:
-        raise SystemExit("No complete bo3-public/bo3-truth pair found in tests/fixtures/series.")
+        raise SystemExit(f"No complete bo3-public/bo3-truth pair found in {args.dir}.")
     adapter = SmogonCandidateProjectionAdapter(ipc=NodeIpcClient(
         server_script=ROOT / "node_calc" / "calc_server.js", timeout_seconds=15))
     try:
-        runs = [run_series(adapter, series, public, truth, args.search) for series, (public, truth) in corpus.items()]
+        runs = [guarded(adapter, series, public, truth, args.search) for series, (public, truth) in corpus.items()]
     finally:
         adapter.close()
     summary = summarize(runs)
@@ -199,7 +213,7 @@ def main() -> int:
     args.out.write_text(json.dumps({"search": args.search, "summary": summary, "runs": runs}, indent=1) + "\n",
                         encoding="utf-8")
     print(json.dumps(summary, indent=1))
-    return 1 if summary["unsound"] or summary["nature_misses"] or summary["invalid_truth"] else 0
+    return 1 if summary["unsound"] or summary["nature_misses"] or summary["invalid_truth"] or summary["errors"] else 0
 
 
 if __name__ == "__main__":
