@@ -15,7 +15,7 @@ svg { max-width: none !important; }
 </head>
 <body><main>
 <h1>ProfessorVGC architecture</h1>
-<p>Current source view: 2026-10-25. Pokemon Champions only; BO1 and BO3 are separate use cases.</p>
+<p>Current source view: 2026-11-11. Pokemon Champions only; BO1 and BO3 are separate use cases.</p>
 <p><a href="architecture.md">Architecture and source map</a> ? <a href="../README.md">Project overview</a> ? <a href="bo3-inference/README.md">Inference methodology</a></p>
 <p>Runtime arrows show calls; dependency arrows show code imports. BO3 infers native stat points and nature from eligible damage. IVs are fixed at 31. Caps: 32 per stat and 66 total. Bounded search remains explicitly incomplete.</p>
 <p>Diagrams load Mermaid from a CDN. Without network access, the Mermaid source remains visible below.</p>
@@ -32,7 +32,7 @@ svg { max-width: none !important; }
     end
     subgraph infrastructure [&quot;Adapters and workers&quot;]
         calc[&quot;Forward and candidate calc adapters&quot;]
-        worker[&quot;Node: Champions damage and speed engine&quot;]
+        worker[&quot;Node workers: Champions damage and speed engine&quot;]
         meta[&quot;Chaos adapter&quot;]
         strategy[&quot;Strategy adapters and optional Node dex&quot;]
         provider[&quot;LLM provider adapters&quot;]
@@ -61,6 +61,16 @@ svg { max-width: none !important; }
     single --&gt; provider
     series --&gt;|&quot;typed series evidence&quot;| provider
     provider --&gt; llm
+</pre></section><section><h2>BO3 game-review scheduling</h2><pre class="mermaid">flowchart LR
+    replay[&quot;Validated BO3 game&quot;] --&gt; selection[&quot;LLM matchup selection&quot;]
+    replay --&gt; prefetch[&quot;Metagame and strategy prefetch&quot;]
+    selection --&gt; evidence[&quot;GroundTruthAssembler: same typed evidence&quot;]
+    prefetch --&gt; evidence
+    evidence --&gt; explanation[&quot;Per-game explanation&quot;]
+    evidence --&gt; publication[&quot;Publish ordered game evidence&quot;]
+    publication --&gt; summary[&quot;Series summary while explanations continue&quot;]
+    explanation --&gt; result[&quot;Complete BO3 result&quot;]
+    summary --&gt; result
 </pre></section><section><h2>Dependency direction</h2><pre class="mermaid">flowchart LR
     uiLayer[&quot;UI&quot;] --&gt; services[&quot;Application services&quot;]
     services --&gt; domain[&quot;Domain models, rules and Protocol ports&quot;]
@@ -79,6 +89,37 @@ svg { max-width: none !important; }
     eligible --&gt;|&quot;no&quot;| unresolved[&quot;Record unsupported observation; preserve unresolved profiles&quot;]
     unresolved --&gt; checkpoints
     checkpoints --&gt; coach[&quot;Typed tables and BO3 coaching&quot;]
+</pre></section>
+<section><h2>BO3 progressive presentation</h2><pre class="mermaid">flowchart TD
+    input[&quot;Streamlit BO3: ordered replays and optional teamsheet&quot;] --&gt; importer[&quot;SeriesReplayImporter: published or finished-room logs&quot;]
+    importer --&gt; validate[&quot;Validate 1-3 games, players, regulation and score&quot;]
+    validate --&gt; service[&quot;Bo3AnalysisService&quot;]
+    service --&gt; inverse[&quot;Bo3InferenceCoordinator: before/after-game checkpoints&quot;]
+    inverse --&gt; facts[&quot;Public declarations and eligible event-time damage, including active auras&quot;]
+    facts --&gt; index[&quot;SeriesEvidenceIndex: analysis-local player/slot and stat queries&quot;]
+    index --&gt; factors[&quot;Retrieve causal cross-game damage factors and query provenance&quot;]
+    factors --&gt; solve[&quot;Bounded inverse search: legal stat-point and nature families&quot;]
+    solve --&gt; candidate[&quot;CandidateProjectionPort: Champions damage rolls&quot;]
+    candidate --&gt; match[&quot;Match HP transitions and intersect registered cross-game constraints&quot;]
+    match --&gt; inferred[&quot;Typed ranges, coverage and unsupported observations&quot;]
+    inferred --&gt; attributes[&quot;AttributeProjectionPort: all six level-50 attribute ranges&quot;]
+    attributes --&gt; reduction[&quot;Compare declared baseline and current intervals: integer values ruled out&quot;]
+    reduction --&gt; preview[&quot;Streamlit: publish score, stat ranges and damage evidence&quot;]
+    preview --&gt; reviews[&quot;Fresh per-game AnalysisPipeline: BO1 engine reused&quot;]
+    reduction --&gt; result
+    service --&gt; reviews
+    reviews --&gt; isolated[&quot;Independent battle state and temporary memory per game&quot;]
+    isolated --&gt; selection[&quot;LLM selects cross-side matchups&quot;]
+    isolated --&gt; prefetch[&quot;Prefetch full-roster metagame and strategies&quot;]
+    selection --&gt; gameEvidence[&quot;GroundTruthAssembler: verified game evidence&quot;]
+    prefetch --&gt; gameEvidence
+    gameEvidence --&gt; explanation[&quot;Per-game LLM explanation&quot;]
+    gameEvidence --&gt; publication[&quot;Publish ordered typed evidence&quot;]
+    publication --&gt; synthesis[&quot;Series LLM summary overlaps game explanations&quot;]
+    inferred --&gt; synthesis
+    explanation --&gt; result
+    synthesis --&gt; guard[&quot;Validate rules, roster and numerical narration&quot;]
+    guard --&gt; result[&quot;Bo3AnalysisResult: score, game reviews, inference tables and summary&quot;]
 </pre></section>
 </main>
 <script type="module">

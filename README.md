@@ -6,12 +6,71 @@ Pokemon Champions VGC battle analysis: reconstruct the replay, calculate mechani
 evidence, then explain decisions with an LLM. **Mega Evolution is the only supported
 special battle mechanic.** Missing engine support remains an explicit limitation.
 
+## What it solves
+
+Replays show every move and every hit, but not what the players hid. ProfessorVGC reads the
+replays, calculates the mechanics with the same engine the game uses, and only then lets a
+language model explain, so every number in the answer comes from a verified calculation.
+
+**1. Hidden information: which EVs did they run?** Open team sheets list species, item, ability,
+moves and nature, but never stat points. Across a best-of-three, every damage roll that is
+compatible with a hidden spread rules some values out. The BO3 table shows the surviving range for
+each stat, so you can read, for example, that a Garchomp has HP 0-2, or that a Floette-Eternal has
+Def 0-11. "Unknown" is shown when the evidence does not support a tighter range.
+
+![BO3 spread inference table: per-Pokemon nature and stat-point ranges after game 3](docs/images/spread-inference-table.png)
+
+*Ranges after game 3 of a test series (44 eligible damage observations). These are bounds that are
+consistent with what was observed, never a confirmed spread.*
+
+**2. Which turn decided the game?** Each game is reviewed turn by turn in a battle viewer, with HP,
+stat boosts and KOs per field. The review cites the logged events and explains the turning points
+the evidence supports. It does not claim a proven unique winning move.
+
+![Battle viewer at turn 4: both fields, HP bars and stat boosts](docs/images/battle-viewer.png)
+
+### How the answer is built
+
+The model never calculates or invents numbers. It receives typed, verified evidence and a plan of
+the claims it may make, and a validator checks its text against the log before it is shown.
+
+```mermaid
+flowchart LR
+    replay["Replays and team sheets"] --> parse["Parse and validate regulation"]
+    parse --> truth["Ground truth: damage, speed, inverse spread ranges"]
+    truth --> calc["Champions calculator, Node worker"]
+    truth --> plan["Claim plan: what may be said"]
+    context["Metagame and strategy, labeled as assumptions"] --> plan
+    plan --> llm["LLM explanation: Gemini or OpenAI via ADK, LangChain or native"]
+    llm --> guard["Validate: rules, roster, numbers against the log"]
+    guard -->|"rejected: correction loop"| llm
+    guard --> result["Answer with citations, ranges and battle viewer"]
+```
+
+The system diagram below shows where each piece runs.
+
+```mermaid
+flowchart LR
+    ui["React or Streamlit UI"] --> api["FastAPI and services"]
+    api --> importer["Replay importer: public Showdown logs"]
+    api --> bo3["BO3: inverse inference and game reviews"]
+    api --> bo1["BO1 pipeline"]
+    bo3 --> calc["Node workers: Champions calculator"]
+    bo1 --> calc
+    bo3 --> provider["LLM providers"]
+    bo1 --> provider
+    api --> data["Firestore, Smogon data"]
+```
+
+Detailed diagrams: [BO1](#bo1-one-battle), [BO3](#bo3-series-analysis-and-inverse-spread-inference),
+[game-review scheduling](#bo3-game-review-scheduling) and [measured results](#measured-results).
+
 ## Main features
 
 | Feature | What it does |
 |---|---|
 | **BO1 review** | Analyze one battle: observed damage, assumed-set damage projections, speed, KO threats and Protect/switch options. |
-| **BO3 review** | Import up to three ordered games; track players, score, leads and adaptations. Two wins end the series. |
+| **BO3 review** | Import up to three ordered games; track players, score, leads and adaptations. Isolated game reviews run concurrently; two wins end the series. |
 | **Reverse spread inference, BO3 only** | Cross compatible damage across registered games using typed attack/stat mechanics; show initial/current intervals and measured reduction. |
 | **Battle viewer** | Review each game's battlefield and move-by-move evidence with separate navigation state. |
 | **Metagame and team advice** | Add regulation-scoped usage data and strategy context; statistical profiles remain assumptions. |
@@ -53,6 +112,45 @@ Details: [methodology](docs/bo3-inference/README.md) and
 
 ## Architecture
 
+The **React/FastAPI beta** runs alongside Streamlit and uses the same BO1/BO3
+services and Champions calculator. It publishes verified BO3 score, damage
+citations and stat-point intervals before the model finishes. Local jobs use
+SQLite; multi-instance jobs use Firestore, private Cloud Storage and Cloud Tasks.
+
+```mermaid
+flowchart LR
+    browser["React: BO1, BO3, replay viewer"] --> api["FastAPI /api/v1"]
+    api --> store["Job store and artifacts"]
+    api --> queue["Local executor or Cloud Tasks"]
+    queue --> runner["Analysis runner"]
+    runner --> bo1["BO1 pipeline"]
+    runner --> bo3["BO3 series and inverse inference"]
+    bo1 --> calc["Champions Node calculator"]
+    bo3 --> calc
+    bo1 --> models["Gemini or OpenAI"]
+    bo3 --> models
+    runner --> store
+```
+
+Run the beta locally after installing `requirements.txt` and the `node_calc`
+dependencies:
+
+```powershell
+python scripts/run_web_local.py
+```
+
+In another terminal:
+
+```powershell
+cd web
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. For one served build, run `npm run build` in
+`web` before starting Uvicorn, then open `http://127.0.0.1:8503`.
+`Dockerfile.web` builds the beta image; the original `Dockerfile` builds Streamlit.
+
 BO1 and BO3 have separate entry points and result models. `Container` injects
 infrastructure adapters through domain-owned ports (Clean Architecture). These
 arrows show runtime flow, not Python import dependencies.
@@ -82,7 +180,16 @@ flowchart TD
 A series contains up to three ordered games and ends at two wins. Import is
 read-only and makes no model call. Analysis first computes inverse constraints,
 then reviews each game through a fresh instance of the shared battle pipeline.
-The series summary uses typed evidence, not generated per-game answers.
+Independent hit tables can use four Node workers. Within each BO3 game review,
+metagame and strategy data are prefetched while the model selects matchups.
+The series summary starts when every game's typed evidence is ready and can run
+alongside the per-game explanations. It never uses generated game answers.
+Once inverse inference finishes, BO3 shows its verified score, stat-point
+intervals, level-50 attribute ranges and supporting damage citations while the
+AI reviews continue. The full-screen loading indicator ends at this point;
+an inline status remains until the game and series explanations are ready.
+If an explanation fails, the verified evidence stays visible for that attempt.
+The submission still uses one daily analysis slot.
 
 ```mermaid
 flowchart TD
@@ -97,14 +204,42 @@ flowchart TD
     match --> inferred["Typed ranges, coverage and unsupported observations"]
     inferred --> attributes["AttributeProjectionPort: all six level-50 attribute ranges"]
     attributes --> reduction["Compare declared baseline and current intervals: integer values ruled out"]
+    reduction --> preview["Streamlit: publish score, stat ranges and damage evidence"]
+    preview --> reviews["Fresh per-game AnalysisPipeline: BO1 engine reused"]
     reduction --> result
-    attributes --> reviews["Fresh per-game AnalysisPipeline: BO1 engine reused"]
     service --> reviews
     reviews --> isolated["Independent battle state and temporary memory per game"]
-    isolated --> synthesis["Synthesize typed game and series evidence with an LLM"]
+    isolated --> selection["LLM selects cross-side matchups"]
+    isolated --> prefetch["Prefetch full-roster metagame and strategies"]
+    selection --> gameEvidence["GroundTruthAssembler: verified game evidence"]
+    prefetch --> gameEvidence
+    gameEvidence --> explanation["Per-game LLM explanation"]
+    gameEvidence --> publication["Publish ordered typed evidence"]
+    publication --> synthesis["Series LLM summary overlaps game explanations"]
     inferred --> synthesis
+    explanation --> result
     synthesis --> guard["Validate rules, roster and numerical narration"]
     guard --> result["Bo3AnalysisResult: score, game reviews, inference tables and summary"]
+```
+
+### BO3 game-review scheduling
+
+This is the per-game scheduling inside the shared pipeline. The selection model
+still runs and is validated; prefetch changes only when the same data is read.
+If a selected focus needs data outside the prefetched roster, the assembler
+recomputes that context before explaining. BO1 keeps its sequential path.
+
+```mermaid
+flowchart LR
+    replay["Validated BO3 game"] --> selection["LLM matchup selection"]
+    replay --> prefetch["Metagame and strategy prefetch"]
+    selection --> evidence["GroundTruthAssembler: same typed evidence"]
+    prefetch --> evidence
+    evidence --> explanation["Per-game explanation"]
+    evidence --> publication["Publish ordered game evidence"]
+    publication --> summary["Series summary while explanations continue"]
+    explanation --> result["Complete BO3 result"]
+    summary --> result
 ```
 
 Registered-team continuity carries compatible set constraints between games;
@@ -114,13 +249,20 @@ at most 66 total; IVs are fixed at 31. Bounded search results remain uncertain.
 
 Both flows share the parser, regulation guard, Champions Node calculator,
 Chaos/strategy adapters and Gemini/OpenAI integrations. The BO3 candidate and
-attribute ports use the same calculator engine as forward projections.
+attribute ports use the same calculator engine as forward projections. BO3
+spread findings retain game/event/move citations and verified claim plans; the
+model explains those results but cannot establish an unmeasured exact spread.
+The evidence index is scoped to one series, never to a Pokemon species across
+unrelated analyses.
 
 See the [shared infrastructure overview](docs/diagrams/architecture.mmd),
 [BO1 Mermaid source](docs/diagrams/bo1-architecture.mmd),
 [BO3 Mermaid source](docs/diagrams/bo3-architecture.mmd),
+[game-review scheduling source](docs/diagrams/review-prefetch.mmd),
 [architecture and source map](docs/architecture.md), and
 [browser diagram viewer](docs/architecture-blueprint.html).
+The [React migration runbook](docs/react-migration.md) tracks implemented and
+remaining gates. The older diagrams describe the Streamlit runtime.
 
 ## Run locally
 
@@ -139,6 +281,16 @@ Edit `.env` with your provider key, `PROFESSORVGC_FIRESTORE_PROJECT_ID`, and eit
 `PROFESSORVGC_FIRESTORE_CREDENTIALS_PATH` or Application Default Credentials.
 Choose the provider with `PROFESSORVGC_DEFAULT_PROVIDER=gemini|openai` and backend
 with `PROFESSORVGC_ORCHESTRATOR=adk|langchain|native`. Use one value for each.
+BO3 defaults to three concurrent game reviews, four calculator table workers,
+context prefetch during selection, and series-summary overlap. The corresponding
+`.env.example` settings can be lowered or disabled on a constrained deployment.
+For Gemini BO3, the **Analysis depth** control defaults to **Low** and offers
+**Medium** for a more deliberate model explanation. The choice applies to
+matchup selection, each game review and the series summary through ADK,
+LangChain and native orchestration. It does not change the deterministic damage
+engine or stat-point search. OpenAI retains its provider-defined behavior, and
+BO1 keeps its existing model settings. Low may reduce latency, but the actual
+time and narrative quality depend on the provider response.
 The running app reads Chaos data from Firestore; data-loading instructions and
 optional Smogon/semantic retrieval are in [DATA.md](DATA.md).
 
@@ -193,6 +345,71 @@ Historical log-grounded A/B measurements over 40 games: grounded claims **61.2%
 p = 0.013, within ?2 percentage points and ?5% relative tolerance. These measure
 those archived explanation runs, not current inverse-inference accuracy.
 [Evidence and benchmark history](docs/validation-evidence.md).
+
+### BO3 analysis depth: Low vs Medium (measured)
+
+Matched runs of the full BO3 pipeline (Gemini 3.5 Flash, ADK) on the recorded public series
+2709311277: same three replays, 2 questions (stat-spread analysis, turn-by-turn damage), 2 repeats per
+depth, order alternated. `python -m scripts.bo3_depth_benchmark --repeats 2` reproduces it; raw runs are
+in [depth-benchmark.json](docs/bo3-inference/validation/depth-benchmark.json).
+
+| Metric | Low | Medium |
+|---|---|---|
+| Wall time, spread question (2 runs) | 59.1 / 32.6 s | 49.2 / 53.3 s |
+| Wall time, damage question (2 runs) | 50.3 / 36.9 s | 68.7 / 62.4 s |
+| Mean wall time, all 4 runs | **44.7 s** | **58.4 s** (+30%) |
+| Mean game-review phase | 29.0 s | 51.6 s |
+| Mean series summary | 23.6 s | 38.1 s |
+| Damage claims supported by the log (damage question) | 40/59 = 67.8%; 10 claims absent from the log | 39/49 = 79.6%; 5 claims absent from the log |
+| Fisher's exact, Low vs Medium, exploratory | odds ratio 0.54 (0.20-1.41), p = 0.20 | |
+| Narrative validation rejections (from run logs) | 5 across 3 of 4 runs | 0 |
+| Verified bounds identical across depths | yes (same digest in all 8 runs) | yes |
+| Known-spread regression (shared deterministic search) | 44/44 logged attacks compatible; reference points retained in all 3 checkpoints | same |
+
+How to read it:
+
+- Low was faster in 3 of the 4 matched pairs and about 14 s faster on average. The first Low run also
+  paid the cold-cache inverse search (21 s instead of about 2.5 s), so the Low advantage is slightly
+  understated.
+- Medium did not prove more accurate (exploratory p = 0.20, 108 extracted claims). Both depths
+  produced stat bounds from the same deterministic checkpoint, so the spread intervals never differ.
+- The one visible quality signal is that Low triggered the narrative-validation correction loop in 3 of 4
+  runs (numerical attributes, a base-form ability assigned to a Mega, malformed claim JSON) and Medium in
+  none. The guards caught and corrected each case, and no run fell back to the generic notice, so the
+  user-facing result stayed safe. Rejections come from console logs, not the saved JSON.
+- Limits: 8 runs, one series, one provider. The spread question yielded only 4 checkable damage claims,
+  so the Fisher test uses the damage question. It counts claims absent from the log as failures.
+  Claims within the same answer are dependent, so Fisher's independence assumption is unmet and its
+  p-value and confidence interval are descriptive only. The checker does not grade strategic reasoning.
+  Treat the 14 s as an estimate, not a guarantee. The 89-test recorded-series regression was rerun
+  on 13 November 2026; the known spreads were held out from public inference.
+
+## Measured results
+
+Inference is validated against series where the true spreads are known. The key property is
+**soundness**: a narrowed range must always contain the real value. Narrowing is judged on strong,
+sound claims, not on how many stats are narrowed. All numbers below come from simulated series
+played with the Showdown simulator on real public team sheets under Reg M-C; simulations are
+longer and give more hits than real games, so narrowing is optimistic. Method and per-source
+caveats: [CORPUS.md](docs/bo3-inference/CORPUS.md) and [ADR-077](ADR.md).
+
+| Measure (110 series, 7,920 stats, 1,320 Pokemon) | Result |
+|---|---|
+| Stats whose range contains the true value | **7,920 / 7,920 (100%)** |
+| Narrowed claims that are sound | **663 / 663** (95% CI 99.4-100%) |
+| Stats narrowed (interval or interior holes) | 663 (8.4%, CI 7.8-9.0%) |
+| Stats with a narrower min-max interval | 537 (6.8%) |
+| Width <= 16 of 33 values (half the range) | 153 (1.9%), all sound |
+| Width <= 8 | 57 (0.7%), all sound |
+| Pokemon with at least one narrowed stat | 310 (23.5%) |
+| Pokemon with a stat of width <= 16 | 102 (7.7%) |
+| Mean fraction of range removed | 2.9% |
+| Narrowed stats that rest on a single observation | 95.6% |
+| Public series from real players (22, no spreads published) | 0 errors, 0 conflicts |
+
+Proposed release gates (not yet adopted in the ADR): every narrowed claim sound; at least 1.5% of stats at width <= 16, 0.5% at width <= 8
+and 20% of Pokemon with a narrowed stat (floors, not aspirations); 0 errors or conflicts on the real
+public series. Accuracy on real human spreads is not measured, because those spreads are hidden.
 
 ## Project documentation
 

@@ -18,7 +18,9 @@ import pytest
 
 pytest.importorskip("langchain_core")
 
-from langchain_core.language_models.fake_chat_models import GenericFakeChatModel  # noqa: E402
+from langchain_core.language_models.fake_chat_models import (
+    GenericFakeChatModel,  # noqa: E402
+)
 from langchain_core.messages import AIMessage  # noqa: E402
 
 from src.adapters.llm.langchain_tools import build_langchain_tools
@@ -27,6 +29,7 @@ from src.adapters.parsers.showdown_parser import ShowdownReplayParser
 from src.domain.exceptions import CalcEngineError, LLMProviderError
 from src.domain.interfaces import AnalysisPipeline
 from src.domain.models import AnalysisRequest
+from src.services.bo3_review_telemetry import ReviewProfiler, active_review
 from src.services.langchain_orchestrator import LangChainAnalysisOrchestrator
 from tests.conftest import PROMPTS, FakeCalcEngine, build_evidence, build_tools
 
@@ -184,6 +187,51 @@ def test_no_tool_call_means_empty_agent_tool_calls(sample_chaos_path, sample_rep
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
     result = orch.analyze(AnalysisRequest(session_id="lc-5", replay_json=replay, question="q"))
     assert result.agent_tool_calls == []
+
+
+def test_bo3_langchain_profile_counts_model_and_tool_calls(sample_chaos_path, sample_replay_path):
+    model = _fake_model_with_tool_call("{}", "damage_calc", {
+        "attacker_species": "Garchomp", "defender_species": "Sinistcha", "move": "Earthquake",
+    }, "Recorded answer.")
+    orch = _build(sample_chaos_path, model)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    profile = ReviewProfiler()
+    with active_review(profile):
+        result = orch.analyze(AnalysisRequest(session_id="lc-timing", replay_json=replay, question="q"))
+    timing = profile.snapshot(1, result.provider, 1.0)
+    assert result.answer == "Recorded answer."
+    assert timing.model_calls == 3 and timing.tool_calls == 1
+    assert timing.tool_counts == {"damage_calc": 1}
+    assert timing.selection_seconds > 0 and timing.explanation_seconds > 0
+
+
+def test_langchain_extracts_text_blocks_instead_of_python_list_repr(sample_chaos_path, sample_replay_path):
+    model = _ToolCapableFakeChatModel(messages=iter([
+        AIMessage(content="{}"), AIMessage(content=[{"type": "text", "text": "Structured answer."}]),
+    ]))
+    orch = _build(sample_chaos_path, model)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    result = orch.analyze(AnalysisRequest(session_id="lc-text-block", replay_json=replay, question="q"))
+    assert result.answer == "Structured answer."
+
+
+def test_bo3_langchain_text_blocks_pass_verified_narration_without_correction(sample_chaos_path, sample_replay_path):
+    from src.services.bo3_claim_plan import build_claim_plan
+    from tests.test_bo3_claim_plan import checkpoint, draft
+
+    plan = build_claim_plan(checkpoint(), "EV spread")
+    model = _ToolCapableFakeChatModel(messages=iter([
+        AIMessage(content="{}"), AIMessage(content=[{"type": "text", "text": draft(plan)}]),
+    ]))
+    orch = _build(sample_chaos_path, model)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    profile = ReviewProfiler()
+    with active_review(profile):
+        result = orch.analyze(AnalysisRequest(session_id="lc-bo3-block", replay_json=replay,
+            question="EV spread", bo3_claim_plan=plan, series_context={"game": 1}))
+    assert "HP compatible native points: 12-24" in result.answer
+    assert "did not pass evidence validation" not in result.answer
+    assert profile.snapshot(1, result.provider, 1.0).model_calls == 2
 
 
 def test_failed_tool_call_degrades_instead_of_crashing_the_turn(

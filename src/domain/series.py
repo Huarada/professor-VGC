@@ -61,6 +61,22 @@ class Bo3Evidence(BaseModel):
     limitations: list[str] = Field(default_factory=list)
 
 
+class Bo3ReviewTiming(BaseModel):
+    """Per-game latency diagnostics; no prompts, arguments or model responses."""
+
+    game: int = Field(ge=1, le=3)
+    backend: str
+    total_seconds: float = Field(ge=0)
+    selection_seconds: float = Field(ge=0)
+    evidence_seconds: float = Field(ge=0)
+    explanation_seconds: float = Field(ge=0)
+    model_calls: int = Field(ge=0)
+    model_seconds: float = Field(ge=0)
+    tool_calls: int = Field(ge=0)
+    tool_seconds: float = Field(ge=0)
+    tool_counts: dict[str, int] = Field(default_factory=dict)
+
+
 class Bo3AnalysisResult(BaseModel):
     """UI DTO: deterministic series evidence and independent per-game reviews."""
 
@@ -70,3 +86,7 @@ class Bo3AnalysisResult(BaseModel):
     evidence: Bo3Evidence
     games: list[AnalysisResult]
     inference: Bo3InferenceEvidence | None = None
+    review_timings: list[Bo3ReviewTiming] = Field(default_factory=list)
+    inference_seconds: float | None = None
+    reviews_wall_seconds: float | None = None
+    synthesis_seconds: float | None = None

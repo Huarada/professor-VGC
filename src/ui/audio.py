@@ -8,7 +8,7 @@ import streamlit as st
 
 
 # Optional background music: drop theme.<ext> into src/ui/assets/audio/ and a
-# sidebar player appears. No file = no player.
+# player appears in Settings. No file = no player.
 _AUDIO_DIR = Path(__file__).resolve().parent / "assets" / "audio"
 
 
@@ -32,15 +32,12 @@ def _find_audio_file() -> tuple[Path, str] | None:
 
 
 def render_background_music() -> None:
-    """A looping sidebar player with an on/off checkbox, when a track exists.
-    Autoplay is requested, but browsers may block it until the visitor
-    interacts; unchecking removes the player.
-    """
+    """Keep the optional player off until the visitor chooses to show it."""
     found = _find_audio_file()
     if found is None:
         return
-    enabled = st.checkbox("Background music", value=True, key="music_enabled")
+    enabled = st.checkbox("Background music", value=False, key="music_enabled")
     if not enabled:
         return
     path, mime = found
-    st.audio(str(path), format=mime, loop=True, autoplay=True)
+    st.audio(str(path), format=mime, loop=True, autoplay=False)

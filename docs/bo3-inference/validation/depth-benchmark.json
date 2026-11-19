@@ -1,0 +1,870 @@
+{
+ "provider": "gemini",
+ "repeats": 2,
+ "questions": {
+  "spread": {
+   "summary": {
+    "low": {
+     "runs": 2,
+     "wall_seconds_mean": 45.9,
+     "wall_seconds_range": [
+      32.6,
+      59.1
+     ],
+     "reviews_wall_mean": 27.1,
+     "synthesis_mean": 14.6,
+     "damage_claims": {
+      "correct": 4,
+      "incorrect": 0,
+      "not_in_log": 0,
+      "rate": "100.0% (95% CI 51.0-100.0%, 4/4)"
+     },
+     "fallback_notices": 0,
+     "mentions_both_named": 2,
+     "digests": [
+      "ca6a8cc09cbc"
+     ]
+    },
+    "medium": {
+     "runs": 2,
+     "wall_seconds_mean": 51.2,
+     "wall_seconds_range": [
+      49.2,
+      53.3
+     ],
+     "reviews_wall_mean": 45.2,
+     "synthesis_mean": 31.2,
+     "damage_claims": {
+      "correct": 0,
+      "incorrect": 0,
+      "not_in_log": 0,
+      "rate": "n/a (0 judged)"
+     },
+     "fallback_notices": 0,
+     "mentions_both_named": 2,
+     "digests": [
+      "ca6a8cc09cbc"
+     ]
+    },
+    "deterministic_identical_across_levels": true
+   },
+   "runs": [
+    {
+     "level": "low",
+     "tag": "spread-low-0",
+     "wall_seconds": 59.1,
+     "inference_seconds": 21.483845100010512,
+     "reviews_wall_seconds": 25.978567300000577,
+     "synthesis_seconds": 14.928560700005619,
+     "review_model_seconds": [
+      13.9,
+      13.9,
+      15.1
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 9477,
+     "game_answer_chars": [
+      5736,
+      7917,
+      9342
+     ],
+     "damage_claims": [],
+     "answer": "**Strategic interpretation**\n\nIn Game 1, Player B established early board control through speed control, dictating turn order and allowing Floette-Eternal to pressure Player A's side with boosted Fairy-type spread damage while Kingambit provided late-game priority cleanup. In Game 2, Player A adjusted leads to pressure Player B's initial pair directly, securing an early knockout on Player B's Dragon-type lead and taking advantage of terrain support and boosted special attacks to force trades and tie the series. For Game 3, Player B returned to the opening lead structure, setting speed control on turn one to regain tempo; despite Player A utilizing redirection and special setup, Player B's combination of priority attacks and speed-boosted offensive threats maintained position and closed out the final match to take the series two games to one.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    },
+    {
+     "level": "medium",
+     "tag": "spread-medium-0",
+     "wall_seconds": 49.2,
+     "inference_seconds": 2.741578800007119,
+     "reviews_wall_seconds": 41.58093850000296,
+     "synthesis_seconds": 33.32786570000462,
+     "review_model_seconds": [
+      39.1,
+      30.8,
+      32.5
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 9098,
+     "game_answer_chars": [
+      5570,
+      7764,
+      9385
+     ],
+     "damage_claims": [],
+     "answer": "**Strategic interpretation**\n\nIn Game 1, Player B established early board control through speed support, generating immediate offensive pressure that forced Player A into defensive maneuvers. In Game 2, Player A adjusted by aggressive double-targeting and setup turns, effectively managing turn order to equalize the series. In Game 3, critical speed control exchanges dictated the late game, where Player B navigated key endgame targeting choices to claim the series victory.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    },
+    {
+     "level": "medium",
+     "tag": "spread-medium-1",
+     "wall_seconds": 53.3,
+     "inference_seconds": 2.5803913999989163,
+     "reviews_wall_seconds": 48.8062959999952,
+     "synthesis_seconds": 29.024971299993922,
+     "review_model_seconds": [
+      39.4,
+      45.9,
+      34.8
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 9331,
+     "game_answer_chars": [
+      5981,
+      8233,
+      9587
+     ],
+     "damage_claims": [],
+     "answer": "**Strategic interpretation**\n\nIn Game 1, Player B established early field control and speed advantages while utilizing defensive turns to mitigate initial disruption, enabling high-powered spread damage to wear down Player A's side and take the opener. Player A adjusted leads for Game 2, applying immediate single-target pressure to secure a fast knockout on turn one; by cycling active slots and maintaining tempo, Player A forced defensive responses and leveled the series. In Game 3, both players matched initial field setup options, but Player B navigated targeted attacks and back-line sweepers effectively after trading initial momentum, ultimately closing out the deciding game to win the series.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    },
+    {
+     "level": "low",
+     "tag": "spread-low-1",
+     "wall_seconds": 32.6,
+     "inference_seconds": 2.177932000005967,
+     "reviews_wall_seconds": 28.181865000005928,
+     "synthesis_seconds": 14.305139399992186,
+     "review_model_seconds": [
+      16.8,
+      26.4,
+      16.1
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 9278,
+     "game_answer_chars": [
+      6885,
+      8585,
+      10171
+     ],
+     "damage_claims": [
+      {
+       "claim": "Kingambit Sucker Punch -> Gholdengo 80.0-80.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Dazzling Gleam -> Incineroar 44.0-44.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Whimsicott Moonblast -> Rillaboom 53.0-53.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Whimsicott Moonblast -> Raichu 51.0-51.0%",
+       "verdict": "correct",
+       "reason": ""
+      }
+     ],
+     "answer": "**Strategic interpretation**\n\nIn Game 1, Player B set up speed control on the opening turn while shielding their main threat from disruption, establishing field control early. This speed advantage enabled continuous pressure against Player A's setup attempts. In Game 2, Player A adjusted leads to immediately challenge Player B's opening board, successfully taking early knockouts and managing terrain and defensive turns to force a decisive late-game win. For Game 3, Player B returned to their initial opening duo, successfully establishing speed control once more and out-pacing Player A's position across key turns to close out the series victory.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    }
+   ]
+  },
+  "damage": {
+   "summary": {
+    "low": {
+     "runs": 2,
+     "wall_seconds_mean": 43.6,
+     "wall_seconds_range": [
+      36.9,
+      50.3
+     ],
+     "reviews_wall_mean": 31.0,
+     "synthesis_mean": 32.5,
+     "damage_claims": {
+      "correct": 40,
+      "incorrect": 19,
+      "not_in_log": 10,
+      "rate": "67.8% (95% CI 55.1-78.3%, 40/59)"
+     },
+     "fallback_notices": 0,
+     "mentions_both_named": 2,
+     "digests": [
+      "ca6a8cc09cbc"
+     ]
+    },
+    "medium": {
+     "runs": 2,
+     "wall_seconds_mean": 65.5,
+     "wall_seconds_range": [
+      62.4,
+      68.7
+     ],
+     "reviews_wall_mean": 58.0,
+     "synthesis_mean": 44.9,
+     "damage_claims": {
+      "correct": 39,
+      "incorrect": 10,
+      "not_in_log": 5,
+      "rate": "79.6% (95% CI 66.4-88.5%, 39/49)"
+     },
+     "fallback_notices": 0,
+     "mentions_both_named": 2,
+     "digests": [
+      "ca6a8cc09cbc"
+     ]
+    },
+    "fisher_low_vs_medium": "A: 67.8% (95% CI 55.1-78.3%, 40/59)  vs  B: 79.6% (95% CI 66.4-88.5%, 39/49)\nFisher's exact test — odds ratio: 0.54 (95% CI 0.20-1.41), two-sided p=0.1955, one-sided (A>B) p=0.9456 -> NOT significant at alpha=0.05",
+    "deterministic_identical_across_levels": true
+   },
+   "runs": [
+    {
+     "level": "low",
+     "tag": "damage-low-0",
+     "wall_seconds": 50.3,
+     "inference_seconds": 2.4817580999952042,
+     "reviews_wall_seconds": 35.84047940000892,
+     "synthesis_seconds": 39.58024179999484,
+     "review_model_seconds": [
+      15.6,
+      34.0,
+      16.9
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 15247,
+     "game_answer_chars": [
+      5821,
+      7777,
+      10244
+     ],
+     "damage_claims": [
+      {
+       "claim": "Raichu-Mega-Y Zap Cannon -> Whimsicott 49.0-49.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Whimsicott Moonblast -> Rillaboom 53.0-53.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Dazzling Gleam -> Rillaboom 47.0-47.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Floette-Mega Dazzling Gleam -> Incineroar 44.0-44.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Whimsicott Moonblast -> Raichu-Mega-Y 51.0-51.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Moonblast -> Raichu-Mega-Y 49.0-49.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Incineroar Flare Blitz -> Whimsicott 57.0-57.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Light of Ruin -> Incineroar 74.0-74.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Kingambit Sucker Punch -> Gholdengo 80.0-80.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Light of Ruin -> Gholdengo 20.0-20.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Incineroar Fake Out -> Floette-Mega 13.2-15.9%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Floette-Mega Moonblast -> Volcarona 30.2-35.9%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 32.5-38.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 27.5-32.9%",
+       "verdict": "incorrect",
+       "reason": "claimed 27.5-32.9% vs observed T3 46.0%"
+      },
+      {
+       "claim": "Basculegion Aqua Jet -> Volcarona 41.7-50.0%",
+       "verdict": "incorrect",
+       "reason": "claimed 41.7-50.0% vs observed T4 60.0%"
+      },
+      {
+       "claim": "Volcarona Overheat -> Kingambit 69.6-82.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Last Respects -> Gholdengo 65.9-78.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Volcarona Overheat -> Whimsicott 71.5-84.7%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 32.5-38.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Whimsicott 187.6-221.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Aqua Jet -> Gholdengo 13.4-16.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Dazzling Gleam -> Volcarona 25.5-30.2%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Floette-Mega Moonblast -> Garchomp-Mega-Z 152.4-179.5%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Basculegion Wave Crash -> Incineroar 39.6-47.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Moonblast -> Incineroar 34.2-40.6%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Basculegion Wave Crash -> Incineroar 39.6-47.5%",
+       "verdict": "correct",
+       "reason": ""
+      }
+     ],
+     "answer": "**Strategic interpretation**\n\nGame 1 Turn-by-Turn:\n- Turn 1: Floette-Eternal protects, blocking Incineroar's Fake Out. Whimsicott sets Tailwind. Raichu Mega-Evolves and strikes Whimsicott with Zap Cannon for 49% damage (leaving Whimsicott at 51% HP), which aligned closely with the projected 46.7%-55.5% baseline.\n- Turn 2: Player A switches Raichu out to Rillaboom to set Grassy Terrain, while Floette-Eternal Mega-Evolves. Whimsicott lands Moonblast on Rillaboom for 53% damage (bringing it to 47% HP; projected 36.7%-43.5%). Floette-Eternal follows with Dazzling Gleam, dealing 47% damage to knock out Rillaboom and 44% damage to Incineroar (leaving Incineroar at 56% HP; projected 32.7%-38.6%). Incineroar uses Parting Shot into Floette-Eternal to bring Raichu back in.\n- Turn 3: Whimsicott strikes Raichu with Moonblast for 51% damage (leaving it at 49% HP; projected 41.3%-49.1%). Floette-Eternal then finishes Raichu with a second Moonblast for the remaining 49% HP. Incineroar responds with Flare Blitz, dealing 57% damage to eliminate Whimsicott (expected OHKO range 127.0%-150.4%). Gholdengo and Kingambit enter the battle.\n- Turn 4: Kingambit's Sucker Punch fails as Gholdengo boosts with Nasty Plot. Floette-Eternal lands a critical hit Light of Ruin on Incineroar for 74% damage, securing a KO (projected non-critical damage was 50.5%-59.4%). Tailwind expires for Player B.\n- Turn 5: Kingambit connects with Sucker Punch on Gholdengo for 80% damage (reducing Gholdengo to 20% HP; projected 85.4%-102.4%). Floette-Eternal finishes Gholdengo with Light of Ruin for 20% damage, closing Game 1 for Player B.\n\nGame 2 Turn-by-Turn:\n- Turn 1: Both Floette-Eternal and Garchomp Mega-Evolve. Incineroar uses Fake Out on Floette-Eternal for 15% damage (down to 85% HP; projected 13.2%-15.9%). Player B's Garchomp uses Dragon Claw on Player A's Garchomp for 69% damage (leaving it at 31% HP; projected 73.0%-88.6%). Player A's Garchomp retaliates with Dragon Pulse for 100% damage to knock out Player B's Garchomp (projected 104.9%-124.3%). Kingambit switches in.\n- Turn 2: Player A switches Garchomp out to Gholdengo. Floette-Eternal uses Dazzling Gleam, dealing 20% damage to Gholdengo (leaving it at 80% HP) and 46% damage to Incineroar (leaving it at 54% HP; projected 32.7%-38.6%). Incineroar uses Parting Shot to cycle into Rillaboom, establishing Grassy Terrain. Kingambit strikes Rillaboom with Low Kick for 34% damage (bringing Rillaboom to 66% HP; projected 27.1%-32.4%).\n- Turn 3: Floette-Eternal and Kingambit both use Protect. Rillaboom's Fake Out is blocked by Kingambit's Protect, while Gholdengo sets up with Nasty Plot.\n- Turn 4: Player B switches Floette-Eternal out for Basculegion. Rillaboom's Grassy Glide deals 19% damage to Kingambit (down to 81% HP; projected 15.9%-19.3%). Kingambit hits Gholdengo with Sucker Punch for 77% damage (leaving Gholdengo at 15% HP; projected 85.4%-102.4%). Gholdengo unleashes Make It Rain, dealing 58% damage to Basculegion (down to 42% HP) and 60% damage to Kingambit (down to 21% HP).\n- Turn 5: Gholdengo and Basculegion both use Protect. Rillaboom's Grassy Glide is blocked by Basculegion's Protect, and Kingambit's Sucker Punch fails against Gholdengo's Protect.\n- Turn 6: Floette-Eternal returns to the field. Rillaboom's Grassy Glide hits Floette-Eternal for 65% damage (leaving it at 32% HP; projected 58.3%-69.5%). Gholdengo uses Shadow Ball to knock out Floette-Eternal for 32% damage. Kingambit strikes Rillaboom with Kowtow Cleave for 47% damage (leaving Rillaboom at 43% HP; projected 43.5%-51.2%). Grassy Terrain ends.\n- Turn 7: Basculegion protects, blocking Rillaboom's Grassy Glide and Gholdengo's Shadow Ball. Kingambit uses Kowtow Cleave for 49% damage to knock out Rillaboom. Incineroar returns to the field.\n- Turn 8: Incineroar uses Fake Out on Kingambit for 4% damage (down to 35% HP). Gholdengo lands Shadow Ball on Basculegion for 79% damage to knock it out.\n- Turn 9: Gholdengo uses Nasty Plot while Incineroar uses Parting Shot on Kingambit to swap to Garchomp. Kingambit uses Low Kick for 31% damage to knock out Garchomp. Incineroar re-enters.\n- Turn 10: Gholdengo uses Make It Rain for 35% damage to eliminate Kingambit and secure Game 2 for Player A.\n\nGame 3 Turn-by-Turn:\n- Turn 1: Incineroar uses Fake Out on Floette-Eternal (which Mega-Evolves) for 15% damage (down to 85% HP). Whimsicott sets Tailwind, and Volcarona sets Tailwind in response.\n- Turn 2: Volcarona uses Rage Powder. Whimsicott attempts Encore, which fails. Floette-Eternal hits Volcarona with Moonblast for 35% damage (leaving Volcarona at 65% HP; projected 30.2%-35.9%). Incineroar uses Parting Shot into Floette-Eternal to swap to Gholdengo.\n- Turn 3: Player B double-switches to Basculegion and Kingambit. Volcarona uses Rage Powder, and Gholdengo lands a critical hit Make It Rain, dealing 29% damage to Basculegion (down to 71% HP) and 46% damage to Kingambit (down to 54% HP).\n- Turn 4: Basculegion hits Volcarona with Aqua Jet for 60% damage (reducing Volcarona to 5% HP) and receives a burn. Volcarona uses Overheat on Kingambit for 54% damage to knock it out. Gholdengo uses Nasty Plot. Both Tailwinds end, and Whimsicott returns.\n- Turn 5: Whimsicott sets Tailwind. Basculegion strikes Gholdengo with Last Respects for 71% damage (leaving Gholdengo at 19% HP; projected 65.9%-78.0%). Volcarona uses Overheat on Whimsicott for 79% damage (down to 21% HP). Gholdengo uses Make It Rain, dealing 31% damage to Basculegion (down to 42% HP) and 21% damage to knock out Whimsicott. Floette-Eternal returns.\n- Turn 6: Basculegion's Aqua Jet knocks out Gholdengo for 19% damage. Floette-Eternal's Dazzling Gleam knocks out Volcarona for 5% damage. Incineroar and Garchomp (which Mega-Evolves) enter for Player A.\n- Turn 7: Floette-Eternal hits Garchomp with Moonblast for 100% damage to knock it out instantly. Basculegion hits Incineroar with Wave Crash for 41% damage (leaving Incineroar at 59% HP). Incineroar uses Parting Shot on Basculegion.\n- Turn 8: Floette-Eternal hits Incineroar with Moonblast for 47% damage (bringing Incineroar to 12% HP). Basculegion delivers a final Wave Crash for 12% damage to knock out Incineroar, securing Game 3 and the 2-1 series victory for Player B.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; base-form ability: GoodasGold; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; base-form ability: FlameBody; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; base-form ability: RoughSkin; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; base-form ability: Intimidate; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; base-form ability: GrassySurge; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; base-form ability: LightningRod; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; base-form ability: Prankster; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; base-form ability: Adaptability; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; base-form ability: FlowerVeil; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; base-form ability: Defiant; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; base-form ability: Blaze; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; base-form ability: SandVeil; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    },
+    {
+     "level": "medium",
+     "tag": "damage-medium-0",
+     "wall_seconds": 68.7,
+     "inference_seconds": 2.686729599998216,
+     "reviews_wall_seconds": 58.30080730000918,
+     "synthesis_seconds": 54.68056510000315,
+     "review_model_seconds": [
+      37.7,
+      52.9,
+      57.2
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 15765,
+     "game_answer_chars": [
+      4387,
+      10422,
+      11482
+     ],
+     "damage_claims": [
+      {
+       "claim": "Incineroar Fake Out -> Floette-Eternal 13.2-15.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Garchomp Dragon Claw -> Garchomp 73.0-88.6%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Kingambit Low Kick -> Rillaboom 27.1-32.4%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Rillaboom Grassy Glide -> Kingambit 15.9-19.3%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 64.5-76.6%",
+       "verdict": "incorrect",
+       "reason": "claimed 64.5-76.6% vs observed T4 58.0%"
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 54.6-64.7%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Rillaboom Grassy Glide -> Floette-Eternal 58.3-69.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Shadow Ball -> Floette-Eternal 43.7-51.7%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Kingambit Kowtow Cleave -> Rillaboom 43.5-51.2%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Kingambit Kowtow Cleave -> Rillaboom 43.5-51.2%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Incineroar Fake Out -> Kingambit 3.4-4.3%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 73.4-86.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Incineroar Fake Out -> Floette-Eternal 15.0-15.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Volcarona 35.0-35.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 29.0-29.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 46.0-46.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Aqua Jet -> Volcarona 60.0-60.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Volcarona Overheat -> Kingambit 54.0-54.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Last Respects -> Gholdengo 71.0-71.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Volcarona Overheat -> Whimsicott 79.0-79.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 31.0-31.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Garchomp-Mega-Z 100.0-100.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Wave Crash -> Incineroar 41.0-41.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Incineroar 34.0-34.0%",
+       "verdict": "incorrect",
+       "reason": "claimed 34.0-34.0% vs observed T8 47.0%"
+      }
+     ],
+     "answer": "**Strategic interpretation**\n\nSeries Review: Player B defeated Player A 2-1 in a three-game Champions series.\n\nGame 1 (Winner: Player B, Score 1-0):\nLeads: Player A opened with Raichu and Incineroar; Player B opened with Whimsicott and Floette-Eternal.\n- Turn 1: Floette-Eternal used Protect, blocking Incineroar's Fake Out. Whimsicott established Tailwind speed control. Raichu Mega-Evolved into Raichu-Mega-Y and attacked Whimsicott with Zap Cannon for 49% damage (Whimsicott down to 51% HP), which aligned with expected baseline projections (46.7%-55.5%).\n- Turn 2: Player A switched Raichu to Rillaboom. Floette-Eternal Mega-Evolved into Floette-Mega. Whimsicott hit Rillaboom with Moonblast for 53% damage (reducing Rillaboom to 47% HP), expected given baseline damage calculations. Floette-Mega followed up with spread Dazzling Gleam, knocking out Rillaboom (47% damage) and dealing 44% damage to Incineroar (down to 56% HP). Incineroar used Parting Shot to soften Floette-Mega and bring Raichu back out.\n- Turn 3: With Tailwind active, Whimsicott hit Raichu with Moonblast for 51% damage (Raichu down to 49% HP, within expected 41.3%-49.1%), and Floette-Mega finished Raichu with Moonblast (49% damage KO). Incineroar retaliated with super-effective Flare Blitz on Whimsicott for 57% damage, knocking it out.\n- Turn 4: Player B brought in Kingambit, while Player A brought in Gholdengo. Kingambit attempted Sucker Punch, which failed as Gholdengo used Nasty Plot. Floette-Mega landed a critical hit Light of Ruin on Incineroar for 56% damage to knock it out. Tailwind expired.\n- Turn 5: Kingambit struck first with super-effective Sucker Punch for 80% damage on Gholdengo (down to 20% HP), matching expected baseline rolls (85.4%-102.4%). Floette-Mega completed the sweep with resisted Light of Ruin for 20% damage to knock out Gholdengo.\n\nGame 2 (Winner: Player A, Score 1-1):\nLead Adjustment: Player A changed leads to Garchomp and Incineroar; Player B changed leads to Floette-Eternal and Garchomp.\n- Turn 1: Both Floette-Eternal and Garchomp Mega-Evolved (into Floette-Mega and Garchomp-Mega-Z). Incineroar used Fake Out on Floette-Mega for 15% damage (down to 85% HP). Player B's Garchomp hit Garchomp-Mega-Z with super-effective Dragon Claw for 69% damage (leaving Garchomp-Mega-Z at 31% HP), which fell within expected ranges (73.0%-88.6%). Garchomp-Mega-Z responded with super-effective Dragon Pulse for 100% damage, instantly knocking out Player B's Garchomp (expected 104.9%-124.3%).\n- Turn 2: Player A switched Garchomp-Mega-Z out for Gholdengo. Floette-Mega used spread Dazzling Gleam, dealing 20% damage to Gholdengo (down to 80% HP) and 46% damage to Incineroar (down to 54% HP). Incineroar used Parting Shot to pivot into Rillaboom. Kingambit dealt 34% damage to Rillaboom with Low Kick (down to 66% HP).\n- Turn 3: Player B executed a double Protect. Rillaboom's Fake Out was blocked by Kingambit's Protect, while Gholdengo built pressure with Nasty Plot.\n- Turn 4: Player B switched Floette-Mega to Basculegion. Rillaboom hit Kingambit with resisted Grassy Glide for 19% damage (down to 81% HP). Kingambit connected with super-effective Sucker Punch on Gholdengo for 77% damage (reducing Gholdengo to 15% HP), expected under baseline rolls. Boosted Gholdengo fired off spread Make It Rain, dealing 58% damage to Basculegion (down to 42% HP) and 60% damage to Kingambit (down to 21% HP).\n- Turn 5: Both Gholdengo and Basculegion used Protect. Rillaboom's Grassy Glide was blocked, and Kingambit's Sucker Punch failed.\n- Turn 6: Player B brought Floette-Mega back in. Rillaboom hit Floette-Mega with Grassy Glide for 65% damage (down to 32% HP), allowing Gholdengo to finish Floette-Mega with Shadow Ball (32% damage KO). Kingambit hit Rillaboom with Kowtow Cleave for 47% damage (down to 43% HP).\n- Turn 7: Basculegion protected against attacks while Kingambit knocked out Rillaboom with Kowtow Cleave (49% damage). Player A brought in Incineroar.\n- Turn 8: Incineroar chipped Kingambit with Fake Out for 4% damage (down to 35% HP). Gholdengo used super-effective Shadow Ball on Basculegion for 79% damage to knock it out.\n- Turn 9: Gholdengo set up Nasty Plot while Incineroar used Parting Shot to pivot into Garchomp-Mega-Z. Kingambit knocked out Garchomp-Mega-Z with Low Kick (31% damage KO). Player A sent Incineroar back in.\n- Turn 10: Gholdengo finished off Kingambit with resisted Make It Rain for 31% damage to seal Game 2.\n\nGame 3 (Winner: Player B, Series Winner 2-1):\nLead Adjustment: Player A brought Incineroar and Volcarona; Player B reverted to the Game 1 lead of Whimsicott and Floette-Eternal.\n- Turn 1: Floette-Eternal Mega-Evolved into Floette-Mega. Incineroar chipped Floette-Mega with Fake Out for 15% damage (down to 85% HP). Both Whimsicott and Volcarona set up Tailwind for their respective sides.\n- Turn 2: Volcarona used Rage Powder. Whimsicott's Encore failed against redirection. Floette-Mega attacked Volcarona with resisted Moonblast for 35% damage (Volcarona down to 65% HP), matching expected baseline rolls (30.2%-35.9%). Incineroar used Parting Shot to pivot into Gholdengo.\n- Turn 3: Player B executed a double switch into Basculegion and Kingambit. Volcarona used Rage Powder while Gholdengo launched spread Make It Rain, landing a critical hit on Basculegion for 29% damage (down to 71% HP) and dealing 46% damage to Kingambit (down to 54% HP).\n- Turn 4: Basculegion hit Volcarona with priority super-effective Aqua Jet for 60% damage (leaving Volcarona at 5% HP). Volcarona responded with super-effective Overheat on Kingambit for 54% damage to knock it out. Gholdengo set up Nasty Plot as Tailwind expired.\n- Turn 5: Whimsicott re-established Tailwind. Basculegion struck Gholdengo with super-effective Last Respects for 71% damage (reducing Gholdengo to 19% HP), expected baseline (65.9%-78.0%). Volcarona hit Whimsicott with Overheat for 79% damage (down to 21% HP). Boosted Gholdengo used spread Make It Rain, dealing 31% damage to Basculegion (down to 42% HP) and knocking out Whimsicott (21% damage KO).\n- Turn 6: Basculegion picked off Gholdengo with Aqua Jet (19% damage KO). Floette-Mega finished Volcarona with Dazzling Gleam (5% damage KO). Player A brought out Incineroar and Garchomp.\n- Turn 7: Garchomp Mega-Evolved into Garchomp-Mega-Z. Floette-Mega knocked out Garchomp-Mega-Z instantly with super-effective Moonblast for 100% damage (expected 152.4%-179.5%). Basculegion hit Incineroar with super-effective Wave Crash for 41% damage (down to 59% HP). Incineroar used Parting Shot on Floette-Mega.\n- Turn 8: Floette-Mega hit Incineroar with Moonblast for 47% damage (down to 12% HP), and Basculegion completed the series victory with Wave Crash to knock out Incineroar.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; base-form ability: GoodasGold; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; base-form ability: FlameBody; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; base-form ability: RoughSkin; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; base-form ability: Intimidate; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; base-form ability: GrassySurge; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; base-form ability: LightningRod; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; base-form ability: Prankster; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; base-form ability: Adaptability; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; base-form ability: FlowerVeil; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; base-form ability: Defiant; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; base-form ability: Blaze; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; base-form ability: SandVeil; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    },
+    {
+     "level": "medium",
+     "tag": "damage-medium-1",
+     "wall_seconds": 62.4,
+     "inference_seconds": 2.52042369999981,
+     "reviews_wall_seconds": 57.6009544999979,
+     "synthesis_seconds": 35.18781119999767,
+     "review_model_seconds": [
+      53.9,
+      56.3,
+      55.0
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 9880,
+     "game_answer_chars": [
+      5219,
+      9472,
+      12036
+     ],
+     "damage_claims": [
+      {
+       "claim": "Incineroar Fake Out -> Floette-Eternal 0.0-0.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Raichu-Mega-Y Zap Cannon -> Whimsicott 49.0-49.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Whimsicott Moonblast -> Rillaboom 53.0-53.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Dazzling Gleam -> Rillaboom 47.0-47.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Floette-Mega Dazzling Gleam -> Incineroar 44.0-44.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Whimsicott Moonblast -> Raichu-Mega-Y 51.0-51.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Incineroar Flare Blitz -> Whimsicott 57.0-57.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Light of Ruin -> Incineroar 74.0-74.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Kingambit Sucker Punch -> Gholdengo 80.0-80.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Mega Light of Ruin -> Gholdengo 20.0-20.0%",
+       "verdict": "not_in_log",
+       "reason": "no such hit happened in this game"
+      },
+      {
+       "claim": "Incineroar Fake Out -> Floette-Eternal 13.2-15.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Volcarona 30.2-35.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 32.5-38.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 27.5-32.9%",
+       "verdict": "incorrect",
+       "reason": "claimed 27.5-32.9% vs observed T3 46.0%"
+      },
+      {
+       "claim": "Basculegion Aqua Jet -> Volcarona 41.7-50.0%",
+       "verdict": "incorrect",
+       "reason": "claimed 41.7-50.0% vs observed T4 60.0%"
+      },
+      {
+       "claim": "Volcarona Overheat -> Kingambit 69.6-82.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Last Respects -> Gholdengo 65.9-78.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Volcarona Overheat -> Whimsicott 71.5-84.7%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Whimsicott 187.6-221.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 32.5-38.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Aqua Jet -> Gholdengo 13.4-16.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Dazzling Gleam -> Volcarona 25.5-30.2%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Mega Garchomp Z 152.4-179.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Incineroar 34.2-40.6%",
+       "verdict": "incorrect",
+       "reason": "claimed 34.2-40.6% vs observed T8 47.0%"
+      },
+      {
+       "claim": "Basculegion Wave Crash -> Incineroar 39.6-47.5%",
+       "verdict": "correct",
+       "reason": ""
+      }
+     ],
+     "answer": "**Strategic interpretation**\n\nIn Game 1, Player B took control early with Whimsicott establishing speed control via Tailwind while Floette-Eternal used Protect to block Incineroar's Fake Out. Floette-Eternal's offensive pressure forced defensive switches from Player A, enabling Player B to break through the defensive core and secure Game 1. In Game 2, Player A adjusted by leading Mega Garchomp alongside Incineroar, scoring a Turn 1 knockout against Player B's Garchomp with Dragon Pulse. By positioning Rillaboom for Grassy Terrain and setting up Gholdengo with Nasty Plot, Player A overcame Kingambit's priority attacks and equalized the series with Make It Rain. In Game 3, Player B regained tempo through Whimsicott's Tailwind and Basculegion's priority attacks, allowing Floette-Eternal and Basculegion to overwhelm Player A's remaining roster and secure the 2-1 series victory.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; base-form ability: GoodasGold; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; base-form ability: FlameBody; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; base-form ability: RoughSkin; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; base-form ability: Intimidate; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; base-form ability: GrassySurge; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; base-form ability: LightningRod; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; base-form ability: Prankster; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; base-form ability: Adaptability; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; base-form ability: FlowerVeil; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; base-form ability: Defiant; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; base-form ability: Blaze; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; base-form ability: SandVeil; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    },
+    {
+     "level": "low",
+     "tag": "damage-low-1",
+     "wall_seconds": 36.9,
+     "inference_seconds": 2.4691840000014054,
+     "reviews_wall_seconds": 26.087218999993638,
+     "synthesis_seconds": 25.456995100001222,
+     "review_model_seconds": [
+      24.4,
+      17.5,
+      17.6
+     ],
+     "inference_digest": "ca6a8cc09cbc",
+     "fallback_notice": false,
+     "mentions_floette": true,
+     "mentions_garchomp": true,
+     "answer_chars": 10035,
+     "game_answer_chars": [
+      5263,
+      9622,
+      10747
+     ],
+     "damage_claims": [
+      {
+       "claim": "Incineroar Fake Out -> Floette-Eternal 13.2-15.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Garchomp Dragon Claw -> Garchomp-Mega-Z 73.0-88.6%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Garchomp-Mega-Z Dragon Pulse -> Garchomp 104.9-124.3%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Dazzling Gleam -> Gholdengo 25.6-29.9%",
+       "verdict": "incorrect",
+       "reason": "claimed 25.6-29.9% vs observed T2 20.0%"
+      },
+      {
+       "claim": "Floette-Eternal Dazzling Gleam -> Incineroar 32.7-38.6%",
+       "verdict": "incorrect",
+       "reason": "claimed 32.7-38.6% vs observed T2 46.0%"
+      },
+      {
+       "claim": "Kingambit Low Kick -> Rillaboom 27.1-32.4%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Rillaboom Grassy Glide -> Kingambit 15.9-19.3%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Kingambit Sucker Punch -> Gholdengo 85.4-102.4%",
+       "verdict": "incorrect",
+       "reason": "claimed 85.4-102.4% vs observed T4 77.0%"
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 64.5-76.6%",
+       "verdict": "incorrect",
+       "reason": "claimed 64.5-76.6% vs observed T4 58.0%"
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 54.6-64.7%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Rillaboom Grassy Glide -> Floette-Eternal 58.3-69.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Shadow Ball -> Floette-Eternal 43.7-51.7%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Kingambit Kowtow Cleave -> Rillaboom 43.5-51.2%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Kingambit Kowtow Cleave -> Rillaboom 43.5-51.2%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Incineroar Fake Out -> Kingambit 3.4-4.3%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Shadow Ball -> Basculegion 116.2-138.6%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Kingambit Low Kick -> Garchomp-Mega-Z 95.1-112.4%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 73.4-86.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Incineroar Fake Out -> Floette-Eternal 13.2-15.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Volcarona 30.2-35.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 32.5-38.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Kingambit 27.5-32.9%",
+       "verdict": "incorrect",
+       "reason": "claimed 27.5-32.9% vs observed T3 46.0%"
+      },
+      {
+       "claim": "Basculegion Aqua Jet -> Volcarona 41.7-50.0%",
+       "verdict": "incorrect",
+       "reason": "claimed 41.7-50.0% vs observed T4 60.0%"
+      },
+      {
+       "claim": "Volcarona Overheat -> Kingambit 69.6-82.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Last Respects -> Gholdengo 65.9-78.0%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Volcarona Overheat -> Whimsicott 71.5-84.7%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Whimsicott 187.6-221.9%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Gholdengo Make It Rain -> Basculegion 32.5-38.1%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Aqua Jet -> Gholdengo 13.4-16.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Dazzling Gleam -> Volcarona 25.5-30.2%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Basculegion Wave Crash -> Incineroar 39.6-47.5%",
+       "verdict": "correct",
+       "reason": ""
+      },
+      {
+       "claim": "Floette-Eternal Moonblast -> Incineroar 34.2-40.6%",
+       "verdict": "incorrect",
+       "reason": "claimed 34.2-40.6% vs observed T8 47.0%"
+      },
+      {
+       "claim": "Basculegion Wave Crash -> Incineroar 39.6-47.5%",
+       "verdict": "correct",
+       "reason": ""
+      }
+     ],
+     "answer": "**Strategic interpretation**\n\nIn Game 1, Player B established speed control on turn one, allowing Floette-Eternal and Whimsicott to deal heavy spread and single-target damage across turns two and three. Player A attempted to recover tempo using Parting Shot cycling and setup, but Player B maintained relentless pressure with Light of Ruin and Sucker Punch to close out the opening game in five turns.\n\nIn Game 2, Player A adjusted leads to Garchomp and Incineroar, securing an immediate turn-one knock out on opposing Garchomp. Controlling terrain and switching momentum allowed Gholdengo to set up and deliver key spread damage, enabling Player A to dictate the pace through ten turns and equalize the series 1-1.\n\nIn Game 3, both players opened with speed control setups on turn one. Player B effectively neutralized setup attempts, utilizing redirection play and late-game water priority alongside high-power ghost attacks from Basculegion to clean up Player A's remaining targets across eight turns, taking the game and the series 2-1.\n\n**Verified teamsheet and spread findings**\n\n- **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; base-form ability: GoodasGold; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; base-form ability: FlameBody; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; base-form ability: RoughSkin; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; base-form ability: Intimidate; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; base-form ability: GrassySurge; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; base-form ability: LightningRod; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; base-form ability: Prankster; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; base-form ability: Adaptability; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; base-form ability: FlowerVeil; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; base-form ability: Defiant; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\n- **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; base-form ability: Blaze; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.\n\n- **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; base-form ability: SandVeil; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.\n\nIVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.\n\nIndependent attribute endpoints do not form one complete legal spread.\n\nThis checkpoint has 44 eligible damage observations; 0 observations carry modeling limitations.\n\nThe joint search remains incomplete; compatible bounds do not prove a unique original spread."
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,10 @@
+flowchart LR
+    replay["Validated BO3 game"] --> selection["LLM matchup selection"]
+    replay --> prefetch["Metagame and strategy prefetch"]
+    selection --> evidence["GroundTruthAssembler: same typed evidence"]
+    prefetch --> evidence
+    evidence --> explanation["Per-game explanation"]
+    evidence --> publication["Publish ordered game evidence"]
+    publication --> summary["Series summary while explanations continue"]
+    explanation --> result["Complete BO3 result"]
+    summary --> result

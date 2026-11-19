@@ -100,3 +100,6 @@ def test_all_backends_render_the_same_verified_bo3_claims(sample_chaos_path):
     assert "Verified teamsheet and spread findings" in results[0].answer
     assert "did not pass" not in results[0].answer
     assert all(result.answer == results[0].answer and result.bo3_claim_plan == plan for result in results)
+    for other in results[1:]:
+        for name in _EVIDENCE_FIELDS:
+            assert getattr(other, name) == getattr(results[0], name), name

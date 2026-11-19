@@ -6,9 +6,12 @@ import re
 import uuid
 from collections.abc import Sequence
 
+from src.domain.bo3_inference.citations import cite_observation
+from src.domain.bo3_inference.dependencies import relevant_axes
 from src.domain.bo3_inference.evidence_index import SeriesEvidenceIndex
 from src.domain.bo3_inference.models import (
     Bo3InferenceEvidence,
+    DamageCitation,
     DamageObservation,
     EvidenceQuery,
     EvidenceRetrieval,
@@ -100,6 +103,7 @@ class Bo3InferenceCoordinator:
         excluded: list[str] = []
         prior_traits: dict[str, dict[str, tuple[str, int]]] = {}
         projected = []
+        citations: list[DamageCitation] = []
         attribute_service = AttributeProjectionService(engine=self._attributes) if self._attributes else None
         known_forms: dict[str, set[str]] = {}
         for number, (game, mapping) in enumerate(zip(games, maps), 1):
@@ -131,6 +135,7 @@ class Bo3InferenceCoordinator:
             except CalcEngineError as exc:
                 found, skipped = [], [f"g{number}: engine metadata unavailable: {exc}"]
             index.append(found)
+            citations.extend(cite_observation(hit, relevant_axes([hit])) for hit in found)
             prior = list(index.query(EvidenceQuery(through_game=number)))
             excluded.extend(skipped)
             self._report(f"{scope}: matching {len(found)} eligible hits against legal stat-point spreads; "
@@ -170,7 +175,8 @@ class Bo3InferenceCoordinator:
                                      checkpoints=tuple(session.checkpoints), limitations=tuple(limitations),
                                      projections=budget.projections, conditioned_projections=tuple(projected),
                                      attribute_projections=attribute_service.projections if attribute_service else 0,
-                                     evidence_retrievals=tuple(retrievals) + index.retrievals)
+                                     evidence_retrievals=tuple(retrievals) + index.retrievals,
+                                     damage_citations=tuple(citations))
 
     @staticmethod
     def _remember_initial_traits(

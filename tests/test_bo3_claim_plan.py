@@ -10,7 +10,7 @@ from src.domain.narrative_claims import NarrativeClaimPlan
 from src.services.bo3_claim_plan import build_claim_plan
 from src.services.bo3_narrative_validation import validate_draft
 from src.services.ground_truth import explain_champions_only
-from tests.test_spread_interpretation import narrowed
+from tests.test_spread_interpretation import cited_hit, narrowed
 
 
 def checkpoint():
@@ -53,8 +53,22 @@ def test_valid_draft_uses_exact_rendered_values_without_a_second_call():
     assert len(calls) == 1 and "HP compatible native points: 12-24" in text
     assert "declared nature: Modest" in text and "declared/verified moves: Sludge Bomb, Protect" in text
     assert "Gengar-Mega ability: Shadow Tag" in text
-    assert "complete spread remains unresolved" in text
+    assert "some stat-point intervals narrowed; other values and the joint spread remain open" in text
     assert "Strategic interpretation" in text and "did not pass" not in text
+
+
+def test_verified_narrowing_and_move_citation_are_rendered_from_the_catalog():
+    source = checkpoint()
+    plan = build_claim_plan(source, "EV spread", (cited_hit(),))
+    text = explain_champions_only(lambda correction: draft(plan), bo3=True, plan=plan)
+    assert "HP compatible native points: 12-24" in text
+    assert "initial 0-32; 60.6% fewer possibilities" in text
+    assert "Grassy Glide by Rillaboom into Gengar, 97% -> 32%" in text
+    assert "some stat-point intervals narrowed" in text
+    assert "this is not a complete spread" not in text
+    assert "Grassy Glide" not in explain_champions_only(
+        lambda correction: draft(build_claim_plan(source, "EV spread", (cited_hit(game=2),))),
+        bo3=True, plan=build_claim_plan(source, "EV spread", (cited_hit(game=2),)))
 
 
 @pytest.mark.parametrize("analysis", [

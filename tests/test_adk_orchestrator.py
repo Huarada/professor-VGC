@@ -32,6 +32,7 @@ from src.domain.exceptions import CalcEngineError, LLMProviderError
 from src.domain.interfaces import AnalysisPipeline
 from src.domain.models import AnalysisRequest
 from src.services.adk_orchestrator import AdkAnalysisOrchestrator
+from src.services.bo3_review_telemetry import ReviewProfiler, active_review
 from tests.conftest import PROMPTS, FakeCalcEngine, build_evidence, build_tools
 
 # Each scripted "turn" is either a plain string (a final text response) or a
@@ -142,6 +143,14 @@ def _build(chaos_path, model: BaseLlm, **kwargs: Any) -> AdkAnalysisOrchestrator
 
 def test_orchestrator_satisfies_pipeline_port(sample_chaos_path):
     assert isinstance(_build(sample_chaos_path, _FakeAdkModel(["{}", "x"])), AnalysisPipeline)
+
+
+def test_bo3_thinking_level_reaches_both_adk_agents(sample_chaos_path):
+    from google.genai import types
+
+    orchestrator = _build(sample_chaos_path, _FakeAdkModel(["{}", "x"]), thinking_level="low")
+    for agent in (orchestrator._selection_agent, orchestrator._explanation_agent):
+        assert agent.generate_content_config.thinking_config.thinking_level == types.ThinkingLevel.LOW
 
 
 def test_full_adk_pipeline(sample_chaos_path, sample_replay_path):
@@ -331,6 +340,23 @@ def test_no_tool_call_means_empty_agent_tool_calls(sample_chaos_path, sample_rep
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
     result = orch.analyze(AnalysisRequest(session_id="adk-5", replay_json=replay, question="q"))
     assert result.agent_tool_calls == []
+
+
+def test_bo3_adk_profile_counts_real_agent_round_trips_without_changing_answer(sample_chaos_path, sample_replay_path):
+    profile = ReviewProfiler()
+    model = _FakeAdkModel(["{}", ("damage_calc", {
+        "attacker_species": "Garchomp", "defender_species": "Sinistcha", "move": "Earthquake",
+        "attacker_item": "", "attacker_nature": ""}), "Recorded answer."])
+    orch = _build(sample_chaos_path, model)
+    replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
+    with active_review(profile):
+        result = orch.analyze(AnalysisRequest(session_id="adk-timing", replay_json=replay, question="q"))
+    timing = profile.snapshot(1, result.provider, 1.0)
+    assert result.answer == "Recorded answer."
+    assert timing.model_calls == 3 and timing.tool_calls == 1
+    assert timing.tool_counts == {"damage_calc": 1}
+    assert timing.selection_seconds > 0 and timing.explanation_seconds > 0
+    assert timing.model_seconds >= 0 and timing.tool_seconds >= 0
 
 
 def test_failed_tool_call_degrades_instead_of_crashing_the_turn(

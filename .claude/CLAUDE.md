@@ -43,6 +43,43 @@ or causal checkpoints. Compare inferred native bounds and raw attribute envelope
 with declaration-only baselines using inclusive integer counts. A reduction is
 outer-interval narrowing, never confidence, joint-family count or hidden-set accuracy.
 
+**BO3 table concurrency (ADR-071):** Independent exact per-hit tables may run on
+up to four Node workers through the optional batch port
+(`PROFESSORVGC_BO3_TABLE_WORKERS`, default 4). Associate responses with
+their original observation IDs before series propagation; preserve checkpoint
+order, unknown cells as feasible and the existing inference deadlines. The
+single-table port and BO1 calculator behavior remain available.
+
+**BO3 synthesis overlap (ADR-072):** The shared evidence assembler publishes
+typed per-game evidence into the current request scope before game narration.
+The series summary may start after all games have published, concurrently with
+their explanation calls. It never consumes generated game answers or later
+knowledge for an earlier checkpoint. Await all reviews before returning the
+result. Disable with `PROFESSORVGC_BO3_OVERLAP_SYNTHESIS=false` if provider
+concurrency is limited; BO1 has no publication subscriber.
+
+**BO3 review context prefetch (ADR-073):** Start full-roster metagame and strategy
+lookups after replay preparation, concurrently with matchup selection in each
+isolated game review. Reuse the typed result only when the selected focus and
+regulation format match; otherwise load the ordinary context. Keep BO1 sequential
+and preserve evidence parity across ADK, LangChain and native. Disable with
+`PROFESSORVGC_BO3_PREFETCH_CONTEXT=false` when provider concurrency is limited.
+
+**BO3 Gemini depth (ADR-074):** The UI defaults to Low and offers Medium for
+Gemini BO3 only. Carry the selected thinking level into both game-review agents
+and the direct series-summary call for ADK, LangChain and native. Keep it scoped
+to one pipeline instance; BO1, OpenAI and deterministic inference retain their
+existing behavior. Do not claim a speedup without a matched latency and
+faithfulness comparison.
+
+**BO3 progressive evidence (ADR-075):** Publish the validated score, typed
+inverse bounds and damage citations on the Streamlit script thread immediately
+after deterministic inference, before any game-review model call. Dismiss the
+full-screen loader and keep an inline AI status until the complete result has
+rendered. The callback is request-local and never calls Streamlit from parallel
+workers. Retain verified evidence if later narration fails; do not present
+unresolved bounds as exact spreads or spend an extra quota slot.
+
 **Attack semantics (ADR-059):** reverse inference is not aura-specific. Native move
 metadata identifies real offensive/defensive axes, stat ownership, HP/speed inputs,
 fixed damage and conditional categories. Criticals are side/target-qualified.

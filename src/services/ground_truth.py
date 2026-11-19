@@ -58,6 +58,7 @@ from src.services.battle_context import (
     outcome_summary,
 )
 from src.services.bo3_claim_plan import prompt_claim_plan, render_claim_plan
+from src.services.bo3_evidence_publication import evidence_ready
 from src.services.bo3_narrative_validation import validate_draft
 from src.services.bo3_prompt_context import (
     checked_bo3_message,
@@ -65,6 +66,7 @@ from src.services.bo3_prompt_context import (
     encode_context,
 )
 from src.services.concept_tracking import recurring_concepts
+from src.services.evidence_prefetch import PrefetchedReviewContext
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
 from src.services.regulation_guard import RegulationGuard
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
@@ -86,6 +88,7 @@ class GroundTruthAssembler:
         scope: RegulationScope | None = None,
         regulation_catalog: RegulationCatalog | None = None,
         guard: RegulationGuard | None = None,
+        prefetch_enabled: bool = True,
     ) -> None:
         self._meta = meta_provider
         self._strategy = strategy_provider
@@ -95,6 +98,7 @@ class GroundTruthAssembler:
         self.scope = scope or RegulationScope()
         self._catalog = regulation_catalog
         self._guard = guard or RegulationGuard(None)
+        self.prefetch_enabled = prefetch_enabled
 
     # -- regulation ---------------------------------------------------------- #
 
@@ -136,6 +140,31 @@ class GroundTruthAssembler:
 
     # -- evidence ------------------------------------------------------------ #
 
+    def prefetch(self, request: AnalysisRequest, game_state: GameState) -> PrefetchedReviewContext:
+        """Load selection-independent metagame and strategy context for BO3."""
+        data_format = self._data_format(game_state)
+        roster = self._roster()
+        species = tuple(context_species(game_state))
+        return PrefetchedReviewContext(
+            data_format=data_format, species=species, roster=roster,
+            meta_context=self._load_meta(species, data_format, game_state.rating, roster),
+            strategies=tuple(self._load_strategies(species, data_format, request.question, roster)),
+        )
+
+    def _load_meta(
+        self, species: Sequence[str], data_format: str, rating: int | None, roster: RegulationRoster,
+    ) -> MetaContext:
+        context = _filter_meta(
+            self._meta.build_match_context(list(species), metagame=data_format, rating=rating), roster,
+        )
+        return MetaContext.model_validate(clean_champions_knowledge(context.model_dump()))
+
+    def _load_strategies(
+        self, species: Sequence[str], data_format: str, question: str, roster: RegulationRoster,
+    ) -> list[SmogonStrategy]:
+        return [SmogonStrategy.model_validate(clean_champions_knowledge(_filter_strategy(entry, roster).model_dump()))
+                for entry in collect_strategies(self._strategy, list(species), metagame=data_format, question=question)]
+
     def assemble(
         self,
         *,
@@ -143,21 +172,19 @@ class GroundTruthAssembler:
         game_state: GameState,
         selection: SelectionPlan,
         history: Sequence[ChatMessage],
+        prefetched: PrefetchedReviewContext | None = None,
     ) -> AnalysisEvidence:
-        data_format = self._data_format(game_state)
-        roster = self._roster()
         # Metagame/Smogon context covers EVERY Pokemon in play (both sides),
         # not just the selection focus, so the AI can reason about the full game.
         context_mons = context_species(game_state, selection.focus_species)
-        meta_context = _filter_meta(
-            self._meta.build_match_context(
-                context_mons, metagame=data_format, rating=game_state.rating
-            ),
-            roster,
-        )
-        meta_context = MetaContext.model_validate(clean_champions_knowledge(meta_context.model_dump()))
+        use_prefetched = (prefetched is not None and prefetched.species == tuple(context_mons)
+                          and prefetched.data_format == self._data_format(game_state))
+        data_format = prefetched.data_format if use_prefetched and prefetched else self._data_format(game_state)
+        roster = prefetched.roster if use_prefetched and prefetched else self._roster()
+        meta_context = (prefetched.meta_context if use_prefetched and prefetched else
+                        self._load_meta(context_mons, data_format, game_state.rating, roster))
         turn_checks = self._simulator.simulate(game_state, meta_context)
-        return AnalysisEvidence(
+        evidence = AnalysisEvidence(
             selection=selection.model_copy(update={
                 "rationale": clean_champions_knowledge(selection.rationale),
             }),
@@ -165,13 +192,8 @@ class GroundTruthAssembler:
             verdicts=self._evaluator.evaluate(game_state, selection, meta_context),
             turn_checks=turn_checks,
             protect_reads=self._simulator.build_protect_reads(turn_checks, game_state),
-            strategies=[
-                SmogonStrategy.model_validate(clean_champions_knowledge(_filter_strategy(s, roster).model_dump()))
-                for s in collect_strategies(
-                    self._strategy, context_mons, metagame=data_format,
-                    question=request.question,
-                )
-            ],
+            strategies=(list(prefetched.strategies) if use_prefetched and prefetched else
+                        self._load_strategies(context_mons, data_format, request.question, roster)),
             improvement_suggestions=clean_champions_knowledge(_filter_improvements(
                 self._improvements(request, selection, game_state, data_format), roster
             )),
@@ -181,6 +203,8 @@ class GroundTruthAssembler:
             series_context=clean_champions_knowledge(request.series_context),
             bo3_claim_plan=request.bo3_claim_plan,
         )
+        evidence_ready(evidence)
+        return evidence
 
     def _improvements(
         self, request: AnalysisRequest, selection: SelectionPlan, game_state: GameState,

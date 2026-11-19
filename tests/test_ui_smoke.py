@@ -81,7 +81,10 @@ def test_idle_page_renders():
     at = AppTest.from_file(_APP, default_timeout=60)
     at.run()
     assert not at.exception
-    assert [b.label for b in at.button] == ["Analyze", "Reset conversation"]
+    assert {b.label for b in at.button} == {"Analyze", "Reset conversation"}
+    assert at.segmented_control(key="analysis_mode").value == "Best of one"
+    assert at.segmented_control(key="llm_provider").value == "gemini"
+    assert not at.sidebar
 
 
 def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch):
@@ -89,6 +92,7 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
 
     from src.ui import series as series_ui
     from src.domain.series import Bo3AnalysisRequest
+    from src.domain.exceptions import LLMProviderError
     from src.services.series_analysis import Bo3AnalysisService
     from tests.test_bo3_analysis import game
     from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
@@ -117,7 +121,6 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
 
     def track_renderer(name, renderer):
         def render(*args, **kwargs):
-            assert active, f"Loading ended before {name} was rendered"
             lifecycle.append(name)
             return renderer(*args, **kwargs)
         return render
@@ -127,22 +130,43 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
         monkeypatch.setattr(series_ui, name, track_renderer(name, getattr(series_ui, name)))
 
     class SeriesContainer(_FakeContainer):
+        fail_summary = False
+
         def validate_series(self, request: Bo3AnalysisRequest, regulation=None):
             return Container(self.settings).validate_series(request, regulation)
 
-        def build_bo3_pipeline(self, provider=None, orchestrator=None, regulation=None, *, progress=None):
+        def build_bo3_pipeline(self, provider=None, orchestrator=None, regulation=None, *, progress=None,
+                               thinking_level="low", on_deterministic_ready=None):
+            self.thinking_level = thinking_level
             self.progress_events = []
+            self.preview_ready = False
+
+            def ready(evidence, inferred):
+                self.preview_ready = True
+                if on_deterministic_ready is not None:
+                    on_deterministic_ready(evidence, inferred)
+
+            def review_pipeline():
+                assert self.preview_ready, "Deterministic evidence must render before model review"
+                assert "render_inference" in lifecycle and not active
+                return self.build_pipeline()
 
             def report(message):
                 self.progress_events.append(message)
                 if progress is not None:
                     progress(message)
 
+            class FailingSummary:
+                def complete(self, **kwargs):
+                    raise LLMProviderError("Summary unavailable")
+
             return Bo3AnalysisService(
-                parser=ShowdownReplayParser(), pipeline_factory=self.build_pipeline,
-                llm=FakeLLM("{}", "Alice won the series 2-0."), prompts=PROMPTS,
+                parser=ShowdownReplayParser(), pipeline_factory=review_pipeline,
+                llm=FailingSummary() if self.fail_summary else FakeLLM("{}", "Alice won the series 2-0."),
+                prompts=PROMPTS,
                 inference=Bo3InferenceCoordinator(sheets=JsonTeamSheetParser(), projection=AnalyticProjection(), progress=report),
                 progress=report,
+                on_deterministic_ready=ready,
             )
 
     monkeypatch.setattr("src.ui.battle_panel.http_head_ok", lambda url, timeout=2.0: False)
@@ -151,10 +175,11 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     at.session_state["container"] = container
     at.run()
     at.text_area[0].input(_LOG_ATTACKED)
-    at.button[0].click().run()
+    next(button for button in at.button if button.label == "Analyze").click().run()
     assert not at.exception
     original = at.session_state["last_result"]
-    at.radio[0].set_value("Best of three").run()
+    at.segmented_control(key="analysis_mode").set_value("Best of three").run()
+    assert at.segmented_control(key="bo3_thinking_level").value == "Low"
     assert [at.text_area(key=f"bo3_source_{i}").label for i in range(1, 4)] == [f"Game {i} replay JSON, log or URL" for i in range(1, 4)]
     assert any(area.label == "Teamsheet JSON (optional)" for area in at.text_area)
     at.text_area(key="bo3_source_1").input(game())
@@ -163,17 +188,24 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     assert not at.exception
     assert at.session_state["bo3_result"].evidence.score == {"Alice": 2, "Bob": 0}
     assert at.session_state["bo3_result"].inference is not None
+    assert container.thinking_level == "low"
     assert any(entry.label == "Evidence consulted across games" for entry in at.expander)
-    assert lifecycle[-1] == "closed" and not active
+    assert "closed" in lifecycle and not active
+    assert lifecycle.index("closed") < lifecycle.index("render_inference")
+    assert lifecycle.index("render_inference") < lifecycle.index("render_result")
     assert all(name in lifecycle for name in ("render_battle_panel", "render_result", "render_inference"))
-    assert any("Preparing stat ranges" in message for message in captions)
+    assert container.preview_ready
     assert any("Reviewing game 1 of 2" in message for message in container.progress_events)
     assert any("Reviewing game 2 of 2" in message for message in container.progress_events)
     assert any("Stage 3 of 3 — AI comparing games" in message for message in container.progress_events)
     assert sum("Computed stat-spread findings" in entry.value for entry in at.markdown) >= 2
     assert not any("investment" in message.lower() for message in container.progress_events)
     assert any(heading.value == "Stat-point inference (BO3)" for heading in at.subheader)
+    assert _page_order(at.main) == ["Series review", "Stat-point inference (BO3)"]  # AI text above the tables
     assert at.session_state["last_result"] == original
+    at.segmented_control(key="bo3_thinking_level").set_value("Medium").run()
+    next(button for button in at.button if button.label == "Analyze BO3").click().run()
+    assert not at.exception and container.thinking_level == "medium"
     assert any(slider.key.startswith("bo3_game_") for slider in at.slider)
     built = container.pipelines_built
     at.slider(key="bo3_game_0_turn_index").set_value(1).run()
@@ -182,10 +214,30 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     at.selectbox(key="bo3_review_game").set_value(0).run()
     assert at.slider(key="bo3_game_0_turn_index").value == 1
     assert container.pipelines_built == built
+    assert _page_order(at.main) == ["Series review", "Stat-point inference (BO3)"]  # same order after a plain rerun
     assert not at.exception
-    at.radio[0].set_value("Best of one").run()
+    container.fail_summary = True
+    next(button for button in at.button if button.label == "Analyze BO3").click().run()
+    assert not at.exception and at.session_state.get("bo3_result") is None
+    assert at.session_state.get("bo3_preview") is not None
+    at.text_area(key="bo3_source_2").input(game(move="Dragon Claw")).run()
+    assert not any(heading.value == "Stat-point inference (BO3)" for heading in at.subheader)
+    at.segmented_control(key="analysis_mode").set_value("Best of one").run()
     assert not at.exception
     assert at.session_state["last_result"] == original
+
+
+def _page_order(node, found=None):
+    """Document order of the Series review expander and the stat-point tables (ADR-075 layout)."""
+    found = [] if found is None else found
+    label = getattr(node, "label", None)
+    value = getattr(node, "value", None)
+    label = label if isinstance(label, str) else value if isinstance(value, str) else None
+    if label in ("Series review", "Stat-point inference (BO3)"):
+        found.append(label)
+    for child in getattr(node, "children", {}).values():
+        _page_order(child, found)
+    return found
 
 
 def test_analysis_flow_renders_answer_and_decision_review(monkeypatch):
@@ -222,7 +274,7 @@ def test_bo3_import_fills_official_slots_without_building_a_paid_pipeline(monkey
     container = ImportContainer()
     at.session_state["container"] = container
     at.run()
-    at.radio[0].set_value("Best of three").run()
+    at.segmented_control(key="analysis_mode").set_value("Best of three").run()
     at.text_area(key="bo3_import_source").input(ROOT if missing else URLS[2] + "\n" + URLS[1])
     next(button for button in at.button if button.label == "Import BO3").click().run()
     assert not at.exception
@@ -238,7 +290,7 @@ def test_bo3_import_fills_official_slots_without_building_a_paid_pipeline(monkey
 
 
 def _analyze_as_openai(at: AppTest) -> None:
-    at.sidebar.selectbox[0].select("openai")
+    at.segmented_control(key="llm_provider").set_value("openai")
     at.run()
 
     at.text_area[0].input(_LOG_ATTACKED)
@@ -265,7 +317,7 @@ def test_import_retrieves_and_prefills_public_natures_without_a_paid_analysis(mo
     container = PublicContainer()
     at.session_state["container"] = container
     at.run()
-    at.radio[0].set_value("Best of three").run()
+    at.segmented_control(key="analysis_mode").set_value("Best of three").run()
     at.text_area(key="bo3_import_source").input("https://play.pokemonshowdown.com/game-bestof3-gen9championsvgc2026regmcbo3-2702587956")
     next(button for button in at.button if button.label == "Import BO3").click().run()
     assert not at.exception
@@ -288,11 +340,11 @@ def test_openai_quota_counts_down_then_blocks_without_calling_the_model(monkeypa
 
     _analyze_as_openai(at)
     assert not at.error
-    assert any("openai: 1 of 2 analyses left today" in c.value for c in at.sidebar.caption)
+    assert any("openai: 1 of 2 analyses left today" in c.value for c in at.caption)
 
     _analyze_as_openai(at)
     assert not at.error
-    assert any("openai: 0 of 2 analyses left today" in c.value for c in at.sidebar.caption)
+    assert any("openai: 0 of 2 analyses left today" in c.value for c in at.caption)
 
     _analyze_as_openai(at)
     assert not at.exception
@@ -301,8 +353,8 @@ def test_openai_quota_counts_down_then_blocks_without_calling_the_model(monkeypa
 
 
 def _analyze_replay_as_openai(at: AppTest, replay_text: str, regulation: str = "auto") -> None:
-    at.sidebar.selectbox[0].select("openai")
-    next(s for s in at.sidebar.selectbox if s.label == "Regulation").select(regulation)
+    at.segmented_control(key="llm_provider").set_value("openai")
+    next(s for s in at.selectbox if s.label == "Regulation").select(regulation)
     at.run()
     at.text_area[0].input(replay_text)
     next(b for b in at.button if b.label == "Analyze").click()
@@ -330,4 +382,4 @@ def test_refused_replay_does_not_spend_quota(monkeypatch):
     assert any("pinned to" in e.value for e in at.error)
 
     assert container.pipelines_built == 0
-    assert any("openai: 2 of 2 analyses left today" in c.value for c in at.sidebar.caption)
+    assert any("openai: 2 of 2 analyses left today" in c.value for c in at.caption)

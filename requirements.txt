@@ -4,6 +4,8 @@ pydantic-settings>=2.2,<3
 
 # Presentation
 streamlit>=1.33
+fastapi>=0.115,<1
+uvicorn>=0.30,<1
 requests>=2.31
 truststore>=0.10,<1; sys_platform == "win32"  # verified operator-installed Windows roots
 websockets>=15,<16  # public Showdown BO3 room discovery; read-only, no login
@@ -17,17 +19,22 @@ litellm>=1.84  # google-adk's own documented path to non-Gemini models (BYOK Ope
 # LLM providers (bring-your-own-key; optional at runtime)
 langchain-openai>=0.2
 langchain-google-genai>=2.0
+google-genai>=1.51  # BO3 Gemini thinking-level control
 openai>=1.30
 google-generativeai>=0.7
 
 # Chaos data backend: required by the running app; offline tests use fakes.
 google-cloud-firestore>=2.16,<3
+google-cloud-storage>=3,<4  # private artifacts for React API jobs
+google-auth>=2,<3  # authenticated Cloud Tasks REST dispatch
+protobuf>=5.29,<6  # compatible with Gemini and current Cloud libraries
 
 # Dev / test
 # Linters are pinned exactly: a newer mypy/ruff/vulture changes what CI reports
 # (a newer mypy once gave 68 errors on the same code). CI's lint job installs the
 # ruff/vulture lines of this file; bump them on purpose, together.
 pytest>=8.0,<10
+httpx>=0.27,<1  # FastAPI TestClient
 mypy==2.4.0
 ruff==0.17.2
 vulture==2.16

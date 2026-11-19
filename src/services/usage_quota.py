@@ -82,3 +82,7 @@ class UsageQuotaService:
         day = self._clock().astimezone(timezone.utc).strftime("%Y-%m-%d")
         digest = hmac.new(self._secret, visitor.encode("utf-8"), hashlib.sha256).hexdigest()
         return f"{day}_{provider.lower()}_{digest[:32]}"
+
+    def bucket(self, provider: str, visitor: str) -> str:
+        """Opaque daily key for adapters that reserve a slot transactionally."""
+        return self._bucket(provider, visitor)

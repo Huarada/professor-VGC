@@ -7,6 +7,8 @@ from src.adapters.teamsheet.json_teamsheet import JsonTeamSheetParser
 from src.domain.bo3_inference.interpretation import interpret_checkpoint
 from src.domain.bo3_inference.models import (
     AttributeEnvelope,
+    DamageCitation,
+    HPReading,
     InferenceOptions,
     PointRange,
 )
@@ -26,8 +28,18 @@ def narrowed():
     summary = original.summaries[0]
     points = {**summary.stat_points, "hp": PointRange(minimum=12, maximum=24)}
     return original.model_copy(update={"summaries": (summary.model_copy(update={
-        "basis": "necessary_local_bounds", "stat_points": points}),),
+        "basis": "necessary_local_bounds", "stat_points": points,
+        "baseline_stat_points": {stat: PointRange(minimum=0, maximum=32) for stat in points}}),),
         "local_constraints": ("hit1",), "observation_ids": ("hit1", "hit2")})
+
+
+def cited_hit(identifier="hit1", game=1, axes=("hp", "def")):
+    return DamageCitation(id=identifier, game=game, event_index=43,
+        attacker_id="Bob:slot2", defender_id="Alice:slot1", attacker_species="Rillaboom",
+        defender_species="Gengar", move="Grassy Glide",
+        before=HPReading(numerator=97, denominator=100, mode="percent"),
+        after=HPReading(numerator=32, denominator=100, mode="percent"),
+        dependent_axes={"Alice:slot1": axes})
 
 
 def test_validated_bounds_survive_coaching_projection_without_restoring_chaos_priors():
@@ -80,10 +92,22 @@ def test_numeric_commentary_distinguishes_exact_values_and_ranges_without_guessi
 
 def test_computed_text_uses_native_bounds_and_marks_incomplete_or_conflicting_evidence():
     text = stat_spread_commentary(narrowed())
-    assert "HP 12-24" in text and "does not identify a complete spread" in text
+    assert "HP 12-24" in text and "Other stat-point choices may remain open" in text
     assert "not observed battle stats" in text
     conflict = narrowed().model_copy(update={"outcome": "conflict"})
     assert "retain earlier valid bounds" in stat_spread_commentary(conflict)
+
+
+def test_narrowed_range_names_the_modeled_move_and_hp_readings_without_claiming_unique_proof():
+    current = narrowed()
+    text = stat_spread_commentary(current, (cited_hit(), cited_hit("hit2", axes=("atk",))))
+    assert "HP 12-24" in text and "game 1 event 43" in text
+    assert "Grassy Glide by Rillaboom into Gengar, 97% -> 32%" in text
+    assert "Related certified hits; they may constrain the interval jointly" in text
+    assert "Removing any listed hit" not in text
+    assert "hit2" not in text
+    assert "Grassy Glide" not in stat_spread_commentary(current, (cited_hit(game=2),))
+    assert "Grassy Glide" not in stat_spread_commentary(current.model_copy(update={"outcome": "conflict"}), (cited_hit(),))
 
 
 def test_native_and_attribute_reductions_reach_text_without_confidence_claims():

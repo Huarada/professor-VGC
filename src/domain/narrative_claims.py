@@ -23,6 +23,9 @@ class NarrativeClaim(BaseModel):
     value: str | tuple[str, ...] | tuple[int, int]
     stat: Literal["hp", "atk", "def", "spa", "spd", "spe"] | None = None
     form: str | None = None
+    baseline: tuple[int, int] | None = None
+    evidence: tuple[str, ...] = ()
+    evidence_label: str = ""
     source: ClaimSource
 
     @model_validator(mode="after")
@@ -38,6 +41,8 @@ class NarrativeClaim(BaseModel):
                 raise ValueError("Champions point bounds must be within 0-32")
             if self.source.field != f"summary.stat_points.{self.stat}":
                 raise ValueError("The bound reference must identify its own attribute")
+            if self.baseline is not None and (len(self.baseline) != 2 or not 0 <= self.baseline[0] <= self.baseline[1] <= 32):
+                raise ValueError("A bound baseline must be an ordered native point interval")
         elif self.kind == "moves":
             if not isinstance(self.value, tuple) or not all(isinstance(value, str) for value in self.value):
                 raise ValueError("Moves must be a tuple of verified names")
@@ -45,7 +50,9 @@ class NarrativeClaim(BaseModel):
             raise ValueError("Trait and status claims require textual values")
         if self.kind == "forme_ability" and (not self.form or self.source.basis != "engine_form_ability"):
             raise ValueError("A forme ability requires an engine-backed forme reference")
-        if self.kind == "spread_status" and self.value not in {"known_within_supplied_model", "original_spread_unresolved"}:
+        if self.kind == "spread_status" and self.value not in {
+            "known_within_supplied_model", "partially_narrowed", "original_spread_unresolved"
+        }:
             raise ValueError("Unknown spread status")
         return self
 

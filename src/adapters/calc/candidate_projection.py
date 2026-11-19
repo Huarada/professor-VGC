@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections import OrderedDict
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from typing import Any
 
 from pydantic import ValidationError
@@ -28,11 +30,14 @@ from src.domain.exceptions import CalcEngineError
 class SmogonCandidateProjectionAdapter:
     """Anti-corruption layer; no inference policy or alternate damage formula."""
 
-    def __init__(self, *, ipc: NodeIpcClient) -> None:
+    def __init__(self, *, ipc: NodeIpcClient, table_workers: int = 4) -> None:
         self._ipc = ipc
+        self._table_worker_count = max(1, min(4, table_workers))
         self._forme_abilities: dict[str, str | None] = {}
         # Engine results only (a pure function of the request), never inference state.
         self._tables: OrderedDict[str, TableSupport] = OrderedDict()
+        self._table_workers: list[NodeIpcClient] = []
+        self._table_lock = Lock()
 
     def _call(self, command: str, **values: Any) -> Any:
         response = self._ipc.request({"cmd": command, **values})
@@ -93,9 +98,10 @@ class SmogonCandidateProjectionAdapter:
 
     def project_table(self, request: TableRequest) -> TableSupport:
         key = request.model_dump_json()
-        if key in self._tables:
-            self._tables.move_to_end(key)
-            return self._tables[key]
+        with self._table_lock:
+            if key in self._tables:
+                self._tables.move_to_end(key)
+                return self._tables[key]
         try:
             result = TableSupport.model_validate(self._call("candidateTable", request={
                 "base": self._payload(request.base), "axes": [axis.model_dump() for axis in request.axes],
@@ -104,10 +110,66 @@ class SmogonCandidateProjectionAdapter:
             raise CalcEngineError("Malformed candidate table") from exc
         if len(result.cells) != 33 ** len(request.axes):
             raise CalcEngineError("Candidate table size mismatch")
-        self._tables[key] = result
-        if len(self._tables) > 256:
-            self._tables.popitem(last=False)
+        with self._table_lock:
+            self._tables[key] = result
+            if len(self._tables) > 256:
+                self._tables.popitem(last=False)
         return result
+
+    @property
+    def parallel_table_capacity(self) -> int:
+        """Maximum independent table calls admitted by this adapter."""
+        return self._table_worker_count
+
+    def project_tables(self, requests: Sequence[TableRequest]) -> list[TableSupport | CalcEngineError]:
+        """Evaluate independent hits on four Node workers; retain input order."""
+        if not requests:
+            return []
+        keys = [request.model_dump_json() for request in requests]
+        with self._table_lock:
+            missing = {key: request for key, request in zip(keys, requests) if key not in self._tables}
+            if len(missing) > 1 and not self._table_workers:
+                self._table_workers = [self._ipc, *(self._ipc.fork() for _ in range(self._table_worker_count - 1))]
+        if len(missing) <= 1:
+            return [self._project_table_or_error(request) for request in requests]
+
+        def evaluate(item: tuple[int, str, TableRequest]) -> tuple[str, TableSupport | CalcEngineError]:
+            index, key, request = item
+            worker = self._table_workers[index % len(self._table_workers)]
+            try:
+                raw = worker.request({"cmd": "candidateTable", "request": {
+                    "base": self._payload(request.base),
+                    "axes": [axis.model_dump() for axis in request.axes],
+                    "after": request.after.model_dump(),
+                }})
+                if not raw.get("ok"):
+                    raise CalcEngineError(str(raw.get("error", "Candidate projection failed")))
+                result = TableSupport.model_validate(raw.get("result"))
+                if len(result.cells) != 33 ** len(request.axes):
+                    raise CalcEngineError("Candidate table size mismatch")
+                return key, result
+            except ValidationError as exc:
+                return key, CalcEngineError(f"Malformed candidate table: {exc}")
+            except CalcEngineError as exc:
+                return key, exc
+
+        with ThreadPoolExecutor(max_workers=min(self._table_worker_count, len(missing))) as pool:
+            evaluated = dict(pool.map(evaluate, ((index, key, request)
+                for index, (key, request) in enumerate(missing.items()))))
+        with self._table_lock:
+            for key, result in evaluated.items():
+                if isinstance(result, TableSupport):
+                    self._tables[key] = result
+                    if len(self._tables) > 256:
+                        self._tables.popitem(last=False)
+            return [self._tables.get(key, evaluated.get(key, CalcEngineError("Candidate table unavailable")))
+                    for key in keys]
+
+    def _project_table_or_error(self, request: TableRequest) -> TableSupport | CalcEngineError:
+        try:
+            return self.project_table(request)
+        except CalcEngineError as exc:
+            return exc
 
     def attributes_batch(self, requests: Sequence[AttributeBoundsRequest]) -> list[AttributeEnvelope]:
         try:
@@ -122,4 +184,7 @@ class SmogonCandidateProjectionAdapter:
             raise CalcEngineError("Malformed Champions attribute bounds") from exc
 
     def close(self) -> None:
+        for worker in self._table_workers:
+            if worker is not self._ipc:
+                worker.close()
         self._ipc.close()

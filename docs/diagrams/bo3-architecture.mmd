@@ -12,11 +12,19 @@ flowchart TD
     match --> inferred["Typed ranges, coverage and unsupported observations"]
     inferred --> attributes["AttributeProjectionPort: all six level-50 attribute ranges"]
     attributes --> reduction["Compare declared baseline and current intervals: integer values ruled out"]
+    reduction --> preview["Streamlit: publish score, stat ranges and damage evidence"]
+    preview --> reviews["Fresh per-game AnalysisPipeline: BO1 engine reused"]
     reduction --> result
-    attributes --> reviews["Fresh per-game AnalysisPipeline: BO1 engine reused"]
     service --> reviews
     reviews --> isolated["Independent battle state and temporary memory per game"]
-    isolated --> synthesis["Synthesize typed game and series evidence with an LLM"]
+    isolated --> selection["LLM selects cross-side matchups"]
+    isolated --> prefetch["Prefetch full-roster metagame and strategies"]
+    selection --> gameEvidence["GroundTruthAssembler: verified game evidence"]
+    prefetch --> gameEvidence
+    gameEvidence --> explanation["Per-game LLM explanation"]
+    gameEvidence --> publication["Publish ordered typed evidence"]
+    publication --> synthesis["Series LLM summary overlaps game explanations"]
     inferred --> synthesis
+    explanation --> result
     synthesis --> guard["Validate rules, roster and numerical narration"]
     guard --> result["Bo3AnalysisResult: score, game reviews, inference tables and summary"]

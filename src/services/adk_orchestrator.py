@@ -16,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import json
 import uuid
+from contextlib import nullcontext
 from typing import TYPE_CHECKING, Any, Sequence
 
 from pydantic import BaseModel, Field
@@ -32,6 +33,8 @@ from src.domain.models import (
     SelectionPlan,
 )
 from src.services.battle_context import candidate_species, outcome_summary, rosters
+from src.services.bo3_review_telemetry import current_review
+from src.services.evidence_prefetch import prefetch_during_selection
 from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
@@ -151,6 +154,7 @@ class AdkAnalysisOrchestrator:
         max_matchups: int = 6,
         agent_max_llm_calls: int = 20,
         agent_timeout_seconds: float = 180.0,
+        thinking_level: str | None = None,
     ) -> None:
         from google.adk.agents import Agent
         from google.adk.runners import Runner
@@ -171,12 +175,40 @@ class AdkAnalysisOrchestrator:
         self._session_service = InMemorySessionService()
 
         self._selection_system = prompts.get("selection_system")
+        if thinking_level is not None:
+            from google.genai import types
+
+            generation_config = types.GenerateContentConfig(
+                thinking_config=types.ThinkingConfig(
+                    thinking_level=types.ThinkingLevel.LOW if thinking_level == "low" else
+                                   types.ThinkingLevel.MEDIUM))
+        else:
+            generation_config = None
+
+        def before_model(_context: Any, _request: Any) -> None:
+            if profile := current_review():
+                profile.start_model("adk-model")
+
+        def after_model(_context: Any, _response: Any) -> None:
+            if profile := current_review():
+                profile.end_model("adk-model")
+
+        def before_tool(tool: Any, _arguments: Any, context: Any) -> None:
+            if profile := current_review():
+                profile.start_tool(f"adk-tool:{id(context)}", str(tool.name))
+
+        def after_tool(_tool: Any, _arguments: Any, context: Any, _response: Any) -> None:
+            if profile := current_review():
+                profile.end_tool(f"adk-tool:{id(context)}")
 
         self._selection_agent = Agent(
             name="professorvgc_selection",
             model=model,
             instruction=self._selection_system,
             output_schema=_SelectionOutput,
+            generate_content_config=generation_config,
+            before_model_callback=before_model,
+            after_model_callback=after_model,
         )
         self._selection_runner = Runner(
             agent=self._selection_agent,
@@ -193,6 +225,11 @@ class AdkAnalysisOrchestrator:
             model=model,
             instruction=explanation_instruction,
             tools=list(tools),
+            generate_content_config=generation_config,
+            before_model_callback=before_model,
+            after_model_callback=after_model,
+            before_tool_callback=before_tool,
+            after_tool_callback=after_tool,
         )
         self._explanation_runner = Runner(
             agent=self._explanation_agent,
@@ -263,12 +300,18 @@ class AdkAnalysisOrchestrator:
             ) from exc
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
+        profile = current_review()
         history = load_champions_history(self._memory, request.session_id)
-        game_state = self._evidence.prepare(self._parser, request)
-        selection = self._select(request, game_state, history)
-        evidence = self._evidence.assemble(
-            request=request, game_state=game_state, selection=selection, history=history
-        )
+        with profile.stage("selection") if profile else nullcontext():
+            game_state = self._evidence.prepare(self._parser, request)
+        with prefetch_during_selection(self._evidence, request, game_state) as pending:
+            with profile.stage("selection") if profile else nullcontext():
+                selection = self._select(request, game_state, history)
+            with profile.stage("evidence") if profile else nullcontext():
+                prefetched = pending.result() if pending is not None else None
+                evidence = self._evidence.assemble(
+                    request=request, game_state=game_state, selection=selection,
+                    history=history, prefetched=prefetched)
         tool_calls: list[AgentToolInvocation] = []
 
         def explain(correction: str) -> str:
@@ -276,7 +319,8 @@ class AdkAnalysisOrchestrator:
             tool_calls.extend(calls)
             return answer
 
-        answer, warnings = self._evidence.explain_within_regulation(explain, evidence, game_state)
+        with profile.stage("explanation") if profile else nullcontext():
+            answer, warnings = self._evidence.explain_within_regulation(explain, evidence, game_state)
         remember_turn(self._memory, request, answer)
         return build_result(
             request=request,

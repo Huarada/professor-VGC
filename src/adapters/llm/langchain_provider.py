@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 _SUPPORTED = ("openai", "gemini")
 
 
-def build_chat_model(provider: str, settings: Settings) -> BaseChatModel:
+def build_chat_model(provider: str, settings: Settings, *, thinking_level: str | None = None) -> BaseChatModel:
     """BYOK factory returning a concrete LangChain chat model."""
     name = (provider or settings.default_provider).lower()
     if name not in _SUPPORTED:
@@ -52,4 +52,5 @@ def build_chat_model(provider: str, settings: Settings) -> BaseChatModel:
         model=settings.gemini_model,
         google_api_key=settings.gemini_api_key,
         temperature=settings.llm_temperature,
+        **({"thinking_level": thinking_level} if thinking_level else {}),
     )

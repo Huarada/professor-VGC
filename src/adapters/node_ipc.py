@@ -56,6 +56,10 @@ class NodeIpcClient:
             ) from exc
         return self._process
 
+    def fork(self) -> NodeIpcClient:
+        """Create an independent worker with the same trusted script and timeout."""
+        return NodeIpcClient(self._script, node_binary=self._node_binary, timeout_seconds=self._timeout)
+
     def request(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Send one request and return the decoded response dict."""
         with self._lock:

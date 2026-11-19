@@ -183,6 +183,17 @@ def test_get_refuses_redirects_and_oversized_payloads():
             gateway.replay(gateway.locate(URLS[0]))
 
 
+def test_tls_failure_explains_local_trust_without_disabling_verification():
+    from requests.exceptions import SSLError
+
+    gateway = ShowdownSeriesGateway()
+    with (patch("requests.get", side_effect=SSLError("certificate verify failed")) as get,
+          pytest.raises(ReplayFetchError, match="TLS certificate validation failed")):
+        gateway.replay(gateway.locate(URLS[0]))
+    assert get.call_args.kwargs["allow_redirects"] is False
+    assert "verify" not in get.call_args.kwargs
+
+
 def test_official_replay_display_format_is_accepted_without_relaxing_game_boundary():
     validate_champions_input(json.dumps(data()))
     with pytest.raises(UnsupportedRulesError):

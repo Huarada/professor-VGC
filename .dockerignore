@@ -36,6 +36,8 @@ venv/
 # (reproducible, correct platform/arch); shipping a host-built copy here
 # would fight that and can bake in the wrong platform's native binaries.
 node_calc/node_modules/
+web/node_modules/
+.cache/
 
 # Tests, benchmark tooling and its (large, run-specific) output, docs,
 # deployment artifacts for the OTHER (chaos-sync) container — none of this

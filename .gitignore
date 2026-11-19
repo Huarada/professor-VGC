@@ -4,6 +4,9 @@ __pycache__/
 venv/
 .env
 node_calc/node_modules/
+web/node_modules/
+.cache/npm/
+.cache/web/
 .pytest_cache/
 .mypy_cache/
 *.egg-info/
@@ -41,3 +44,8 @@ scripts/faithfulness_benchmark/out/
 
 # BO3 simulator corpus (tools/bo3_sim)
 tools/bo3_sim/node_modules/
+
+# Local run output: simulations, scoring results and logs
+.cache/
+*.log
+tsconfig.tsbuildinfo

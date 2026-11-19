@@ -19,9 +19,9 @@ from src.domain.exceptions import (
 )
 from src.domain.series_import import ImportedReplay, ReplayLocation, SeriesRoomGame
 
-_REPLAY = re.compile(r"gen9championsvgc[0-9a-z-]+-[0-9]+(?:-[a-z0-9]+)?", re.I)
-_SERIES = re.compile(r"game-bestof3-gen9championsvgc[0-9a-z-]+-[0-9]+(?:-[a-z0-9]+)?", re.I)
-_ORDINAL = re.compile(r"Game\s+([123])\b", re.I)
+_REPLAY = re.compile(r"gen9championsvgc[0-9a-z-]+-[0-9]+(?:-[a-z0-9]+)?", re.IGNORECASE)
+_SERIES = re.compile(r"game-bestof3-gen9championsvgc[0-9a-z-]+-[0-9]+(?:-[a-z0-9]+)?", re.IGNORECASE)
+_ORDINAL = re.compile(r"Game\s+([123])\b", re.IGNORECASE)
 
 
 class _Links(HTMLParser):
@@ -92,6 +92,10 @@ class ShowdownSeriesGateway:
             if len(response.content) > 2_000_000:
                 raise ReplayFetchError("Showdown response exceeds the import size limit.")
             return response.json()
+        except requests.exceptions.SSLError as exc:
+            raise ReplayFetchError(
+                "TLS certificate validation failed while reading Showdown. "
+                "Use the local launcher or configure a trusted CA for this process.") from exc
         except (requests.RequestException, ValueError) as exc:
             raise ReplayFetchError("Could not read Showdown replay data. Retry or paste the replay log.") from exc
 

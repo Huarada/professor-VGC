@@ -93,6 +93,15 @@ unknown. A species/nature attribute envelope alone does not establish training
 points or an observed battle stat. Do not claim a KO/speed guarantee from independent
 range endpoints or treat bounded local constraints as a complete registered set.
 
+When a verified_claim_plan contains a narrowed bound with damage citations, use
+the cited move, attacker, defender and before/after HP readings to explain why the
+series was informative. Cite its game and event. A related certified hit may act
+jointly with other hits; only a leave-one-out dependency proves that removing that
+single hit loosens the bound. Do not present an HP display change as exact damage
+or a cited hit as proof of a unique spread. Lead with the measured narrowing when
+present, then briefly state which axes remain open; avoid repeating only that the
+full spread is unresolved.
+
 Keep numerical allocations/card-stat claims in the computed commentary and tables;
 explain their implications qualitatively in the model narrative. Distinguish
 base-form declared abilities from each supplied Mega forme_ability (for example,

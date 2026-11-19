@@ -147,6 +147,23 @@ def test_ports_without_tables_fall_back_to_the_legacy_search():
     assert port.requests  # the legacy path projected through the batch port
 
 
+def test_one_worker_capacity_uses_deadline_checked_single_table_path():
+    declarations, observation, _, _ = table_setup()
+
+    class OneWorker(TableProjection):
+        parallel_table_capacity = 1
+
+        def project_tables(self, requests):
+            raise AssertionError("One-worker capacity must preserve per-table deadline checks")
+
+    port = OneWorker()
+    budget = ProjectionBudget(port, InferenceOptions(max_projections=120000))
+    proof = propagated_bounds(game=1, phase="after_game", declarations=declarations,
+        observations=[observation], rules=port.rules(), budget=budget)
+    assert proof is not None and observation.id in proof.observation_ids
+    assert port.tables == 1
+
+
 def test_retained_bounds_keep_sound_exclusions_inside_the_final_range():
     declarations, observation, port, budget = table_setup()
     proof = propagated_bounds(game=1, phase="after_game", declarations=declarations, observations=[observation],

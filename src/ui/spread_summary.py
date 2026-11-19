@@ -1,7 +1,14 @@
 """Format computed spread findings alongside coaching without LLM arithmetic."""
 
+from collections.abc import Sequence
+
+from src.domain.bo3_inference.citations import bound_evidence, describe_hit
 from src.domain.bo3_inference.interpretation import interpret_checkpoint
-from src.domain.bo3_inference.models import InferenceCheckpoint, StatName
+from src.domain.bo3_inference.models import (
+    DamageCitation,
+    InferenceCheckpoint,
+    StatName,
+)
 
 _LABELS: dict[StatName, str] = {"hp": "HP", "atk": "Atk", "def": "Def", "spa": "SpA", "spd": "SpD", "spe": "Spe"}
 
@@ -11,7 +18,8 @@ def _hit(observation_id: str) -> str:
     return f"game {game[1:]} event {event[1:]}"
 
 
-def stat_spread_commentary(checkpoint: InferenceCheckpoint | None) -> str:
+def stat_spread_commentary(checkpoint: InferenceCheckpoint | None,
+                           citations: Sequence[DamageCitation] = ()) -> str:
     """Show proven ranges or a clear unresolved result, never an invented set."""
     if checkpoint is None:
         return ""
@@ -37,8 +45,8 @@ def stat_spread_commentary(checkpoint: InferenceCheckpoint | None) -> str:
                                    else f"{_LABELS[stat]} {bound.minimum}-{bound.maximum}"
                                    for stat, bound in bounds.items())
                 lines.append(f"- **{entry.species} ({player})** — {label}: {values}. "
-                             + ("The complete spread is known within the supplied model."
-                                if entry.complete_spread_known else "This does not identify a complete spread."))
+                             + ("The full six-stat spread is fixed within the supplied model."
+                                if entry.complete_spread_known else "Other stat-point choices may remain open."))
             summary = summaries.get(entry.pokemon_id)
             if summary is None or not entry.constrained_native_bounds:
                 continue
@@ -50,7 +58,7 @@ def stat_spread_commentary(checkpoint: InferenceCheckpoint | None) -> str:
             if fragile:
                 lines.append("  **Single-observation dependency:** " + "; ".join(
                     f"{_LABELS[stat]} ({', '.join(map(_hit, hits))})" for stat, hits in fragile.items())
-                    + ". Removing any one listed hit loosens that bound, so one mis-modeled hit could make it wrong.")
+                    + ". These were leave-one-out dependencies when checked; later hits may add redundancy.")
     lines.append(f"The calculation used {findings.eligible_damage_observations} eligible damage observations and "
                  f"{findings.complete_local_constraints} certified damage constraints. "
                  "Local constraints can reject joint combinations without narrowing every individual stat.")
@@ -66,9 +74,15 @@ def stat_spread_commentary(checkpoint: InferenceCheckpoint | None) -> str:
         player = entry.pokemon_id.rsplit(":slot", 1)[0]
         for stat, change in entry.range_reductions.items():
             if change.removed_integer_values:
-                reductions.append(f"- **{entry.species} ({player}), {_LABELS[stat]}**: "
+                detail = (f"- **{entry.species} ({player}), {_LABELS[stat]}**: "
                     f"{change.baseline.minimum}-{change.baseline.maximum} -> {change.current.minimum}-{change.current.maximum} "
                     f"native points; **{change.reduction_percent}%** fewer integer possibilities in this interval.")
+                summary = next((item for item in checkpoint.summaries if item.pokemon_id == entry.pokemon_id), None)
+                if summary is not None:
+                    label, hits = bound_evidence(checkpoint, summary, stat, citations)
+                    if hits:
+                        detail += "\n  - " + label + ": " + "; ".join(describe_hit(hit) for hit in hits) + "."
+                reductions.append(detail)
     if reductions:
         lines.append("**Range reduction from initial declarations**")
         lines.extend(reductions)

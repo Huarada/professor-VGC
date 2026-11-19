@@ -3,11 +3,14 @@
 from __future__ import annotations
 
 import json
+import time
 import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from threading import Condition
 
 from src.domain.bo3_inference.interpretation import interpret_checkpoint
+from src.domain.bo3_inference.models import Bo3InferenceEvidence
 from src.domain.bo3_inference.narration import coaching_context
 from src.domain.champions import forbidden_references, require_champions_format
 from src.domain.exceptions import (
@@ -24,22 +27,32 @@ from src.domain.interfaces import (
     PromptRepository,
     RegulationCatalog,
 )
-from src.domain.models import AnalysisRequest, AnalysisResult, ChatMessage, GameState
+from src.domain.models import (
+    AnalysisEvidence,
+    AnalysisRequest,
+    AnalysisResult,
+    ChatMessage,
+    GameState,
+)
+from src.domain.narrative_claims import NarrativeClaimPlan
 from src.domain.regulation import Regulation, RegulationScope, normalize_species
 from src.domain.series import (
     Bo3AnalysisRequest,
     Bo3AnalysisResult,
     Bo3Evidence,
+    Bo3ReviewTiming,
     SeriesGameEvidence,
 )
 from src.services.bo3_claim_plan import build_claim_plan, prompt_claim_plan
+from src.services.bo3_evidence_publication import publish_to
 from src.services.bo3_inference.coordinator import Bo3InferenceCoordinator
 from src.services.bo3_prompt_context import (
     checked_bo3_message,
     compact_bo3_context,
     encode_context,
 )
-from src.services.ground_truth import explain_champions_only, parse_replay
+from src.services.bo3_review_telemetry import ReviewProfiler, active_review
+from src.services.ground_truth import build_result, explain_champions_only, parse_replay
 from src.services.regulation_guard import RegulationGuard
 
 
@@ -180,11 +193,14 @@ class Bo3AnalysisService:
                  guard: RegulationGuard | None = None,
                  memory: ConversationMemory | None = None,
                  inference: Bo3InferenceCoordinator | None = None,
-                 progress: ProgressReporter | None = None, parallel_reviews: int = 1) -> None:
+                 progress: ProgressReporter | None = None, parallel_reviews: int = 1,
+                 overlap_synthesis: bool = True,
+                 on_deterministic_ready: Callable[[Bo3Evidence, Bo3InferenceEvidence | None], None] | None = None) -> None:
         self._parser = parser
         # Game reviews are isolated (own request, session and pipeline), so they
         # may run concurrently; 1 keeps the sequential order and per-game progress.
         self._parallel_reviews = max(1, parallel_reviews)
+        self._overlap_synthesis = overlap_synthesis
         self._pipeline_factory = pipeline_factory
         self._llm = llm
         self._system = prompts.get("series_system")
@@ -194,17 +210,22 @@ class Bo3AnalysisService:
         self._memory = memory
         self._inference = inference
         self._progress = progress
+        self._on_deterministic_ready = on_deterministic_ready
 
     def _report(self, message: str) -> None:
         if self._progress is not None:
             self._progress(message)
 
     def analyze(self, request: Bo3AnalysisRequest) -> Bo3AnalysisResult:
+        inference_started = time.perf_counter()
         self._report("Stage 1 of 3 — Checking replay order, players, regulation and teamsheets...")
         evidence, states = prepare_series(self._parser, request, self._pinned)
         if self._inference and request.inference_options.enabled:
             self._report("Stage 1 of 3 — Reconstructing attacks and finding stat spreads compatible with their damage...")
         inferred = self._inference.analyze(request, evidence, states) if self._inference else None
+        inference_seconds = time.perf_counter() - inference_started
+        if self._on_deterministic_ready is not None:
+            self._on_deterministic_ready(evidence, inferred)
         run_id = uuid.uuid4().hex
         prepared: list[tuple[int, AnalysisRequest]] = []
         for source, game in zip(request.games, evidence.games):
@@ -230,23 +251,44 @@ class Bo3AnalysisService:
                 checkpoint = next((entry for entry in inferred.checkpoints
                                    if entry.game == game.number and entry.phase == "after_game"), None)
                 if checkpoint is not None:
-                    game_request = game_request.model_copy(update={"bo3_claim_plan": build_claim_plan(checkpoint, request.question)})
+                    game_request = game_request.model_copy(update={"bo3_claim_plan": build_claim_plan(
+                        checkpoint, request.question, inferred.damage_citations)})
             if game_request.series_context is not None:
                 game_request = game_request.model_copy(update={"series_context": compact_bo3_context(game_request.series_context)})
             prepared.append((game.number, game_request))
 
-        def review(item: tuple[int, AnalysisRequest]) -> AnalysisResult:
+        published: dict[int, AnalysisResult] = {}
+        publication = Condition()
+
+        def review(item: tuple[int, AnalysisRequest]) -> tuple[AnalysisResult, Bo3ReviewTiming, float]:
             number, game_request = item
+            profile = ReviewProfiler()
+            started = time.perf_counter()
+
+            def ready(game_evidence: AnalysisEvidence) -> None:
+                preview = build_result(request=game_request, evidence=game_evidence,
+                                       answer="", provider=game_request.provider)
+                with publication:
+                    published[number] = preview
+                    publication.notify_all()
+
             try:
-                return self._pipeline_factory().analyze(game_request)
+                with active_review(profile), publish_to(ready):
+                    pipeline = self._pipeline_factory()
+                    game_result = pipeline.analyze(game_request)
             except LLMProviderError as exc:
                 raise LLMProviderError(f"BO3 game {number} review: {exc}") from exc
             finally:
                 if self._memory is not None:
                     self._memory.clear(game_request.session_id)
+            finished = time.perf_counter()
+            return game_result, profile.snapshot(number, game_result.provider, finished - started), finished
 
         count = len(prepared)
         workers = min(self._parallel_reviews, count)
+        reviews_started = time.perf_counter()
+        summary: tuple[str, NarrativeClaimPlan | None] | None = None
+        synthesis_seconds = 0.0
         if workers == 1:
             results = []
             for item in prepared:
@@ -263,7 +305,41 @@ class Bo3AnalysisService:
             self._report(f"Stage 2 of 3 — Reviewing games 1-{count} of {count} in parallel: "
                          "AI analysing leads, turn-by-turn decisions and damage evidence with the computed stat ranges.")
             with ThreadPoolExecutor(max_workers=workers) as pool:
-                results = list(pool.map(review, prepared))  # game order is preserved
+                futures = [pool.submit(review, item) for item in prepared]
+                with publication:
+                    while len(published) < count and not all(future.done() for future in futures):
+                        publication.wait(timeout=0.25)
+                    all_evidence_ready = len(published) == count
+                    previews = [published[number] for number, _ in prepared] if all_evidence_ready else []
+                for future in futures:
+                    if future.done():
+                        future.result()  # Surface a known review failure before paying for synthesis.
+                if all_evidence_ready and self._overlap_synthesis:
+                    started = time.perf_counter()
+                    summary = self._summarize(request, evidence, inferred, previews)
+                    synthesis_seconds = time.perf_counter() - started
+                    if any(not future.done() for future in futures):
+                        self._report("Stage 3 of 3 — Finishing the remaining game explanations...")
+                results = [future.result() for future in futures]  # game order is preserved
+        reviews_wall_seconds = max(finished for _, _, finished in results) - reviews_started
+        review_timings = [timing for _, timing, _ in results]
+        games = [game_result for game_result, _, _ in results]
+        if summary is None:
+            started = time.perf_counter()
+            summary = self._summarize(request, evidence, inferred, games)
+            synthesis_seconds = time.perf_counter() - started
+        answer, plan = summary
+        return Bo3AnalysisResult(session_id=request.session_id,
+                                 answer=answer, evidence=evidence, games=games, inference=inferred, bo3_claim_plan=plan,
+                                 review_timings=review_timings, inference_seconds=inference_seconds,
+                                 reviews_wall_seconds=reviews_wall_seconds,
+                                 synthesis_seconds=synthesis_seconds)
+
+    def _summarize(
+        self, request: Bo3AnalysisRequest, evidence: Bo3Evidence,
+        inferred: Bo3InferenceEvidence | None, games: list[AnalysisResult],
+    ) -> tuple[str, NarrativeClaimPlan | None]:
+        """Explain typed series evidence without waiting for game narration."""
         payload = {
             "question": request.question, "series": evidence.model_dump(mode="json"),
             "set_inference": inferred.model_dump(mode="json") if inferred else None,
@@ -271,10 +347,11 @@ class Bo3AnalysisService:
                 for checkpoint in inferred.checkpoints] if inferred else [],
             "game_evidence": [result.model_dump(mode="json", exclude={
                 "answer", "session_id", "question", "agent_tool_calls", "bo3_claim_plan",
-            }) for result in results],
+                "regulation_warnings", "provider",
+            }) for result in games],
         }
         final_checkpoint = next((entry for entry in reversed(inferred.checkpoints) if entry.phase == "after_game"), None) if inferred else None
-        plan = build_claim_plan(final_checkpoint, request.question) if final_checkpoint is not None else None
+        plan = build_claim_plan(final_checkpoint, request.question, inferred.damage_citations) if final_checkpoint is not None and inferred else None
         if plan is not None:
             payload["verified_claim_plan"] = prompt_claim_plan(plan)
         compact_payload = compact_bo3_context(dict(coaching_context(payload)))
@@ -305,5 +382,4 @@ class Bo3AnalysisService:
                 )
                 if self._guard.violations(answer, roster):
                     raise SeriesValidationError("The series summary included Pokemon outside its regulation.")
-        return Bo3AnalysisResult(session_id=request.session_id,
-                                 answer=answer, evidence=evidence, games=results, inference=inferred, bo3_claim_plan=plan)
+        return answer, plan
