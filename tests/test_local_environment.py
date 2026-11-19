@@ -76,3 +76,13 @@ def test_windows_runtime_loads_verified_system_trust_before_streamlit(monkeypatc
     trust.inject_into_ssl.assert_not_called()
     configure_trust(windows=True)
     trust.inject_into_ssl.assert_called_once_with()
+
+
+def test_web_launcher_uses_isolated_environment_and_runtime(tmp_path):
+    from scripts.run_web_local import web_local_command
+
+    executable = tmp_path / ".venv-windows/Scripts/python.exe"
+    executable.parent.mkdir(parents=True)
+    executable.touch()
+    command = web_local_command(tmp_path, ["--port", "8504"], windows=True)
+    assert command == [str(executable), str(tmp_path / "scripts/web_runtime.py"), "--port", "8504"]

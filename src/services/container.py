@@ -82,10 +82,10 @@ _ORCHESTRATORS = {"native", "langchain", "adk"}
 class Container:
     """Lazily wires and caches the object graph for one application instance."""
 
-    def __init__(self, settings: Settings | None = None) -> None:
+    def __init__(self, settings: Settings | None = None, *, memory: ConversationMemory | None = None) -> None:
         self._settings = settings or load_settings()
         self._candidate_projection: SmogonCandidateProjectionAdapter | None = None
-        self._memory: ConversationMemory | None = None
+        self._memory: ConversationMemory | None = memory
         self._calc: SmogonCalcAdapter | None = None
         self._dex: SmogonDexAdapter | None = None
         # One repository shared by chaos() and _chaos_strategy(), so reads aren't doubled.

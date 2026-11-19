@@ -11,12 +11,18 @@ dependencies = [
     "pydantic>=2.6,<3",
     "pydantic-settings>=2.2,<3",
     "streamlit>=1.33",
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.30,<1",
     "requests>=2.31",
     "truststore>=0.10,<1; sys_platform == 'win32'",
     "websockets>=15,<16",
     "langchain>=1.0",
     "langchain-core>=1.0",
     "google-adk>=2.0,<3",
+    "google-auth>=2,<3",
+    "google-cloud-firestore>=2.16,<3",
+    "google-cloud-storage>=3,<4",
+    "protobuf>=5.29,<6",
 ]
 
 [project.optional-dependencies]
@@ -28,7 +34,7 @@ firestore = ["google-cloud-firestore>=2.16,<3"]
 # `pip install -r requirements.txt` already provides — no test should ever
 # fail (as opposed to skip) purely because of which of these two documented
 # install paths someone used.
-dev = ["pytest>=8.0,<10", "mypy==2.4.0", "professorvgc[openai,gemini]"]
+dev = ["pytest>=8.0,<10", "mypy==2.4.0", "httpx>=0.27,<1", "professorvgc[openai,gemini]"]
 
 [tool.pytest.ini_options]
 pythonpath = ["."]
