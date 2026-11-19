@@ -1,8 +1,23 @@
 # Architecture
 
-Current source view: 2026-11-11. ProfessorVGC is a modular Python application with
-Node subprocesses, packaged together for deployment. BO3 inference is a supporting
-bounded context inside that application, not a separate deployed service.
+Current source view: 2026-11-18. Streamlit and React/FastAPI are parallel
+presentation adapters over shared BO1/BO3 services and a Champions Node calculator.
+The React beta has separate API and worker roles for cloud deployment.
+
+```mermaid
+flowchart LR
+    react["React/TypeScript"] --> api["FastAPI public adapter"]
+    api --> jobs["JobStore: SQLite or Firestore + Storage"]
+    api --> dispatch["Local executor or Cloud Tasks"]
+    dispatch --> runner["AnalysisRunner"]
+    streamlit["Streamlit"] --> container["Container: shared composition root"]
+    runner --> container
+    container --> bo1["BO1 pipeline"]
+    container --> bo3["BO3 service + inverse solver"]
+    bo1 --> node["Champions Node calculator"]
+    bo3 --> node
+    runner --> jobs
+```
 
 ## Runtime interactions
 

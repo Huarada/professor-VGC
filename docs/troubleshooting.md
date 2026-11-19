@@ -26,6 +26,12 @@ the declared requirements and passed `pip check` without broken dependencies.
 
 ## Start on Windows
 
+For the React/FastAPI beta, run `python scripts/run_web_local.py` from the
+repository root. This uses the same isolated Windows trust setup as the
+Streamlit launcher. Starting Uvicorn directly can make public Showdown replay
+imports fail with `CERTIFICATE_VERIFY_FAILED` on networks that install a local
+TLS root. The import error now identifies that certificate failure explicitly.
+
 From the repository root:
 
 ```powershell

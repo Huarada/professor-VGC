@@ -6,6 +6,65 @@ Pokemon Champions VGC battle analysis: reconstruct the replay, calculate mechani
 evidence, then explain decisions with an LLM. **Mega Evolution is the only supported
 special battle mechanic.** Missing engine support remains an explicit limitation.
 
+## What it solves
+
+Replays show every move and every hit, but not what the players hid. ProfessorVGC reads the
+replays, calculates the mechanics with the same engine the game uses, and only then lets a
+language model explain, so every number in the answer comes from a verified calculation.
+
+**1. Hidden information: which EVs did they run?** Open team sheets list species, item, ability,
+moves and nature, but never stat points. Across a best-of-three, every damage roll that is
+compatible with a hidden spread rules some values out. The BO3 table shows the surviving range for
+each stat, so you can read, for example, that a Garchomp has HP 0-2, or that a Floette-Eternal has
+Def 0-11. "Unknown" is shown when the evidence does not support a tighter range.
+
+![BO3 spread inference table: per-Pokemon nature and stat-point ranges after game 3](docs/images/spread-inference-table.png)
+
+*Ranges after game 3 of a test series (44 eligible damage observations). These are bounds that are
+consistent with what was observed, never a confirmed spread.*
+
+**2. Which turn decided the game?** Each game is reviewed turn by turn in a battle viewer, with HP,
+stat boosts and KOs per field. The review cites the logged events and explains the turning points
+the evidence supports. It does not claim a proven unique winning move.
+
+![Battle viewer at turn 4: both fields, HP bars and stat boosts](docs/images/battle-viewer.png)
+
+### How the answer is built
+
+The model never calculates or invents numbers. It receives typed, verified evidence and a plan of
+the claims it may make, and a validator checks its text against the log before it is shown.
+
+```mermaid
+flowchart LR
+    replay["Replays and team sheets"] --> parse["Parse and validate regulation"]
+    parse --> truth["Ground truth: damage, speed, inverse spread ranges"]
+    truth --> calc["Champions calculator, Node worker"]
+    truth --> plan["Claim plan: what may be said"]
+    context["Metagame and strategy, labeled as assumptions"] --> plan
+    plan --> llm["LLM explanation: Gemini or OpenAI via ADK, LangChain or native"]
+    llm --> guard["Validate: rules, roster, numbers against the log"]
+    guard -->|"rejected: correction loop"| llm
+    guard --> result["Answer with citations, ranges and battle viewer"]
+```
+
+The system diagram below shows where each piece runs.
+
+```mermaid
+flowchart LR
+    ui["React or Streamlit UI"] --> api["FastAPI and services"]
+    api --> importer["Replay importer: public Showdown logs"]
+    api --> bo3["BO3: inverse inference and game reviews"]
+    api --> bo1["BO1 pipeline"]
+    bo3 --> calc["Node workers: Champions calculator"]
+    bo1 --> calc
+    bo3 --> provider["LLM providers"]
+    bo1 --> provider
+    api --> data["Firestore, Smogon data"]
+```
+
+Detailed diagrams: [BO1](#bo1-one-battle), [BO3](#bo3-series-analysis-and-inverse-spread-inference),
+[game-review scheduling](#bo3-game-review-scheduling) and [measured results](#measured-results).
+
 ## Main features
 
 | Feature | What it does |
@@ -52,6 +111,45 @@ Details: [methodology](docs/bo3-inference/README.md) and
 [example teamsheet](docs/bo3-inference/example-teamsheet.json).
 
 ## Architecture
+
+The **React/FastAPI beta** runs alongside Streamlit and uses the same BO1/BO3
+services and Champions calculator. It publishes verified BO3 score, damage
+citations and stat-point intervals before the model finishes. Local jobs use
+SQLite; multi-instance jobs use Firestore, private Cloud Storage and Cloud Tasks.
+
+```mermaid
+flowchart LR
+    browser["React: BO1, BO3, replay viewer"] --> api["FastAPI /api/v1"]
+    api --> store["Job store and artifacts"]
+    api --> queue["Local executor or Cloud Tasks"]
+    queue --> runner["Analysis runner"]
+    runner --> bo1["BO1 pipeline"]
+    runner --> bo3["BO3 series and inverse inference"]
+    bo1 --> calc["Champions Node calculator"]
+    bo3 --> calc
+    bo1 --> models["Gemini or OpenAI"]
+    bo3 --> models
+    runner --> store
+```
+
+Run the beta locally after installing `requirements.txt` and the `node_calc`
+dependencies:
+
+```powershell
+python scripts/run_web_local.py
+```
+
+In another terminal:
+
+```powershell
+cd web
+npm ci
+npm run dev
+```
+
+Open `http://127.0.0.1:5173`. For one served build, run `npm run build` in
+`web` before starting Uvicorn, then open `http://127.0.0.1:8503`.
+`Dockerfile.web` builds the beta image; the original `Dockerfile` builds Streamlit.
 
 BO1 and BO3 have separate entry points and result models. `Container` injects
 infrastructure adapters through domain-owned ports (Clean Architecture). These
@@ -163,6 +261,8 @@ See the [shared infrastructure overview](docs/diagrams/architecture.mmd),
 [game-review scheduling source](docs/diagrams/review-prefetch.mmd),
 [architecture and source map](docs/architecture.md), and
 [browser diagram viewer](docs/architecture-blueprint.html).
+The [React migration runbook](docs/react-migration.md) tracks implemented and
+remaining gates. The older diagrams describe the Streamlit runtime.
 
 ## Run locally
 
@@ -283,6 +383,33 @@ How to read it:
   p-value and confidence interval are descriptive only. The checker does not grade strategic reasoning.
   Treat the 14 s as an estimate, not a guarantee. The 89-test recorded-series regression was rerun
   on 13 November 2026; the known spreads were held out from public inference.
+
+## Measured results
+
+Inference is validated against series where the true spreads are known. The key property is
+**soundness**: a narrowed range must always contain the real value. Narrowing is judged on strong,
+sound claims, not on how many stats are narrowed. All numbers below come from simulated series
+played with the Showdown simulator on real public team sheets under Reg M-C; simulations are
+longer and give more hits than real games, so narrowing is optimistic. Method and per-source
+caveats: [CORPUS.md](docs/bo3-inference/CORPUS.md) and [ADR-077](ADR.md).
+
+| Measure (110 series, 7,920 stats, 1,320 Pokemon) | Result |
+|---|---|
+| Stats whose range contains the true value | **7,920 / 7,920 (100%)** |
+| Narrowed claims that are sound | **663 / 663** (95% CI 99.4-100%) |
+| Stats narrowed (interval or interior holes) | 663 (8.4%, CI 7.8-9.0%) |
+| Stats with a narrower min-max interval | 537 (6.8%) |
+| Width <= 16 of 33 values (half the range) | 153 (1.9%), all sound |
+| Width <= 8 | 57 (0.7%), all sound |
+| Pokemon with at least one narrowed stat | 310 (23.5%) |
+| Pokemon with a stat of width <= 16 | 102 (7.7%) |
+| Mean fraction of range removed | 2.9% |
+| Narrowed stats that rest on a single observation | 95.6% |
+| Public series from real players (22, no spreads published) | 0 errors, 0 conflicts |
+
+Proposed release gates (not yet adopted in the ADR): every narrowed claim sound; at least 1.5% of stats at width <= 16, 0.5% at width <= 8
+and 20% of Pokemon with a narrowed stat (floors, not aspirations); 0 errors or conflicts on the real
+public series. Accuracy on real human spreads is not measured, because those spreads are hidden.
 
 ## Project documentation
 

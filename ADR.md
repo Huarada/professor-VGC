@@ -5925,3 +5925,84 @@ src/ui/series.py, tests/test_bo3_progress.py, tests/test_ui_smoke.py,
 README.md, docs/architecture.md, docs/diagrams/bo3-architecture.mmd,
 docs/architecture-blueprint.html.
 
+## ADR-076 - Introduce React as a parallel presentation adapter
+
+**Status:** accepted for beta, 2026-11-18. Streamlit remains the production
+reference until held-out replay, quota, accessibility and cloud rollout gates
+pass. React displays versioned projections from the existing Python services;
+it does not implement battle rules or infer hidden spreads.
+
+The FastAPI adapter accepts BO1 and BO3 separately, validates before
+scheduling, and publishes verified BO3 evidence ahead of model narration.
+Local development persists jobs and BO1 conversation state in SQLite. Cloud
+deployments use Firestore metadata, private Cloud Storage artifacts and
+authenticated Cloud Tasks dispatch to a private worker. A cloud job and its
+daily quota slot are created in one Firestore transaction. Idempotency keys
+scope retries to one browser session and request hash.
+
+The original Streamlit Dockerfile and workflows remain available for rollback.
+Cloud infrastructure and live provider parity are rollout gates. See
+`docs/react-migration.md`.
+
+## ADR-077 - Validate BO3 inference against simulated and real series
+
+**Status:** accepted, 2026-11-18. Extends ADR-044 and ADR-068; changes no runtime behavior.
+
+Soundness and tightness of BO3 spread inference need games whose true spreads are known, and
+public replays never publish them. Three sources are kept separate, because each supports a different claim:
+
+1. **Simulated series with known spreads** (`tools/bo3_sim`, the official Showdown simulator, the
+   `champions` mod). Random teams or, with `--teams`, the open team sheets of real series with newly drawn
+   spreads (random or metagame-shaped, several variants per team). Scored by `scripts.bo3_truth_corpus`.
+   Supports: no false claims (soundness) and how much the engine narrows. Does not support: accuracy on human
+   play, since the bots choose moves at random and damage is the simulator's own code.
+2. **Own-account series with spreads written before play** (`docs/bo3-inference/CORPUS.md`). Supports the same
+   metrics on real play, at small volume.
+3. **Real public series without spreads** (`scripts.bo3_public_series_check`). Supports: real logs parse,
+   validate and never produce a `conflict`. Does not support any accuracy claim.
+
+Decisions:
+
+- Reg M-C is not shipped by `pokemon-showdown` 0.11.11. The generator registers it at run time with the M-B
+  mod and rules and the `Obtainable` legality filter lifted. It reproduces the mod's mechanics, not the
+  M-C banlist or any unpublished data change. Without `--teams` the default format stays M-B.
+- A soundness miss is a bug and fails the run. Reporting 0-32 everywhere is also sound, so soundness is
+  always read with the share narrowed and the mean range removed. A narrowed stat that rests on one
+  observation is reported as fragile.
+- Truth files are scoring data only, opened after the search ends. Corpus outputs live in `.cache/`
+  (Git-ignored); only the recorded real series are fixtures.
+- The 160-series run exposed three parser defects, fixed with tests in PR #94: Skill Swap and Wandering
+  Spirit abilities, Pickpocket and Magician holders, and a flung berry eaten by the target. Swapped abilities
+  are excluded from original-set attribution, in line with ADR-053.
+
+Result: 160 simulated series (random teams), 11,520 of 11,520 stats sound and 840 of 840 narrowed claims sound (lower
+95% bound 99.5%); 7.3% of stats narrowed, 1.9% of the range removed on average, 96.8% of the narrowed stats
+single-observation, Speed almost never. 22 real public series: no error or conflict. Numbers and commands:
+`docs/bo3-inference/CORPUS.md`.
+
+Real-team run: 110 series over 22 real team sheets (spreads drawn per series, Reg M-C): 7,920 of 7,920 stats sound
+and 663 of 663 narrowed claims sound (lower bound 99.4%), 8.4% of stats narrowed, 2.9% of the range removed. The
+first run, before the overlay, found two
+unsound Attack stats, both traced to stale simulator data, not to the search or the calculator:
+`pokemon-showdown` 0.11.11 (the newest npm release) lacks the Champions punch flag on Double Shock, the powers of
+Slash and Meteor Assault, and gives five Mega formes placeholder abilities (including Golisopod-Mega). The
+generator now applies `tools/bo3_sim/master-overlay.json`, which holds only the differences from the Showdown
+master, so simulated games follow the data live replays are played with. The calculator already matched the
+master on all of them, so no calculator change was needed; `championsMoveData.test.js` pins the Double Shock
+fact. A first attempt to "fix" Double Shock in the calculator was wrong and was reverted: it compared against
+plain Gen 9 data instead of the Champions mod. Simulated games are also longer and give more eligible hits than
+real ones (CORPUS.md), so narrowing rates measured on simulations are optimistic.
+
+Consequences: the claim is "no false statement observed", not "spreads are identified". Narrowing on
+random spreads is small and fragile, so UI and narration keep presenting ranges as unresolved marginals
+(ADR-057, ADR-062). Hidden-spread accuracy on human play still needs spreads from real players.
+
+KPI revision: narrowing is judged by strong, sound claims, not by the mean fraction of range removed. Required:
+soundness 100% of narrowed claims. Reported: claims at width <= 16 and <= 8 and the share of Pokemon with at
+least one. On the 110-series real-team run: 537 stats interval-narrowed (all sound), 153 at width <= 16 (1.9%),
+57 at width <= 8 (0.7%); 23.5% of Pokemon have a narrowed stat, 7.7% a width <= 16 one. Details in CORPUS.md.
+
+Security hardening (web API): the cloud worker route `/internal/run/{job_id}` now verifies the Cloud Tasks OIDC token
+(Google signature, audience = worker URL, email = task service account) and returns 403 otherwise, on top of Cloud Run IAM.
+The usage-quota visitor is the X-Forwarded-For entry added by our own proxy (`PROFESSORVGC_TRUSTED_PROXY_HOPS`, default 1),
+not the last public address in a client-controlled header.
