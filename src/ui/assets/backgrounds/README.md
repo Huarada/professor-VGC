@@ -5,7 +5,7 @@ automatically on the next page load — no code edit needed.
 
 | File (any one extension) | Where it's used |
 |---|---|
-| `page.jpg` / `page.jpeg` / `page.png` / `page.webp` | The whole app's backdrop (behind the Q&A, the technical expanders, the sidebar) — currently a built-in "Pokemon research lab" CSS gradient. Rendered with `background-attachment: fixed`, so it stays anchored to the viewport while the page scrolls over it (the parallax effect). |
+| `page.jpg` / `page.jpeg` / `page.png` / `page.webp` | The whole app's backdrop, behind the replay form and results. Without an image, the page uses a restrained light gradient. |
 | `battle-stage.jpg` / `.jpeg` / `.png` / `.webp` | The battle-replay panel's own backdrop, behind the sprites and HP bars — currently a built-in "genetics lab" CSS gradient. |
 
 Both are independent — you can supply one, both, or neither.

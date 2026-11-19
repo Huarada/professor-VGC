@@ -81,7 +81,10 @@ def test_idle_page_renders():
     at = AppTest.from_file(_APP, default_timeout=60)
     at.run()
     assert not at.exception
-    assert [b.label for b in at.button] == ["Analyze", "Reset conversation"]
+    assert {b.label for b in at.button} == {"Analyze", "Reset conversation"}
+    assert at.segmented_control(key="analysis_mode").value == "Best of one"
+    assert at.segmented_control(key="llm_provider").value == "gemini"
+    assert not at.sidebar
 
 
 def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch):
@@ -172,10 +175,10 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     at.session_state["container"] = container
     at.run()
     at.text_area[0].input(_LOG_ATTACKED)
-    at.button[0].click().run()
+    next(button for button in at.button if button.label == "Analyze").click().run()
     assert not at.exception
     original = at.session_state["last_result"]
-    at.radio[0].set_value("Best of three").run()
+    at.segmented_control(key="analysis_mode").set_value("Best of three").run()
     assert at.segmented_control(key="bo3_thinking_level").value == "Low"
     assert [at.text_area(key=f"bo3_source_{i}").label for i in range(1, 4)] == [f"Game {i} replay JSON, log or URL" for i in range(1, 4)]
     assert any(area.label == "Teamsheet JSON (optional)" for area in at.text_area)
@@ -219,7 +222,7 @@ def test_bo3_ui_reviews_ordered_games_and_keeps_bo1_result_separate(monkeypatch)
     assert at.session_state.get("bo3_preview") is not None
     at.text_area(key="bo3_source_2").input(game(move="Dragon Claw")).run()
     assert not any(heading.value == "Stat-point inference (BO3)" for heading in at.subheader)
-    at.radio[0].set_value("Best of one").run()
+    at.segmented_control(key="analysis_mode").set_value("Best of one").run()
     assert not at.exception
     assert at.session_state["last_result"] == original
 
@@ -271,7 +274,7 @@ def test_bo3_import_fills_official_slots_without_building_a_paid_pipeline(monkey
     container = ImportContainer()
     at.session_state["container"] = container
     at.run()
-    at.radio[0].set_value("Best of three").run()
+    at.segmented_control(key="analysis_mode").set_value("Best of three").run()
     at.text_area(key="bo3_import_source").input(ROOT if missing else URLS[2] + "\n" + URLS[1])
     next(button for button in at.button if button.label == "Import BO3").click().run()
     assert not at.exception
@@ -287,7 +290,7 @@ def test_bo3_import_fills_official_slots_without_building_a_paid_pipeline(monkey
 
 
 def _analyze_as_openai(at: AppTest) -> None:
-    at.sidebar.selectbox[0].select("openai")
+    at.segmented_control(key="llm_provider").set_value("openai")
     at.run()
 
     at.text_area[0].input(_LOG_ATTACKED)
@@ -314,7 +317,7 @@ def test_import_retrieves_and_prefills_public_natures_without_a_paid_analysis(mo
     container = PublicContainer()
     at.session_state["container"] = container
     at.run()
-    at.radio[0].set_value("Best of three").run()
+    at.segmented_control(key="analysis_mode").set_value("Best of three").run()
     at.text_area(key="bo3_import_source").input("https://play.pokemonshowdown.com/game-bestof3-gen9championsvgc2026regmcbo3-2702587956")
     next(button for button in at.button if button.label == "Import BO3").click().run()
     assert not at.exception
@@ -337,11 +340,11 @@ def test_openai_quota_counts_down_then_blocks_without_calling_the_model(monkeypa
 
     _analyze_as_openai(at)
     assert not at.error
-    assert any("openai: 1 of 2 analyses left today" in c.value for c in at.sidebar.caption)
+    assert any("openai: 1 of 2 analyses left today" in c.value for c in at.caption)
 
     _analyze_as_openai(at)
     assert not at.error
-    assert any("openai: 0 of 2 analyses left today" in c.value for c in at.sidebar.caption)
+    assert any("openai: 0 of 2 analyses left today" in c.value for c in at.caption)
 
     _analyze_as_openai(at)
     assert not at.exception
@@ -350,8 +353,8 @@ def test_openai_quota_counts_down_then_blocks_without_calling_the_model(monkeypa
 
 
 def _analyze_replay_as_openai(at: AppTest, replay_text: str, regulation: str = "auto") -> None:
-    at.sidebar.selectbox[0].select("openai")
-    next(s for s in at.sidebar.selectbox if s.label == "Regulation").select(regulation)
+    at.segmented_control(key="llm_provider").set_value("openai")
+    next(s for s in at.selectbox if s.label == "Regulation").select(regulation)
     at.run()
     at.text_area[0].input(replay_text)
     next(b for b in at.button if b.label == "Analyze").click()
@@ -379,4 +382,4 @@ def test_refused_replay_does_not_spend_quota(monkeypatch):
     assert any("pinned to" in e.value for e in at.error)
 
     assert container.pipelines_built == 0
-    assert any("openai: 2 of 2 analyses left today" in c.value for c in at.sidebar.caption)
+    assert any("openai: 2 of 2 analyses left today" in c.value for c in at.caption)

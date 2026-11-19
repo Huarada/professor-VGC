@@ -26,18 +26,16 @@ from src.ui.battle_panel import (
     current_turn_number,
     render_battle_panel,
 )
-from src.ui.icons import POKEBALL_ICON, icon_md
+from src.ui.icons import POKEBALL_ICON
 from src.ui.landing import (
-    ambient_background_html,
-    feature_cards_html,
     footer_html,
-    grass_row_html,
     hero_header_html,
     hero_section_html,
 )
 from src.ui.loading import loading_overlay_html
 from src.ui.results import render_result
 from src.ui.series import render_series
+from src.ui.sidebar import PROVIDER_NAMES, key_setup_text, key_status_text
 from src.ui.theme import inject_global_styles
 
 
@@ -95,35 +93,35 @@ def _error_tip(exc: Exception) -> str:
         if any(hint in text for hint in _QUOTA_HINTS):
             return (
                 "Tip: your LLM provider account is out of credits/quota. Add "
-                "billing at your provider's dashboard, or switch provider in "
-                "the sidebar (openai ↔ gemini) if the other one still has "
+                "billing at your provider's dashboard, or change the explanation "
+                "model above if the other provider still has "
                 "credit — deterministic calcs are unaffected, only the final "
                 "explanation needs the LLM."
             )
         if any(hint in text for hint in _RATE_LIMIT_HINTS):
             return (
                 "Tip: the provider is rate-limiting requests. Wait a moment "
-                "and try again, or switch provider in the sidebar."
+                "and try again, or change the explanation model above."
             )
         return (
             "Tip: the LLM provider call failed. Check `PROFESSORVGC_OPENAI_API_KEY` / "
             "`PROFESSORVGC_GEMINI_API_KEY` are set and valid, and that the selected "
-            "provider in the sidebar matches a key you actually have."
+            "explanation model above matches a key you actually have."
         )
     if isinstance(exc, UsageLimitExceededError):
         return (
             "Tip: this provider has a daily per-visitor limit on this deployment. "
-            "Switch provider in the sidebar, or come back after 00:00 UTC."
+            "Change the explanation model above, or come back after 00:00 UTC."
         )
     if isinstance(exc, UsageQuotaError):
         return (
             "Tip: the usage quota could not be checked, so the analysis was not "
-            "run. Try again in a moment, or switch provider in the sidebar."
+            "run. Try again in a moment, or change the explanation model above."
         )
     if isinstance(exc, RegulationMismatchError):
         return (
-            "Tip: the regulation controller in the sidebar is pinned to a different "
-            "regulation than this replay. Pick the replay's regulation (or 'Auto')."
+            "Tip: the regulation selected in Settings differs from this replay. "
+            "Choose the replay's regulation (or 'Auto')."
         )
     if isinstance(exc, ReplayFetchError):
         return (
@@ -142,23 +140,44 @@ def _error_tip(exc: Exception) -> str:
 def main() -> None:
     st.set_page_config(page_title="ProfessorVGC", page_icon=POKEBALL_ICON, layout="wide")
     inject_global_styles()
-    st.markdown(ambient_background_html(), unsafe_allow_html=True)
     st.markdown(hero_header_html(), unsafe_allow_html=True)
-    st.caption("Deterministic damage-calc + Chaos metagame stats + LLM explainability.")
 
     # Landing sections only before the first analysis.
     is_idle = not any(key in st.session_state for key in ("last_replay", "last_result", "bo3_result"))
-    if is_idle:
-        st.markdown(hero_section_html(), unsafe_allow_html=True)
 
-    with st.sidebar:
-        st.header("Configuration (BYOK)")
-        battle_mode = st.radio("Analysis mode", ["Best of one", "Best of three"])
-        provider = st.selectbox("LLM provider", ["gemini", "openai"], index=0)
+    # Keep the two frequent choices next to the replay form. Rare controls
+    # remain available on demand without reserving a third of the viewport.
+    with st.container(border=True):
+        mode_column, provider_column, settings_column = st.columns(
+            [1.6, 1, 0.45], vertical_alignment="bottom", gap="small"
+        )
+        with mode_column:
+            battle_mode = st.segmented_control(
+                "Analysis mode", ["Best of one", "Best of three"], default="Best of one", required=True,
+                key="analysis_mode", width="stretch")
+        with provider_column:
+            provider = st.segmented_control(
+                "Explanation model", ["gemini", "openai"], default="gemini", required=True, key="llm_provider",
+                format_func=lambda name: PROVIDER_NAMES.get(name, name), width="stretch")
+        with settings_column:
+            settings_panel = st.popover("Settings", icon=":material/tune:", width="stretch")
+        has_provider_key = bool(getattr(_get_container().settings, f"{provider}_api_key", None))
+        st.caption(key_status_text(provider, has_provider_key))
+        # The placeholder is updated after an analysis consumes a slot.
+        quota_slot = st.empty()
+        try:
+            caption = _quota_caption(_get_container(), provider)
+        except ProfessorVGCError:
+            caption = f"{provider}: usage quota unavailable."
+        if caption:
+            quota_slot.caption(caption)
+
+    with settings_panel:
+        if not has_provider_key:
+            st.caption(key_setup_text(provider))
         orchestrator = st.selectbox(
             "Orchestration", ["adk", "langchain", "native"], index=0,
-            help="Google ADK agents (default), LangChain LCEL chains, or the "
-                 "hand-rolled native pipeline.",
+            help="Google ADK agents (default), LangChain LCEL chains, or the native pipeline.",
         )
         # Regulation controller (ADR-035): pin a regulation or follow the replay's.
         choices = _get_container().regulation_choices()
@@ -168,24 +187,11 @@ def main() -> None:
             list(choices),
             index=list(choices).index(configured) if configured in choices else 0,
             format_func=lambda key: choices[key],
-            help="Pinned: usage data, Smogon sets and the Pokemon the answer may "
-                 "mention come from that regulation only, and a replay from another "
-                 "regulation is refused. Auto: the replay's own regulation.",
+            help="Pinned: data and legal Pokemon come from that regulation only. "
+                 "Auto: use the replay's regulation.",
         )
-        # A placeholder, refilled right after an analysis spends one: the
-        # sidebar renders before the Analyze click is handled below.
-        quota_slot = st.empty()
-        try:
-            caption = _quota_caption(_get_container(), provider)
-        except ProfessorVGCError:
-            caption = f"{provider}: usage quota unavailable."
-        if caption:
-            quota_slot.caption(caption)
-        st.info(
-            f"{icon_md(POKEBALL_ICON)} Set your key via environment variables:\n"
-            "`PROFESSORVGC_OPENAI_API_KEY` or `PROFESSORVGC_GEMINI_API_KEY`."
-        )
-        if st.button("Reset conversation"):
+        st.divider()
+        if st.button("Reset conversation", icon=":material/restart_alt:", width="stretch"):
             # Also drops panel state that could be stale after a schema change + hot reload.
             for key in (
                 "session_id", "container", "last_replay", "last_result",
@@ -201,6 +207,9 @@ def main() -> None:
 
         # Optional background music (renders nothing when the folder is empty).
         render_background_music()
+
+    if is_idle:
+        st.markdown(hero_section_html(), unsafe_allow_html=True)
 
     container = _get_container()
     if battle_mode == "Best of three":
@@ -227,9 +236,6 @@ def main() -> None:
     )
 
     analyze_clicked = st.button("Analyze", type="primary")
-    if is_idle:
-        st.markdown(grass_row_html(), unsafe_allow_html=True)
-        st.markdown(feature_cards_html(), unsafe_allow_html=True)
 
     if analyze_clicked:
         if not replay_text.strip() and not question.strip():

@@ -8,7 +8,6 @@ from pathlib import Path
 
 import streamlit as st
 
-
 # Optional background images: drop page.<ext> / battle-stage.<ext> into
 # src/ui/assets/backgrounds/. Without them the CSS gradients below are used.
 _BACKGROUNDS_DIR = Path(__file__).resolve().parent / "assets" / "backgrounds"
@@ -26,15 +25,9 @@ LAB_BACKGROUND_CSS_DEFAULT = (
 )
 
 
-# Page-wide backdrop: a light "battle notebook" sky with a graph-paper grid,
-# from the Figma prototype (ADR-026). The battle stage stays dark.
+# A quiet page surface keeps the replay form and evidence readable.
 _PAGE_BACKGROUND_CSS_DEFAULT = (
-    "radial-gradient(ellipse 70% 40% at 50% 0%, rgba(255,255,255,.55), transparent 70%),"
-    "repeating-linear-gradient(0deg, rgba(37,99,168,.05) 0px, rgba(37,99,168,.05) 1px,"
-    " transparent 1px, transparent 46px),"
-    "repeating-linear-gradient(90deg, rgba(37,99,168,.05) 0px, rgba(37,99,168,.05) 1px,"
-    " transparent 1px, transparent 46px),"
-    "linear-gradient(160deg, #dbeeff 0%, #c8e4f8 35%, #b8d8f4 70%, #cce7fa 100%)"
+    "linear-gradient(180deg, #f7f9fc 0%, #edf3f9 100%)"
 )
 
 
@@ -69,6 +62,53 @@ _COMPONENT_THEME_CSS = """
 html, body, [data-testid="stAppViewContainer"], .stApp {
     font-family: var(--pvgc-font-body);
 }
+.pvgc-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin: 18px 2px 22px;
+}
+.pvgc-hero-copy {
+    max-width: 760px;
+    min-width: 0;
+}
+.pvgc-hero-art {
+    position: relative;
+    flex: 0 0 248px;
+    height: 144px;
+    pointer-events: none;
+}
+.pvgc-hero-art::before {
+    content: '';
+    position: absolute;
+    inset: 15px 10px 7px;
+    border: 1px solid rgba(37, 99, 168, .13);
+    border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(194, 221, 246, .48), transparent 70%);
+}
+.pvgc-hero-sprite {
+    position: absolute;
+    display: block;
+    object-fit: contain;
+    image-rendering: pixelated;
+    filter: drop-shadow(0 6px 5px rgba(30, 42, 74, .12));
+}
+.pvgc-hero-pikachu {
+    left: 13px;
+    bottom: 7px;
+    width: 112px;
+    height: 112px;
+}
+.pvgc-hero-mewtwo {
+    right: 4px;
+    bottom: 12px;
+    width: 128px;
+    height: 128px;
+}
+@media (max-width: 850px), (prefers-reduced-motion: reduce) {
+    .pvgc-hero-art { display: none; }
+}
 h1, h2, h3, h4,
 [data-testid="stMarkdownContainer"] h1,
 [data-testid="stMarkdownContainer"] h2,
@@ -77,45 +117,34 @@ h1, h2, h3, h4,
     color: var(--pvgc-ink);
 }
 [data-testid="stCaptionContainer"] {
-    font-family: var(--pvgc-font-mono);
-    letter-spacing: .02em;
+    font-family: var(--pvgc-font-body);
 }
 [data-testid="stWidgetLabel"] p {
-    font-family: var(--pvgc-font-mono) !important;
-    font-size: .68rem !important;
-    letter-spacing: .08em;
-    text-transform: uppercase;
+    font-family: var(--pvgc-font-body) !important;
+    font-size: .86rem !important;
+    font-weight: 700;
     color: var(--pvgc-ink-muted) !important;
 }
 [data-testid="stExpander"], [data-testid="stVerticalBlockBorderWrapper"] {
-    background: rgba(255, 255, 255, .62) !important;
+    background: #fff !important;
     border: 1px solid rgba(37, 99, 168, .14) !important;
-    border-radius: 16px !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    border-radius: 12px !important;
 }
 [data-testid="stExpander"] summary {
     font-family: var(--pvgc-font-display);
     color: var(--pvgc-ink);
 }
-[data-testid="stSidebarContent"] {
-    background: rgba(255, 255, 255, .55);
-    border-right: 1px solid rgba(37, 99, 168, .12);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-}
 [data-testid="stTextArea"] textarea, [data-testid="stTextInput"] input {
-    border-radius: 12px !important;
+    border-radius: 10px !important;
     border: 1.5px solid rgba(37, 99, 168, .16) !important;
-    background: rgba(37, 99, 168, .04) !important;
+    background: #fff !important;
 }
 .stButton button[kind="primary"] {
-    background: linear-gradient(135deg, var(--pvgc-blue-dark) 0%, var(--pvgc-blue) 100%) !important;
+    background: var(--pvgc-blue-dark) !important;
     border: none !important;
-    border-radius: 12px !important;
+    border-radius: 10px !important;
     font-family: var(--pvgc-font-body);
     font-weight: 700 !important;
-    box-shadow: 0 4px 20px rgba(37, 99, 168, .25);
 }
 .stButton button[kind="secondary"] {
     border-radius: 10px !important;

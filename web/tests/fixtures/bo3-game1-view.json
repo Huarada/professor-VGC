@@ -1,0 +1,501 @@
+{
+  "player_names": {
+    "p1": "testProfessor",
+    "p2": "Huarada"
+  },
+  "avatars": {
+    "p1": "170",
+    "p2": "169"
+  },
+  "team": {
+    "p1": [
+      "Gholdengo",
+      "Volcarona",
+      "Garchomp",
+      "Incineroar",
+      "Rillaboom",
+      "Raichu"
+    ],
+    "p2": [
+      "Whimsicott",
+      "Basculegion",
+      "Floette-Eternal",
+      "Kingambit",
+      "Charizard",
+      "Garchomp"
+    ]
+  },
+  "winner_player": "p2",
+  "forfeited_player": null,
+  "snapshots": [
+    {
+      "turn": 0,
+      "active": {
+        "p1": [
+          "Raichu",
+          "Incineroar"
+        ],
+        "p2": [
+          "Whimsicott",
+          "Floette-Eternal"
+        ]
+      },
+      "pokemon": {
+        "p1": {
+          "Raichu": {
+            "species": "Raichu",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          },
+          "Incineroar": {
+            "species": "Incineroar",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          }
+        },
+        "p2": {
+          "Whimsicott": {
+            "species": "Whimsicott",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          },
+          "Floette-Eternal": {
+            "species": "Floette-Eternal",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "atk": -1
+            }
+          }
+        }
+      },
+      "log": [
+        "p1 sent out Raichu.",
+        "p1 sent out Incineroar.",
+        "p2 sent out Whimsicott.",
+        "p2 sent out Floette-Eternal."
+      ],
+      "conditions": []
+    },
+    {
+      "turn": 1,
+      "active": {
+        "p1": [
+          "Raichu",
+          "Incineroar"
+        ],
+        "p2": [
+          "Whimsicott",
+          "Floette-Eternal"
+        ]
+      },
+      "pokemon": {
+        "p1": {
+          "Raichu": {
+            "species": "Raichu",
+            "forme": "Raichu-Mega-Y",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          },
+          "Incineroar": {
+            "species": "Incineroar",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          }
+        },
+        "p2": {
+          "Whimsicott": {
+            "species": "Whimsicott",
+            "forme": "",
+            "hp_percent": 51.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          },
+          "Floette-Eternal": {
+            "species": "Floette-Eternal",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "atk": -1
+            }
+          }
+        }
+      },
+      "log": [
+        "p2 Floette-Eternal used Protect",
+        "p1 Incineroar used Fake Out — Floette-Eternal blocked (Protect)",
+        "p2 Whimsicott used Tailwind",
+        "p1 Raichu used Zap Cannon (resisted) — Whimsicott->51%"
+      ],
+      "conditions": [
+        "Tailwind p2"
+      ]
+    },
+    {
+      "turn": 2,
+      "active": {
+        "p1": [
+          "Incineroar",
+          "Raichu"
+        ],
+        "p2": [
+          "Whimsicott",
+          "Floette-Eternal"
+        ]
+      },
+      "pokemon": {
+        "p1": {
+          "Raichu": {
+            "species": "Raichu",
+            "forme": "Raichu-Mega-Y",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          },
+          "Incineroar": {
+            "species": "Incineroar",
+            "forme": "",
+            "hp_percent": 56.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          },
+          "Rillaboom": {
+            "species": "Rillaboom",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          }
+        },
+        "p2": {
+          "Whimsicott": {
+            "species": "Whimsicott",
+            "forme": "",
+            "hp_percent": 57.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "atk": -1
+            }
+          },
+          "Floette-Eternal": {
+            "species": "Floette-Eternal",
+            "forme": "Floette-Mega",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "atk": -3,
+              "spa": -1
+            }
+          }
+        }
+      },
+      "log": [
+        "p1 sent out Rillaboom.",
+        "p2 Whimsicott used Moonblast — Rillaboom->47%",
+        "p2 Floette-Eternal used Dazzling Gleam (spread) — Rillaboom fainted; Incineroar->56%",
+        "p1 Incineroar used Parting Shot",
+        "p1 sent out Raichu-Mega-Y.",
+        "p1 sent out Incineroar."
+      ],
+      "conditions": [
+        "Tailwind p2",
+        "terrain Grassy"
+      ]
+    },
+    {
+      "turn": 3,
+      "active": {
+        "p1": [
+          "Incineroar",
+          "Gholdengo"
+        ],
+        "p2": [
+          "Kingambit",
+          "Floette-Eternal"
+        ]
+      },
+      "pokemon": {
+        "p1": {
+          "Raichu": {
+            "species": "Raichu",
+            "forme": "Raichu-Mega-Y",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Incineroar": {
+            "species": "Incineroar",
+            "forme": "",
+            "hp_percent": 74.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          },
+          "Rillaboom": {
+            "species": "Rillaboom",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Gholdengo": {
+            "species": "Gholdengo",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          }
+        },
+        "p2": {
+          "Whimsicott": {
+            "species": "Whimsicott",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {
+              "atk": -1
+            }
+          },
+          "Floette-Eternal": {
+            "species": "Floette-Eternal",
+            "forme": "Floette-Mega",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "atk": -3,
+              "spa": -1
+            }
+          },
+          "Kingambit": {
+            "species": "Kingambit",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          }
+        }
+      },
+      "log": [
+        "p2 Whimsicott used Moonblast — Raichu->49%",
+        "p2 Floette-Eternal used Moonblast — Raichu fainted",
+        "p1 Incineroar used Flare Blitz (super effective) — Whimsicott fainted",
+        "p1 sent out Gholdengo.",
+        "p2 sent out Kingambit."
+      ],
+      "conditions": [
+        "Tailwind p2",
+        "terrain Grassy"
+      ]
+    },
+    {
+      "turn": 4,
+      "active": {
+        "p1": [
+          "Incineroar",
+          "Gholdengo"
+        ],
+        "p2": [
+          "Kingambit",
+          "Floette-Eternal"
+        ]
+      },
+      "pokemon": {
+        "p1": {
+          "Raichu": {
+            "species": "Raichu",
+            "forme": "Raichu-Mega-Y",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Incineroar": {
+            "species": "Incineroar",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Rillaboom": {
+            "species": "Rillaboom",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Gholdengo": {
+            "species": "Gholdengo",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "spa": 2
+            }
+          }
+        },
+        "p2": {
+          "Whimsicott": {
+            "species": "Whimsicott",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {
+              "atk": -1
+            }
+          },
+          "Floette-Eternal": {
+            "species": "Floette-Eternal",
+            "forme": "Floette-Mega",
+            "hp_percent": 55.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "atk": -3,
+              "spa": -1
+            }
+          },
+          "Kingambit": {
+            "species": "Kingambit",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          }
+        }
+      },
+      "log": [
+        "p2 Kingambit used Sucker Punch (failed)",
+        "p2 Floette-Eternal used Light of Ruin (crit) — Incineroar fainted",
+        "p1 Gholdengo used Nasty Plot"
+      ],
+      "conditions": [
+        "Tailwind p2",
+        "terrain Grassy"
+      ]
+    },
+    {
+      "turn": 5,
+      "active": {
+        "p1": [
+          "Incineroar",
+          "Gholdengo"
+        ],
+        "p2": [
+          "Kingambit",
+          "Floette-Eternal"
+        ]
+      },
+      "pokemon": {
+        "p1": {
+          "Raichu": {
+            "species": "Raichu",
+            "forme": "Raichu-Mega-Y",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Incineroar": {
+            "species": "Incineroar",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Rillaboom": {
+            "species": "Rillaboom",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {}
+          },
+          "Gholdengo": {
+            "species": "Gholdengo",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {
+              "spa": 2
+            }
+          }
+        },
+        "p2": {
+          "Whimsicott": {
+            "species": "Whimsicott",
+            "forme": "",
+            "hp_percent": 0.0,
+            "fainted": true,
+            "status": "",
+            "boosts": {
+              "atk": -1
+            }
+          },
+          "Floette-Eternal": {
+            "species": "Floette-Eternal",
+            "forme": "Floette-Mega",
+            "hp_percent": 42.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {
+              "atk": -3,
+              "spa": -1
+            }
+          },
+          "Kingambit": {
+            "species": "Kingambit",
+            "forme": "",
+            "hp_percent": 100.0,
+            "fainted": false,
+            "status": "",
+            "boosts": {}
+          }
+        }
+      },
+      "log": [
+        "p2 Kingambit used Sucker Punch (super effective) — Gholdengo->20%",
+        "p2 Floette-Eternal used Light of Ruin (resisted) — Gholdengo fainted"
+      ],
+      "conditions": [
+        "terrain Grassy"
+      ]
+    }
+  ]
+}
