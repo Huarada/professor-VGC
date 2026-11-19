@@ -1,0 +1,46 @@
+{
+ "source": "smogon/pokemon-showdown master (data/mods/champions/moves.ts and data/pokedex.ts), fetched 2026-11-18; only fields that differ from the pokemon-showdown 0.11.11 package",
+ "moves": {
+  "doubleshock": {
+   "flags": [
+    "contact",
+    "mirror",
+    "protect",
+    "punch"
+   ]
+  },
+  "meteorassault": {
+   "basePower": 170
+  },
+  "slash": {
+   "basePower": 80
+  }
+ },
+ "species": {
+  "absolmegaz": {
+   "abilities": {
+    "0": "Sharpness"
+   }
+  },
+  "garchompmegaz": {
+   "abilities": {
+    "0": "Levitate"
+   }
+  },
+  "lucariomegaz": {
+   "abilities": {
+    "0": "Aura Guard"
+   }
+  },
+  "golisopodmega": {
+   "abilities": {
+    "0": "Tough Claws"
+   }
+  },
+  "baxcaliburmega": {
+   "abilities": {
+    "0": "Thermal Exchange"
+   }
+  }
+ }
+}

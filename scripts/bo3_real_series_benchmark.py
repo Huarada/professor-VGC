@@ -67,8 +67,8 @@ def collect(adapter: SmogonCandidateProjectionAdapter,
     return request, evidence, states, sheet, initial, hits, exclusions
 
 
-def held_out_profiles(initial: Mapping[str, DeclaredSet]) -> dict[str, CandidateProfile]:
-    truth = json.loads(TRUTH.read_text(encoding="utf-8"))["teams"]
+def held_out_profiles(initial: Mapping[str, DeclaredSet], truth_path: Path = TRUTH) -> dict[str, CandidateProfile]:
+    truth = json.loads(truth_path.read_text(encoding="utf-8"))["teams"]
     profiles = {}
     for key, entry in initial.items():
         known = truth[entry.participant][entry.species]
