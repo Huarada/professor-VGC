@@ -74,7 +74,13 @@ def _series_games(series_id: str) -> list[dict[str, Any]]:
     return list(json.loads(path.read_text(encoding="utf-8"))["games"])
 
 
-def build_cases(*, quick: bool = False) -> list[Case]:
+def group(row_or_id: dict[str, Any] | str) -> str:
+    """bo1, bo1-sim (simulated games, random move choice) or bo3: simulated rows are never mixed with real play."""
+    ident = row_or_id if isinstance(row_or_id, str) else row_or_id["id"]
+    return "bo1-sim" if ident.startswith("bo1sim-") else ident[:3]
+
+
+def build_cases(*, quick: bool = False, sim_dir: Path | None = None, sim_games: int = 0) -> list[Case]:
     cases: list[Case] = []
     recorded = sorted(REPLAY_DIR.glob("*.json"))
     for path in recorded[: 1 if quick else None]:
@@ -91,6 +97,13 @@ def build_cases(*, quick: bool = False) -> list[Case]:
         games = _series_games(series_id)
         for key in keys:
             cases.append(Case(f"bo3-{series_id}-{key}", "bo3", key, games, f"public series {series_id}"))
+    if sim_dir is not None and sim_games:
+        from scripts.bo1_engine_sweep import load_games
+
+        keys = ("turning", "coach_loser", "decisions")
+        for index, (game_id, game) in enumerate(load_games(sim_dir, sim_games)):
+            key = keys[index % len(keys)]
+            cases.append(Case(f"bo1sim-{game_id}-{key}", "bo1", key, [game], f"simulated game {game_id} (random moves)"))
     return cases
 
 
@@ -145,9 +158,10 @@ JUDGE_SYSTEM = (
     "You grade one Pokemon VGC coaching answer against the battle evidence it was given. Score each criterion from 1 "
     "(poor) to 5 (excellent), strictly: grounded = every claim traceable to the evidence, nothing invented; actionable "
     "= concrete changes the player can apply next time; specific = names turns, moves and Pokemon; consistent = no "
-    "contradiction with the log (sides, turns, faints, who moved first); honest = states what the evidence cannot "
-    "show. Return only JSON: {\"grounded\":n,\"actionable\":n,\"specific\":n,\"consistent\":n,\"honest\":n,"
-    "\"issues\":[up to three short strings]}.")
+    "contradiction with the log (sides, turns, faints, who moved first) or with the engine's turning point when the "
+    "evidence includes one (it is computed, not an opinion: grade the answer against it); honest = states what the "
+    "evidence cannot show. Return only JSON: {\"grounded\":n,\"actionable\":n,\"specific\":n,\"consistent\":n,"
+    "\"honest\":n,\"issues\":[up to three short strings]}.")
 
 
 def judge(llm: Any, question: str, answer: str, evidence: str) -> dict[str, Any] | None:
@@ -197,6 +211,10 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
         warnings = list(result.regulation_warnings)
         turning = result.turning_point.turn if result.turning_point is not None else None
         evidence = result.battle_result
+        if result.turning_point is not None:
+            evidence += ("\n\nENGINE TURNING POINT (computed from the logged HP and faints: the earliest turn after which the "
+                         "winner stayed at least half a Pokemon's worth of HP ahead until the end): "
+                         + result.turning_point.summary + f" Turn {result.turning_point.turn}.")
     else:
         result = container.build_bo3_pipeline(args.provider, args.orchestrator, thinking_level="low").analyze(
             Bo3AnalysisRequest(session_id=case.id, games=list(case.games), question=question, provider=args.provider))
@@ -239,8 +257,8 @@ def render(report: dict[str, Any]) -> str:
            f"- date: {report['date']}", f"- commit: {report['commit']}", f"- orchestrator: {report['orchestrator']}", f"- grader (judge and claim extractor): {report['grader']}",
            f"- cases: {len(report['rows'])}", "",
            "Deterministic columns come first; the judge scores are subjective (one grader-model call per answer).", ""]
-    for mode in ("bo1", "bo3"):
-        rows = [r for r in report["rows"] if r["mode"] == mode]
+    for mode in ("bo1", "bo1-sim", "bo3"):
+        rows = [r for r in report["rows"] if group(r) == mode]
         if not rows:
             continue
         s = summarize(rows)
@@ -300,6 +318,9 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=ROOT / "docs" / "validation" / "coaching")
     parser.add_argument("--chaos", default=str(CHAOS_CACHE))
     parser.add_argument("--quick", action="store_true", help="one case per kind, for a smoke run")
+    parser.add_argument("--sim-dir", type=Path, default=ROOT / ".cache" / "sim-real-teams-v2",
+                        help="simulated series (tools/bo3_sim) for the extra BO1 cases")
+    parser.add_argument("--sim-games", type=int, default=0, help="simulated BO1 games to add (0 = none)")
     parser.add_argument("--only", default="", help="substring filter on case ids")
     args = parser.parse_args()
 
@@ -322,8 +343,8 @@ def main() -> None:
     report: dict[str, Any] = {"provider": args.provider, "model": model, "orchestrator": args.orchestrator or settings.orchestrator,
                               "grader": args.grader_model or model,
                               "date": date.today().isoformat(), "commit": commit, "rows": []}
-    cases = [c for c in build_cases(quick=args.quick) if args.only in c.id]
-    stem = f"{report['date']}-{args.provider}-{model}".replace("/", "_") + ("-quick" if args.quick else "")
+    cases = [c for c in build_cases(quick=args.quick, sim_dir=args.sim_dir, sim_games=args.sim_games) if args.only in c.id]
+    stem = f"{report['date']}-{args.provider}-{model}".replace("/", "_") + ("-quick" if args.quick else "") + (f"-sim{args.sim_games}" if args.sim_games else "")
     args.out.mkdir(parents=True, exist_ok=True)
     try:
         for index, case in enumerate(cases, 1):
