@@ -6052,3 +6052,19 @@ error (a turn-12 KO of Dragonite placed on turn 11), and nothing else; one false
 fixed first. It misses claims that are less explicit than these patterns, so it raises the chance that the narration
 is right without proving it.
 
+## ADR-080 - A coaching-quality testbench driven by the OpenAI API
+
+Status: accepted. `scripts/coaching_testbench.py` runs 17 full pipeline passes (12 BO1 and 5 BO3: three recorded Reg M-B
+replays with three coaching questions, game 1 of three public Reg M-C series, the recorded series with a coaching and a
+spread question, three public Reg M-C series with a coaching question) against the real calculator, the Chaos tiers in
+`data/chaos-cache` and the configured orchestrator, and stores every answer verbatim in
+`docs/validation/coaching/<date>-<provider>-<model>.md` (plus the JSON) so two runs can be compared later. Real player
+names are replaced per case before anything is written.
+
+Per answer: contradictions with the log (side and faint-timing checks), damage claims checked against the raw log,
+percentages found nowhere in the evidence, expected BO1 structure, whether the engine's turning point is named, warnings,
+BO3 narrative-validation rejections and fallback notices, plus a 1-5 rubric from one grader-model call (grounded, actionable,
+specific, consistent, honest). The grader defaults to the run model; a same-model judge scored every BO1 answer 4-5 in a
+smoke run, so use `--grader-model gpt-4o` for a stricter judge. The rubric is subjective; read the deterministic columns first.
+Baseline (gpt-4o-mini, gpt-4o grader) is in the first report; no human grading has been done.
+
