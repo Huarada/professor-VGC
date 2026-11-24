@@ -723,6 +723,43 @@ class RegulationInfo(BaseModel):
     data is loaded (legality unverified)."""
 
 
+class TurnMaterial(BaseModel):
+    """Both sides' material at the end of one turn, from the logged HP and faints only."""
+
+    model_config = ConfigDict(frozen=True)
+
+    turn: int
+    winner_alive: int
+    loser_alive: int
+    winner_hp: float
+    loser_hp: float
+    """Sum of the HP percent of every Pokemon the side brought (fainted counts 0)."""
+    lead: float
+    """(winner_hp - loser_hp) / 100: how many Pokemon's worth of HP the winner is ahead."""
+    swing: float
+    """Change of ``lead`` during this turn; positive favours the winner."""
+    faints: list[str] = Field(default_factory=list)
+
+
+class TurningPoint(BaseModel):
+    """Deterministic answer to "which turn decided the game", computed from the log.
+
+    ``lead_held_to_the_end``: the earliest turn after which the winner stayed at least half a Pokemon's worth
+    of HP ahead on every later turn. ``largest_swing``: no such turn exists (a close finish), so this is the
+    turn that moved the lead toward the winner the most.
+    """
+
+    model_config = ConfigDict(frozen=True)
+
+    rule: Literal["lead_held_to_the_end", "largest_swing"]
+    turn: int
+    winner_player: str
+    winner_name: str = ""
+    summary: str
+    candidates: list[TurnMaterial] = Field(default_factory=list)
+    """The chosen turn first, then the two other turns with the largest swings."""
+
+
 class AnalysisEvidence(BaseModel):
     """The ground-truth bundle every backend hands to its explanation stage,
     built once by ``GroundTruthAssembler`` so backends cannot drift apart."""
@@ -741,6 +778,8 @@ class AnalysisEvidence(BaseModel):
     regulation: RegulationInfo | None = None
     series_context: dict[str, Any] | None = None
     bo3_claim_plan: NarrativeClaimPlan | None = None
+    turning_point: TurningPoint | None = None
+    """BO1 only: the deterministic decisive turn (the explanation narrates it, never picks it)."""
 
 
 class AnalysisResult(BaseModel):
@@ -757,6 +796,7 @@ class AnalysisResult(BaseModel):
     strategies: list[SmogonStrategy] = Field(default_factory=list)
     agent_tool_calls: list[AgentToolInvocation] = Field(default_factory=list)
     bo3_claim_plan: NarrativeClaimPlan | None = None
+    turning_point: TurningPoint | None = None
     battle_result: str = ""
     provider: str = "openai"
     regulation: RegulationInfo | None = None
