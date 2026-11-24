@@ -12,10 +12,10 @@ import re
 from src.domain.models import GameState
 from src.services.battle_context import rosters
 
-_MARK = r"[*_`]*"
+MARK = r"[*_`]*"
 
 
-def _owners(game_state: GameState) -> dict[str, frozenset[str]]:
+def owners_by_species(game_state: GameState) -> dict[str, frozenset[str]]:
     """Species or forme -> the players that brought it (a mirror species has two owners and is never flagged)."""
     owners: dict[str, set[str]] = {}
     brought = rosters(game_state)
@@ -29,12 +29,12 @@ def _owners(game_state: GameState) -> dict[str, frozenset[str]]:
     return {name: frozenset(players) for name, players in owners.items()}
 
 
-def _alternation(words: list[str]) -> str:
+def alternation(words: list[str]) -> str:
     return "|".join(re.escape(word) for word in sorted(set(words), key=len, reverse=True))
 
 
 def side_attribution_issues(answer: str, game_state: GameState) -> list[str]:
-    owners = _owners(game_state)
+    owners = owners_by_species(game_state)
     if len(game_state.sides) != 2 or not owners:
         return []
     labels = {side.player: side.player_name or side.player for side in game_state.sides}
@@ -42,8 +42,8 @@ def side_attribution_issues(answer: str, game_state: GameState) -> list[str]:
     for player, name in labels.items():
         who[name.casefold()] = player
         who[player.casefold()] = player
-    species = _alternation(list(owners))
-    holder = _alternation(list(who))
+    species = alternation(list(owners))
+    holder = alternation(list(who))
     issues: list[str] = []
 
     def sole_owner(name: str) -> str | None:
@@ -55,31 +55,40 @@ def side_attribution_issues(answer: str, game_state: GameState) -> list[str]:
         if owner is not None and owner != claimed_player:
             issues.append(f'"{quote}": {mon} belongs to {labels[owner]} ({owner}), not {labels[claimed_player]}.')
 
-    possessive = re.compile(rf"(?<![\w-])({holder}){_MARK}(?:'s|’s){_MARK}\s+{_MARK}({species})(?![\w-])", re.I)
+    possessive = re.compile(rf"(?<![\w-])({holder}){MARK}(?:'s|’s){MARK}\s+{MARK}({species})(?![\w-])", re.I)
     for match in possessive.finditer(answer):
-        check(who[match.group(1).casefold()], _canonical(match.group(2), owners), match.group(0))
-    prefixed = re.compile(rf"(?<![\w-])(p[12])\s+{_MARK}({species})(?![\w-])", re.I)
+        check(who[match.group(1).casefold()], canonical(match.group(2), owners), match.group(0))
+    prefixed = re.compile(rf"(?<![\w-])(p[12])\s+{MARK}({species})(?![\w-])", re.I)
     for match in prefixed.finditer(answer):
         if match.group(1).casefold() in who:
-            check(who[match.group(1).casefold()], _canonical(match.group(2), owners), match.group(0))
+            check(who[match.group(1).casefold()], canonical(match.group(2), owners), match.group(0))
     switch = re.compile(
-        rf"(?<![\w-])(?:switch|swap)\w*\s+{_MARK}({species}){_MARK}\s+(?:out\s+)?(?:to|into|for|with)\s+{_MARK}({species})(?![\w-])",
+        rf"(?<![\w-])(?:switch|swap)\w*\s+{MARK}({species}){MARK}\s+(?:out\s+)?(?:to|into|for|with)\s+{MARK}({species})(?![\w-])",
         re.I)
     for match in switch.finditer(answer):
-        first, second = (_canonical(match.group(i), owners) for i in (1, 2))
+        first, second = (canonical(match.group(i), owners) for i in (1, 2))
         left, right = sole_owner(first), sole_owner(second)
         if left is not None and right is not None and left != right:
             issues.append(f'"{match.group(0)}": {first} and {second} are on opposing teams, so one cannot replace the other.')
     return list(dict.fromkeys(issues))
 
 
-def _canonical(text: str, owners: dict[str, frozenset[str]]) -> str:
+def canonical(text: str, owners: dict[str, frozenset[str]]) -> str:
     folded = text.casefold()
     return next((name for name in owners if name.casefold() == folded), text)
 
 
-def side_correction_note(issues: list[str]) -> str:
+def narration_issues(answer: str, game_state: GameState) -> list[str]:
+    """Everything in a BO1 answer that contradicts the log: wrong side, or a faint on the wrong turn."""
+    from src.services.faint_timing import faint_timing_issues  # noqa: PLC0415 - faint_timing imports this module
+
+    return side_attribution_issues(answer, game_state) + faint_timing_issues(answer, game_state)
+
+
+def correction_note(issues: list[str]) -> str:
     lines = "\n".join(f"- {issue}" for issue in issues)
-    return ("CORRECTION: your previous answer credited a Pokemon to the wrong side:\n" + lines +
-            "\nThe '<p1/p2> roster' lines are the only authority on sides. Rewrite the full answer so every "
-            "Pokemon is attributed to its own side and advice names only Pokemon from the advised player's roster.")
+    return ("CORRECTION: your previous answer contradicts the battle log:\n" + lines +
+            "\nThe '<p1/p2> roster' lines, the ordered timeline and turning_point.candidates[].faints are the only "
+            "authority on sides and on which turn each Pokemon fainted. Rewrite the full answer so every Pokemon is "
+            "attributed to its own side, advice names only Pokemon from the advised player's roster, and every faint "
+            "is placed on the turn the log shows.")

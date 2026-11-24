@@ -70,7 +70,7 @@ from src.services.concept_tracking import recurring_concepts
 from src.services.evidence_prefetch import PrefetchedReviewContext
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
 from src.services.regulation_guard import RegulationGuard
-from src.services.side_attribution import side_attribution_issues, side_correction_note
+from src.services.side_attribution import correction_note, narration_issues
 from src.services.turning_point import find_turning_point
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
@@ -228,7 +228,7 @@ class GroundTruthAssembler:
         game_state: GameState,
     ) -> tuple[str, list[str]]:
         """Run ``explain``; if the answer names an illegal Pokemon, retry once with a
-        correction note. A BO1 answer that credits a Pokemon to the wrong side gets one more retry.
+        correction note. A BO1 answer that contradicts the log (wrong side, faint on the wrong turn) gets one more retry.
         Returns the answer and any remaining warnings.
         """
         def checked_explain(correction: str) -> str:
@@ -237,13 +237,13 @@ class GroundTruthAssembler:
         answer, warnings = self._regulation_pass(checked_explain, checked_explain(""), evidence, game_state)
         if evidence.series_context is not None:
             return answer, warnings
-        issues = side_attribution_issues(answer, game_state)
+        issues = narration_issues(answer, game_state)
         if not issues:
             return answer, warnings
         answer, warnings = self._regulation_pass(
-            checked_explain, checked_explain(side_correction_note(issues)), evidence, game_state)
-        remaining = side_attribution_issues(answer, game_state)
-        return answer, warnings + [f"Side attribution may be wrong: {issue}" for issue in remaining]
+            checked_explain, checked_explain(correction_note(issues)), evidence, game_state)
+        remaining = narration_issues(answer, game_state)
+        return answer, warnings + [f"The answer may contradict the log: {issue}" for issue in remaining]
 
     def _regulation_pass(
         self, checked_explain: Callable[[str], str], answer: str, evidence: AnalysisEvidence, game_state: GameState,

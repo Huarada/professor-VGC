@@ -6043,3 +6043,12 @@ side check found no issue in the nine earlier live answers: the "switch to Kinga
 error, because both players brought Kingambit. The check is a guard, not a measured fix. The model can still misplace
 events inside the chosen turn (it moved a turn-12 KO into turn 11 in one answer), so narration of that turn is unverified.
 
+Addendum (faint timing): `services/faint_timing.py` also checks "Pokemon X fainted on turn N" against the log's faint list. A
+claim is checked only when its sentence names exactly one turn (or says "this turn" right after a sentence that did), has
+a clear victim ("fainted", "knock out Player A's Dragonite") and no hypothetical word (would, could, guaranteed, ...);
+a Mega forme counts as its base Pokemon and a species on both sides matches either player unless the text names one.
+It shares the single correction retry with the side check. Against 15 stored live answers it flagged 3, each the same real
+error (a turn-12 KO of Dragonite placed on turn 11), and nothing else; one false positive (an Altaria-Mega) was found and
+fixed first. It misses claims that are less explicit than these patterns, so it raises the chance that the narration
+is right without proving it.
+

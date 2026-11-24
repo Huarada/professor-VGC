@@ -56,7 +56,7 @@ class _Scripted(FakeLLM):
         self.calls.append({"system": kwargs["system"], "json_mode": kwargs["json_mode"], "messages": list(kwargs["messages"])})
         if kwargs["json_mode"]:
             return _SELECTION
-        corrected = "CORRECTION: your previous answer credited" in kwargs["messages"][-1].content
+        corrected = "CORRECTION: your previous answer contradicts" in kwargs["messages"][-1].content
         return self._second if corrected else self._explanation
 
 
@@ -73,7 +73,7 @@ def test_service_retries_once_with_the_correction(sample_chaos_path: Path) -> No
     right = "Player A could have kept Diggersby in and protected."
     llm = _Scripted(wrong, right)
     result = _run(sample_chaos_path, llm)
-    assert result.answer == right and not any("Side attribution" in w for w in result.regulation_warnings)
+    assert result.answer == right and not any("may contradict the log" in w for w in result.regulation_warnings)
     assert sum(not call["json_mode"] for call in llm.calls) == 2  # one answer, one corrected answer
 
 
@@ -81,5 +81,5 @@ def test_service_reports_what_remains_and_never_loops(sample_chaos_path: Path) -
     wrong = "Switching Diggersby to Klefki on turn 3 would have helped."
     llm = _Scripted(wrong, wrong)
     result = _run(sample_chaos_path, llm)
-    assert result.answer == wrong and any("Side attribution" in w for w in result.regulation_warnings)
+    assert result.answer == wrong and any("may contradict the log" in w for w in result.regulation_warnings)
     assert sum(not call["json_mode"] for call in llm.calls) == 2
