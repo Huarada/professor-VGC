@@ -33,6 +33,7 @@ from src.domain.interfaces import (
     ConversationMemory,
     LogParser,
     MetaStatsProvider,
+    PromptRepository,
     RegulationCatalog,
     SmogonSuggestionSource,
     StrategyKnowledgeProvider,
@@ -374,6 +375,14 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
     if evidence.series_context is not None:
         return compact_bo3_context(dict(coaching_context(context)))
     return context
+
+
+def explanation_system_prompt(prompts: PromptRepository, *, series: bool) -> str:
+    """BO1 explanation rules; BO3 game reviews append the series rules (kept out of BO1 calls)."""
+    core = prompts.get("explanation_system")
+    if not series:
+        return core
+    return core + "\n\n" + prompts.get("explanation_bo3_addendum")
 
 
 def build_explanation_input(question: str, evidence: AnalysisEvidence, correction: str = "") -> str:

@@ -27,6 +27,7 @@ from src.services.evidence_prefetch import prefetch_during_selection
 from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
+    explanation_system_prompt,
     build_result,
     load_champions_history,
     remember_turn,
@@ -51,7 +52,7 @@ class AnalysisService:
         self._evidence = evidence
         self._llm = llm
         self._memory = memory
-        self._explanation_system = prompts.get("explanation_system")
+        self._prompts = prompts
 
     def analyze(self, request: AnalysisRequest) -> AnalysisResult:
         """Run one full analysis turn and return the UI DTO."""
@@ -91,7 +92,7 @@ class AnalysisService:
             content=build_explanation_input(request.question, evidence, correction),
         )
         return self._llm.complete(
-            system=self._explanation_system,
+            system=explanation_system_prompt(self._prompts, series=request.series_context is not None),
             messages=[*history, user_turn],
             temperature=0.3,
             json_mode=False,

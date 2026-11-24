@@ -38,6 +38,7 @@ from src.services.evidence_prefetch import prefetch_during_selection
 from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
+    explanation_system_prompt,
     build_result,
     load_champions_history,
     remember_turn,
@@ -155,6 +156,7 @@ class AdkAnalysisOrchestrator:
         agent_max_llm_calls: int = 20,
         agent_timeout_seconds: float = 180.0,
         thinking_level: str | None = None,
+        series: bool = False,
     ) -> None:
         from google.adk.agents import Agent
         from google.adk.runners import Runner
@@ -217,7 +219,7 @@ class AdkAnalysisOrchestrator:
         )
 
         explanation_instruction = (
-            f"{prompts.get('explanation_system')}\n\n"
+            f"{explanation_system_prompt(prompts, series=series)}\n\n"
             f"{prompts.get('explanation_agent_addendum')}"
         )
         self._explanation_agent = Agent(

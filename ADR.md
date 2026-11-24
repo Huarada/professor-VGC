@@ -6006,3 +6006,20 @@ Security hardening (web API): the cloud worker route `/internal/run/{job_id}` no
 (Google signature, audience = worker URL, email = task service account) and returns 403 otherwise, on top of Cloud Run IAM.
 The usage-quota visitor is the X-Forwarded-For entry added by our own proxy (`PROFESSORVGC_TRUSTED_PROXY_HOPS`, default 1),
 not the last public address in a client-controlled header.
+
+## ADR-078 - Keep BO3 rules out of BO1 explanation calls and give BO1 a fixed answer structure
+
+Status: accepted. The explanation prompt had grown to 34.5 KB, of which about 30% was BO3-only text sent on every BO1
+call. It is now `explanation_system.txt` (BO1 and shared rules) plus `explanation_bo3_addendum.txt`, appended only for
+BO3 game reviews: per request in the native service (`series_context`), and by the `series` flag that
+`build_bo3_pipeline` passes to the ADK and LangChain pipelines. No other line was removed: only the callback block and the
+regulation example changed. The callback ("recurring concepts") is now an optional follow-up placed after the context
+list instead of "before anything else"; the regulation example no longer names Reg M-B or M-C; BO1 answers follow
+Result, Turning point, Decisions and What to change.
+
+Verification: the BO1 pipeline with a fake LLM produced identical evidence and context messages before and after
+ADR-075/076 on four replays. A live check with gpt-4o-mini (3 replays, 1 question, 1 run each, so indicative only): system
+prompt 33.9 KB to 27.3 KB, every answer followed the structure, percentages cited per answer rose from 0-2 to 2-6 and every
+cited percentage appears in the supplied context. The small model still mislabels sides in some advice (for example
+suggesting a switch to a Pokemon on the opposing team) both before and after, so side attribution is not solved by the prompt.
+

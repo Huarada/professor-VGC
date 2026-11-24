@@ -307,7 +307,7 @@ class Container:
 
     def build_langchain_pipeline(
         self, provider: str | None = None, regulation: str | None = None,
-        *, thinking_level: str | None = None,
+        *, thinking_level: str | None = None, series: bool = False,
     ) -> AnalysisPipeline:
         """Assemble the LangChain LCEL orchestrator."""
         name = self._resolve_provider(provider)
@@ -319,12 +319,12 @@ class Container:
             memory=self.memory(),
             prompts=self.prompts(),
             tools=build_langchain_tools(self.evidence_tools(name, scope)),
-            provider_name=f"langchain:{name}",
+            provider_name=f"langchain:{name}", series=series,
         )
 
     def build_adk_pipeline(
         self, provider: str | None = None, regulation: str | None = None,
-        *, thinking_level: str | None = None,
+        *, thinking_level: str | None = None, series: bool = False,
     ) -> AnalysisPipeline:
         """Assemble the Google ADK orchestrator (default backend)."""
         name = self._resolve_provider(provider)
@@ -338,7 +338,7 @@ class Container:
             tools=build_adk_tools(self.evidence_tools(name, scope)),
             provider_name=f"adk:{name}",
             agent_timeout_seconds=self._settings.agent_timeout_seconds,
-            thinking_level=thinking_level,
+            thinking_level=thinking_level, series=series,
         )
 
     def build_pipeline(
@@ -346,7 +346,7 @@ class Container:
         provider: str | None = None,
         orchestrator: str | None = None,
         regulation: str | None = None,
-        *, thinking_level: str | None = None,
+        *, thinking_level: str | None = None, series: bool = False,
     ) -> AnalysisPipeline:
         """Assemble the configured pipeline (orchestrator-agnostic entrypoint).
 
@@ -359,9 +359,9 @@ class Container:
                 f"Unknown orchestrator '{backend}'. Available: {sorted(_ORCHESTRATORS)}"
             )
         if backend == "adk":
-            return self.build_adk_pipeline(provider, regulation, thinking_level=thinking_level)
+            return self.build_adk_pipeline(provider, regulation, thinking_level=thinking_level, series=series)
         if backend == "langchain":
-            return self.build_langchain_pipeline(provider, regulation, thinking_level=thinking_level)
+            return self.build_langchain_pipeline(provider, regulation, thinking_level=thinking_level, series=series)
         return self.build_native_pipeline(provider, regulation, thinking_level=thinking_level)
 
     def validate_series(self, request: Bo3AnalysisRequest, regulation: str | None = None) -> Bo3Evidence:
@@ -395,7 +395,7 @@ class Container:
         return Bo3AnalysisService(
             parser=ShowdownReplayParser(),
             pipeline_factory=lambda: self.build_pipeline(provider, orchestrator, regulation,
-                                                         thinking_level=level),
+                                                         thinking_level=level, series=True),
             llm=self.build_llm(provider, thinking_level=level), prompts=self.prompts(),
             pinned=self.regulation(regulation),
             regulation_catalog=self.chaos(strict=self.regulation(regulation) is not None),
