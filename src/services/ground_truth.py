@@ -70,6 +70,8 @@ from src.services.concept_tracking import recurring_concepts
 from src.services.evidence_prefetch import PrefetchedReviewContext
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
 from src.services.regulation_guard import RegulationGuard
+from src.services.side_attribution import side_attribution_issues, side_correction_note
+from src.services.turning_point import find_turning_point
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
 
@@ -203,6 +205,7 @@ class GroundTruthAssembler:
             regulation=self._regulation_info(roster),
             series_context=clean_champions_knowledge(request.series_context),
             bo3_claim_plan=request.bo3_claim_plan,
+            turning_point=find_turning_point(game_state) if request.series_context is None else None,
         )
         evidence_ready(evidence)
         return evidence
@@ -225,12 +228,26 @@ class GroundTruthAssembler:
         game_state: GameState,
     ) -> tuple[str, list[str]]:
         """Run ``explain``; if the answer names an illegal Pokemon, retry once with a
-        correction note. Returns the answer and any remaining warnings.
+        correction note. A BO1 answer that credits a Pokemon to the wrong side gets one more retry.
+        Returns the answer and any remaining warnings.
         """
         def checked_explain(correction: str) -> str:
             return explain_champions_only(explain, correction, bo3=evidence.series_context is not None, plan=evidence.bo3_claim_plan)
 
-        answer = checked_explain("")
+        answer, warnings = self._regulation_pass(checked_explain, checked_explain(""), evidence, game_state)
+        if evidence.series_context is not None:
+            return answer, warnings
+        issues = side_attribution_issues(answer, game_state)
+        if not issues:
+            return answer, warnings
+        answer, warnings = self._regulation_pass(
+            checked_explain, checked_explain(side_correction_note(issues)), evidence, game_state)
+        remaining = side_attribution_issues(answer, game_state)
+        return answer, warnings + [f"Side attribution may be wrong: {issue}" for issue in remaining]
+
+    def _regulation_pass(
+        self, checked_explain: Callable[[str], str], answer: str, evidence: AnalysisEvidence, game_state: GameState,
+    ) -> tuple[str, list[str]]:
         roster = self._roster()
         if evidence.regulation is None:
             return answer, []
@@ -366,6 +383,8 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
         "improvement_suggestions": dict(evidence.improvement_suggestions),
         "selection_rationale": evidence.selection.rationale,
     }
+    if evidence.turning_point is not None:
+        context["turning_point"] = evidence.turning_point.model_dump(mode="json")
     if evidence.regulation is not None:
         context["regulation"] = evidence.regulation.model_dump(mode="json")
     if evidence.bo3_claim_plan is not None:
@@ -434,6 +453,7 @@ def build_result(
         protect_reads=evidence.protect_reads,
         agent_tool_calls=list(agent_tool_calls),
         bo3_claim_plan=evidence.bo3_claim_plan,
+        turning_point=evidence.turning_point,
         battle_result=evidence.battle_result,
         provider=provider,
         regulation=evidence.regulation,

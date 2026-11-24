@@ -6023,3 +6023,23 @@ prompt 33.9 KB to 27.3 KB, every answer followed the structure, percentages cite
 cited percentage appears in the supplied context. The small model still mislabels sides in some advice (for example
 suggesting a switch to a Pokemon on the opposing team) both before and after, so side attribution is not solved by the prompt.
 
+## ADR-079 - Compute the BO1 turning point in the engine and check side attribution after the answer
+
+Status: accepted. The BO1 prompt asked the model to explain "the turning point" without defining it, and gpt-4o-mini
+picked the last KO of a Pokemon already at 2% HP. `services/turning_point.py` now computes it from the log: material
+per side (sum of the HP percent of every brought Pokemon, a faint counts 0) at the end of each turn; the turning point is
+the earliest turn after which the winner stayed at least half a Pokemon's worth of HP ahead until the end
+(`lead_held_to_the_end`), or the turn with the largest swing when no turn qualifies. It is absent for forfeits and games
+without a winner, BO1 only (BO3 keeps its claim contract), exposed as `AnalysisEvidence.turning_point` and in the context.
+It measures material on the board, not intent, and the prompt says so. On the three recorded games it returns turn 11
+(a triple KO), turn 1 (a double KO) and turn 2 (the first KO).
+
+`services/side_attribution.py` checks the answer for the three claims that are unambiguous in text (a possessive such
+as "Player A's Kingambit", a `p1`/`p2` prefix, and a switch between Pokemon of opposing teams). A species brought by
+both sides is never flagged. One correction retry, then a user warning, never a loop.
+
+Verification: 13 new tests; a live gpt-4o-mini run on the three replays now names the engine's turn each time. The
+side check found no issue in the nine earlier live answers: the "switch to Kingambit" example reported earlier was not an
+error, because both players brought Kingambit. The check is a guard, not a measured fix. The model can still misplace
+events inside the chosen turn (it moved a turn-12 KO into turn 11 in one answer), so narration of that turn is unverified.
+
