@@ -55,7 +55,7 @@ def test_summary_counts_the_deterministic_columns_and_means_the_judge() -> None:
 
 def test_report_keeps_every_answer_verbatim_for_later_comparison() -> None:
     report = {"provider": "openai", "model": "m", "date": "2026-11-24", "commit": "abc", "orchestrator": "adk",
-              "grader": "g", "rows": [_row(), {"id": "e", "mode": "bo3", "error": "boom"}]}
+              "grader": "g", "rows": [_row(), {"id": "bo3-e", "mode": "bo3", "error": "boom"}]}
     text = bench.render(report)
     assert "## BO1 summary" in text and "### bo1-x-turning" in text and "> line one" in text
     assert "Error: boom" in text and "ERROR boom" in text
@@ -72,3 +72,17 @@ def test_anonymized_row_drops_the_players_and_their_names() -> None:
 def test_numbered_bold_sections_count_as_headings() -> None:
     answer = "1. **Result**: A won.\n\n2. **Turning point**: turn 14.\n3. **Decisions**: x\n4. **What to change**: y"
     assert len(bench.sections_present(answer)) == 4
+
+
+def test_simulated_games_become_separate_bo1_cases(tmp_path: Any) -> None:
+    import json
+
+    game = {"players": ["SimAlpha", "SimBeta"], "log": "|t:|1", "formatid": "gen9championsvgc2026regmcbo3"}
+    for name in ("a", "b"):
+        (tmp_path / f"bo3-public-{name}.json").write_text(json.dumps({"games": [game, game]}), encoding="utf-8")
+    cases = bench.build_cases(sim_dir=tmp_path, sim_games=3)
+    sim = [c for c in cases if c.id.startswith("bo1sim-")]
+    assert len(sim) == 3 and all(c.mode == "bo1" and len(c.games) == 1 for c in sim)
+    assert {bench.group(c.id) for c in sim} == {"bo1-sim"} and bench.group("bo3-1-x") == "bo3" and bench.group("bo1-x") == "bo1"
+    assert len({c.id for c in sim}) == 3
+    assert not [c for c in bench.build_cases() if c.id.startswith("bo1sim-")]

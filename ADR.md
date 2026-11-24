@@ -6068,3 +6068,14 @@ specific, consistent, honest). The grader defaults to the run model; a same-mode
 smoke run, so use `--grader-model gpt-4o` for a stricter judge. The rubric is subjective; read the deterministic columns first.
 Baseline (gpt-4o-mini, gpt-4o grader) is in the first report; no human grading has been done.
 
+Addendum (simulated games): the simulator of ADR-077 now feeds the BO1 side of the testbench. `scripts/bo1_engine_sweep.py`
+runs the real BO1 evidence stack with a scripted LLM over every simulated game (268 games, about 1 s each, no API call) and
+checks that it finishes, returns one per-move check per move event, names the log's winner in the turning point, and that
+the faint-timing validator never flags a true statement built from the log nor misses the same statement moved to another
+turn (0 problems, 0 false positives in 3,126 true statements, 0 of 1,238 wrong-turn statements missed; the statements use
+the validator's own phrasings, so this is a regression check, not a measure of free text). `--sim-games N` adds N simulated
+games as separate `bo1-sim` cases to the coaching report. The simulator picks moves at random, so those cases test the
+engine and the narration checks, not advice quality, and are never pooled with real replays. The rubric judge now also
+receives the engine's turning point: without it a first run flagged "incorrect turning point" in 17 of 24 answers that cited
+the engine's turn. The stored baseline is the full 41-case run (12 BO1, 24 simulated BO1, 5 BO3) with the final judge.
+
