@@ -31,6 +31,7 @@ from src.services.evidence_prefetch import prefetch_during_selection
 from src.services.ground_truth import (
     GroundTruthAssembler,
     build_explanation_input,
+    explanation_system_prompt,
     build_result,
     load_champions_history,
     remember_turn,
@@ -66,6 +67,7 @@ class LangChainAnalysisOrchestrator:
         provider_name: str = "langchain",
         max_matchups: int = 6,
         agent_max_steps: int = 20,
+        series: bool = False,
     ) -> None:
         self._parser = parser
         self._evidence = evidence
@@ -78,7 +80,7 @@ class LangChainAnalysisOrchestrator:
 
         self._selection_system = prompts.get("selection_system")
         explanation_system = (
-            f"{prompts.get('explanation_system')}\n\n"
+            f"{explanation_system_prompt(prompts, series=series)}\n\n"
             f"{prompts.get('explanation_agent_addendum')}"
         )
         self._selection_chain = self._build_selection_chain(chat_model)
