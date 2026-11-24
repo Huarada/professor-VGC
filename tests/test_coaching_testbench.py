@@ -22,9 +22,11 @@ def test_structure_and_turning_point_checks() -> None:
     answer = "### Result\nA won.\n### Turning Point\nOn turn 11 it swung.\n## Decisions\nx\n**What to change**\ny"
     assert bench.sections_present(answer) == ["result", "turning point", "decisions", "what to change"]
     assert bench.sections_present("Just prose about turn 11.") == []
-    assert bench.mentions_turn(answer, 11) is True and bench.mentions_turn(answer, 12) is False
-    assert bench.mentions_turn("By turns 5 and 11 it ended.", 11) is True
-    assert bench.mentions_turn(answer, None) is None
+    assert bench.presents_turning_point(answer, 11, []) is True
+    assert bench.presents_turning_point(answer, 12, []) is False
+    assert bench.presents_turning_point("The turning point was turn 5; turn 11 only closed it out.", 11, []) is False
+    assert bench.presents_turning_point("Turn 11 was the finish.", 11, []) is None  # no turning-point claim
+    assert bench.presents_turning_point(answer, None, []) is None
 
 
 def test_figures_outside_evidence_and_advice_counting() -> None:
@@ -37,7 +39,7 @@ def test_figures_outside_evidence_and_advice_counting() -> None:
 def _row(**override: Any) -> dict[str, Any]:
     row: dict[str, Any] = {
         "id": "bo1-x-turning", "mode": "bo1", "question": "q", "source": "s", "seconds": 10.0, "answer": "line one\n\nline two",
-        "sections": ["result"], "mentions_turning_point": True, "contradictions": [], "warnings": [],
+        "sections": ["result"], "presents_turning_point": True, "contradictions": [], "warnings": [],
         "damage_claims": [{"verdict": "correct", "claim": "a"}, {"verdict": "incorrect", "claim": "b"},
                           {"verdict": "unverifiable", "claim": "c"}],
         "figures_outside_evidence": [], "validation_rejections": [], "fallback_notice": False,

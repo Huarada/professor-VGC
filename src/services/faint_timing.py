@@ -38,7 +38,17 @@ def _faint_turns(game_state: GameState, base: dict[tuple[str, str], str]) -> dic
     return turns
 
 
-def _sentences(text: str, species: list[str]) -> list[str]:
+def turn_groups(sentence: str) -> list[tuple[int, int, set[int]]]:
+    """(start, end, turns) of every "turn 5" / "turns 5 and 6" in a sentence."""
+    return [(m.start(), m.end(), {int(n) for n in re.findall(r"\d+", m.group(1))}) for m in _TURN.finditer(sentence)]
+
+
+def turn_numbers(sentence: str) -> set[int]:
+    """The turn numbers a sentence names ("turn 5", "turns 5 and 6")."""
+    return {turn for _, _, turns in turn_groups(sentence) for turn in turns}
+
+
+def sentences(text: str, species: list[str]) -> list[str]:
     for name in species:
         if "." in name:
             text = text.replace(name, name.replace(".", _MASK))
@@ -61,8 +71,8 @@ def faint_timing_issues(answer: str, game_state: GameState) -> list[str]:
     faints = _faint_turns(game_state, base)
     issues: list[str] = []
     previous: set[int] = set()
-    for sentence in _sentences(answer, list(owners)):
-        numbers = {int(n) for group in _TURN.findall(sentence) for n in re.findall(r"\d+", group)}
+    for sentence in sentences(answer, list(owners)):
+        numbers = turn_numbers(sentence)
         # "During this turn, ..." continues the turn named by the sentence right before it.
         inherited = not numbers and bool(_THIS_TURN.search(sentence))
         current = previous if inherited else numbers
