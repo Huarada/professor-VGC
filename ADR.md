@@ -6079,3 +6079,12 @@ engine and the narration checks, not advice quality, and are never pooled with r
 receives the engine's turning point: without it a first run flagged "incorrect turning point" in 17 of 24 answers that cited
 the engine's turn. The stored baseline is the full 41-case run (12 BO1, 24 simulated BO1, 5 BO3) with the final judge.
 
+Addendum (turning-point claim): `services/turning_claim.py` checks that the BO1 answer presents the engine's turn as THE turning
+point. A sentence that calls something the turning point (or decisive, pivotal, "decided the game") claims the turn named
+closest to the marker, a bare heading takes the turn from the next sentence, and the answer passes when any such sentence
+claims the engine's turn, so a secondary swing is allowed; an answer with no such claim is not flagged. A mismatch shares the single
+correction retry of `narration_issues` (BO3 answers are not checked). The testbench column `presents_turning_point` replaces
+`mentions_turning_point`, which only showed that the number appeared somewhere. Over the 36 stored BO1 answers the strict
+check found 36 of 36 presenting the engine's turn, so the judge's remaining "inconsistent with engine turning point"
+remarks do not come from naming another turn; the guard now protects against regressions.
+

@@ -78,17 +78,20 @@ def canonical(text: str, owners: dict[str, frozenset[str]]) -> str:
     return next((name for name in owners if name.casefold() == folded), text)
 
 
-def narration_issues(answer: str, game_state: GameState) -> list[str]:
-    """Everything in a BO1 answer that contradicts the log: wrong side, or a faint on the wrong turn."""
-    from src.services.faint_timing import faint_timing_issues  # noqa: PLC0415 - faint_timing imports this module
+def narration_issues(answer: str, game_state: GameState, *, turning_point: bool = True) -> list[str]:
+    """Everything in a BO1 answer that contradicts the log: wrong side, a faint on the wrong turn, another turn called decisive."""
+    from src.services.faint_timing import faint_timing_issues  # noqa: PLC0415 - these import this module
+    from src.services.turning_claim import turning_point_issues  # noqa: PLC0415
 
-    return side_attribution_issues(answer, game_state) + faint_timing_issues(answer, game_state)
+    issues = side_attribution_issues(answer, game_state) + faint_timing_issues(answer, game_state)
+    return issues + turning_point_issues(answer, game_state) if turning_point else issues
 
 
 def correction_note(issues: list[str]) -> str:
     lines = "\n".join(f"- {issue}" for issue in issues)
     return ("CORRECTION: your previous answer contradicts the battle log:\n" + lines +
-            "\nThe '<p1/p2> roster' lines, the ordered timeline and turning_point.candidates[].faints are the only "
+            "\nThe '<p1/p2> roster' lines, the ordered timeline, turning_point (present turning_point.turn as the turning point) and "
+            "turning_point.candidates[].faints are the only "
             "authority on sides and on which turn each Pokemon fainted. Rewrite the full answer so every Pokemon is "
             "attributed to its own side, advice names only Pokemon from the advised player's roster, and every faint "
             "is placed on the turn the log shows.")

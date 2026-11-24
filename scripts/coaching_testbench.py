@@ -129,10 +129,15 @@ def advice_sentences(answer: str) -> int:
     return sum(bool(_ADVICE.search(part)) for part in re.split(r"(?<=[.!?])\s+|\n+", answer))
 
 
-def mentions_turn(answer: str, turn: int | None) -> bool | None:
-    if turn is None:
+def presents_turning_point(answer: str, turn: int | None, species: list[str]) -> bool | None:
+    """True when a sentence calling something the turning point names the engine's turn, False when such sentences
+    name only other turns, None when the answer makes no such claim (or there is no engine turn)."""
+    from src.services.turning_claim import claimed_turning_turns
+
+    claims = claimed_turning_turns(answer, species)
+    if turn is None or not claims:
         return None
-    return bool(re.search(rf"(?<![\w-])turns?\s+(?:\d+\s*(?:,|and|&|-|to)\s*)*{turn}(?![\w-])", answer, re.I))
+    return any(turn in named for named in claims)
 
 
 def summarize(rows: list[dict[str, Any]]) -> dict[str, Any]:
@@ -198,7 +203,7 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
     from src.adapters.parsers.showdown_parser import ShowdownReplayParser
     from src.domain.models import AnalysisRequest
     from src.domain.series import Bo3AnalysisRequest
-    from src.services.side_attribution import narration_issues
+    from src.services.side_attribution import narration_issues, owners_by_species
 
     question = QUESTIONS[case.question]
     rejections = _Rejections()
@@ -227,10 +232,11 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
 
     parser = ShowdownReplayParser()
     band = ToleranceBand(relative=0.05)
+    species = list(owners_by_species(parser.parse(case.games[0])))
     contradictions: list[str] = []
     claims: list[dict[str, Any]] = []
     for game, analysis in zip(case.games, per_game):
-        contradictions += narration_issues(analysis.answer, parser.parse(game))
+        contradictions += narration_issues(analysis.answer, parser.parse(game), turning_point=False)
         claims += score_game(claim_llm, game, analysis, extract_observed_hits(str(game["log"])), band)
     evidence_text = result.model_dump_json()
     texts = [answer] + [g.answer for g in per_game]
@@ -240,7 +246,7 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
         "seconds": seconds, "chars": len(answer), "answer": answer,
         "game_answers": [g.answer for g in per_game] if case.mode == "bo3" else [],
         "sections": sections_present(answer) if case.mode == "bo1" else None,
-        "turning_point_turn": turning, "mentions_turning_point": mentions_turn(answer, turning),
+        "turning_point_turn": turning, "presents_turning_point": presents_turning_point(answer, turning, species),
         "advice_sentences": advice_sentences(answer),
         "contradictions": contradictions, "damage_claims": claims, "warnings": warnings,
         "figures_outside_evidence": figures_outside_evidence(" ".join(texts), evidence_text),
@@ -280,7 +286,7 @@ def render(report: dict[str, Any]) -> str:
             j = r["judge"]
             scores = " ".join(str(j[k]) for k in RUBRIC) if j else "-"
             sections = "-" if r["sections"] is None else f"{len(r['sections'])}/4"
-            turning = "-" if r["mentions_turning_point"] is None else str(r["mentions_turning_point"])
+            turning = "-" if r["presents_turning_point"] is None else str(r["presents_turning_point"])
             out.append(f"| {r['id']} | {r['seconds']} | {sections} | {turning} | {len(r['contradictions'])} | "
                        f"{good}/{len(claims)} | {len(r['figures_outside_evidence'])} | {len(r['validation_rejections'])} | {scores} |")
         out.append("")
