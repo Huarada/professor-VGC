@@ -36,7 +36,7 @@ protobuf>=5.29,<6  # compatible with Gemini and current Cloud libraries
 pytest>=8.0,<10
 httpx>=0.27,<1  # FastAPI TestClient
 mypy==2.4.0
-ruff==0.17.2
+ruff==0.17.6
 vulture==2.16
 
 # Benchmark tooling (scripts/faithfulness_benchmark — not shipped in src/)
