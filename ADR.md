@@ -6109,3 +6109,8 @@ the formatted answer, the checks, the engine's turning point, the replay (engine
 public games) and a verdict box per answer, saved in the browser and exportable as JSON, for a human to validate. The JSON and
 Markdown reports omit the replays.
 
+Addendum (replay links): every card of the HTML report now opens with its replay links (a Showdown page for public games, never for
+simulated ones, whose ids contain "sim"; a best-effort "watch in Showdown viewer" page built from the log in the shape of Showdown's
+own replay pages, which needs internet and was not tested in a browser here; the engine timeline). `--rebuild-html JSON` rewrites
+the HTML of a stored run from the same cases, because the JSON reports omit the replays.
+

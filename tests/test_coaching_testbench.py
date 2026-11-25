@@ -88,3 +88,9 @@ def test_simulated_games_become_separate_bo1_cases(tmp_path: Any) -> None:
     assert {bench.group(c.id) for c in sim} == {"bo1-sim"} and bench.group("bo3-1-x") == "bo3" and bench.group("bo1-x") == "bo1"
     assert len({c.id for c in sim}) == 3
     assert not [c for c in bench.build_cases() if c.id.startswith("bo1sim-")]
+
+
+def test_only_public_replays_get_a_showdown_link() -> None:
+    assert bench.public_url("gen9championsvgc2026regmcbo3-2698400388") == (
+        "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2698400388")
+    assert bench.public_url("gen9championsvgc2026regmcbo3-sim700x0g1") == "" and bench.public_url("") == ""

@@ -51,3 +51,26 @@ def test_group_filters_errors_and_script_in_a_replay_log_are_safe() -> None:
     assert group_of("bo1sim-x") == "bo1-sim" and group_of("bo3-x") == "bo3" and group_of("bo1-x") == "bo1"
     assert 'data-filter="bo1-sim"' in page and 'data-filter="bo3"' in page and "Error: boom &lt;b&gt;" in page
     assert "<script>x</script>" not in page and "&lt;/pre&gt;&lt;script&gt;" in page
+
+
+def test_replay_links_sit_right_under_the_title_before_the_answer() -> None:
+    page = render_html({"provider": "openai", "model": "m", "date": "d", "commit": "c", "rows": [_row()]})
+    assert page.index('class="rbar"') < page.index('class="question"') < page.index('class="answer"')
+    assert 'class="btn primary" href="https://replay.pokemonshowdown.com/gen9championsvgc2026regmb-1"' in page
+    assert "watch in Showdown viewer" in page and 'href="#tl-0-0"' in page and 'id="tl-0-0"' in page
+
+
+def test_a_simulated_game_has_no_showdown_link_but_keeps_the_viewer_and_the_timeline() -> None:
+    sim = _row(id="bo1sim-a-g1-turning", replays=[{"label": "The game", "id": "gen9championsvgc2026regmcbo3-sim700x0g1",
+                                                   "players": [], "url": "", "log": "|turn|1", "timeline": "t"}])
+    page = render_html({"provider": "openai", "model": "m", "date": "d", "commit": "c", "rows": [sim]})
+    assert "simulated game, no Showdown page" in page and "replay.pokemonshowdown.com" not in page
+    assert "data-viewer=" in page and "engine timeline" in page
+
+
+def test_the_viewer_page_embeds_the_log_safely_in_showdowns_replay_shape() -> None:
+    from scripts.coaching_report_html import viewer_page
+
+    page = viewer_page({"log": "|turn|1\n</script><b>x</b>"})
+    assert 'class="battle-log-data"' in page and "replay-embed.js" in page and page.count("</script>") == 2
+    assert "|turn|1" in page and "</script><b>" not in page
