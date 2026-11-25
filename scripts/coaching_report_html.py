@@ -140,6 +140,34 @@ def _turning(row: dict[str, Any]) -> str:
             f'{html.escape(point["summary"])}<ul>{cands}</ul></div>')
 
 
+def viewer_page(game: dict[str, Any]) -> str:
+    """A standalone page in the shape of Showdown's own replay pages (needs internet: the viewer script is Showdown's)."""
+    log = game["log"].replace("</script", "<" + chr(92) + "/script")
+    return ('<!DOCTYPE html><meta charset="utf-8"><title>Replay</title>'
+            '<div class="wrapper replay-wrapper" style="max-width:1180px;margin:0 auto"><div class="battle"></div>'
+            '<div class="battle-log"></div><div class="replay-controls"></div><div class="replay-controls-2"></div>'
+            '<script type="text/plain" class="battle-log-data">' + log + "</script></div>"
+            "<script>let d=Math.floor(Date.now()/1000/60/60/24);document.write('<script src=\"https://play.pokemonshowdown.com/"
+            "js/replay-embed.js?version'+d+'\"></'+'script>')</script>")
+
+
+def _replay_bar(row: dict[str, Any], index: int) -> str:
+    """The replay links, right under the case title, so the answer can be judged against the game."""
+    items = []
+    for n, game in enumerate(row.get("replays", [])):
+        name = html.escape(game["label"])
+        if game.get("url"):
+            main = f'<a class="btn primary" href="{html.escape(game["url"])}" target="_blank" rel="noopener">{name}: open replay on Showdown &#8599;</a>'
+        else:
+            main = f'<span class="btn static">{name}: simulated game, no Showdown page</span>'
+        viewer = html.escape(viewer_page(game), quote=True)
+        items.append(
+            f'<span class="rgame">{main}'
+            f'<a class="btn view" href="#" data-viewer="{viewer}">watch in Showdown viewer (needs internet)</a>'
+            f'<a class="btn" href="#tl-{index}-{n}">engine timeline</a></span>')
+    return f'<div class="rbar">{"".join(items)}</div>' if items else ""
+
+
 def _replays(row: dict[str, Any], index: int) -> str:
     parts = []
     for n, game in enumerate(row.get("replays", [])):
@@ -147,7 +175,7 @@ def _replays(row: dict[str, Any], index: int) -> str:
                 if game.get("url") else "")
         payload = html.escape(json.dumps({"id": game.get("id"), "players": game.get("players"), "log": game["log"]}), quote=True)
         parts.append(
-            f'<details class="replay"><summary>{html.escape(game["label"])}{link}</summary>'
+            f'<details class="replay" id="tl-{index}-{n}"><summary>{html.escape(game["label"])}{link}</summary>'
             f'<p class="muted">Players: {html.escape(" vs ".join(game.get("players", [])))}. '
             f'<a href="#" class="dl" data-name="{html.escape(row["id"])}-{n + 1}.json" data-json="{payload}">'
             f'download replay (.json)</a></p>'
@@ -169,6 +197,7 @@ def _case(row: dict[str, Any], index: int) -> str:
     return f'''<article data-group="{group}" data-id="{html.escape(row["id"])}">
 {head}
 <p class="meta">{html.escape(row["source"])} &middot; {row["seconds"]} s &middot; {row["chars"]} characters</p>
+{_replay_bar(row, index)}
 <p class="question"><b>Question:</b> {html.escape(row["question"])}</p>
 <div class="answer">{markdown_to_html(row["answer"])}</div>
 {games}
@@ -210,6 +239,9 @@ article h2{margin:0;font-size:1rem;font-family:ui-monospace,Consolas,monospace;w
 .verdict{border-top:1px dashed var(--line);margin-top:12px;padding-top:10px;display:grid;gap:6px}
 .verdict label{margin-right:14px}.verdict textarea{width:100%;min-height:60px;font:inherit;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:6px}
 details{margin:8px 0}summary{cursor:pointer;color:var(--accent)}pre{white-space:pre-wrap;font-size:.8rem;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;max-height:420px;overflow:auto}
+.rbar{display:flex;flex-direction:column;gap:6px;margin:8px 0 12px}.rgame{display:flex;flex-wrap:wrap;gap:6px}
+.btn{font-size:.85rem;border:1px solid var(--line);border-radius:8px;padding:4px 10px;text-decoration:none;color:var(--ink);background:var(--chip)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600}.btn.static{color:var(--muted)}
 .err{color:var(--bad)}.done{opacity:.72}.cont{margin-left:1.3rem}code{background:var(--chip);padding:0 4px;border-radius:4px}
 @media (max-width:560px){main{padding:10px}article{padding:12px}}
 """
@@ -229,6 +261,7 @@ function count(){const all=document.querySelectorAll('.verdict').length,done=doc
 document.addEventListener('change',e=>{const b=e.target.closest('.verdict'); if(b) save(b)});
 document.addEventListener('input',e=>{const b=e.target.closest('.verdict'); if(b) save(b)});
 document.addEventListener('click',e=>{
+  const vw=e.target.closest('[data-viewer]'); if(vw){e.preventDefault(); window.open(URL.createObjectURL(new Blob([vw.dataset.viewer],{type:'text/html'})),'_blank'); return;}
   const dl=e.target.closest('.dl'); if(dl){e.preventDefault(); const a=document.createElement('a');
     a.href=URL.createObjectURL(new Blob([dl.dataset.json],{type:'application/json'})); a.download=dl.dataset.name; a.click(); return;}
   const f=e.target.closest('[data-filter]'); if(f){document.querySelectorAll('[data-filter]').forEach(x=>x.classList.toggle('on',x===f));

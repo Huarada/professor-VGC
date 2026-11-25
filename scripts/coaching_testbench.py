@@ -254,7 +254,7 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
         "fallback_notice": "did not pass evidence validation" in answer.lower(),
         "judge": judge(judge_llm, question, answer, evidence),
         "turning_point": result.turning_point.model_dump(mode="json") if case.mode == "bo1" and result.turning_point else None,
-        "replays": [replay_entry(case, i, game, analysis) for i, (game, analysis) in enumerate(zip(case.games, per_game))],
+        "replays": [replay_entry(case, i, game, analysis.battle_result) for i, (game, analysis) in enumerate(zip(case.games, per_game))],
     }
 
 
@@ -310,12 +310,41 @@ def render(report: dict[str, Any]) -> str:
     return "\n".join(out)
 
 
-def replay_entry(case: Case, index: int, game: dict[str, Any], analysis: Any) -> dict[str, Any]:
+_PUBLIC_ID = re.compile(r"gen9champions[a-z0-9]+-\d+")
+
+
+def public_url(ident: str) -> str:
+    """The Showdown page of a public replay; simulated games (ids with "sim") have none."""
+    return f"https://replay.pokemonshowdown.com/{ident}" if _PUBLIC_ID.fullmatch(ident) else ""
+
+
+def replay_entry(case: Case, index: int, game: dict[str, Any], timeline: str) -> dict[str, Any]:
     """What the human validating an answer needs to see: the log, the engine's ordered timeline and, if public, its link."""
     ident = str(game.get("id", ""))
     return {"label": "The game" if case.mode == "bo1" else f"Game {index + 1}", "id": ident,
-            "players": [str(p) for p in game.get("players", [])], "log": str(game["log"]), "timeline": analysis.battle_result,
-            "url": f"https://replay.pokemonshowdown.com/{ident}" if ident.startswith("gen9champions") else ""}
+            "players": [str(p) for p in game.get("players", [])], "log": str(game["log"]), "timeline": timeline,
+            "url": public_url(ident)}
+
+
+def rebuild_html(json_path: Path, sim_dir: Path) -> Path:
+    """Rebuild the HTML of a stored run (its JSON has no replays) from the same cases the run used."""
+    from scripts.coaching_report_html import render_html
+    from scripts.faithfulness_benchmark.run_log_grounded import anonymize
+    from src.adapters.parsers.showdown_parser import ShowdownReplayParser
+    from src.services.battle_context import outcome_summary
+
+    report = json.loads(json_path.read_text(encoding="utf-8"))
+    sim_games = sum(r["id"].startswith("bo1sim-") for r in report["rows"])
+    cases = {c.id: c for c in build_cases(sim_dir=sim_dir, sim_games=sim_games)}
+    rows = []
+    for row in report["rows"]:
+        case = cases[row["id"]]
+        parser = ShowdownReplayParser()
+        replays = [replay_entry(case, i, game, outcome_summary(parser.parse(game))) for i, game in enumerate(case.games)]
+        rows.append(anonymized({**row, "replays": replays, "players": [str(p) for p in case.games[0].get("players", [])]}, anonymize))
+    target = json_path.with_suffix(".html")
+    target.write_text(render_html({**report, "rows": rows}), encoding="utf-8")
+    return target
 
 
 def anonymized(row: dict[str, Any], anonymize: Any) -> dict[str, Any]:
@@ -338,7 +367,11 @@ def main() -> None:
                         help="simulated series (tools/bo3_sim) for the extra BO1 cases")
     parser.add_argument("--sim-games", type=int, default=0, help="simulated BO1 games to add (0 = none)")
     parser.add_argument("--only", default="", help="substring filter on case ids")
+    parser.add_argument("--rebuild-html", type=Path, default=None, help="rewrite the HTML of a stored JSON run and exit")
     args = parser.parse_args()
+    if args.rebuild_html:
+        print(f"wrote {rebuild_html(args.rebuild_html, args.sim_dir)}")
+        return
 
     from scripts.run_local import local_environment
     os.environ.update(local_environment(ROOT, os.environ))
