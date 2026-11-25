@@ -7,6 +7,7 @@ rosters and the explanation stage sees the same ground-truth ordered timeline.
 from __future__ import annotations
 
 from src.domain.models import FieldWindow, GameState
+from src.services.side_labels import event_line, label_text
 
 
 def rosters(game_state: GameState) -> dict[str, list[str]]:
@@ -44,9 +45,10 @@ def context_species(game_state: GameState, focus: list[str] | None = None) -> li
     return list(seen.keys())
 
 
-def outcome_summary(game_state: GameState) -> str:
+def outcome_summary(game_state: GameState, *, named_sides: bool = False) -> str:
     """The strictly ordered ground-truth timeline for prompts; a Pokemon with no
-    "used <move>" line before fainting did not act.
+    "used <move>" line before fainting did not act. ``named_sides`` writes the player's name, never p1/p2, next to every
+    Pokemon (ADR-082).
     """
     outcome = game_state.outcome
     if outcome is None:
@@ -61,9 +63,10 @@ def outcome_summary(game_state: GameState) -> str:
     )
 
     lines: list[str] = []
+    forfeiter_id = "" if named_sides else f" ({outcome.forfeited_player or '?'})"
     if outcome.forfeited_name:
         lines.append(
-            f"IMPORTANT — {outcome.forfeited_name} ({outcome.forfeited_player or '?'}) "
+            f"IMPORTANT — {outcome.forfeited_name}{forfeiter_id} "
             "FORFEITED this game. It did NOT end by their team being defeated in play: "
             "do not narrate the win as 'earned' through strategy beyond what the actual "
             "timeline below shows, do not invent a final score from a full team wipeout, "
@@ -71,7 +74,7 @@ def outcome_summary(game_state: GameState) -> str:
             "fight they never had."
         )
     if outcome.winner_name:
-        lines.append(f"Winner: {outcome.winner_name} ({outcome.winner_player or '?'}).")
+        lines.append(f"Winner: {outcome.winner_name}" + ("." if named_sides else f" ({outcome.winner_player or '?'})."))
     if score:
         lines.append("Score — " + score + ".")
     lines.append(f"Total turns: {outcome.turns}.")
@@ -82,10 +85,9 @@ def outcome_summary(game_state: GameState) -> str:
     for side in game_state.sides:
         roster = side_rosters.get(side.player, [])
         if roster:
-            lines.append(
-                f"{side.player} roster ({names.get(side.player, side.player)}): "
-                + ", ".join(roster) + "."
-            )
+            heading = (f"Pokemon {names.get(side.player, side.player)} brought" if named_sides
+                       else f"{side.player} roster ({names.get(side.player, side.player)})")
+            lines.append(f"{heading}: " + ", ".join(roster) + ".")
 
     if outcome.events:
         lines.append("")
@@ -99,9 +101,11 @@ def outcome_summary(game_state: GameState) -> str:
                 current_turn = event.turn
                 label = "Leads" if current_turn == 0 else f"Turn {current_turn}"
                 conds = _field_labels(game_state, current_turn)
+                if named_sides:
+                    conds = [label_text(cond, names) for cond in conds]
                 suffix = f" [{'; '.join(conds)}]" if conds else ""
                 lines.append(f"{label}{suffix}:")
-            lines.append(f"  - {event.text}")
+            lines.append(f"  - {event_line(event, names) if named_sides else event.text}")
     return "\n".join(lines)
 
 

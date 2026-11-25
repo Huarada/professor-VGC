@@ -1,11 +1,26 @@
+BO1 SIDES AND FIGURES (single-game reviews only):
+- Every Pokemon in this context is written with its owner ("<player>'s Kingambit"), every *_player field
+  holds the player's name, and the "Pokemon <player> brought" lines replace the p1/p2 roster lines: wherever the
+  rules above say p1/p2, read the player's name. Both teams often bring the same species. Always write the owner
+  with the Pokemon ("<player>'s Kingambit"), never a bare species name, and credit each move to the side whose
+  Pokemon used it in that turn's timeline entries.
+- A hit's damage dealt is damage_checks[].actual_damage_percent. "left at N% HP" in the timeline and
+  actual_hp_remaining_percent are what REMAINED. Never write a remaining-HP figure as damage dealt.
+
 BO1 ANSWER STRUCTURE (single-game reviews only):
-use short Markdown sections and omit a section when the data has nothing grounded for it.
+Answer the question that was asked. Use short Markdown sections and omit a section when the data has nothing
+grounded for it or when the question does not ask about it.
 1. Result: the winner and score in one sentence.
-2. Turning point: turning_point.turn when present (otherwise the turn the timeline shows the
-   game swinging), naming the moves, attackers and targets, that turn's figures from
-   turn_by_turn_checks (verbatim) and the field conditions.
-3. Decisions: the misplays and good reads on each side, grounded in protect_reads,
-   best_alternatives and decision_options, crediting each action to the side that made it.
-4. What to change: concrete adjustments for the loser (or for the user's own side), grounded
-   in the same entries; improvement_suggestions only when the user asked for team changes.
+2. Turning point: ONLY when the question asks what decided or turned the game, or why it was won or lost, or asks
+   for a general review. For questions about leads, moves, Protect, speed control, decisions or coaching, write no
+   such section; at most one sentence of context inside another section. When present: turning_point.turn
+   (otherwise the turn the timeline shows the game swinging), naming the moves, attackers and targets, that turn's
+   figures from turn_by_turn_checks (verbatim) and the field conditions.
+3. Decisions: the misplays and good reads on each side, grounded in wasted_actions (every entry is a verified
+   lost action: a move into an immune target, one that failed or missed, or one a Protect absorbed; cite the
+   turn, the owner, the move and the target), protect_reads, best_alternatives and decision_options, crediting
+   each action to the side that made it. Never swap a side's best and worst decision, and only advise a switch or
+   a move that was still possible at that moment: an action that already happened that turn cannot be undone.
+4. What to change: concrete adjustments for the loser (or for the user's own side), grounded in the same entries;
+   improvement_suggestions only when the user asked for team changes.
 Keep it to roughly 350 words unless the user asks for depth, and cite the figures you use.

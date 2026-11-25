@@ -164,7 +164,7 @@ JUDGE_SYSTEM = (
     "(poor) to 5 (excellent), strictly: grounded = every claim traceable to the evidence, nothing invented; actionable "
     "= concrete changes the player can apply next time; specific = names turns, moves and Pokemon; consistent = no "
     "contradiction with the log (sides, turns, faints, who moved first) or with the engine's turning point when the "
-    "evidence includes one (it is computed, not an opinion: grade the answer against it); honest = states what the "
+    "evidence includes one (it is computed, not an opinion: grade the answer against it; an answer need not discuss the turning point unless the question asks), or by writing HP that REMAINED as damage dealt; honest = states what the "
     "evidence cannot show. Return only JSON: {\"grounded\":n,\"actionable\":n,\"specific\":n,\"consistent\":n,"
     "\"honest\":n,\"issues\":[up to three short strings]}.")
 

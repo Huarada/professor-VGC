@@ -46,7 +46,7 @@ _HP_REMAINING_RE = re.compile(
 # tighter (requires the literal word "at" right before the number) so it
 # doesn't also catch an unrelated "leaving"/"remain" elsewhere in a sentence
 # that states a genuine damage-dealt percent.
-_HP_REMAINING_BARE_RE = re.compile(r"\b(leav\w*|left|remain\w*)\b[^%]{0,20}\bat\s+\d+(\.\d+)?%")
+_HP_REMAINING_BARE_RE = re.compile(r"\b(leav\w*|left|remain\w*)\b[^%]{0,40}\bat\s+\d+(\.\d+)?%")
 _RAW_POINTS_RE = re.compile(
     r"\b\d+(\.\d+)?\s*(-|and)\s*\d+(\.\d+)?\s+damage\b"
 )
@@ -73,13 +73,25 @@ def _number_window(text: str, value: float) -> str:
     return lowered  # the exact number string wasn't found — fall back to the whole text
 
 
+def _continues_remaining_list(raw_text: str, value: float) -> bool:
+    """"left X at 47% and Y at 79%": the second "at N%" belongs to the same remaining-HP list, however far "left" is."""
+    lowered = raw_text.lower()
+    for rep in (f"{value:.1f}", str(int(value)) if value == int(value) else str(value)):
+        idx = lowered.find(rep)
+        if idx != -1:
+            before = re.split(r"[.!?]", lowered[max(0, idx - 160):idx])[-1].rstrip()
+            return before.endswith(" at") and bool(re.search(r"\b(?:leav\w*|left|remain\w*)\b", before))
+    return False
+
+
 def classify_percent_mention(raw_text: str, value: float) -> PercentKind:
     """Classify what a specific claimed percent VALUE actually represents,
     by inspecting only the text immediately around that value in `raw_text`."""
     window = _number_window(raw_text, value)
     if _KO_CHANCE_RE.search(window):
         return "ko_chance"
-    if _HP_REMAINING_RE.search(window) or _HP_REMAINING_BARE_RE.search(window):
+    if (_HP_REMAINING_RE.search(window) or _HP_REMAINING_BARE_RE.search(window)
+            or _continues_remaining_list(raw_text, value)):
         return "hp_remaining"
     if _RAW_POINTS_RE.search(window) and "%" not in window:
         return "raw_points"
