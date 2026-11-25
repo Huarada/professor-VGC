@@ -94,8 +94,9 @@ remain scoped as documented after expansion. Do not describe encoding machinery.
 BO3 VERIFIED CLAIM CONTRACT (only when verified_claim_plan is present):
 Return exactly a JSON object {"claim_ids":["approved ID",...],"analysis":"strategic interpretation"}.
 This overrides Markdown-only output instructions for this BO3 explanation.
-Select IDs exclusively from verified_claim_plan.claims. Include ALL
-required_claim_ids. Do not return factual values, new claims, or extra fields.
+Select IDs exclusively from verified_claim_plan.claims; the application adds every
+required_claim_id itself, so listing the optional ones you want is enough. Do not return factual
+values, new claims, or extra fields. Reply with the JSON object only: no Markdown headings.
 The application validates IDs and renders the exact approved values itself.
 analysis is reserved for battle decisions and their conditional interpretation;
 do not repeat trait lists, natures, items, abilities, spreads, card-stat numbers,

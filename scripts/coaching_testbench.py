@@ -253,6 +253,8 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
         "validation_rejections": rejections.reasons,
         "fallback_notice": "did not pass evidence validation" in answer.lower(),
         "judge": judge(judge_llm, question, answer, evidence),
+        "turning_point": result.turning_point.model_dump(mode="json") if case.mode == "bo1" and result.turning_point else None,
+        "replays": [replay_entry(case, i, game, analysis) for i, (game, analysis) in enumerate(zip(case.games, per_game))],
     }
 
 
@@ -308,6 +310,14 @@ def render(report: dict[str, Any]) -> str:
     return "\n".join(out)
 
 
+def replay_entry(case: Case, index: int, game: dict[str, Any], analysis: Any) -> dict[str, Any]:
+    """What the human validating an answer needs to see: the log, the engine's ordered timeline and, if public, its link."""
+    ident = str(game.get("id", ""))
+    return {"label": "The game" if case.mode == "bo1" else f"Game {index + 1}", "id": ident,
+            "players": [str(p) for p in game.get("players", [])], "log": str(game["log"]), "timeline": analysis.battle_result,
+            "url": f"https://replay.pokemonshowdown.com/{ident}" if ident.startswith("gen9champions") else ""}
+
+
 def anonymized(row: dict[str, Any], anonymize: Any) -> dict[str, Any]:
     """The row with its own players' real names replaced (each case names its players Player A/B)."""
     data: dict[str, Any] = json.loads(anonymize(json.dumps(row, ensure_ascii=False), row.get("players", [])))
@@ -335,6 +345,7 @@ def main() -> None:
     from scripts.local_runtime import configure_trust
     configure_trust(windows=os.name == "nt")
     from scripts.faithfulness_benchmark.bench_container import build_container
+    from scripts.coaching_report_html import render_html
     from scripts.faithfulness_benchmark.run_log_grounded import anonymize
 
     container = build_container(args.chaos)
@@ -363,8 +374,10 @@ def main() -> None:
                 print(f"   ERROR {row['error']}", flush=True)
             report["rows"].append(row)
             safe = {**report, "rows": [anonymized(r, anonymize) for r in report["rows"]]}
-            (args.out / f"{stem}.json").write_text(json.dumps(safe, ensure_ascii=False, indent=1), encoding="utf-8")
+            light = {**safe, "rows": [{k: v for k, v in r.items() if k != "replays"} for r in safe["rows"]]}
+            (args.out / f"{stem}.json").write_text(json.dumps(light, ensure_ascii=False, indent=1), encoding="utf-8")
             (args.out / f"{stem}.md").write_text(render(safe), encoding="utf-8")
+            (args.out / f"{stem}.html").write_text(render_html(safe), encoding="utf-8")
     finally:
         container.shutdown()
     print(f"wrote {args.out / (stem + '.md')}")

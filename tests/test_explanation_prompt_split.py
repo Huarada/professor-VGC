@@ -22,16 +22,19 @@ def test_bo1_prompt_has_no_series_rules_and_bo3_prompt_keeps_all_of_them() -> No
     bo3 = explanation_system_prompt(_prompts, series=True)
     assert not any(marker in bo1 for marker in _BO3_ONLY)
     assert all(marker in bo3 for marker in _BO3_ONLY)
-    assert bo3.startswith(bo1) and len(bo3) > len(bo1) + 5000
+    shared = _prompts.get("explanation_system")
+    assert bo1.startswith(shared) and bo3.startswith(shared) and len(bo3) > len(bo1) + 1000
+    # The BO1 answer structure must never compete with the BO3 JSON contract (it made gpt-4o-mini answer in prose).
+    assert "BO1 ANSWER STRUCTURE" in bo1 and "BO1 ANSWER STRUCTURE" not in bo3 and "Answer structure" not in bo3
 
 
 def test_bo1_prompt_structure_regulation_example_and_callback_order() -> None:
-    text = _prompts.get("explanation_system")
+    text = explanation_system_prompt(_prompts, series=False)
     assert "Reg M-B" not in text  # the target regulation moves; examples stay generic
     for section in ("1. Result:", "2. Turning point:", "3. Decisions:", "4. What to change:"):
         assert section in text
     assert text.index("REGULATION") < text.index("RECURRING CONCEPTS") < text.index("Absolute rules")
-    assert text.index("Answer structure") < text.index("Predictive / risk-reward analysis (go beyond")
+    assert text.index("Predictive / risk-reward analysis (go beyond") < text.index("BO1 ANSWER STRUCTURE")
 
 
 def test_native_service_picks_the_prompt_per_request(sample_chaos_path, sample_replay_path) -> None:
@@ -43,4 +46,4 @@ def test_native_service_picks_the_prompt_per_request(sample_chaos_path, sample_r
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
     service.analyze(AnalysisRequest(session_id="bo1", replay_json=replay, question="q"))
     explanation = llm.calls[1]["system"]  # calls: [selection, explanation]
-    assert "BO3 VERIFIED CLAIM CONTRACT" not in explanation and "Answer structure" in explanation
+    assert "BO3 VERIFIED CLAIM CONTRACT" not in explanation and "BO1 ANSWER STRUCTURE" in explanation

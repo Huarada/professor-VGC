@@ -118,7 +118,8 @@ class FakeLLM:
         json_mode: bool = False,
     ) -> str:
         self.calls.append({"system": system, "json_mode": json_mode, "messages": list(messages)})
-        return self._selection_json if json_mode else self._explanation
+        # Structured BO3 narration also asks for JSON; only the selection stage gets the selection reply.
+        return self._selection_json if json_mode and "SELECTION stage" in system else self._explanation
 
 
 @pytest.fixture

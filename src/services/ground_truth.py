@@ -397,22 +397,23 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
 
 
 def explanation_system_prompt(prompts: PromptRepository, *, series: bool) -> str:
-    """BO1 explanation rules; BO3 game reviews append the series rules (kept out of BO1 calls)."""
-    core = prompts.get("explanation_system")
-    if not series:
-        return core
-    return core + "\n\n" + prompts.get("explanation_bo3_addendum")
+    """Shared rules plus the BO1 answer structure, or plus the BO3 rules for series game reviews."""
+    appendix = "explanation_bo3_addendum" if series else "explanation_bo1_structure"
+    return prompts.get("explanation_system") + "\n\n" + prompts.get(appendix)
 
 
 def build_explanation_input(question: str, evidence: AnalysisEvidence, correction: str = "") -> str:
     """Render the human-turn text for the explanation stage (shared wording)."""
     context = build_explanation_context(evidence)
     serialized = encode_context(context) if evidence.series_context is not None else json.dumps(context, ensure_ascii=False, indent=2)
+    # A BO3 review that carries a claim plan must answer with the JSON contract, not prose.
+    closing = ("Return the JSON object of the BO3 VERIFIED CLAIM CONTRACT (claim_ids and analysis), nothing else."
+               if evidence.bo3_claim_plan is not None else "Write the final ProfessorVGC explanation.")
     text = (
         f"User question: {question or '(general analysis)'}\n\n"
         "Trusted context (JSON):\n"
         f"{serialized}\n\n"
-        "Write the final ProfessorVGC explanation."
+        f"{closing}"
     )
     rendered = f"{text}\n\n{correction}" if correction else text
     if evidence.series_context is not None:

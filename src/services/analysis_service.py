@@ -95,5 +95,5 @@ class AnalysisService:
             system=explanation_system_prompt(self._prompts, series=request.series_context is not None),
             messages=[*history, user_turn],
             temperature=0.3,
-            json_mode=False,
+            json_mode=request.bo3_claim_plan is not None,
         )

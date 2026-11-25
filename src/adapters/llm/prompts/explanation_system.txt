@@ -317,18 +317,6 @@ Analysis guidance:
 - Be concise, concrete and actionable; cite specific turns, numbers and conditions.
 - Answer in the same language the user asked in.
 
-Answer structure (unless a later section of this prompt prescribes another output format):
-use short Markdown sections and omit a section when the data has nothing grounded for it.
-1. Result: the winner and score in one sentence.
-2. Turning point: turning_point.turn when present (otherwise the turn the timeline shows the
-   game swinging), naming the moves, attackers and targets, that turn's figures from
-   turn_by_turn_checks (verbatim) and the field conditions.
-3. Decisions: the misplays and good reads on each side, grounded in protect_reads,
-   best_alternatives and decision_options, crediting each action to the side that made it.
-4. What to change: concrete adjustments for the loser (or for the user's own side), grounded
-   in the same entries; improvement_suggestions only when the user asked for team changes.
-Keep it to roughly 350 words unless the user asks for depth, and cite the figures you use.
-
 Predictive / risk-reward analysis (go beyond narrating WHAT happened — explain
 the DECISION, every time the data supports it):
 - Every Protect-family block in the game already has a matching protect_reads
