@@ -1,7 +1,7 @@
 # Coaching testbench: openai / gpt-4o-mini
 
 - date: 2026-11-24
-- commit: bf895ed
+- commit: 37b7cc3
 - orchestrator: adk
 - grader (judge and claim extractor): gpt-4o
 - cases: 41
@@ -12,75 +12,75 @@ Deterministic columns come first; the judge scores are subjective (one grader-mo
 
 | answers | errors | mean s | contradictions | damage claims correct | unsupported figures | warnings |
 |---|---|---|---|---|---|---|
-| 12 | 0 | 21.4 | 0 answers | 1/3 | 0 answers | 0 |
+| 12 | 0 | 15.5 | 0 answers | 1/4 | 0 answers | 0 |
 
-Judge mean (1-5): grounded 3.42, actionable 3.92, specific 4.33, consistent 4, honest 3
+Judge mean (1-5): grounded 3.08, actionable 3.75, specific 4, consistent 3.08, honest 2.58
 
 | case | s | sections | turning point | contradictions | claims | figures outside evidence | rejections | judge |
 |---|---|---|---|---|---|---|---|---|
-| bo1-2691404852-turning | 42.2 | 4/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 3 |
-| bo1-2691404852-coach_loser | 18.3 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
-| bo1-2691404852-decisions | 14.0 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 5 3 |
-| bo1-2691414894-turning | 12.8 | 4/4 | True | 0 | 0/2 | 0 | 0 | 5 4 5 5 4 |
-| bo1-2691414894-coach_loser | 17.4 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 5 3 |
-| bo1-2691414894-decisions | 13.8 | 3/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 3 |
-| bo1-2691463439-turning | 13.3 | 4/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 3 |
-| bo1-2691463439-coach_loser | 29.5 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 4 3 |
-| bo1-2691463439-decisions | 33.3 | 3/4 | True | 0 | 1/1 | 0 | 0 | 4 4 5 5 4 |
-| bo1-m-c-2698400388-coach_loser | 16.0 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
-| bo1-m-c-2702301708-coach_loser | 21.1 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
-| bo1-m-c-2712545359-coach_loser | 25.6 | 4/4 | True | 0 | 0/0 | 0 | 0 | 2 3 3 2 2 |
+| bo1-2691404852-turning | 41.8 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
+| bo1-2691404852-coach_loser | 15.0 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 3 |
+| bo1-2691404852-decisions | 11.6 | 3/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
+| bo1-2691414894-turning | 9.7 | 4/4 | True | 0 | 0/1 | 0 | 0 | 4 4 5 5 4 |
+| bo1-2691414894-coach_loser | 13.0 | 4/4 | True | 0 | 0/2 | 0 | 0 | 3 4 4 3 2 |
+| bo1-2691414894-decisions | 9.9 | 3/4 | - | 0 | 0/0 | 0 | 0 | 3 3 4 4 2 |
+| bo1-2691463439-turning | 9.2 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 5 3 |
+| bo1-2691463439-coach_loser | 11.4 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
+| bo1-2691463439-decisions | 9.4 | 3/4 | True | 0 | 0/0 | 0 | 0 | 4 3 5 4 3 |
+| bo1-m-c-2698400388-coach_loser | 12.4 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 2 |
+| bo1-m-c-2702301708-coach_loser | 20.4 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 3 2 2 |
+| bo1-m-c-2712545359-coach_loser | 22.1 | 4/4 | True | 0 | 1/1 | 0 | 0 | 2 3 3 2 2 |
 
 ## BO1-SIM summary
 
 | answers | errors | mean s | contradictions | damage claims correct | unsupported figures | warnings |
 |---|---|---|---|---|---|---|
-| 24 | 0 | 18.9 | 0 answers | 4/7 | 0 answers | 0 |
+| 24 | 0 | 22.1 | 0 answers | 2/7 | 0 answers | 0 |
 
-Judge mean (1-5): grounded 3.08, actionable 3.79, specific 4.04, consistent 3, honest 2.62
+Judge mean (1-5): grounded 3.21, actionable 3.75, specific 4.12, consistent 3, honest 2.96
 
 | case | s | sections | turning point | contradictions | claims | figures outside evidence | rejections | judge |
 |---|---|---|---|---|---|---|---|---|
-| bo1sim-sim700x0-g1-turning | 13.0 | 4/4 | True | 0 | 0/0 | 0 | 0 | 5 5 5 5 5 |
-| bo1sim-sim700x101-g3-coach_loser | 16.4 | 4/4 | True | 0 | 0/2 | 0 | 0 | 3 4 4 3 3 |
-| bo1sim-sim700x106-g1-decisions | 19.3 | 4/4 | True | 0 | 0/0 | 0 | 0 | 2 3 3 1 2 |
-| bo1sim-sim700x11-g1-turning | 63.8 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
-| bo1sim-sim700x16-g1-coach_loser | 30.3 | 4/4 | True | 0 | 1/1 | 0 | 0 | 3 4 4 3 2 |
-| bo1sim-sim700x19-g3-decisions | 35.1 | 4/4 | True | 0 | 0/1 | 0 | 0 | 3 4 4 2 3 |
-| bo1sim-sim700x24-g1-turning | 18.6 | 4/4 | True | 0 | 1/1 | 0 | 0 | 3 4 4 2 3 |
-| bo1sim-sim700x29-g1-coach_loser | 14.6 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
-| bo1sim-sim700x32-g3-decisions | 11.2 | 4/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 3 |
-| bo1sim-sim700x38-g1-turning | 14.1 | 4/4 | True | 0 | 1/1 | 0 | 0 | 3 4 4 2 3 |
-| bo1sim-sim700x41-g2-coach_loser | 13.3 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
-| bo1sim-sim700x46-g2-decisions | 20.1 | 3/4 | True | 0 | 0/0 | 0 | 0 | 3 3 4 4 2 |
-| bo1sim-sim700x50-g2-turning | 9.8 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
-| bo1sim-sim700x54-g2-coach_loser | 27.9 | 4/4 | True | 0 | 0/0 | 0 | 0 | 2 3 3 1 2 |
-| bo1sim-sim700x59-g1-decisions | 11.0 | 3/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
-| bo1sim-sim700x63-g1-turning | 21.5 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 5 3 |
-| bo1sim-sim700x68-g1-coach_loser | 14.8 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
-| bo1sim-sim700x71-g2-decisions | 12.9 | 3/4 | True | 0 | 0/0 | 0 | 0 | 3 3 4 2 2 |
-| bo1sim-sim700x76-g1-turning | 12.3 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 3 4 4 2 |
-| bo1sim-sim700x8-g1-coach_loser | 17.6 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
-| bo1sim-sim700x83-g3-decisions | 17.4 | 3/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
-| bo1sim-sim700x87-g3-turning | 12.7 | 4/4 | True | 0 | 1/1 | 0 | 0 | 4 4 5 5 4 |
-| bo1sim-sim700x91-g2-coach_loser | 14.6 | 4/4 | True | 0 | 0/0 | 0 | 0 | 2 3 3 2 2 |
-| bo1sim-sim700x95-g2-decisions | 12.3 | 3/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 3 |
+| bo1sim-sim700x0-g1-turning | 12.1 | 4/4 | True | 0 | 0/0 | 0 | 0 | 5 4 5 5 4 |
+| bo1sim-sim700x101-g3-coach_loser | 14.9 | 4/4 | True | 0 | 0/1 | 0 | 0 | 3 4 4 2 3 |
+| bo1sim-sim700x106-g1-decisions | 17.2 | 3/4 | True | 0 | 1/1 | 0 | 0 | 2 2 3 1 3 |
+| bo1sim-sim700x11-g1-turning | 37.4 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
+| bo1sim-sim700x16-g1-coach_loser | 16.5 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
+| bo1sim-sim700x19-g3-decisions | 23.0 | 3/4 | True | 0 | 0/1 | 0 | 0 | 3 4 4 2 3 |
+| bo1sim-sim700x24-g1-turning | 19.9 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
+| bo1sim-sim700x29-g1-coach_loser | 15.2 | 4/4 | True | 0 | 0/0 | 0 | 0 | 2 3 3 1 2 |
+| bo1sim-sim700x32-g3-decisions | 14.0 | 4/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 4 |
+| bo1sim-sim700x38-g1-turning | 16.6 | 4/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 3 |
+| bo1sim-sim700x41-g2-coach_loser | 15.4 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
+| bo1sim-sim700x46-g2-decisions | 58.0 | 3/4 | True | 0 | 0/0 | 0 | 0 | 3 3 4 2 2 |
+| bo1sim-sim700x50-g2-turning | 30.2 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 3 |
+| bo1sim-sim700x54-g2-coach_loser | 24.5 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 2 3 |
+| bo1sim-sim700x59-g1-decisions | 13.4 | 3/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 4 |
+| bo1sim-sim700x63-g1-turning | 15.8 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 3 2 |
+| bo1sim-sim700x68-g1-coach_loser | 20.2 | 4/4 | True | 0 | 0/0 | 0 | 0 | 3 4 4 5 3 |
+| bo1sim-sim700x71-g2-decisions | 26.3 | 3/4 | True | 0 | 0/1 | 0 | 0 | 3 3 4 2 3 |
+| bo1sim-sim700x76-g1-turning | 15.9 | 4/4 | True | 0 | 0/0 | 0 | 0 | 5 4 5 5 4 |
+| bo1sim-sim700x8-g1-coach_loser | 38.8 | 4/4 | True | 0 | 0/1 | 0 | 0 | 3 4 4 2 3 |
+| bo1sim-sim700x83-g3-decisions | 28.8 | 3/4 | True | 0 | 0/0 | 0 | 0 | 4 4 5 5 3 |
+| bo1sim-sim700x87-g3-turning | 22.1 | 4/4 | True | 0 | 0/1 | 0 | 0 | 2 3 3 2 2 |
+| bo1sim-sim700x91-g2-coach_loser | 17.6 | 4/4 | True | 0 | 1/1 | 0 | 0 | 2 3 3 1 2 |
+| bo1sim-sim700x95-g2-decisions | 17.3 | 4/4 | True | 0 | 0/0 | 0 | 0 | 4 5 5 5 4 |
 
 ## BO3 summary
 
 | answers | errors | mean s | contradictions | damage claims correct | unsupported figures | warnings |
 |---|---|---|---|---|---|---|
-| 5 | 0 | 56.6 | 0 answers | 0/0 | 0 answers | 0 |
+| 5 | 0 | 88.7 | 0 answers | 0/0 | 0 answers | 0 |
 
-Judge mean (1-5): grounded 3, actionable 3, specific 4, consistent 3.6, honest 3
+Judge mean (1-5): grounded 3.6, actionable 3.2, specific 4.2, consistent 4, honest 3.4
 
 | case | s | sections | turning point | contradictions | claims | figures outside evidence | rejections | judge |
 |---|---|---|---|---|---|---|---|---|
-| bo3-2709311277-coach_series | 91.2 | - | - | 0 | 0/0 | 0 | 5 | 3 3 4 4 3 |
-| bo3-2709311277-spread | 45.3 | - | - | 0 | 0/0 | 0 | 7 | 3 2 4 3 3 |
-| bo3-2698400388-coach_series | 36.0 | - | - | 0 | 0/0 | 0 | 7 | 3 3 4 4 3 |
-| bo3-2702301708-coach_series | 70.5 | - | - | 0 | 0/0 | 0 | 6 | 3 3 4 4 3 |
-| bo3-2712545359-coach_series | 39.8 | - | - | 0 | 0/0 | 0 | 8 | 3 4 4 3 3 |
+| bo3-2709311277-coach_series | 62.0 | - | - | 0 | 0/0 | 0 | 1 | 4 4 5 5 4 |
+| bo3-2709311277-spread | 260.1 | - | - | 0 | 0/0 | 0 | 2 | 5 3 5 5 4 |
+| bo3-2698400388-coach_series | 27.4 | - | - | 0 | 0/0 | 0 | 1 | 3 3 4 4 3 |
+| bo3-2702301708-coach_series | 60.3 | - | - | 0 | 0/0 | 0 | 1 | 3 3 4 4 2 |
+| bo3-2712545359-coach_series | 33.6 | - | - | 0 | 0/0 | 0 | 0 | 3 3 3 2 4 |
 
 ## Answers
 
@@ -90,31 +90,32 @@ Source: recorded replay gen9championsvgc2026regmb-2691404852. Question: What was
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 3. Issues: ['invented OHKO chance', 'invented switch suggestion', 'unverified Protect justification']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Incorrect turning point description', 'Misinterpretation of move effectiveness', 'Inconsistent with engine turning point']
 
-> ### Result
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 2.
+> ### Result:
+> Player B (p2) won with a score of 4-2 against Player A (p1).
 >
-> ### Turning Point
-> The turning point occurred on **Turn 11**. During this turn, **p1's Kingambit** fainted due to **p2's Sneasler** using **Close Combat**, resulting in a shift in numbers where Player B led with 2 Pokémon against Player A’s 1 Pokémon (94% HP against 2% total HP). This situation resulted in Player B maintaining a significant lead for the rest of the game.
+> ### Turning Point:
+> The turning point of the game occurred on **Turn 11**. In this pivotal turn, Player B's Kingambit used **Sucker Punch** on Player A's Dragonite, which had only 2% HP remaining, causing a faint. At this point, Player B was ahead with 2 Pokémon remaining to Player A's 1, and Player B had a significant HP lead at 94% against Player A's 2%. The details of this turn were as follows:
+> - **Player A** (Dragonite-Mega): 2% HP fainted.
+> - **Player B** (Kingambit): 17% HP.
+> - After this turn, Player B maintained a lead of 0.92 (over 0.5 Pokémon) until the end, effectively controlling the game's outcome.
 >
-> ### Decisions
-> - **Player A (loser)**:
->   - **Turn 3**: **Basculegion** used **Wave Crash** against **Froslass**, which was critical. Protect from **Froslass** blocked the predicted **OHKO** (projected 62.5% chance) but this was a justified block since failing to protect would have resulted in a major set back.
->   - **Turn 4**: **Basculegion** was in a favorable position but chose to **Protect**, missing the chance to attack **Kingambit** with **Wave Crash**, where it had a guaranteed **2HKO** if it had targeted.
->   - **Turn 11**: Failed to protect Dragonite against **Kingambit’s** Sucker Punch, leading to its faint. It could have switched out to **Kingambit** to avoid this damage, as it faced a powerful **KO threat** from the move.
+> ### Decisions:
+> 1. **Player A's Misplays:**
+>    - On Turn 2, Player A's Dragonite used **Heat Wave** instead of **Dragon Pulse** against Froslass, which would have guaranteed a 2HKO instead of simply dealing 61% damage after factoring in Aurora Veil. The **Dragon Pulse** against the Froslass would have not only dealt more damage but potentially put Player B under immediate pressure.
+>    - On Turn 3, Player A's Dragonite also used Protect, which allowed Player B's Froslass to protect itself instead. This was a strategic disadvantage since Player A had the opportunity to deal damage instead. 
 >
-> - **Player B (winner)**:
->   - Did well to utilize **Protect** on key Pokémon like **Froslass** and **Basculegion**, avoiding major damage and ensuring a more stable position during critical turns.
->   - Successfully capitalized on Player A’s misplays by efficiently managing its own team's positioning and threat levels.
+> 2. **Player B's Good Reads:**
+>    - Player B successfully predicted Player A's attacks with their Protects, especially on Turn 5 with Basculegion protecting against a potential **Wave Crash**, and on Turn 6 to avoid damage from Aqua Jet.
+>    - The use of **Aurora Veil** in Turn 1 was a sound decision, boosting the team's defenses significantly against Player A's attacks.
 >
-> ### What to Change
-> Player A could improve by:
-> - Opting for **Kingambit** to attack instead of using **Protect** when it had the momentum to potentially take down more opposing Pokémon.
-> - Ensuring better status management by leveraging Pokémon switches when risks of fainting were high, particularly with **Dragonite** in a precarious HP state on Turn 12. Switching to **Sneasler** or **Basculegion** could have avoided some critical damage.
-> - Consider attacking **Froslass** with **Heat Wave** earlier on, instead of trying to wait for a more favorable position later in the game.
+> ### What to Change:
+> 1. **Player A (Sneasler and Dragonite):**
+>    - On Turn 11, Player A's Sneasler should have utilized **Dire Claw** against Basculegion instead of placing reliance on the fainted Dragonite for damage. This would have maximized damage output and potentially swung pressure back to Player A.
+>    - Considering earlier rounds, Player A should have aimed to manage the risks presented by the **Aurora Veil** and maximize their damage output through correct move choices (i.e., Dragon Pulse over Heat Wave when targeting Froslass).
 >
-> By better anticipating opponent moves and utilizing Pokémon swaps on dangerous turns, Player A could have potentially turned the game in their favor.
+> Adapting strategies around the potential threats of Player B’s Pokémon and deciding on more aggressive plays may have turned the tide towards Player A in future scenarios.
 
 ### bo1-2691404852-coach_loser
 
@@ -122,36 +123,38 @@ Source: recorded replay gen9championsvgc2026regmb-2691404852. Question: Coach th
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Incorrect claim about Fake Out immunity', 'Misinterpretation of Protect usage', 'Lack of acknowledgment of evidence limitations']
+Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 3. Issues: ["Incorrect analysis of Sneasler's Fake Out", 'Misinterpretation of Protect usage', "Inaccurate suggestion for Basculegion's Protect"]
 
 > ### Result:
 > Winner: Player B (p2). Score — Player A lost 4; Player B lost 2.
 >
 > ### Turning Point:
-> The turning point occurred on **Turn 11** when Player B had significantly more Pokemon remaining (2 against 1) and a health lead of 94% over Player A's 2% total HP. Player A lost Sneasler and Kingambit that turn, while Player B managed to retain their Basculegion and Sneasler. 
+> The game swung decisively on turn 11 when Player B, leading with 2 Pokémon to 1 (94% against 2% total HP), maintained a significant advantage until the end. During this turn, Player B's Kingambit used Sucker Punch on Player A's Dragonite, resulting in its fainting.
 >
 > ### Decisions:
-> 1. **Player A (Losing Side)**:
->    - **Turn 1**: Player A led with Sneasler and Dragonite, which was appropriate considering both had offensive potential. However, Sneasler's **Fake Out** on Froslass was a poor target since Froslass is immune to it; using **Dire Claw** against Basculegion would have been more effective, offering almost a guaranteed three-hit KO (99.4% chance). 
->    - **Turn 3**: Protecting the Dragonite was unnecessary, as Dragonite could have attacked Basculegion with a **Dragon Pulse**, guaranteeing a three-hit KO. This would have put pressure on Player B.
->    - **Turn 5**: Player A kept using Protect instead of attacking, which allowed Player B to set up momentum without responding. Switches to mitigate threats were overlooked, especially with Basculegion being dangerously low (5% HP).
->    - **Turn 10**: Using **Aqua Jet** when threats like Kowtow Cleave from Kingambit were imminent failed to protect the vulnerable Pokemon.
+> 1. **Player A's Sneasler's Actions**:
+>    - On turn 1, Player A's Sneasler used Fake Out on Player B's Sneasler, which was ineffective due to Sneasler's immunity. Instead, it could have opted for Dire Claw against Basculegion or Froslass. The better choice would have been to attack Froslass, as it guaranteed 4HKO.
+>    
+> 2. **Player A's Dragonite**:
+>    - Player A's Dragonite used Tailwind effectively on turn 1 but later used Protect on turns 3, 4, and 8. This pattern limited its damage output opportunities as it could have used stronger moves like Heat Wave to pressure the opposing team rather than just stalling.
 >
-> 2. **Player B (Winning Side)**:
->    - Efficient use of Aurora Veil on Turn 1 by Froslass helped protect against Player A's attacks. They effectively capitalized on Player A’s Protects with judicious moves.
->    - **Turn 3’s** Protect from Player B’s side was a smart play, ensuring Froslass survived a potential knockout while accepting minor damage to Basculegion.
+> 3. **Player A's Basculegion**:
+>    - On turn 3, Basculegion’s usage of Wave Crash was blocked by Froslass's Protect, showcasing ineffective targeting. It seems using Aqua Jet against opponents like Kingambit could have provided more safety while potentially securing a KO.
+>
+> 4. **Use of Protect**:
+>    - Player A's Protect choices did not capitalize on critical incoming threats. For instance, on turn 5, Basculegion could have used Protect to block Kingambit's Last Respects, which was a considerable threat and guaranteed a KO. 
 >
 > ### What to Change:
-> 1. **Leads**: Player A could benefit from remapping their leads to exploit their opponents more effectively. For example, having Sneasler prioritize a defensive role and switch its item from Focus Sash to a different item might allow it to endure longer.
->   
-> 2. **Move Selection**: Player A should focus on optimizing move choices. Specifically, prioritizing **Dire Claw** over **Fake Out**, especially against opponents like Basculegion or Froslass, who resist Fake Out.
->    - Using **Dragon Pulse** over **Protect** when the target is vulnerable could shift momentum.
+> - **Lead Strategy**:
+>    - Consider leading with a Pokémon that can immediately threaten opponents, like Basculegion or Dragonite, while ensuring that Sneasler’s Fake Out can hit an active target on your lead. A better matchup against Froslass with Sneasler or a strong counter against Kingambit would be ideal.
+>    
+> - **Adjust Moves**:
+>    - Encourage more aggressive targeting instead of protection. Utilize moves like Dragon Pulse on turn 3 or 4 instead of Protect to apply more pressure, particularly against Basculegion and Kingambit. More aggressive plays when ahead can snowball the advantage versus teams reliant on established setups.
 >
-> 3. **Use of Protect**: Player A should use Protects more strategically, potentially saving them for critical turns when predicting high-damage moves from Player B rather than as routine defensive plays.
+> - **Effective Use of Protect**:
+>    - Reassess when to use Protect. If a Pokémon under protection isn't in immediate threat of an OHKO, consider using offensive moves to maintain pressure. For example, Player A's Kingambit could have exploited Sneasler’s Protect while targeting Kingambit or Basculegion outright.
 >
-> 4. **Speed Control**: Effective speed control alongside Protects or switches would have lessened the number of critical hits Player B could secure against Player A’s lower HP Pokémon. Implementing slower teammates or Trick Room in different matchups might provide a better strategic advantage.
->
-> Adopting these changes will enhance Player A's performance in future matches by allowing more proactive responses to opposition moves and optimizing their offensive strategies.
+> By refining these strategic areas and considering targeted moves while protecting crucial Pokémon positions, Player A can enhance their chances in future matchups.
 
 ### bo1-2691404852-decisions
 
@@ -159,34 +162,25 @@ Source: recorded replay gen9championsvgc2026regmb-2691404852. Question: Which de
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 5, honest 3. Issues: ['Inaccurate score reporting', 'Misinterpretation of turn 5 actions', 'Lack of clarity on what evidence cannot show']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['turning point misidentified', 'incorrect best decision for Player B', 'inaccurate worst decision for Player B']
 
-> ### Result:
-> Player B won the match with a score of 4-2.
+> ### Result
+> Winner: Player B (p2). Score — Player A lost 4; Player B lost 2.
 >
-> ### Turning point:
-> The turning point of the match occurred on **Turn 11**. On this turn, Player B's **Sneasler** used **Close Combat** against Player A's **Kingambit**, which resulted in a faint. This KO positioned Player B with 2 Pokémon remaining against Player A's 1 Pokémon (Dragonite-Mega at 2% HP), leading to an insurmountable advantage. The specifics were as follows:
+> ### Turning Point
+> The turning point of the match was Turn 11. On this turn, Player B's Kingambit used Sucker Punch against Player A's Dragonite, which resulted in Dragonite fainting. Before this turn, Player B was leading with two Pokémon against Player A's one, giving them a significant advantage with around 94% total HP remaining compared to Player A's 2%. This turn solidified Player B's control of the match, as they maintained at least half a Pokémon's worth of HP ahead until the end.
 >
-> - **Dragonite-Mega** HP before: 2%
-> - **Sneasler** HP after attack: 0%
+> ### Decisions
+> **Player A:**
+> - **Best Decision:** Player A's use of Tailwind on Turn 1 was strategic, providing critical speed control for the upcoming turns, allowing their Pokémon to act first in a match where speed was crucial.
+> - **Worst Decision:** On Turn 3, Player A's choice to protect Dragonite instead of attacking with Dragon Pulse or Heat Wave against Basculegion was suboptimal. Dragon Pulse would have guaranteed a 2HKO against their opponent's Basculegion, who had the potential to threaten both Dragonite and the opposing Froslass that turn.
 >
-> ### Decisions:
-> #### Player A Decisions:
-> 1. **Best Decision:** Using **Fake Out** with **Sneasler** in Turn 1 prevented potential damage to Dragonite while allowing **Dragonite** to set up **Tailwind**. This was crucial in gaining speed advantage.
-> 2. **Worst Decision:** In Turn 3, Dragonite used **Protect** while **Basculegion** targeted Froslass with **Wave Crash**. Given the immediate threat from Froslass's ability to use **Shadow Ball**, a switch or targeting the other Basculegion would have been wiser to capitalize on potential KOs while keeping momentum.
+> **Player B:**
+> - **Best Decision:** On Turn 4, Player B's use of Protect with Froslass to block the incoming Wave Crash from Basculegion was well-timed and saved Froslass from potentially being knocked out. This choice showcased a good read of the threats coming from Player A.
+> - **Worst Decision:** On Turn 7, Player B used Aqua Jet instead of Last Respects against Sneasler, which could have secured a stronger damage output or even potentially fainted it. Given that they had the HP advantage, a more aggressive approach could have further tilted the game in their favor.
 >
-> #### Player B Decisions:
-> 1. **Best Decision:** Player B's use of **Protect** on **Froslass** in Turn 3 effectively blocked Basculegion's **Wave Crash**, which had a 62.5% chance to OHKO. This decision was necessary to maintain the health of their lead Pokémon.
-> 2. **Worst Decision:** In Turn 5, Basculegion's **Aqua Jet** aimed at Kingambit while it was still at high HP was a suboptimal choice, especially when a confirmed KO option with **Last Respects** would have been available against weaker Pokémon on Player A’s side.
->
-> ### What to change:
-> For **Player A**:
-> - Considered better targeting options; specifically, using **Dragon Pulse** against Basculegion instead of **Heat Wave** during critical moments could have maximized damage output.
->
-> For **Player B**:
-> - Consistently utilize protective strategies to retain Pokémon’s health, especially when facing guaranteed threats such as on Turn 9 against **Sneasler**. Prioritize switching targets to maintain pressure on weakened opponents when possible. 
->
-> Overall, both players displayed strengths and weaknesses in their decision-making, with Player B ultimately securing victory through effective use of Protect and keen target analysis on critical turns.
+> ### Conclusion
+> Overall, Player B's ability to effectively use Protect and maintain their lead allowed them to control the match. Player A's misplays, particularly in Turn 3 by opting to protect rather than damage, led to critical swings in momentum that ultimately resulted in their defeat. Each player's decision-making regarding targeting and Protect usage was crucial in shaping the outcome of this battle.
 
 ### bo1-2691414894-turning
 
@@ -194,30 +188,29 @@ Source: recorded replay gen9championsvgc2026regmb-2691414894. Question: What was
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 5, actionable 4, specific 5, consistent 5, honest 4. Issues: ['suggests Last Respects on Turn 4 but it was used', 'does not mention burns affecting Player A', 'does not state what evidence cannot show']
+Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ['Froslass switch suggestion lacks burn consideration', 'Close Combat suggestion ignores Rage Powder', 'Burn effects not mentioned']
 
 > ### Result
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 1.
+> Player B won the match with a score of 4-1 against Player A.
 >
-> ### Turning point
-> The turning point of the game occurred on **Turn 1**, where Player B took a significant lead after actions unfolded as follows:
-> - **p1 Froslass** transformed into **Froslass-Mega** and used **Blizzard**, dealing 47% to **p2 Scovillain** and 79% to **p2 Kingambit**. However, this attack was ineffective due to the spread and resistance.
-> - In response, **p2 Scovillain** used **Overheat**, resulting in a guaranteed OHKO on **p1 Kingambit** (fainted) and lowering its Sp. Atk by two stages.
-> - Subsequently, **p2 Kingambit** used **Kowtow Cleave**, knocking out **p1 Froslass** (fainted).
-> This established a position where Player B led with 4 Pokémon remaining compared to Player A's 2, a substantial advantage with 326% total HP against 200%.
+> ### Turning Point
+> The critical turning point occurred on **Turn 1**. Player B, through effective use of their Pokémon, managed to take a decisive lead. The sequence of events was as follows:
+> - **p1 Froslass** transformed into **Froslass-Mega** and revealed its item, Froslassite.
+> - Weather changed to **Snow** from Froslass's **Snow Warning**.
+> - **p2 Scovillain** also transformed into **Scovillain-Mega** and revealed its item, Scovillainite.
+> - **p1 Froslass** used **Blizzard** which dealt 47% to Scovillain and left **p2 Kingambit** at 79% HP.
+> - In response, **p2 Scovillain** used **Overheat**, resulting in a guaranteed OHKO on **p1 Kingambit**, which fainted.
+> - **p2 Kingambit** then used **Kowtow Cleave** on **Froslass**, resulting in another faint.
+>
+> After this turn, Player B was ahead in Pokémon count 4 to 2, and they maintained a significant health advantage throughout the match, which was a lead they never relinquished, sealing Player A's fate with 326% total HP against Player A's 200% total HP.
 >
 > ### Decisions
-> - **Player A's Misplays:**
->   - **Froslass** attacked with **Blizzard**, which was not the most effective choice against the **Scovillain** and continued to expose it to a guaranteed OHKO from **Scovillain's** Overheat. Instead, switching **Froslass** to **Basculegion** would have allowed it to absorb the damage better (taking at most 36.5% from Overheat) and potentially keep it as a threat later on.
+> 1. **Player A** made a crucial mistake by keeping Froslass in against the guaranteed OHKO from Scovillain's Overheat. A suitable alternative would have been to switch Froslass to either **Basculegion** or **Sneasler**, which would have minimized the damage taken from Overheat (36.5% for Basculegion and 87.9% for Sneasler).
+>   
+> 2. **Player B** played effectively, utilizing Scovillain's offensive pressure to secure important knockouts, which set the tone for the rest of the match.
 >
-> - **Player B's Effective Plays:**
->   - **Scovillain's** choice to use **Overheat** was crucial, eliminating a major opponent early on and setting the pace for a dominant early-game lead. Following this, **Kowtow Cleave** from **Kingambit** furthered the advantage by removing another key Pokémon.
->
-> ### What to change
-> - For Player A, a crucial change would be to switch **Froslass** out instead of attacking with **Blizzard**, mitigating risk from **Scovillain's** Overheat. The best option was to switch to either **Basculegion** or **Sneasler**, which could have absorbed damage more effectively without falling to an early KO.
-> - Additionally, during Turn 4, Player A's **Basculegion** could have utilized **Last Respects** instead of **Aqua Jet** to target **Sneasler**, ensuring a higher chance of OHKO rather than relying on a less effective move.
->
-> Improving tactical decisions early on would give Player A a stronger footing in the match moving forward.
+> ### What to Change
+> Player A should have opted to switch Froslass out on Turn 1 to mitigate the risk of a KO. Given the outcome, a safer approach would involve switching to **Basculegion**, which could effectively handle the threat from Scovillain without sacrificing its own HP, allowing it to remain active in future turns. Additionally, Player A could have used Close Combat with **Sneasler** instead of Fake Out on Turn 2, which would have dealt significant damage to Scovillain, potentially removing the spread threat earlier and changing the match dynamics.
 
 ### bo1-2691414894-coach_loser
 
@@ -225,33 +218,27 @@ Source: recorded replay gen9championsvgc2026regmb-2691414894. Question: Coach th
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 5, honest 3. Issues: ['Froslass switch suggestion lacks evidence', 'Protect suggestion not grounded', 'No mention of burns affecting strategy']
+Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['incorrect_turn_2_analysis', 'incorrect_turn_4_analysis', 'missing_honesty_about_burns']
 
-> ### Result
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 1.
+> **Result:** Player B won with a score of 4-1.
 >
-> ### Turning Point
-> The turning point of the match occurred on **Turn 1**. Player B effectively led with **Scovillain-Mega** and **Kingambit**, while Player A brought out **Froslass-Mega** and **Kingambit**. After actions played out this turn, Player A lost both of their leading Pokémon to Player B's strong offensive presence. Player B maintained substantial HP and Pokémon advantage, leading 4 Pokémon to 2, with Player A having 200% total HP compared to Player B's 326% HP. The outcomes of this turn had a decisive impact on the match.
+> **Turning Point:** The turning point was **Turn 1**. Player A led with **Froslass-Mega** and **Kingambit**, while Player B sent out **Scovillain-Mega** and **Kingambit**. Here, Player A's Froslass used **Blizzard** (spread, resisted), dealing 47% to Scovillain and 79% to Kingambit. However, Player B's Scovillain retaliated with **Overheat**, securing a guaranteed OHKO on Player A's Kingambit. Following this, Player B's Kingambit used **Kowtow Cleave**, which KO'd Player A's Froslass. By the end of Turn 1, Player B led 4 Pokémon to 2, which significantly impacted the match.
 >
-> ### Decisions
-> **Player A (losing side):**
-> 1. **Froslass Choice**: Froslass used **Blizzard** but only managed to hit Scovillain for a guaranteed 3HKO (47% remaining) and did minimal damage to Kingambit (79% remaining). A more effective choice could have been to switch Froslass out to avoid an inevitable OHKO from Scovillain's **Overheat**, which would have dealt guaranteed damage to Kingambit, allowing it to survive longer.
-> 2. **Use of Sneasler**: On Turn 2, Sneasler used **Fake Out** on Kingambit, dealing negligible damage (4.8%–5.7%). Instead, it could have used **Close Combat**, which had a guaranteed OHKO against Kingambit (85%–101.4% damage). This could have shifted the match by eliminating a prominent threat from Player B.
-> 3. **Basculegion's Moves**: On Turn 2, Basculegion went with **Aqua Jet** instead of **Last Respects**, which did not effectively capitalize on Scovillain being low on health. Using **Last Respects** would have guaranteed a KO on Scovillain, eliminating a major attacker from Player B.
+> **Decisions:** Player A made several misplays:
+> 1. **Turn 1:** Using Blizzard against Scovillain was suboptimal given the incoming threat from Overheat. Player A could have switched Froslass out to avoid the guaranteed KO, risking at most 36.5% from Scovillain's Overheat instead.
+> 2. **Turn 2:** Player A’s Sneasler used **Fake Out** against Kingambit, which was not effective enough and missed a chance to use **Close Combat** for a guaranteed OHKO on Scovillain.
+> 3. **Turn 4:** When Player B's Sneasler entered, it used **Fake Out** on Sneasler instead of targeting Basculegion or performing a more impactful action. This allowed Player B to maintain control.
 >
-> **Player B (winning side)**:
-> - Player B effectively utilized their strong offensive with **Scovillain** and **Kingambit**, prioritizing damage and managing threats decisively through the early game.
+> Player B played optimally by leveraging Scovillain’s **Rage Powder** to redirect attacks and using **Overheat** to secure early KOs. 
 >
-> ### What to Change
-> To improve for the next matchup, Player A should consider the following adjustments:
+> **What to Change:**
+> 1. **Leads:** Player A should reconsider their lead options. Leading with Froslass was risky given its susceptibility to strong attackers like Scovillain. A safer lead combination could involve pairing Basculegion or Sneasler with Kingambit to apply immediate pressure and provide better synergy.
+>    
+> 2. **Moves:** Froslass could run moves like **Will-O-Wisp** for burn support or **Destiny Bond** for trading KOs rather than relying solely on direct damage. For Sneasler, using **Close Combat** earlier would have been more effective against Scovillain.
 >
-> 1. **Switch Strategy**: Incorporate more switching tactics to avoid unnecessary KOs due to strong attacks. For instance, switching Froslass to Basculegion immediately would have mitigated the risk of losing a key Pokémon to an OHKO from Overheat. Utilizing Pokémon with protection capabilities or bulkier stats could help buffer against strong hits.
+> 3. **Use of Protect/Speed Control:** Introducing **Protect** on certain Pokémon like Kingambit can mitigate danger from powerful attacks like Overheat. Also, scheduling speed control, possibly with a Pokémon that can use **Tailwind** or **Trick Room**, would allow Player A to gain advantage over Player B, especially with faster threats.
 >
-> 2. **Move Selection**: Improve the decision-making on move priority. Using **Close Combat** on Sneasler against Kingambit would not only have secured a KO but also shifted offensive pressure back to Player B.
->
-> 3. **Protect and Speed Control**: Explore options like **Protect** on key Pokémon to avoid immediate threats. Utilizing Pokémon like Sneasler or Kingambit with **Protect** can help buffer against offensive plays from the opposing side, particularly in a pressure environment with threats like **Scovillain**.
->
-> Implementing these strategies would help Player A balance offense and defense better, potentially turning the tide in future matchups.
+> By reinforcing their strategy in these areas and adapting their lead approach, Player A could improve their chances against Player B in future matchups.
 
 ### bo1-2691414894-decisions
 
@@ -259,40 +246,29 @@ Source: recorded replay gen9championsvgc2026regmb-2691414894. Question: Which de
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 3. Issues: ['Froslass fainted to Kingambit, not Scovillain', 'No mention of burns affecting Player A', 'Assumes switching was possible without evidence']
+Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 2. Issues: ['Invented sleep status for Froslass', "Misleading about Blizzard's impact", 'Ignored engine turning point']
 
-> # Analysis of Player Decisions in the Match
+> **Result:** Player B wins with a score of 4-1.
 >
-> ## Result
-> Player B won the match with a score of 4-1 against Player A.
+> **Turning Point:** The first turn proved pivotal, establishing an early lead for Player B. Player A's Froslass used Blizzard, targeting Scovillain and Kingambit, resulting in Scovillain ending at 47% HP and Kingambit at 79%. However, Scovillain responded with Overheat, securing a guaranteed OHKO on Player A's Kingambit. Player B's Kingambit then used Kowtow Cleave to knock out Froslass, leaving Player A with only two Pokémon while Player B retained four, establishing a significant advantage.
 >
-> ## Turning Point
-> The turning point was **Turn 1**. During this turn, Player B led in numbers with 4 Pokémon against Player A's 2 remaining Pokémon. This was after Player B's **Scovillain** used **Overheat**, guaranteeing the KO on Player A's **Kingambit**. Player A's **Froslass** also fainted after being targeted by Player B's **Kingambit**. Conditions at the end of this turn included Player B having 4 Pokémon remaining (326% total HP) versus Player A’s 2 (200% total HP), establishing a significant lead.
+> **Decisions:**
+> - **Player A's Best Decisions:**
+>   - Deploying Froslass as a lead was solid, utilizing its Mega Evolution to set up Snow and leverage Blizzard.
+>   - Targeting Scovillain with Blizzard initially was logical, as it aimed to reduce threats immediately.
 >
-> ## Decisions
+> - **Player A's Worst Decisions:**
+>   - Not switching Froslass out after it was burned and under threat from Scovillain's Overheat was detrimental. A switch to Basculegion would have mitigated the risk of a guaranteed OHKO, taking only 36.5% damage from Overheat.
+>   - Choosing Blizzard over other potential high-impact moves (like targeting Scovillain with a different strategy) allowed Player B to capitalize on the sleep status and gain momentum.
 >
-> ### Player A (P1)
+> - **Player B's Best Decisions:**
+>   - Using Overheat effectively to remove Kingambit was pivotal, leveraging its super-effective attack without risking its own safety.
+>   - The choice to use Rage Powder on turns 2 and 3 maximized Scovillain's effectiveness by redirecting attacks away, allowing it to control the pace of the match.
 >
-> **Best Decisions:**
-> 1. **Using Blizzard**: Player A's Froslass used Blizzard against Scovillain, achieving damage that suited their strategy by hitting both opponents, although it was not particularly effective due to type resistance.
+> - **Player B's Worst Decisions:**
+>   - Attempting to use Sucker Punch with Kingambit against a target that could not be affected at the time (due to Froslass using Blizzard) was a miscalculation, as it failed to achieve anything. This could have opened opportunities for targeting alternatives instead.
 >
-> **Worst Decisions:**
-> 1. **Fainting of Froslass**: Instead of switching Froslass out after assessing the threats, Player A left it in to be hit by Scovillain's Overheat. This was a significant error since switching to either **Basculegion** or **Sneasler** would have absorbed less damage and preserved Froslass for later turns as noted in the decision options.
->
-> 2. **Using Fake Out** on Kingambit: Sneasler’s use of Fake Out was ineffective as it did minimal damage and did not apply enough pressure at a critical moment when a more direct offensive move like Close Combat could have guaranteed a KO against either of Player B's Pokémon.
->
-> ### Player B (P2)
->
-> **Best Decisions:**
-> 1. **Using Overheat**: Player B capitalized on the opportunity to knock out Kingambit with Overheat. This offensive decision swung the momentum in their favor and showcased the pokemon's ability to capitalize on its power while lowering its Special Attack.
->
-> 2. **Utilizing Rage Powder**: In subsequent turns, Scovillain's usage of **Rage Powder** effectively redirected the attacks to itself, allowing for more strategic plays and protecting other Pokémon on the team.
->
-> **Worst Decision:**
-> 1. **Failed Sucker Punch**: Kingambit attempted to use Sucker Punch on Sneasler but it failed. This could have been avoided by opting for Kowtow Cleave instead, which was a guaranteed KO on Sneasler. Since Sneasler was at a negative attack stage and could have been considered a safer target previously, this was a missed chance for damage that provided an opportunity for Sneasler to take down Scovillain with Close Combat.
->
-> ## Summary
-> Overall, Player B's effective offensive strategies and strategic redirects with Scovillain aided in maintaining momentum and securing the win. Meanwhile, Player A's critical decision-making errors, particularly the loss of Froslass without sufficient efforts to switch, were pivotal in the outcome of the match.
+> In conclusion, Player B's strategic use of offensive pressure and effective redirecting of attacks through Rage Powder played a crucial role in consolidating their win, while Player A’s early-game mistakes contributed to their downfall.
 
 ### bo1-2691463439-turning
 
@@ -300,32 +276,23 @@ Source: recorded replay gen9championsvgc2026regmb-2691463439. Question: What was
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 3. Issues: ['misinterpretation of Freeze-Dry effectiveness', "no mention of Ditto's Tailwind misuse", 'assumes Klefki could switch without evidence']
+Judge: grounded 3, actionable 4, specific 4, consistent 5, honest 3. Issues: ['Incorrect claim about Freeze-Dry OHKO on Noivern', "Missed opportunity to mention Ditto's Tailwind misuse", 'Assumes switching would have been beneficial without evidence']
 
-> ### Result
-> Player A (p1) won the match with a score of 1-4.
+> **Result:** Player A won the match with a score of 4-1.
 >
-> ### Turning Point
-> The turning point of the game occurred on **Turn 2** when Player A had gained a significant lead. Player A had 4 Pokemon remaining to Player B's 3, with a total HP of 267% against Player B's 204%. The key events of this turn were:
-> - **p1 Noivern** used **Draco Meteor**, reducing **p2 Mr. Rime** to 4% HP.
-> - **p2 Klefki** was fainted by **p1 Diggersby**'s **Earthquake**.
-> After this turn, Player A maintained at least half a Pokemon's worth of HP advantage until the game's conclusion.
+> **Turning Point:** The turning point of the game was Turn 2. After this turn, Player A held a strong advantage with 4 Pokémon remaining compared to 3 Pokémon for Player B, and a total HP of 267% against only 204% for Player B. This decisive shift was solidified by Klefki fainting due to Earthquake from Diggersby after they had already taken significant damage from Noivern's Draco Meteor.
 >
-> ### Decisions
-> - **Player B Misplays:**
->   - On **Turn 1**, instead of using **Fake Out** against **Noivern** (which was already threatened by a guaranteed OHKO from **Mr. Rime**'s **Freeze-Dry**), Player B could have opted for **Freeze-Dry** on **Noivern**, ensuring a guaranteed OHKO. This failure to capitalize on a clear threat allowed **Noivern** to deal significant damage.
->   - Additionally, on **Turn 2**, Player B’s **Klefki** should have used **Dazzling Gleam** against **Noivern** instead, as it had a reasonable chance to damage it effectively.
+> **Decisions:**  
+> 1. **Player B (loser)** made critical misplays during the match. On Turn 1, Mr. Rime used Fake Out against Diggersby, which only left it at 90% HP, whereas it could have used Freeze-Dry on Noivern for a guaranteed OHKO. This misallocation of resources allowed Diggersby to survive and contribute significantly to the subsequent turn.
+>    
+> 2. Additionally, Klefki's use of Thunder Wave did not address the immediate threat posed by Diggersby and Noivern. Switching Klefki to Altaria or Ditto during that turn would have reduced the damage taken considerably. Instead, it risked its health by allowing two significant attacks from Diggersby and Noivern.
 >
-> - **Player A Good Reads:**
->   - Player A correctly focused on taking out key threats, notably fainting **Klefki** and **Mr. Rime**, which enabled them to maintain pressure throughout the game.
+> 3. On Turn 2, Player B missed an opportunity to switch out Mr. Rime to avoid fainting from Diggersby’s impending attack, thereby losing a valuable Pokémon early in the match.
 >
-> ### What to Change
-> For Player B to improve their performance, they should:
-> 1. **Prioritize Threat Assessment:** Use **Freeze-Dry** from **Mr. Rime** on **Noivern** in **Turn 1** to prevent heavy damage later.
-> 2. **Switchs Instead of Attacking:** During critical moments when **Klefki** was facing **Diggersby**, switching to **Ditto** or **Altaria** could have conserved its HP and potentially allowed a better position in impending turns.
-> 3. **Anticipate Pivotal Moments:** Understanding that **Turn 2** was pivotal, ensuring that no threats go unanswered would help maintain balance in Pokemon count and health, which ultimately determines match outcomes.
+> 4. **Player A (winner)** made effective use of Diggersby's Earthquake to eliminate Klefki, which was crucial in turning the tide. Employing Quick Attack on Turn 3 against the weakened Mr. Rime was also a good tactical move, securing a KO before Player B could react effectively.
 >
-> By better strategizing and anticipating threats, Player B can elevate their performance in future matches.
+> **What to Change:**  
+> For future matches, Player B should prioritize switching out Pokémon when facing guaranteed threats, as was the case on Turn 1 and during the encounter with Diggersby. Early switching to a Pokémon like Altaria could mitigate damage significantly and preserve their team throughout the match. Additionally, optimizing attacks to ensure maximum damage against high-risk targets would improve the chances of winning against formidable opponents like Player A's Diggersby and Noivern.
 
 ### bo1-2691463439-coach_loser
 
@@ -333,32 +300,31 @@ Source: recorded replay gen9championsvgc2026regmb-2691463439. Question: Coach th
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 4, honest 3. Issues: ['Fake Out on Noivern not grounded', 'Reflect suggestion not grounded', 'Switching strategies not specific']
+Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Incorrect analysis of Thunder Wave effectiveness', "Misinterpretation of Noivern's paralysis impact", 'Lack of acknowledgment of evidence limitations']
 
-> ### Result
-> Winner: Player A (p1). Score — Player A lost 1; Player B lost 4.
+> **Result:** Player A (p1) won with a score of 4-1 against Player B (p2).
 >
-> ### Turning Point
-> The turning point was turn 2. Player A led with 4 Pokémon against Player B's 3, maintaining a significant HP advantage (267% vs. 204% total HP). During this turn, Player A's Diggersby used Earthquake to faint Klefki, while Mr. Rime was left at 4% HP.
+> **Turning point:** The turning point of the match occurred on turn 2. Player B's Klefki fainted after an Earthquake from Player A's Diggersby, and Mr. Rime was left at 4% HP. After this turn, Player A maintained a significant lead, having 4 Pokémon remaining to Player B's 3, and keeping at least half a Pokémon's worth of HP ahead until the end of the game.
 >
-> ### Decisions
-> **Player B: Misplays and Decisions**
-> 1. **Mr. Rime's Fake Out (Turn 1):** While Fake Out compressed pressure on Diggersby, it could have utilized Freeze-Dry against Noivern instead, which would have guaranteed an OHKO and potentially changed the momentum early on. This misallocation contributed to the precarious HP situation, where Noivern began with full health but got paralyzed.
-> 2. **Klefki's Thunder Wave (Turn 1):** The use of Thunder Wave didn't capitalize on the opponent's vulnerable position. Instead, it could have used Dazzling Gleam, threatening significant damage to Noivern instead of causing paralysis.
-> 3. **Switches:** Both Klefki and Mr. Rime would have benefited from switching out to absorb potential damage from Diggersby, as they faced direct threats with their lower HP percentages.
+> **Decisions:**
+> 1. **Player B's Misplays:**
+>    - On turn 1, instead of using **Fake Out** to target Noivern, Mr. Rime had the opportunity to use **Freeze-Dry**, which would have guaranteed an OHKO on Noivern. This misplay allowed Noivern to act, resulting in it causing damage to both Klefki and Mr. Rime. If Freeze-Dry had been used, Mr. Rime would have been more likely to survive longer.
+>    - Klefki used **Thunder Wave** on Noivern, which was ineffective due to it getting paralyzed on the first turn. Dazzling Gleam would have been a better option as it could deal damage and threaten both Diggersby and Noivern at that time.
 >
-> **Player A: Effective Plays**
-> 1. **Diggersby’s Earthquake (Turn 2):** This move was pivotal, removing a threat (Klefki) from the field and causing substantial damage to Mr. Rime.
-> 2. **Switching to Mawile and Mega Evolution (Turn 3):** This move helped Player A to effectively counter Player B’s new Pokémon on the field, claiming a much-needed offensive boost against the remaining threats.
+> 2. **Player B's Switching Decisions:**
+>    - When faced with the threat of Diggersby's Earthquake, switching Klefki out to either Altaria or Ditto could have mitigated the risk of losing it that turn. Both alternatives would have absorbed less damage than staying in and risking a KO.
+>    - During turns 2 and 3, switching Noivern out when it was under threat from Mr. Rime's Freeze-Dry would have preserved it for later turns. Instead, allowing it to stay in put it at risk for being KO'd, which compounded into a disadvantage.
 >
-> ### What to Change
-> **For Player B:**
-> 1. **Leads:** Consider setting up a lead combination that can handle bulky threats better. For example, a lead with higher speed control, utilizing Pokémon that can resist physical threats like Diggersby.
-> 2. **Moves:** Reflect on move choices. Mr. Rime should focus on offensive pressure using Freeze-Dry against threats, being aware of the imminent risks from Diggersby's Earthquake. 
-> 3. **Protect and Speed Control:** Assess the timing of using moves like Tailwind or Protect. If Klefki had utilized Reflect instead of Thunder Wave, it might have provided essential support to withstand Diggersby’s assault.
-> 4. **Switching Strategies:** Use better defensive switches when facing threats. For instance, switching in Altaria to absorb hits would prevent Mr. Rime from fainting early and would give a buffer against Diggersby.
+> **What to change:**
+> - **Leads:** Consider leading with a stronger answer to Diggersby, such as a Pokémon with coverage that threatens it, or including a fast Pokémon that can set up Tailwind before Diggersby acts. Mr. Rime, while useful, overexposed itself by allowing Diggersby to Earthquake after failing to take it out early.
+>   
+> - **Moves:** All Pokémon should have moves that maximize their impact. Mr. Rime’s set could include roles that utilize versatility - adding support or damage-dealing moves (e.g. substituting Fake Out for Freeze-Dry) would improve pressure on opponents immediately. Moreover, the team composition should focus on coverage against popular threats like Noivern.
 >
-> By addressing these areas, Player B could improve their chances in future encounters while strategically managing moves and team synergy more effectively.
+> - **Using Protect:** Player B didn't utilize Protect effectively, especially with Mr. Rime and Klefki. Given Mr. Rime's guaranteed survivability with Protect against Noivern's Draco Meteor and potential damage from Diggersby, it could have offered the survivability needed to maintain momentum in the match.
+>
+> - **Speed Control:** Player B missed opportunities to set up Tailwind properly, allowing Player A to capitalize on speed advantages. If Ditto outspeeds Diggersby, the sequence should prioritize KO’ing Diggersby first in subsequent turns whilst maintaining their own speed advantage through Tailwind. 
+>
+> In revising these strategies, Player B can enhance their capacity against strong matchups like that of Player A and capitalize more effectively on their Pokémon's strengths.
 
 ### bo1-2691463439-decisions
 
@@ -366,41 +332,32 @@ Source: recorded replay gen9championsvgc2026regmb-2691463439. Question: Which de
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ['Quick Attack critique lacks context', 'Thunder Wave critique assumes damage priority', 'No mention of paralysis impact on Noivern']
+Judge: grounded 4, actionable 3, specific 5, consistent 4, honest 3. Issues: ['Incorrect claim about Thunder Wave target', "No mention of Ditto's Tailwind misuse", 'Assumes Protect without evidence']
 
-> ## Result
-> Player A (p1) won the match with a score of 4-1 against Player B (p2).
+> ### Result
+> Winner: Player A (p1), Score — Player A lost 1; Player B lost 4.
 >
-> ## Turning point
-> The turning point occurred on **Turn 2**. During this turn, Player B's Klefki was defeated by Player A's Diggersby using Earthquake, while Mr. Rime was left with 4% HP. Player A led with 4 Pokémon against Player B's 3, showcasing a strong HP advantage (267% vs. 204% total HP).
+> ### Turning Point
+> The turning point of the match was Turn 2. At this point, Player A led with 4 Pokemon to Player B's 3, holding 267% total HP against 204% total HP. The decisive event was the fainting of p2's Klefki due to Diggersby's Earthquake. The sequence of actions this turn was as follows:
+> - p1 Noivern used Draco Meteor, leaving Mr. Rime at 48%.
+> - p2 Klefki attacked with Dazzling Gleam, dealing damage to both Diggersby and Noivern.
+> - p1 Diggersby used Earthquake, which KO'd Klefki and reduced Mr. Rime to 4% HP.
+> - p2 Mr. Rime retaliated with Freeze-Dry, but Diggersby held on at 11% HP.
 >
-> ### Turn details:
-> - Player B's Klefki fainted.
-> - Player B's Mr. Rime ended at 4% HP while Diggersby was at 71% HP.
+> ### Decisions
+> **Player A (p1):**
+> - **Best Decision**: Diggersby's use of Earthquake on Turn 2 was pivotal, as it not only knocked out Klefki but severely weakened Mr. Rime. This move capitalized on Player B's setup.
+> - **Poor Decision**: The choice to let Noivern take paralysis from Thunder Wave on Turn 1 was detrimental, limiting its effectiveness.
 >
-> ## Decisions
+> **Player B (p2):**
+> - **Best Decision**: Mr. Rime's Fake Out on Turn 1 prevented Diggersby from executing a move and hindered early damage output from Player A.
+> - **Worst Decision**: After using Fake Out, Mr. Rime should have used Freeze-Dry targeting Noivern, which would have guaranteed a KO instead of opting for Thunder Wave against Diggersby.
 >
-> ### Player A (p1)
-> **Best Decisions:**
-> 1. **Turn 1 - Noivern used Draco Meteor on Mr. Rime:** This move dealt 48% damage to Mr. Rime (ending at 48% HP) and minimized the threat of Mr. Rime’s Freeze-Dry. Although Noivern was paralyzed, this was still a strong offensive action.
->   
-> 2. **Turn 2 - Diggersby used Earthquake:** This move not only knocked out Klefki but also heavily damaged Mr. Rime, setting up a 4 vs. 3 advantage. 
+> ### Protect Choices
+> There were no uses of Protect recorded, but Player B had several opportunities to switch Klefki and preserve its bulk, particularly into Altaria on Turn 1 to avoid damage from Diggersby. Similarly, Mr. Rime could have switched to Ditto to mitigate damage from Diggersby instead of risking a KO.
 >
-> 3. **Switching from Diggersby to Mawile:** Later in the match (Turn 3), having Mawile join the battle created significant offense against Altaria, ultimately leading to its defeat.
->
-> **Worst Decision:**
-> 1. **Turn 4 - Having Diggersby use Quick Attack on Altaria:** While Quick Attack allowed a hit, it was a less effective choice compared to using Earthquake, which would have guaranteed substantial damage.
->
-> ### Player B (p2)
-> **Best Decisions:**
-> 1. **Turn 1 - Mr. Rime used Fake Out on Diggersby:** This was a solid choice to disrupt Diggersby's potential early offensive, effectively allowing for a safer setup.
->   
-> **Worst Decisions:**
-> 1. **Turn 1 - Klefki used Thunder Wave instead of Dazzling Gleam:** Given Diggersby's high Attack, using Dazzling Gleam would have provided more immediate damage (projected 42.0-51.9% to Noivern). Additionally, a switch could have been made into Altaria to absorb the damage from Diggersby.
->   
-> 2. **Turn 4 - Ditto attempted to use Tailwind:** This move failed due to its existing Tailwind status, indicating poor opportunity management.
->
-> Overall, while Player A's decisions allowed them to capitalize on Pokémon advantages effectively, Player B missed opportunities to apply pressure, which ultimately shifted the match's momentum in Player A's favor.
+> ### Summary
+> The match showcased pivotal decisions that turned the tide in Player A's favor. Player A effectively capitalized on Player B's mistakes by using strong offensive pressure, while missed opportunities for defensiveness defined Player B's downfall. The critical moment around Turn 2’s events fundamentally shifted the momentum toward Player A, enabling them to maintain a decisive lead throughout the match.
 
 ### bo1-m-c-2698400388-coach_loser
 
@@ -408,35 +365,29 @@ Source: game 1 of public series 2698400388 (Reg M-C). Question: Coach the losing
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['turning point misidentified', 'Protect analysis inconsistent', "Floette-Eternal's actions misrepresented"]
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 2. Issues: ['turning point misidentified', 'incorrect lead suggestion', 'Protect advice inconsistent with log']
 
-> ### Result
-> Player A won the match, finishing with a score of 2 to 4 against Player B.
+> **Result:** Player A won the match, with a score of 4 to 2 against Player B.
 >
-> ### Turning Point
-> The turning point was **Turn 6**; during this turn, Basculegion (p1) used **Wave Crash**, successfully fainting Indeedee-F (p2). At this point, Player A maintained a significant advantage, with 144% total HP remaining across two Pokémon while Player B had none left, demonstrating a decisive shift in control of the match.
+> **Turning point:** The critical moment in this match occurred on **Turn 6**, when p1 Basculegion used Wave Crash to knock out p2 Indeedee-F, establishing a significant lead for Player A with 2 Pokémon still in play, compared to none for Player B. At this point, Player A had a total HP of 144% while Player B was at 0%, solidifying their advantage.
 >
-> ### Decisions
-> 1. **Floette-Eternal's Protect (Turn 1)**: Floette-Eternal used **Protect** to block Gardevoir's **Hyper Voice**, which successfully limited damage. However, this was a missed opportunity to deal significant damage to Gardevoir, as a **Moonblast** would have provided a guaranteed 2HKO on either target with Gardevoir or Indeedee-F.
+> **Decisions:** Player B's key missteps revolved around their use of Protect and Pokémon positioning.
 >
-> 2. **Floette-Eternal's Calm Mind (Turn 2)**: Instead of utilizing Protect again, a direct attack like **Moonblast** following that Calm Mind could have capitalized on the turn's setup. This would have greatly pressured the opposing side.
->
-> 3. **Avoiding Protect Misallocations**: There were multiple instances where Floette-Eternal used Protect without imminent KO threats. On **Turn 3**, against Sneasler’s potential **Close Combat**, Protect blocked an attack but didn’t mitigate the full risk, leading to Kingambit's faint. A switch or an attack could have avoided or capitalized on the incoming threat.
->
-> 4. **Sneasler's Protect (Turn 4)**: Sneasler’s Protect blocked a guaranteed OHKO from Basculegion’s **Wave Crash**, which was a good decision considering its HP but sacrificed the ability to attack. Choosing to switch to Indeedee-F could have mitigated damage and allowed the team to live longer.
->
-> 5. **Final Turn Strategy**: On **Turn 5**, the Protect from Basculegion was justified as it blocked an OHKO from Hydreigon, maintaining its position in the battle. However, the effectiveness of timing Protects could be improved to better avoid fainting Pokémon before they can retaliate.
->
-> ### What to Change
-> 1. **Lead Changes**: Consider using a lead combination that allows for better synergy and damage output. A combination like Rillaboom and Floette could provide early pressure with Grassy Terrain alongside strong priority moves.
+> 1. **Turn 1 Decision:** Player B opted to use Follow Me with Indeedee-F while Gardevoir used Hyper Voice. Though Floette-Eternal's Protect blocked Hyper Voice, this allowed Rillaboom to be significantly damaged (ending at 38% HP). A better strategy would have been to allow Floette-Eternal to use Moonblast instead—targeting either Gardevoir or Indeedee-F would have resulted in a guaranteed 2HKO after Grassy Terrain recovery, initiating offensive pressure early on.
 >    
-> 2. **Adjust Moves and Strategy**: Shift focus toward offensive moves early on; particularly, the **Moonblast** option should be prioritized in the first turns rather than defaulting to Protection, allowing opponents to set up or attack freely. Also, using **Dazzling Gleam** could hit both opponents during early turns.
+> 2. **Turn 2 and 3 Decisions:** Player B let Gardevoir use Protect on Turn 2 rather than attacking. Given that Floette-Eternal was likely to use Calm Mind, using Hyper Voice would have been more effective at applying pressure to p1’s setup. Additionally, in Turn 3, Floette-Eternal should not have used Protect in anticipation of Sneasler’s Close Combat; instead, they could have switched in Basculegion to take that hit, with Sneasler's effectiveness not minimizing due to Kingambit's faint.
+>    
+> 3. **Turn 5 Decision:** Player B did not utilize Protect effectively with Sneasler against Basculegion. Recognizing that Basculegion's Wave Crash had guaranteed OHKO potential, they should have opted to use Protect to cushion damage or switch to Indeedee-F, mitigating its damage against their team while avoiding the certain loss of Sneasler.
 >
-> 3. **Improve Use of Protect and Speed Control**: Protect should be reserved for when immediate threats are present. If able to recognize that opponents are setting up or immobilizing (like Indeedee’s **Follow Me**), capitalize on attacking rather than protecting during those crucial turns.
+> **What to change:** 
 >
-> 4. **Speed Management**: Reflect on the use of speed control approaches, including possible moves like **Fake Out** from Rillaboom to neutralize threats before they can move. This will provide a more solid offensive position to dictate tempo in future matches.
+> 1. **Leads:** Rather than leading with Floette-Eternal and Kingambit, consider starting with a combination that can better handle the threats posed by Gardevoir and Sneasler. A lead such as Rillaboom and Hydreigon may provide more offensive presence against early threats and synergy with Grassy Terrain.
 >
-> By adjusting these strategies and focusing on calculated offensive maneuvers, Player B is likely to see improved outcomes in future matchups.
+> 2. **Moves:** Floette-Eternal should prioritize offensive moves more consistently. For example, even in the face of potential spread, using Moonblast would have applied immediate pressure. Incorporating Dazzling Gleam early can also yield better results against Indeedee-F while utilizing Calm Mind may delay action rather than directly impacting the battlefield.
+>
+> 3. **Use of Protect and Speed Control:** Ensure Protect is used under clear threats, especially against moves that can deliver a guaranteed KO. Late-game switches or smart use can buffer against strong pressure. Keeping track of speed tiers is essential, particularly against dynamic threats like Sneasler. If Hydreigon is present, moves like Dark Pulse can outspeed many of p1's Pokémon. A viable adjustment would be to invest in alternative speed control methods to maintain tempo, possibly utilizing Trick Room or priority-related moves depending on your team comp.
+>
+> Implementing these strategic adjustments can improve Player B’s chances of success in future matchups.
 
 ### bo1-m-c-2702301708-coach_loser
 
@@ -444,34 +395,33 @@ Source: game 1 of public series 2702301708 (Reg M-C). Question: Coach the losing
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['turning point misidentified', 'incorrect Floette-Eternal switch suggestion', 'misinterpretation of Psychic Terrain effect']
+Judge: grounded 3, actionable 4, specific 3, consistent 2, honest 2. Issues: ['Inconsistent with engine turning point', 'Misinterpretation of turn 1 actions', 'Lack of honesty about evidence limitations']
 
 > ## Result
-> Winner: Player A (p1) — Score: Player A lost 3; Player B lost 4.
+> Winner: Player A (p1)  
+> Score — Player A lost 3; Player B lost 4.  
 >
 > ## Turning Point
-> The turning point occurred on turn 14 when p1's INCINEROAR used Throat Chop, fainting p2's INCINEROAR, leaving Player B with only 0 Pokémon while Player A had 1 remaining. p1 led the match with a score advantage of 61% HP against 0% for p2.
+> The pivotal moment occurred at **turn 14**. At this stage, **p1 Incineroar** used **Throat Chop**, which KO'd **p2 Incineroar**, leaving p1 in a strong position with 61% HP against 0% remaining for p2's team. This turn decisively swung the match in favor of Player A, as they maintained a material lead until the end of the game.  
 >
 > ## Decisions
-> ### Misplays
-> 1. **Sneasler's Fake Out** on turn 1: p2 Sneasler used Fake Out on p1 Sneasler, rendering it ineffective as it was immune. The effective play would have been to use Dire Claw instead, targeting Indeedee-F, where p2 had a guaranteed 3HKO chance (40.7–48.0%).
+> ### p2 (Player B)
+> 1. **Turn 1:** Player B led with **Sneasler** and chose to use **Fake Out** on **p1's Floette-Eternal**, which missed the mark due to immunity. The better option was to target **Indeedee-F** with **Dire Claw** instead, which would have guaranteed a 3HKO and dealt significant damage.
+> 2. **Turn 7:** The follow-up **Fake Out** on **Floette-Eternal** was again ineffective due to p1's Protect. In hindsight, turning the attack on **Indeedee-F** once again could have been a more effective choice.
+> 3. **Turn 11:** Using **Wood Hammer** against **Indeedee-F** would have been a more optimal play instead of **Fake Out**, which only provided minimal damage but did not ensure significant outcomes.
+> 4. **Using Protect effectively:** Player B did not fully utilize the protection mechanics available, notably not switching Sneasler for Incineroar at various points when taking heavy incoming threats from Indeedee-F’s Psychic or Flare Blitz.
 >
-> 2. **Floette-Eternal** exposing itself to a potentially fatal hit by staying in against a known threat: On turn 5, Floette-Eternal could have switched to Indeedee-F to avoid the OHKO from Incineroar's Flare Blitz. Instead, it remained in and took heavy damage.
->
-> ### Good Reads
-> 1. **Holding off for Protect**: On turn 6, p1's Floette-Eternal used Protect, successfully blocking a potential OHKO from p2 Sneasler's Dire Claw, indicating a strong read on the incoming threat.
+> ### p1 (Player A)
+> The p1 team effectively utilized **Indeedee-F's Follow Me** to redirect attention away from crucial Pokemon, ensuring **Floette-Eternal** could effectively set up and potentially sweep. The usage of **Fake Out**, followed by a strong attacking sequence, kept the initiative on their side.
 >
 > ## What to Change
-> 1. **Leads Adjustment**: Both players led with Sneasler and Floette-Eternal. While this can be effective, Player B may consider leading with Incineroar more frequently for its ability to provide Intimidate support right at the start, reducing Sneasler’s attack power from the get-go.
+> ### For Player B (p2)
+> 1. **Leads:** Consider adjusting your lead to either avoid direct conflicts with Indeedee-F or choose strategies to nullify its Psychic Terrain while deploying more offensive threats from the start.
+> 2. **Moves:** Utilize moves that would maximize damage against Indeedee-F or Floette-Eternal, especially in the early turns. Use **Dire Claw** or **Close Combat** with Sneasler, aimed directly at the supporting Mon or threat when possible.
+> 3. **Use of Protect:** Player B had opportunities to Protect when facing direct threats (e.g., Floette-Eternal should have used Protect against Dire Claw), hence better timing and strategic application of Protect is crucial to mitigating risks during heavy damage phases.
+> 4. **Speed Control:** Implement a plan to better manage speed through switching or utilizing moves providing speed control like Trick Room or Tailwind. Rillaboom can provide crucial utility with Grassy Surge, enabling better engagements through mobility and terrain advantage.
 >
-> 2. **Move Adjustments**: 
->    - Utilize Dire Claw more effectively; it was a guaranteed OHKO against Floette-Eternal but was underutilized in multiple instances. When applicable, prioritize strong damaging moves over non-damaging options if there's a clear advantage. 
->
-> 3. **Use of Protect**: Player B should use Protect on Floette-Eternal more proactively to shield it from potential OHKOs. For instance, turning any guaranteed KO threat into a defensive play can turn the tide; the use of Protect on turn 8 against Sneasler should have been used earlier when the health was higher.
->
-> 4. **Speed Control**: Implement a clearer speed control strategy. While p1 utilized Psychic Terrain with Indeedee-F, providing added speed for p1's Pokémon, Player B didn't seem to capitalize on speed differences effectively. Future play should consider switching out for Rillaboom or making use of priority moves for better positioning.
->
-> In summary, the above adjustments to leads, strategic move selections, and enhanced use of Protect and speed control should offer Player B a stronger approach in their next encounter.
+> In summary, optimizing lead matchups, utilizing Protect strategically, effectively using offense against critical targets, and managing speed control can provide Player B a better chance to secure victory in future encounters.
 
 ### bo1-m-c-2712545359-coach_loser
 
@@ -479,51 +429,43 @@ Source: game 1 of public series 2712545359 (Reg M-C). Question: Coach the losing
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 2, actionable 3, specific 3, consistent 2, honest 2. Issues: ['incorrect turning point analysis', 'misleading Protect advice', 'unfounded lead change suggestion']
+Judge: grounded 2, actionable 3, specific 3, consistent 2, honest 2. Issues: ['misinterpretation of turn 4 actions', 'incorrect lead suggestion', 'inaccurate Protect advice']
 
-> ### Result
-> Winner: Player A (p1). Score — Player A lost 3; Player B lost 4.
+> **Result:** Winner: Player A (p1). Score — Player A lost 3; Player B lost 4.
 >
-> ### Turning Point
-> The turning point occurred on **turn 2**. Here, p1's Arcanine-Hisui used **Flare Blitz** against p2's Rillaboom, bringing it down to 16% health, while p2's Rillaboom used **Fake Out** on Pawmot, preventing its move. Both sides had 4 Pokémon alive, but p1 had a slight lead in total HP (343% vs 316%). This turn marked a significant swing, as it allowed p1 to start gaining the upper hand.
+> **Turning Point:** The turning point of the match occurred on **turn 2**, where Player A led 4 Pokémon to 4 (343% against 316% total HP); no earlier turn held a clear lead, so this moved it the most.
 >
-> ### Decisions
-> 1. **Good Reads from p1**: 
->    - P1's use of **Follow Me** on turn 3 ensured a safe hit from Arcanine-Hisui on Rillaboom, which resulted in a KO. This was a strong strategic move, redirecting threats effectively.
+> **Decisions:** 
+> 1. On **turn 1**, Arcanine-Hisui used Flare Blitz against Kingambit, which activated Protect, blocking a potentially guaranteed 2HKO (78.3%-92.8%). Kingambit had the option to use Kowtow Cleave against Arcanine-Hisui for guaranteed 2HKO, but chose Protect instead. This decision allowed Player A to establish an early presence that led to Arcanine remaining in play.
 >    
-> 2. **Missed Options from p1**: 
->    - On turn 1, p1 could have switched Arcanine-Hisui out for Indeedee-F to avoid a significant threat from Basculegion's **Wave Crash**. This switch would have taken less damage than risking a KO on Arcanine-Hisui.
->    
-> 3. **Missed Opportunities for p2**: 
->    - P2's Kingambit should have used **Kowtow Cleave** instead of Protect on turn 1, which would have done significant damage to Arcanine-Hisui (guaranteed 2HKO). Additionally, on turn 4, using **Flare Blitz** on Indeedee-F could have been more beneficial than Protect, as it would have threatened to KO or heavily damage Indeedee-F.
+> 2. On **turn 2**, Pawmot used Double Shock against Rillaboom, but this move was resisted due to Grassy Terrain, resulting in a mere 29.9%-35.2% damage (guaranteed 4HKO after recovery). A switch to Indeedee-F here would have blunted Basculegion's offensive threat. 
 >
-> ### What to Change
-> 1. **Leads**: 
->    - P1 should consider leading with Indeedee-F to set up **Psychic Terrain** first, protecting against priority moves like Fake Out from Rillaboom, which can otherwise disrupt their flow.
+> 3. The significant misplay occurred on **turn 4** with Gardevoir-Mega, where it had the chance to use Protect against an incoming KO from Mega Blaziken’s Flare Blitz. Instead, it opted to remain exposed, ultimately leading to Gardevoir's faint later in turn 9, which may have cost Player A a critical momentum swing.
 >
-> 2. **Moves**: 
->    - Pawmot could utilize **Fake Out** earlier in the match to disrupt Blaziken or Kingambit, as its presence could pressure the opponents without risking significant damage itself.
->    - Consider bringing in Pokémon with better synergy against threats like Basculegion, which was able to exert a lot of offensive pressure.
+> 4. Pawmot used Fake Out on **turn 8**, allowing Blaziken to take some significant actions later. Using protective moves in anticipation of the opponent’s threats would have alleviated initiative loss during these turns.
 >
-> 3. **Use of Protect**: 
->    - P1's Gardevoir successfully used Protect to block Blaziken's attack; however, it must leverage its Protect ability at crucial moments to stave off KOs from moves such as Kingambit's **Kowtow Cleave** in upcoming turns.
->   
-> 4. **Speed Control**: 
->    - Taking advantage of **Trick Room** more effectively could turn the tide, especially against faster threats like Blaziken. P1's use of Indeedee-F could set them up to control the pace against Kingambit and Blaziken.
+> **What to Change:** 
+> 1. **Leads:** A lead of Pawmot and Indeedee-F supported by an offensive presence like Arcanine-Hisui may provide better synergy early on. Indeedee’s ability to redirect could protect a vulnerable Arcanine against strong opposing attacks, like Basculegion's Wave Crash.
 >
-> By refining these strategies and adjustments to leads, moves, and timing with Protect, the losing player can enhance their chances of securing a win in future matchups.
+> 2. **Moves:** More offensive pressure should be leveraged. Increasing the usage of higher-damage options (like Close Combat from Pawmot) early could prevent Rillaboom from gaining momentum and lessen the threats as they build up. 
+>
+> 3. **Use of Protect:** Ensure Protect is strategically used on key threats to avoid potential KOs—like Gardevoir on turn 6 and ideally on **turn 1** for Arcanine against Kingambit. This way, the chances to sustain Pokémon in crucial moments could flip the match dynamics.
+>
+> 4. **Speed Control:** Since Trick Room was an available option, activating it earlier could have provided the slower Pokémon like Gardevoir a greater chance to outspeed and pressure the faster threats on the opposing side (such as Mega Blaziken). Paying attention to optimal Trick Room timings would benefit the team significantly.
+>
+> By implementing these changes, focusing on applying offensive pressure, and strategically using Protect and speed control, Player B can improve their chances of success in future matchups.
 
 ### bo3-2709311277-coach_series
 
 Source: public series 2709311277. Question: Coach both players after this series: what should each change in their leads, bring-four choices and move choices next time? Ground every recommendation in the games and say what the replays do not show.
 
-Checks: contradictions none; warnings none; narrative-validation rejections 5; figures outside evidence none; fallback notice False.
+Checks: contradictions none; warnings none; narrative-validation rejections 1; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 3. Issues: ['lacks specific lead recommendations', 'does not address all move choices', 'misses some evidence limitations']
+Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ['lacks specific lead recommendations', 'does not address all move choices', 'does not mention what evidence cannot show']
 
 > **Strategic interpretation**
 >
-> In this series, Player B demonstrated effective use of Tailwind and spread moves, particularly with Floette-Eternal and Whimsicott. TestProfessor should consider adjusting their lead to counter the speed advantage provided by Tailwind. Incorporating a faster lead or a dedicated counter to Whimsicott could help mitigate the impact of its Tailwind and Encore. Additionally, TestProfessor's move choices, particularly the use of Fake Out and Parting Shot, should be evaluated for timing and effectiveness against Player B's team composition. Player B could benefit from maintaining pressure with Basculegion and Kingambit, while ensuring that they manage their own Tailwind effectively to maintain speed control. Overall, both players should focus on optimizing their lead matchups and move sequencing to capitalize on their respective strengths.
+> In this series, Player B demonstrated effective use of Floette-Eternal and Whimsicott to control the pace of the games, particularly with Tailwind support and strong offensive pressure. For Player A, while Gholdengo and Incineroar were pivotal, there were moments where switching strategies could have been more beneficial. For example, Player A could consider adjusting leads to include Gholdengo earlier to capitalize on its offensive capabilities and potentially avoid unfavorable matchups. Additionally, Player A should evaluate the timing of moves like Nasty Plot and Protect to ensure they are not left vulnerable to immediate threats. Player B should maintain the synergy between Whimsicott and Floette-Eternal while possibly considering alternative leads that can apply pressure without relying solely on Tailwind. Both players should analyze their move choices to ensure they are maximizing damage output while minimizing risk from opponents' potential counters.
 >
 > **Verified teamsheet and spread findings**
 >
@@ -563,39 +505,37 @@ Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 3. Issues: ['l
 
 Source: public series 2709311277. Question: Analyze the original Champions stat-point spreads for both players across this BO3. Use only the public teamsheets, recorded battle events and verified damage calculations. For each Pokemon report the compatible native stat-point interval for HP, Atk, Def, SpA, SpD and Spe, and distinguish narrowed intervals from unresolved ones. State clearly when the replay does not contain enough information.
 
-Checks: contradictions none; warnings none; narrative-validation rejections 7; figures outside evidence none; fallback notice False.
+Checks: contradictions none; warnings none; narrative-validation rejections 2; figures outside evidence none; fallback notice True.
 
-Judge: grounded 3, actionable 2, specific 4, consistent 3, honest 3. Issues: ['incomplete analysis', 'some claims lack evidence', 'inconsistent with battle log']
+Judge: grounded 5, actionable 3, specific 5, consistent 5, honest 4. Issues: ['incomplete spread', 'no unique spread', 'limited actionable advice']
 
-> **Strategic interpretation**
->
-> The analysis of the stat-point spreads for both players reveals that the original spreads for each Pokémon are partially narrowed based on the observed damage calculations and the declared natures. However, several Pokémon have unresolved axes, indicating that not all stat points can be definitively determined from the available battle evidence. The fixed IV policy of 31 means that all calculations are based on maximum potential stats, but the actual spreads remain uncertain for some Pokémon due to insufficient damage data. The analysis highlights the importance of specific moves and interactions that influenced the outcomes of the games, providing insights into strategic choices made by both players.
+> The generated explanation did not pass evidence validation. The verified findings are shown below.
 >
 > **Verified teamsheet and spread findings**
 >
-> - **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Gholdengo (Player A)**: declared nature: Modest; declared/verified item: LifeOrb; base-form ability: GoodasGold; declared/verified moves: Protect, ShadowBall, NastyPlot, MakeItRain; HP compatible native points: 4-29 (initial 0-32; 21.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; DEF compatible native points: 0-23 (initial 0-32; 27.3% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Volcarona (Player A)**: declared nature: Timid; declared/verified item: RockyHelmet; base-form ability: FlameBody; declared/verified moves: Overheat, StruggleBug, RagePowder, Tailwind; no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Garchomp (Player A)**: declared nature: Modest; declared/verified item: GarchompiteZ; base-form ability: RoughSkin; declared/verified moves: DragonPulse, EarthPower, PowerGem, Protect; Garchomp-Mega-Z ability: Levitate; HP compatible native points: 0-2 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; DEF compatible native points: 0-1 (initial 0-32; 93.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Incineroar (Player A)**: declared nature: Impish; declared/verified item: SitrusBerry; base-form ability: Intimidate; declared/verified moves: PartingShot, FakeOut, FlareBlitz, DarkestLariat; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 19: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 56%; game 2 event 17: Dazzling Gleam by Floette-Eternal into Incineroar, 100% -> 54%; game 3 event 59: Wave Crash by Basculegion into Incineroar, 100% -> 59%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Rillaboom (Player A)**: declared nature: Adamant; declared/verified item: MiracleSeed; base-form ability: GrassySurge; declared/verified moves: GrassyGlide, WoodHammer, FakeOut, Uturn; HP compatible native points: 1-28 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Raichu (Player A)**: declared nature: Timid; declared/verified item: RaichuniteY; base-form ability: LightningRod; declared/verified moves: ZapCannon, FocusBlast, FakeOut, Protect; Raichu-Mega-Y ability: No Guard; HP compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 28: Moonblast by Whimsicott into Raichu, 100% -> 49%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Whimsicott (Player B)**: declared nature: Timid; declared/verified item: FocusSash; base-form ability: Prankster; declared/verified moves: Moonblast, Tailwind, Encore, SunnyDay; HP compatible native points: 2-29 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; SPA compatible native points: 1-32 (initial 0-32; 3.0% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; SPD compatible native points: 0-29 (initial 0-32; 9.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 3 event 43: Overheat by Volcarona into Whimsicott, 100% -> 21%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Basculegion (Player B)**: declared nature: Adamant; declared/verified item: SitrusBerry; base-form ability: Adaptability; declared/verified moves: WaveCrash, LastRespects, AquaJet, Protect; ATK compatible native points: 4-32 (initial 0-32; 12.1% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 40: Sucker Punch by Kingambit into Gholdengo, 100% -> 20%; game 2 event 31: Sucker Punch by Kingambit into Gholdengo, 92% -> 15%; game 3 event 42: Last Respects by Basculegion into Gholdengo, 90% -> 19%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Floette-Eternal (Player B)**: declared nature: Timid; declared/verified item: Floettite; base-form ability: FlowerVeil; declared/verified moves: Moonblast, DazzlingGleam, LightofRuin, Protect; Floette-Mega ability: Fairy Aura; HP compatible native points: 0-13 (initial 0-32; 57.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; DEF compatible native points: 0-11 (initial 0-32; 63.6% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 43: Grassy Glide by Rillaboom into Floette-Eternal, 97% -> 32%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: ChopleBerry; base-form ability: Defiant; declared/verified moves: KowtowCleave, LowKick, SuckerPunch, Protect; ATK compatible native points: 8-32 (initial 0-32; 24.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 18: Moonblast by Whimsicott into Rillaboom, 100% -> 47%; game 2 event 23: Low Kick by Kingambit into Rillaboom, 100% -> 66%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Charizard (Player B)**: declared nature: Modest; declared/verified item: CharizarditeY; base-form ability: Blaze; declared/verified moves: HeatWave, SolarBeam, WeatherBall, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Garchomp (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; base-form ability: SandVeil; declared/verified moves: DragonClaw, RockSlide, PoisonJab, Earthquake; ATK compatible native points: 30-32 (initial 0-32; 90.9% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 13: Dragon Claw by Garchomp into Garchomp, 100% -> 31%; SPD compatible native points: 0-27 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 14: Dragon Pulse by Garchomp into Garchomp, 100% -> 0%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
 > IVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.
 >
@@ -609,13 +549,13 @@ Judge: grounded 3, actionable 2, specific 4, consistent 3, honest 3. Issues: ['i
 
 Source: public series 2698400388. Question: Coach both players after this series: what should each change in their leads, bring-four choices and move choices next time? Ground every recommendation in the games and say what the replays do not show.
 
-Checks: contradictions none; warnings none; narrative-validation rejections 7; figures outside evidence none; fallback notice False.
+Checks: contradictions none; warnings none; narrative-validation rejections 1; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 3. Issues: ['lacks specific move recommendations', 'does not address all games equally', 'assumes unverified team changes']
+Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 3. Issues: ['lacks specific lead recommendations', 'does not address all move choices', 'does not mention what evidence cannot show']
 
 > **Strategic interpretation**
 >
-> In this series, Player A should consider adjusting their lead to include more offensive pressure against Player B's Indeedee-F and Gardevoir combination, potentially by bringing in a faster attacker or a setup sweeper. They could also benefit from diversifying their move choices to include coverage options that can hit both opponents effectively. Player B, on the other hand, should maintain their strong lead with Indeedee-F but may want to consider switching out Gardevoir for a more versatile attacker like Hydreigon or Tyranitar to better handle Player A's threats. Both players should analyze their Protect usage to avoid unnecessary risks and maximize their defensive plays.
+> In this series, Player A relied heavily on Floette-Eternal and Kingambit as leads, but Player B's adjustments with Tyranitar and Excadrill in Game 2 proved effective, allowing for better synergy and coverage against Player A's team. Player A should consider diversifying their leads to include more offensive pressure or defensive options to counteract Player B's strategies. Additionally, Player A's move choices, particularly Protect on Floette-Eternal, were often reactive rather than proactive, which allowed Player B to capitalize on openings. For Player B, maintaining the use of Indeedee-F for terrain control while incorporating more aggressive options like Sneasler and Excadrill can enhance their offensive capabilities. Both players should analyze the effectiveness of their move choices and consider how to better predict and counter their opponent's strategies.
 >
 > **Verified teamsheet and spread findings**
 >
@@ -655,13 +595,13 @@ Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 3. Issues: ['l
 
 Source: public series 2702301708. Question: Coach both players after this series: what should each change in their leads, bring-four choices and move choices next time? Ground every recommendation in the games and say what the replays do not show.
 
-Checks: contradictions none; warnings none; narrative-validation rejections 6; figures outside evidence none; fallback notice False.
+Checks: contradictions none; warnings none; narrative-validation rejections 1; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 3. Issues: ['lacks specific turn recommendations', 'does not address all Pokemon choices', 'misses some evidence limitations']
+Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 2. Issues: ['lacks evidence for Kingambit lead suggestion', 'does not address specific move choices', 'does not mention what evidence cannot show']
 
 > **Strategic interpretation**
 >
-> In this series, Player A effectively utilized Sneasler and Floette-Eternal as leads, leveraging their synergy and offensive pressure. Player B's adjustments in game 2, particularly the introduction of Garchomp, provided a more balanced approach against Player A's strategy. However, Player B's reliance on Floette-Eternal's Protect in critical moments limited its offensive potential. For future encounters, Player A should consider diversifying their lead options to include Kingambit for additional pressure, while Player B might benefit from ensuring Garchomp's presence in the lead to counter Sneasler more effectively. Both players should also refine their move choices to maximize damage output and minimize risk during critical turns.
+> In this series, Player A demonstrated effective use of Sneasler and Floette-Eternal, leveraging their synergy with Indeedee-F and Incineroar. Player B's reliance on Rillaboom and Garchomp was notable but lacked the necessary adjustments to counter Player A's strategies. For future matches, Player A should consider varying their lead to potentially include Kingambit for added offensive pressure, while Player B might benefit from adjusting their lead to include Garchomp to better handle Indeedee-F's Psychic Terrain. Both players should also evaluate their move choices, particularly in terms of Protect usage, to mitigate damage and maintain board control.
 >
 > **Verified teamsheet and spread findings**
 >
@@ -701,37 +641,39 @@ Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 3. Issues: ['l
 
 Source: public series 2712545359. Question: Coach both players after this series: what should each change in their leads, bring-four choices and move choices next time? Ground every recommendation in the games and say what the replays do not show.
 
-Checks: contradictions none; warnings none; narrative-validation rejections 8; figures outside evidence none; fallback notice True.
+Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 3. Issues: ['incomplete analysis', 'missing turning point', 'inconsistent with evidence']
+Judge: grounded 3, actionable 3, specific 3, consistent 2, honest 4. Issues: ['Golisopod mention incorrect', 'Inconsistent with game 3 leads', 'Lacks specific move recommendations']
 
-> The generated explanation did not pass evidence validation. The verified findings are shown below.
+> **Strategic interpretation**
+>
+> In this series, Player B demonstrated effective use of speed control and offensive pressure, particularly with Blaziken and Kingambit. Liamj vgc! should consider adjusting their lead to include more speed control options or bulkier Pokémon to withstand early game pressure. For instance, switching to a lead like Indeedee-F with a supportive role could help mitigate damage and redirect threats. Additionally, Liamj could benefit from bringing Pokémon that can counter Blaziken effectively, such as a strong Water-type or bulky Fairy-type. Player B should maintain their aggressive strategy but might explore alternative moves on Kingambit to ensure it can safely set up without risking a KO from Pawmot or Gardevoir. Overall, both players should focus on adjusting their leads and move choices based on the revealed threats and damage outputs observed in the games.
 >
 > **Verified teamsheet and spread findings**
 >
-> - **Golisopod (Player A)**: declared nature: Adamant; declared/verified item: Golisopite; base-form ability: EmergencyExit; declared/verified moves: IronHead, LeechLife, DrillRun, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Golisopod (Player A)**: no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Pawmot (Player A)**: declared nature: Jolly; declared/verified item: FocusSash; base-form ability: IronFist; declared/verified moves: DoubleShock, RevivalBlessing, CloseCombat, FakeOut; HP compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; game 3 event 13: Flip Turn by Basculegion into Pawmot, 100% -> 42%; ATK compatible native points: 24-32 (initial 0-32; 72.7% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 9: Close Combat by Pawmot into Blaziken, 100% -> 8%; DEF compatible native points: 0-10 (initial 0-32; 66.7% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Pawmot (Player A)**: HP compatible native points: 0-16 (initial 0-32; 48.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; game 3 event 13: Flip Turn by Basculegion into Pawmot, 100% -> 42%; ATK compatible native points: 24-32 (initial 0-32; 72.7% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 9: Close Combat by Pawmot into Blaziken, 100% -> 8%; DEF compatible native points: 0-10 (initial 0-32; 66.7% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Gardevoir (Player A)**: declared nature: Timid; declared/verified item: Gardevoirite; base-form ability: Trace; declared/verified moves: ExpandingForce, HyperVoice, HyperBeam, Protect; Gardevoir-Mega ability: Pixilate; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Gardevoir (Player A)**: Gardevoir-Mega ability: Pixilate; no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Milotic (Player A)**: declared nature: Modest; declared/verified item: SitrusBerry; base-form ability: Competitive; declared/verified moves: Scald, LifeDew, IceBeam, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Milotic (Player A)**: no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Indeedee-F (Player A)**: declared nature: Bold; declared/verified item: RockyHelmet; base-form ability: PsychicSurge; declared/verified moves: Psychic, TrickRoom, FollowMe, HelpingHand; HP compatible native points: 5-32 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; game 2 event 6: Flip Turn by Basculegion into Indeedee-F, 100% -> 64%; DEF compatible native points: 14-32 (initial 0-32; 42.4% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; game 2 event 6: Flip Turn by Basculegion into Indeedee-F, 100% -> 64%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Indeedee-F (Player A)**: HP compatible native points: 5-32 (initial 0-32; 15.2% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; game 2 event 6: Flip Turn by Basculegion into Indeedee-F, 100% -> 64%; DEF compatible native points: 14-32 (initial 0-32; 42.4% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; game 2 event 6: Flip Turn by Basculegion into Indeedee-F, 100% -> 64%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Arcanine-Hisui (Player A)**: declared nature: Jolly; declared/verified item: ChoiceScarf; base-form ability: RockHead; declared/verified moves: FlareBlitz, HeadSmash, RockSlide, ExtremeSpeed; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Arcanine-Hisui (Player A)**: no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Blaziken (Player B)**: declared nature: Adamant; declared/verified item: Blazikenite; base-form ability: SpeedBoost; declared/verified moves: CloseCombat, FlareBlitz, RockSlide, Protect; Blaziken-Mega ability: Speed Boost; HP compatible native points: 0-7 (initial 0-32; 75.8% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 9: Close Combat by Pawmot into Blaziken, 100% -> 8%; DEF compatible native points: 0-4 (initial 0-32; 84.8% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 9: Close Combat by Pawmot into Blaziken, 100% -> 8%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Blaziken (Player B)**: Blaziken-Mega ability: Speed Boost; HP compatible native points: 0-7 (initial 0-32; 75.8% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 9: Close Combat by Pawmot into Blaziken, 100% -> 8%; DEF compatible native points: 0-4 (initial 0-32; 84.8% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 2 event 9: Close Combat by Pawmot into Blaziken, 100% -> 8%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Rillaboom (Player B)**: declared nature: Adamant; declared/verified item: OccaBerry; base-form ability: GrassySurge; declared/verified moves: WoodHammer, GrassyGlide, FakeOut, Uturn; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Rillaboom (Player B)**: no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Sneasler (Player B)**: declared nature: Adamant; declared/verified item: WhiteHerb; base-form ability: Unburden; declared/verified moves: GunkShot, CloseCombat, FakeOut, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Sneasler (Player B)**: no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Basculegion (Player B)**: declared nature: Jolly; declared/verified item: ChoiceScarf; base-form ability: Adaptability; declared/verified moves: LastRespects, WaveCrash, FlipTurn, AquaJet; ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; some stat-point intervals narrowed; other values and the joint spread remain open.
+> - **Basculegion (Player B)**: ATK compatible native points: 15-32 (initial 0-32; 45.5% fewer possibilities); leave-one-out dependencies recorded during the search; later hits may add redundancy: game 1 event 6: Flip Turn by Basculegion into Pawmot, 100% -> 37%; some stat-point intervals narrowed; other values and the joint spread remain open.
 >
-> - **Kingambit (Player B)**: declared nature: Adamant; declared/verified item: LifeOrb; base-form ability: Defiant; declared/verified moves: SwordsDance, KowtowCleave, SuckerPunch, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Kingambit (Player B)**: no original stat-point interval narrowed here; the full spread remains unresolved.
 >
-> - **Froslass (Player B)**: declared nature: Timid; declared/verified item: Froslassite; base-form ability: CursedBody; declared/verified moves: Blizzard, ShadowBall, AuroraVeil, Protect; no original stat-point interval narrowed here; the full spread remains unresolved.
+> - **Froslass (Player B)**: no original stat-point interval narrowed here; the full spread remains unresolved.
 >
 > IVs are fixed at 31. Bounds describe native Champions stat points, not legacy EVs.
 >
@@ -747,35 +689,37 @@ Source: simulated game sim700x0-g1 (random moves). Question: What was the turnin
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 5, actionable 5, specific 5, consistent 5, honest 5. Issues: none
+Judge: grounded 5, actionable 4, specific 5, consistent 5, honest 4. Issues: ['suggests Trick Room on Turn 1 without evidence it was better', 'suggests switching without evidence it was possible', 'does not state what evidence cannot show']
 
 > ### Result
-> Winner: Player A (p1) with a score of 4 to 1.
+> Winner: Player A (p1) with a score of 1 to 4.
 >
 > ### Turning Point
-> The turning point of the game occurred on **Turn 1**. At this point, Player A led with **4 Pokémon** to 3, having a total HP of **356%** against Player B's **300%**. The sequence was as follows:
-> - **Turn 1** Actions:
->   - p2 Indeedee-F used **Helping Hand**.
->   - p1 Basculegion used **Wave Crash** (guaranteed OHKO) on p2 Excadrill, dealing significant damage that left it at **1% HP**.
->   - p1 Kingambit then used **Kowtow Cleave**, resulting in the fainting of Excadrill.
->   
-> This early lead set the tone for the match, allowing Player A to maintain a significant advantage in both numbers and HP throughout the game.
+> The turning point occurred on **Turn 1**. After this turn, Player A led with 4 Pokémon against Player B's 3 Pokémon, maintaining a significant HP advantage with a total of 356% against Player B's 300%. The actions were as follows:
+> - **p2 Indeedee-F used Helping Hand**.
+> - **p1 Basculegion used Wave Crash** (super effective, crit) on **Excadrill**, reducing it to 1% HP.
+> - **p1 Kingambit used Kowtow Cleave**, resulting in **Excadrill fainting**.
+>
+> This pivotal moment established Player A's early lead, which they maintained throughout the game, never allowing Player B to recover.
 >
 > ### Decisions
-> **Player B:**
-> - On Turn 1, p2 Indeedee-F's usage of **Helping Hand** could have been optimized by instead using **Trick Room** to take advantage of its slower Pokémon for following turns. Given the immediate pressure from Basculegion and Kingambit, establishing Trick Room would have flipped the speed order against the faster Pokémon on Player A's side.
+> For Player B, multiple critical misplays contributed to their loss:
 >
-> - By Turn 2, although Indeedee-F did use **Trick Room**, keeping Gardevoir out against a heavy physical team was risky. A switch to Sneasler would have spared Gardevoir from potential damage while still using the Trick Room effectively.
+> 1. **Indeedee-F's use of Helping Hand (Turn 1)**: Although it was meant to boost the following attack, it could have set up **Trick Room** instead, which would have altered the speed dynamic and potentially allowed Player B to counterattack first.
+>    
+> 2. **Switching opportunities**: 
+>    - During **Turn 2**, Player B could have switched **Gardevoir** to **Sneasler** to absorb an incoming Wood Hammer from **Rillaboom**, as the damage taken would have been significantly less (maximum of 95.5%).
+>    - Similarly, during **Turn 3**, a switch could have been made to avoid imminent threats from **Rillaboom's Wood Hammer** and **Kingambit's Kowtow Cleave**.
 >
-> **Player A:**
-> - Player A played optimally by exploiting p2's weakened Pokémon early on and ensuring consistent pressure. Each attack after the KO of Excadrill led to a more favorable position.
+> 3. **Follow Me vs. Protect**: On **Turn 4**, Indeedee-F used Follow Me which was ineffective as it drew attention to it rather than saving Gardevoir, leading to a loss of momentum.
+>
+> Overall, Player B's decisions to not use their switching options effectively contributed to their eventual defeat.
 >
 > ### What to Change
-> For **Player B** to improve, it should:
-> 1. Prioritize using **Trick Room** earlier to leverage the speed control against Player A's faster Pokémon.
-> 2. Consider switching Indeedee-F out to Sneasler instead of risking being targeted while Gardevoir was vulnerable.
->
-> Utilizing these strategies could have prolonged Player B’s chances of staying in the game by giving it a better matchup against the faster attackers of Player A. Overall, optimizing move choices and considering switch opportunities played a crucial role in determining the outcome of the match.
+> To improve, Player B should consider the following adjustments:
+> - Prioritize using **Trick Room** with Indeedee-F when there is a potentially immediate KO threat; it would have shifted the speed advantage to their favor, allowing more control in subsequent turns.
+> - Emphasize better positioning with strategic switches when facing high-damage threats. Switching Gardevoir and Indeedee-F at key moments could have preserved their presence in the match.
+> - Monitoring the timeline for uses of moves that restrict mobility (like Protect) versus ones that would mitigate damage (like Switching) would be essential for better sustainability in the long term.
 
 ### bo1sim-sim700x101-g3-coach_loser
 
@@ -783,47 +727,33 @@ Source: simulated game sim700x101-g3 (random moves). Question: Coach the losing 
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 3. Issues: ['incorrect turning point analysis', 'misinterpretation of Protect usage', 'incomplete speed control advice']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Inconsistent with engine turning point', 'Misinterpretation of Protect effectiveness', 'Assumes unlogged damage calculations']
 
-> ### Result:
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 2.
+> **Result:** Winner: Player B (p2). Score — Player A lost 4; Player B lost 2.
 >
-> ### Turning Point:
-> The turning point of the match occurred on **turn 6**, where Player B led with two Pokémon against Player A's two, holding a significant health advantage. The moves in this turn were:
-> - p1 **Gholdengo** used **Protect** (blocked Rillaboom's Grassy Glide).
-> - p2 **Rillaboom** used **Grassy Glide** (blocked by Gholdengo's Protect).
-> - p2 **Basculegion** used **Last Respects**, knocking out **Excadrill** (ended with 5% HP).
+> **Turning Point:** The key turning point occurred on Turn 6, when Player B maintained a lead of 2 Pokémon to Player A's 2 with a health advantage of 163% to 105%. At this point, Player A sent out Gholdengo, who used Protect, blocking Rillaboom's Grassy Glide, which would have done 63.1 - 74.3% damage. Meanwhile, Basculegion's Last Respects delivered a guaranteed OHKO to Excadrill, leaving Player A at a significant disadvantage.
 >
-> At the end of this turn, Player B maintained 163% total HP compared to Player A's 105%. The match momentum clearly favored Player B at this point.
+> **Decisions:** 
+> 1. **Misplays:**
+>    - **Tyranitar's Protect on Turn 1** was not optimal as Rillaboom's Wood Hammer was a guaranteed OHKO. Instead, it would have been better to switch Tyranitar to Sinistcha or Gholdengo to mitigate damage from Rillaboom.
+>    - **Excadrill's Protect on Turn 2** did not prevent Basculegion’s impactful Last Respects, which should have been countered with an attack or switch, as it had a guaranteed OHKO on a non-Protected Excadrill.
+>    - On **Turn 4**, Excadrill missed Rock Slide, wasting an opportunity to deal damage to Basculegion. Instead, it should have prioritized a guaranteed hit with High Horsepower on Sneasler.
 >
-> ### Decisions:
-> Several crucial misplays occurred on Player A's side during the battle:
+> 2. **Good Reads:**
+>    - Protects used strategically by both Tyranitar and Excadrill were effective to block immediate threats but could have been more targeted. 
 >
-> 1. **Tyranitar's Decisions:**
->    - On **turn 1**, Tyranitar chose to use **Protect** instead of targeting Rillaboom with **Low Kick**, despite being threatened by a guaranteed OHKO from Rillaboom's **Wood Hammer**. Switching to either **Sinistcha** (taking at most 43.8% damage) or **Gholdengo** (taking at most 64%) would have preserved Tyranitar.
->    
-> 2. **Excadrill’s Choices:**
->    - Again on **turn 2**, Excadrill could have used **High Horsepower** against Sneasler to secure a guaranteed OHKO instead of Protecting. This would have been a pivotal moment, eliminating a major threat. The same situation arose on **turn 3**, where choosing an attacking option instead of Protect might have prevented losing momentum.
+> **What to Change:**
+> 1. **Leads:** Consider adjusting leads to better counter Rillaboom and Sneasler's threats. Having Gholdengo or another Pokémon that can outspeed and threaten them could be beneficial.
+>   
+> 2. **Moves:** 
+>    - Excadrill should ideally focus on using High Horsepower against Sneasler and Basculegion rather than Rock Slide, which has a less favorable accuracy and potential miss.
+>    - A consideration for attacking potential on key threats rather than protecting unless in immediate danger is critical. 
 >
-> 3. **Incorrect Protect Usage:**
->    - Throughout the match, several instances of Protect by Tyranitar and Excadrill often failed to mitigate immediate threats, resulting in wasted turns. For instance, both Protect moves on **turns 2 and 3** blocked attacks but allowed opposing Pokémon to gain momentum instead of eliminating threats.
+> 3. **Use of Protect and Speed Control:**
+>    - Implement more proactive switching strategies instead of relying solely on Protect. For example, switching Tyranitar out on Turn 1 could have preserved valuable HP.
+>    - Utilizing damage-calculating tools pre-battle can help predict potential threats more accurately and assist in making informed decisions about when to Protect or switch.
 >
-> ### What to Change:
-> To improve in a similar matchup, Player A should consider the following adjustments:
->
-> 1. **Leads:**
->    - Ensure that the lead Pokémon can handle common threats effectively. Given the matchup, consider leading with Sinistcha or Gholdengo paired with Excadrill, as Gholdengo offers valuable coverage against both Sneasler and Basculegion.
->
-> 2. **Moveset Adjustments:**
->    - Prioritize moves that can threaten significant damage. For instance, Excadrill's default attacking moves (like High Horsepower) should be utilized early to weaken or eliminate threats without relying too heavily on Protects.
->
-> 3. **Protect Usage:**
->    - Only use Protect when an immediate threat is present that can cause a KO. Misallocated Protects did not block lethal moves adequately. Rather, consider switching to a healthier Pokémon that can withstand possible attacks, which would minimize damage and regroup for better positioning.
->
-> 4. **Speed Control:**
->    - Implementing better speed control might require reconsidering carrying Trick Room options. Rillaboom's Terrain and Grassy Glide often controlled the pace; thus, utilizing Trick Room-friendly Pokémon could outmaneuver this team composition.
->
-> With these adjustments and a focus on immediate threat assessment, Player A can significantly enhance its performance in future matchups.
+> By fine-tuning these aspects of strategy, Player A can better their odds in future encounters against this team composition.
 
 ### bo1sim-sim700x106-g1-decisions
 
@@ -831,38 +761,35 @@ Source: simulated game sim700x106-g1 (random moves). Question: Which decisions b
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 2, actionable 3, specific 3, consistent 1, honest 2. Issues: ['Inconsistent with engine turning point', 'Incorrect analysis of turn 10', "Invented details about Gardevoir's targeting"]
+Judge: grounded 2, actionable 2, specific 3, consistent 1, honest 3. Issues: ['Incorrect turning point analysis', 'Misinterpretation of Protect usage', 'Inaccurate damage calculations']
 
-> ## Result
+> ### Result
 > Winner: Player B (p2). Score — Player A lost 4; Player B lost 3.
 >
-> ## Turning Point
-> The turning point occurred on turn 13, where p2 Golisopod used Iron Head, resulting in a guaranteed OHKO against p1 Froslass (fainted). At this turn, Player B had 1 Pokémon left, Golisopod at 51% HP, while Player A had 0 Pokémon remaining. This turn was decisive as it ensured that Player B maintained a lead in the match and kept ahead throughout.
+> ### Turning Point
+> The turning point of the game was **turn 13**, where Golisopod-Mega used Iron Head to knock out Froslass, pushing Player B to a clear lead. During this turn, Golisopod-Mega dealt **195.9 - 232.7% damage**, ensuring a guaranteed OHKO against Froslass. This KO left Player B in a very favorable position, leading the game with one Pokémon against zero HP from Player A.
 >
-> ## Decisions
-> ### Best Decisions
-> - **Player B (p2)**:
->   - **Turn 4**: Gardevoir used Protect to block Delphox’s Heat Wave. This was a justified move, as it prevented Gardevoir from potentially losing significant HP (projected KO: guaranteed 2HKO after Grassy Terrain recovery).
->   - **Turn 6**: Golisopod used Protect to block Dragonite's Extreme Speed, effectively saving itself and keeping it in the game.
->   - **Turn 10**: Gardevoir correctly targeted Dragonite with Expanding Force, putting it into a precarious situation.
+> ### Decisions
 >
-> - **Player A (p1)**:
->   - **Turn 1**: Delphox’s use of Psychic to faint Pawmot was a critical and strong choice, eliminating an immediate threat from the opposing side.
+> #### Best Decisions
+> 1. **Player B's Gardevoir using Protect (Turn 4):** Gardevoir successfully blocked Delphox's Heat Wave, which had a guaranteed 2HKO potential. This choice protected it from taking significant damage, allowing it to remain in play.
 >
-> ### Worst Decisions
-> - **Player B (p2)**:
->   - **Turn 1**: Golisopod opted to use Protect instead of a strong offensive move like Drill Run against Delphox, which had a guaranteed OHKO potential. This decision allowed Delphox to retaliate.
->   - **Turn 6**: Golisopod’s use of Protect again, while effective for some moves, did not capitalize on dealing damage to either Dragonite or Froslass when it had good opportunities to secure a KO instead.
+> 2. **Player B's Golisopod using Leech Life against Delphox (Turn 4):** This allowed Golisopod to secure the KO on Delphox, maintaining its pressure and recovering HP. Golisopod had multiple alternatives that could have been used without much risk, and it capitalized on Delphox’s low HP.
 >
-> - **Player A (p1)**:
->   - **Turn 4**: Delphox used Heat Wave, but missed due to Gardevoir’s Protect. Instead, Delphox could have opted for a target with guaranteed damage, such as Golisopod, which would have been knocked out effectively.
+> 3. **Player A's Delphox using Psychic on Pawmot (Turn 1):** This decision secured an early KO on Pawmot and set a strong offensive momentum.
 >
-> ## What to Change
-> Player A should consider the following adjustments:
-> - **Shift Targeting Strategy**: On turns where significant threats are present, prioritize moves that ensure KOs against key opponents instead of risking coverage moves that can miss.
-> - **Timelier Protect Usage**: Utilize Protect more strategically to mitigate high-risk situations, especially when facing powerful opponents like Golisopod and Gardevoir. 
+> #### Worst Decisions
+> 1. **Player B’s Golisopod using Protect on Turn 1:** Instead of using a damaging move such as Drill Run for a guaranteed OHKO on Delphox, Golisopod chose to Protect. This was a critical misplay, as it allowed Delphox to retaliate and continue threatening Golisopod that turn, diminishing its effectiveness.
 >
-> By making these changes, the team can improve its overall synergy and effectiveness in future matches.
+> 2. **Player A's Froslass fails to use Protect on Turn 10:** With 43% HP remaining, Froslass should have protected against Golisopod's Iron Head, which had a guaranteed OHKO. This miscalculation led to Froslass fainting and enabling Golisopod to continue applying pressure.
+>
+> 3. **Player A's Dragonite using Extreme Speed against Golisopod (Turn 7):** This move did negligible damage (11.5 - 13.7%) while it could have targeted Gardevoir for a guaranteed OHKO. This strategic misstep significantly affected Player A's ability to secure KOs when the opportunity arose.
+>
+> ### Protect Choices
+> - Player B's Gardevoir's Protect blocked a crucial Heat Wave, ensuring Gardevoir stayed in the game without suffering damage.
+> - Player A's Froslass had multiple opportunities to use Protect that turn but failed to do so against Golisopod's strong attacks, leading to its loss.
+>
+> Both players demonstrated strengths in decision-making, but crucial misplays and missed opportunities led to the outcome in favor of Player B.
 
 ### bo1sim-sim700x11-g1-turning
 
@@ -870,29 +797,26 @@ Source: simulated game sim700x11-g1 (random moves). Question: What was the turni
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Inaccurate turning point description', 'Misinterpretation of turn 24 events', 'Inconsistent with engine turning point']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Incorrect turning point', "Inconsistent with engine's turning point", "Overestimation of Protect's impact"]
 
-> ### Result
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 3.
+> 1. **Result**: Winner: Player B (p2). Score — Player A lost 4; Player B lost 3.
 >
-> ### Turning Point
-> The turning point of the game came on **turn 24**, where **p2 Floette-Eternal** used **Dazzling Gleam** (super effective) against **p1 Dragonite**, resulting in a guaranteed OHKO. Before this turn, Player B was leading with the advantage of two Pokémon still in play while Player A had only one Pokémon left. After this turn, Player B maintained a lead of half a Pokémon's worth of HP until the end of the game, securing their victory.
+> 2. **Turning point**: The turning point of the game was **turn 24**, where **p2 Floette-Eternal used Dazzling Gleam** on **p1 Dragonite**, causing it to faint. Floette-Eternal's Dazzling Gleam had a guaranteed OHKO, dealing 489.3% to Dragonite. At this point, Player B led with 1 Pokémon alive to Player A's 0 and consistently stayed ahead in terms of HP until the end of the game.
 >
-> ### Decisions
-> In the early turns, some notable decisions were misplays from Player A that contributed to their loss:
-> 1. In **turn 1**, Floette-Eternal used **Protect** effectively against a **Dire Claw** from Sneasler, which was a good block considering the imminent threat (guaranteed OHKO at 100% HP).
-> 2. In **turn 2**, Dragonite's **Protect** failed (due to the previous move's use), leading to a **Fake Out** on Floette-Eternal and resulting in it being paralyzed and weakened significantly (to only 6% HP).
-> 3. On **turn 24**, when Dragonite had around 40% HP remaining, it used **Protect**, which blocked Dazzling Gleam, but it was a last-ditch attempt to save Dragonite, showing the presence of poor positioning as it was already threatened with a guaranteed OHKO.
+> 3. **Decisions**: 
+>    - In turn 1, **p1 Floette-Eternal's Protect blocked Sneasler's Dire Claw**, which had a guaranteed OHKO against it. This was a justified play as it avoided a guaranteed KO.
+>    - However, in turn 2, **p1 Dragonite's Protect failed**, leaving Floette-Eternal vulnerable. The immediate threat from **p2 Incineroar's Fake Out** and **Sneasler's Dire Claw** led to Floette-Eternal being hit and paralyzed.
+>    - The critical mistake came in turn 3 where **p2 Sneasler used Close Combat**, achieving a KO on Floette-Eternal. P1 should have considered switching to Sneasler at this stage to mitigate damage and prevent its valuable setup Pokémon from fainting.
+>    - On turn 4, when **Sneasler fainted**, **p1 Incineroar's** Flare Blitz was the correct move to take out Sneasler, but missed the chance to put pressure on the opposing **p2 Floette-Eternal** directly.
+>    - The subsequent turns showed **p1 Dragonite getting paralyzed multiple times**, illustrating that it could have utilized Protect earlier when Floette-Eternal was in a precarious position from a +6 Floette-Eternal.
 >
-> Player B made effective use of **Helping Hand** with Incineroar to enhance the power of Floette-Eternal's attacks, notably in **turn 5** where Dazzling Gleam took down both of Player A's Pokémon. This decisive double KO put Player A at a strategic disadvantage.
+> 4. **What to change**: 
+>    - Throughout the game, **p1 Floette-Eternal** should have switched out at various points when faced with immediate threats from Sneasler or when it was paralyzed, rather than repeatedly trying to Protect. This adjustment would have preserved its presence for later turns to better support its teammates.
+>    - In terms of switching dynamics, activating Dragonite's Protect before the anticipated Dazzling Gleam attack would have been ideal, or it could have switched out to prevent its own KO on turn 21.
+>    - Considering switching to **Sneasler** in high-risk scenarios could have changed the pace of battle for Player A, allowing for better positioning against **p2 Floette-Eternal**.
+>    - Increasing offensive pressure with early OHKO potential moves could have capitalized more effectively on supporting roles like Helping Hand from Incineroar. 
 >
-> ### What to Change
-> Player A should have considered switch strategies earlier in the game:
-> 1. During **turn 1**, switching Floette-Eternal to Sneasler would have mitigated the imminent threat from Sneasler's Dire Claw, which would have allowed them to preserve a more effective attacking option against Player B's team.
-> 2. In **turn 2**, failing to attack or counter Sneasler risking paralysis made the Floette-Eternal vulnerable. If Dragonite had switched instead of attempting a protect strategy, they could have led a stronger offensive in subsequent turns.
-> 3. In later turns, especially from turn 19 onwards, Dragonite consistently faced overwhelming threats from Floette-Eternal. Utilizing the confirmed **Protect** move more strategically could have maintained its HP and possibly altered the outcome. 
->
-> These adjustments could have potentially changed the flow of the game and offered Player A a stronger chance of securing a win.
+> By making these adjustments, Player A could have potentially turned the tide of the battle in their favor.
 
 ### bo1sim-sim700x16-g1-coach_loser
 
@@ -900,28 +824,34 @@ Source: simulated game sim700x16-g1 (random moves). Question: Coach the losing p
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Invented Trick Room strategy', 'Misinterpretation of Protect use', 'Overemphasis on switching leads']
+Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['incorrect turning point description', 'misinterpretation of Protect use', 'lacks acknowledgment of unknowns']
 
-> 1. **Result:** Winner: Player A (p1). Score — Player A lost 2; Player B lost 4.
+> ## Result:
+> Winner: Player A (p1). Score — Player A lost 2; Player B lost 4.
 >
-> 2. **Turning point:** Turn 6 was the turning point. On this turn, p1 Charizard (Mega-Y) used Overheat on p2 Steelix, guaranteeing a KO (faint) with damage of 297.8 - 350.5% against Steelix, which led to a significant disadvantage for p2. After this turn, Player A led 2 Pokémon to 2 with a total HP of 200% against Player B's 101%, holding the lead until the end. 
+> ## Turning Point:
+> The turning point occurred on turn 6. During this turn, p1 Venusaur used Leaf Storm (guaranteed OHKO) on p2 Tyranitar, bringing it down to 1% HP, while p1 Charizard used Overheat (guaranteed OHKO) to finish off p2 Steelix. After this turn, Player A led significantly with 2 Pokémon to 2, maintaining a material advantage (200% HP to 101% total HP) for the rest of the game.
 >
-> 3. **Decisions:** 
->    - **Player B:** 
->      - **Turn 1:** p2 Charizard used Protect, which was unnecessary as it was under immediate threat from Garchomp's Power Gem (43.8% chance to OHKO). Instead, Charizard should have switched to another Pokémon (either Tyranitar or Greninja) to mitigate the damage risk.
->      - **Turn 2:** p2 Charizard transformed into Charizard-Mega-X and opted to use Dragon Dance; however, this provided time for p1 Garchomp to strike while Charizard was vulnerable. In retrospect, outright damage with Dragon Claw or Flare Blitz against Garchomp would have been more potent.
->      - **Turn 5:** Steelix's use of Earthquake did not threaten Malamar a significant amount. Given that a faint was unavoidable with Charizard's attack, focus should’ve been on damaging Venusaur or ensuring Charizard's Protect was active. 
->      - **Turn 3:** Garchomp used Protect correctly to block an immediate OHKO from p2's Charizard.
->    - **Player A:** 
->      - **Turn 3:** Garchomp opted to Protect, successfully protecting itself from an imminent OHKO. Maintaining this decision allowed it to later contribute effectively with Overheat and re-establish pressure.
+> ## Decisions:
+> - **Player B's Misplays:**
+>   1. **Turn 1:** p2 Charizard used Protect. A better option would have been to switch to Tyranitar, which would have taken at most 20.3% from Garchomp's Power Gem instead of risking a possible KO.
+>   2. **Turn 2:** Charizard used Dragon Dance instead of attacking Garchomp. Instead, it could have done significant damage with Dragon Claw (guaranteed OHKO on Garchomp at that health).
+>   3. **Turn 3:** Steelix used Earthquake against Garchomp (blocked by Protect). A Body Press instead could have effectively targeted Garchomp while still having Malamar vulnerable to the spread damage.
+>   4. **Turn 4:** Charizard attacked Garchomp with Flare Blitz. Here, using Dragon Claw would have guaranteed the KO, given Garchomp's low health.
+>   
+> - **Player A's Effective Plays:**
+>   1. Malamar used Skill Swap effectively, but without damage output. 
+>   2. Garchomp used Protect wisely to block critical attacks from both Charizard and Steelix.
+>   3. Venusaur’s strategic Sleep Powder on Greninja provided significant control, avoiding an incoming threat.
 >
-> 4. **What to change:** For Player B to improve:
->    - **Leads:** Consider leading with Pokémon that can hit back harder. Charizard (in particular Mega-X) should potentially be paired with a faster, physically defensive Pokémon like Tyranitar to withstand initial attacks.
->    - **Moves:** Focus more on using damaging moves earlier, especially on turns like 2 and 4, rather than setting up. Moving towards aggressive plays will better suit the offensive setup while limiting the opponents' openings.
->    - **Use of Protect:** Analyze the threats on the field thoroughly; while Protect is vital, selecting the right Pokémon to protect based on incoming threats is crucial. In this matchup, switching Charizard out or responding with Tyranitar earlier would offer better damage control.
->    - **Speed control:** Implement strategies for Trick Room if using Garchomp and Steelix together, as it would balance out the speed differential during crucial turns, particularly if Garchomp is taking damage. This is indicated by the effectiveness of the winning side's moves against the slower threats Player B was facing.
+> ## What to Change:
+> 1. **Leads:** Player B should reconsider the initial lead. A stronger Pokémon like Tyranitar could have anchored the team against threats like Garchomp more effectively. 
+> 2. **Use of Protect:**
+>    - In Turn 1, switching Charizard to Tyranitar instead of using Protect would have preserved Charizard for later in the match and reduced the damage taken overall.
+>    - On Turn 3, when Garchomp was at low health, a better decision would have been to predict Charizard’s Dragon Claw and instead use Protect for Garchomp or switch it out to avoid KO.
+> 3. **Speed Control:** Adding a Trick Room option, or prioritizing Pokémon that can handle opposing speed threats earlier could help with matching up against fast threats like Mega Charizard. 
 >
-> By adjusting the leads to mitigate damage effectively, making more aggressive moves, and carefully considering Protect usage, Player B can pivot their strategies toward a stronger performance in future matchups.
+> Adapting these strategies focusing on Pokémon resilience and strategic plays in the early turns will enhance their chances in future matchups.
 
 ### bo1sim-sim700x19-g3-decisions
 
@@ -929,42 +859,36 @@ Source: simulated game sim700x19-g3 (random moves). Question: Which decisions by
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Inconsistent with engine turning point', 'Invented damage projections', 'Misinterpretation of Rock Slide miss as decision']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Incorrect claim about Earth Power OHKO', "Misinterpretation of Charizard's Flare Blitz effectiveness", 'Inconsistent with engine turning point']
 
-> ### Result
-> Winner: Player A (p1). Score — Player A lost 3; Player B lost 4.
+> ### Result:
+> Player A (p1) won the match, with a score of 3 Pokémon remaining for them and 4 fainted on Player B's (p2) side.
 >
-> ### Turning point
-> **Turn 1** was the turning point of the battle. During this turn:
-> - **p1 Malamar** used **Superpower** on **Steelix**, dealing **78% HP**, and received an attack and defense boost.
-> - **p1 Garchomp** then used **Draco Meteor** on **Charizard**, bringing it down to **45% HP**.
-> - In response, **p2 Charizard** used **Flare Blitz** on **Malamar**, damaging it to **67% HP**.
-> - **p2 Steelix** opted for **Iron Defense**, raising its defense by two stages.
+> ### Turning Point:
+> The key turning point was **Turn 1**, where Player A's Malamar used **Superpower** against Steelix, leaving it at 78% HP while simultaneously boosting its Attack and Defense. Garchomp then followed up with **Draco Meteor**, hitting Charizard for 45% of its HP. P2's Charizard retaliated with **Flare Blitz**, dealing slight damage to Malamar but being unable to secure a KO. Here, Player A managed to deal substantial damage to both an opposing Pokémon and set the stage for further aggressive plays.
 >
-> At this point, **Player A** led with 4 Pokémon alive (367% total HP vs. Player B's 4 Pokémon at 314% HP), establishing a substantial lead.
->
-> ### Decisions
-> #### Player A's Best Decisions:
-> 1. **Malamar's Choice to Use Superpower**: This was a solid decision as it targeted Steelix, a major physical threat to the team. The attack dealt significant damage (projected 25.3 - 30.8%), confirming a strong early hit.
-> 2. **Garchomp's Move Selection**: Using **Draco Meteor** to target Charizard ensured that one key threat was effectively neutralized, setting up a safe advantage for the rest of the match.
->
-> #### Player A's Worst Decisions:
-> 1. **Power Gem Against Steelix (Turn 3)**: Garchomp opted for Power Gem against Steelix, resulting in minimal damage (58% HP remaining). This was suboptimal compared to using Earth Power, which guaranteed a better range of damage (38.5 - 47.3%) and could have significantly weakened or fainted Steelix.
+> ### Decisions:
+> **Player A (p1)**:
+> - **Good Decisions:**
+>   - **Turn 1: Malamar's Superpower** was effective as it targeted Steelix, which had lesser defensive capabilities against Superpower compared to Charizard. This choice allowed Malamar to set up defensively while dealing significant damage.
+>   - **Turn 2: Garchomp's Earth Power** after Malamar's Superpower KO'd Charizard, capturing momentum and preventing the Mega Evolution from posing an ongoing threat.
 >   
-> #### Player B's Best Decisions:
-> 1. **Steelix's Iron Defense**: This was a strategic play that aimed to bolster Steelix's defenses early in the match, though it did not convert into immediate advantage.
-> 2. **Switching In Tyranitar**: Correctly identifying that some offensive presence was needed against the weakened Pokémon from Player A enabled action in subsequent turns.
+> - **Poor Decisions:**
+>   - **Turn 3: Garchomp used Power Gem against Steelix** instead of **Earth Power**, which would have secured a guaranteed OHKO instead of a non-threatening damage roll that left Steelix at 58% HP.
 >
-> #### Player B's Worst Decisions:
-> 1. **Turn 3 Rock Slide Miss**: Tyranitar missed its Rock Slide attack, giving Player A an opportunity without having to deal with damage, allowing Garchomp to focus on offense instead of recovering.
-> 2. **Ignoring Venusaur**: Player B did not sufficiently target Venusaur when it had the opportunity, potentially leaving the opposing Pokémon to run amok and later set up significant damage.
+> **Player B (p2)**:
+> - **Good Decisions:**
+>   - **Turn 2: Using Mega Charizard's Flare Blitz** was a solid choice to try and deal immediate damage to Malamar, even if it didn't secure a KO.
+>   - **Turn 7: Greninja using Blizzard** was a strong move targeting Venusaur, which failed due to a miss but held potential to change the game flow.
 >
-> ### What to change
-> For **Player B**, focusing on maximizing damage output with stronger moves like Knock Off against Garchomp could have pressured Player A more effectively. Furthermore, prioritizing Protect on the Steelix early game may have avoided being heavily punished.
+> - **Poor Decisions:**
+>   - **Turn 1: Charizard's Flare Blitz on Malamar** proved ineffective due to the typing advantage and led to a suboptimal damage output against Malamar. A switch-out was available to avoid a disadvantageous position, especially considering the presence of threats like Garchomp.
+>   - **Turn 3: Tyranitar using Rock Slide** which missed meant losing a chance to exert pressure and stabilize the board state.
 >
-> In contrast, **Player A** should consider more aggressive targeting on key threats and potentially re-evaluating moves that provide lower damage outputs when stronger options are available, particularly with Garchomp against Steelix. 
+> ### Protect Choices:
+> Player A’s Venusaur made a crucial **Protect** on **Turn 5**, successfully blocking attacks from both Steelix and Tyranitar. This decision preserved Venusaur, allowing it to maintain pressure on the opposition without risking a potential KO. The block denied a **guaranteed 2HKO** from Steelix's Iron Head and a chance to KO from Tyranitar's Rock Slide, showcasing an excellent defensive awareness.
 >
-> This analysis identifies key tactical approaches and mistakes, providing a coherent overview of decision-making that led to the outcome of the match.
+> In conclusion, the decisions around targeting, Protect usage, and which threats to prioritize played critical roles in the match outcome. Player A exhibited strong strategic planning, whereas Player B faced challenges in executing optimal plays in critical turns.
 
 ### bo1sim-sim700x24-g1-turning
 
@@ -972,32 +896,27 @@ Source: simulated game sim700x24-g1 (random moves). Question: What was the turni
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Inconsistent with engine turning point', 'Misinterpretation of turn 1 actions', 'Incorrect analysis of turn 2 options']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['turning point mismatch', 'incorrect move suggestions', 'inconsistent with log actions']
 
-> ### Result
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 2.
+> **Result:** Player B (p2) won the match with a score of 4-2 over Player A (p1).
 >
-> ### Turning Point
-> The turning point of the match occurred on **turn 21**. During this turn, **Indeedee** from Player B used **Hyper Voice** against **Ninetales-Alola**, which had previously fainted in turn 26, while **Player B** maintained two Pokémon to Player A's one (Indeedee and Whimsicott vs. Ninetales-Alola). The conditions were favorable for Player B, leading to a decisive remaining HP count of 118% against Player A's total of 67%. 
+> **Turning point:** The turning point of the game occurred on turn 21, where Player B led with 2 Pokémon remaining against Player A's 1 Pokémon, holding a significant lead in HP (118% vs. 67% total HP). The actions from that turn were critical: Player B’s Indeedee used Hyper Voice, dealing substantial damage, while Ninetales-Alola from Player A failed to act effectively against the two opposing Pokémon.
 >
-> ### Decisions
-> #### Player A's Misplays:
-> 1. **Turn 1:** **Raichu** used **Focus Blast**, which missed. The better option would have been **Zap Cannon** on **Indeedee**, which guaranteed a 2HKO. Raichu could have used **Protect** to block immediate threats from **Floette-Eternal** that turn; **Light of Ruin** would have guaranteed an OHKO (135.8%-159.9%).
+> **Decisions:** 
+> - On turn 1, Raichu from Player A missed its Focus Blast target. Instead, it could have chosen to use Zap Cannon on Indeedee, which had a guaranteed 2HKO (61.3-73% damage) rather than risking a less effective move. The missed move allowed Floette-Eternal to hit Baxcalibur hard and set up a snowballing disadvantage against Player A.
 >   
-> 2. **Turn 2:** **Baxcalibur** used **Protect** against **Floette-Eternal's** **Dazzling Gleam**, saving it from fainting, but it could have capitalized on its Swords Dance by attacking Indeedee with **Glaive Rush**, resulting in a guaranteed OHKO (142.3%-168.6%).
+> - Throughout the game, there were multiple instances where Player A's Pokémon could have used Protect instead of risk actions that exposed them to heavy damage. For example, Raichu and Ninetales-Alola both could have used Protect to block imminent OHKO threats from opponents during crucial turns (such as against Floette-Eternal's Light of Ruin on turn 13).
+>   
+> - Also, Incineroar’s Parting Shot on turn 4 could have left a more favorable situation in attack phases, as this would better position Player A for future turns by reducing the opponents’ offensive capability.
 >
-> 3. **Turn 15:** **Raichu** did not utilize **Protect**, allowing **Whimsicott's** **Moonblast** to faint it. It could have prevented a KO by using **Protect**.
+> **What to change:** Player A should consider the following adjustments to improve future performance:
+> 1. Prioritize using Protect when facing threats that can guarantee OHKOs, as seen with Floette-Eternal's moves. For instance, using it on turn 1 to block an incoming attack could have saved key HP on Raichu or Baxcalibur.
+>   
+> 2. Utilize valid switch options more liberally instead of exposing Pokémon to damage, particularly in high-risk situations. For instance, switching Raichu or Baxcalibur out to take less damage from high-threat moves like Light of Ruin or Expanding Force could have preserved their presence in the game.
+>   
+> 3. Evaluate movement timing under Trick Room; making sure to use speed control moves that can enhance the team's attack rhythm when outnumbered could turn future outcomes in their favor. 
 >
-> #### Player B's Good Reads:
-> - The activation of **Tailwind** on turn 11 allowed Player B to maintain speed control and effectively manage the board state.
-> - **Floette-Eternal** consistently targeted high-threat Pokémon with its moves, securing damage and keeping pressure on Player A's remaining Pokémon.
->
-> ### What to Change
-> Player A should consider the following adjustments:
-> - Prioritize using **Protect** on high-threat turns where immediate KOs are possible, especially when facing **Floette-Eternal** and **Whimsicott** in subsequent rounds.
-> - Reassess the attacking and protecting strategy with **Raichu**; it should often opt for moves that can capitalize on specific threats instead of wasting turns with missed moves like **Focus Blast**. The composition of their team can work better with adjusted strategies.
->
-> Adapting strategies based on the current metagame dynamics could also improve their chances in future battles.
+> Overall, these tactical adjustments could provide a stronger offense and defense, enhancing the team synergy and leading to better outcomes in similar situations.
 
 ### bo1sim-sim700x29-g1-coach_loser
 
@@ -1005,40 +924,42 @@ Source: simulated game sim700x29-g1 (random moves). Question: Coach the losing p
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Incorrect analysis of Trick Room impact', "Misinterpretation of Floette-Eternal's optimal moves", 'Lack of acknowledgment of evidence limitations']
+Judge: grounded 2, actionable 3, specific 3, consistent 1, honest 2. Issues: ['incorrect_turning_point', 'misinterpretation_of_faints', 'unfounded_claims']
 
-> ## Result
+> ### Result
 > Winner: Player B (p2). Score — Player A lost 4; Player B lost 1.
 >
-> ## Turning Point
-> The turning point occurred on Turn 7, when Player B led with 3 Pokémon remaining against Player A's 1 Pokémon. After this turn, Player B maintained a significant advantage, with 135% total HP against Player A's 70% total HP. Player A lost Whimsicott that turn, which greatly diminished their ability to recover.
+> ### Turning Point
+> The turning point occurred on **Turn 7**. On this turn, p2's Whimsicott fainted due to Charizard's Heat Wave that guaranteed an OHKO. At this point, p2 led with 3 Pokémon remaining versus Player A's 1 Pokémon. This significant lead (135% total HP for p2 against 70% for p1) enabled p2 to maintain dominance until the end of the match.
 >
-> ## Decisions
-> 1. **Player A's Decisions:**
->    - **Turn 1:** Floette-Eternal used Dazzling Gleam, which did not target Charizard due to its Protect. The optimal choice would have been to use Light of Ruin against Whimsicott, as it guaranteed a knockout (KO), being a 1HKO threat.
->    - **Turn 2:** Despite the opportunity to attack, Indeedee's Trick Room usage put it at a disadvantage against the enemy's Tailwind team. Hyper Voice against Whimsicott would have guaranteed an OHKO instead of using Trick Room, which further limited its effectiveness.
->    - **Subsequent Turns:** Floette-Eternal should have focused on taking out high-threat Pokémon like Charizard or Basculegion quickly rather than spreading damage with moves like Dazzling Gleam. 
+> ### Decisions
+> **Misplays:**
+> 1. **Floette-Eternal's First Turn:** Floette-Eternal used Dazzling Gleam instead of Light of Ruin against Whimsicott, which guaranteed a KO (167.1 - 197.1%) but instead ended up targeting Charizard, which blocked the attack. This choice allowed p2 to set up crucial Tailwind, gaining speed control that favored them later in the match.
+>    
+> 2. **Indeedee's Second Turn:** Indeedee could have used Hyper Voice against Whimsicott, which was a guaranteed OHKO. Instead, it opted for a second Trick Room, which was unnecessary with Tailwind already supporting p2.
 >
-> 2. **Player B's Decisions:**
->    - Player B made effective use of Protect to shield against heavy hits as evidenced in Turn 2 with Whimsicott and on multiple turns with Charizard and Basculegion. This tactic allowed them to maintain pressure.
->    - Utilizing Tailwind on Whimsicott allowed Player B to capitalize on speed leading to successive turns of increasing pressure on Player A.
+> 3. **Whimsicott's Usage of Protect:** Whimsicott could have used its Protect to negate Floette-Eternal's Light of Ruin, ensuring its survival and manipulating the turn's dynamics in favor of p2. Instead, it fainted after using Encore.
 >
-> ## What to Change
-> 1. **Leads:** 
->    - Player A should consider a lead that better counters the opposing speed control strategies. For example, utilizing a faster Pokémon than Whimsicott or having a method to handle Charizard's Tailwind setup could prevent early disadvantage.
+> **Good Reads:**
+> 1. p1's Glimmora successfully protected from Basculegion's Last Respects on Turn 9, mitigating damage and staying in the game longer than it would have without that block.
 >
-> 2. **Moves:**
->    - Adjust Floette-Eternal's moveset to include more immediate KO threats over spread options. Specifically, prioritize moves like Light of Ruin and Moonblast over Dazzling Gleam when facing dual targets, focusing on taking out threats one at a time when possible.
->    - Consider using Indeedee for offensive plays like Hyper Voice early on instead of Trick Room, unless setting it up benefits the overall strategy significantly.
+> ### What to Change
+> 1. **Improve Lead Strategy:**
+>    - Consider leading with Indeedee alongside Floette-Eternal but prioritize using Light of Ruin against threatening Pokémon rather than spreading moves. This will swiftly eliminate opponents while ensuring your setup can progress.
 >
-> 3. **Protect Usage:**
->    - Player A must reconsider when to use Protect strategically. For example, they could have used Protect on Indeedee during critical turns to stall enemy threats like Basculegion and Charizard when in a position where they would likely take significant damage.
->    - Switch mechanics (e.g., Kingambit in for Whimsicott) can also alleviate pressure from opposing attacks while conserving Pokémon.
+> 2. **Utilizing Protect Strategically:**
+>    - Both Whimsicott and Glimmora can benefit from using Protect in key moments. For instance, Whimsicott should proactively use Protect to scout for potential high-damage moves, particularly if it sees opposing Pokémon like Floette-Eternal.
 >
-> 4. **Speed Control:**
->    - Utilizing Trick Room can be advantageous, but timing is essential. If engaging in Trick Room, pairing it with sufficient offensive capability to capitalize on slower Pokémon is vital, as well as switching faster Pokémon out if they are not able to capitalize on the situation.
+> 3. **Timing of Status Moves:**
+>    - Save Trick Room for scenarios where it can truly benefit your team. If p2 has initiated a Tailwind, consider the state of the board and assess whether Speed control is necessary. Instead, responsive moves like Hyper Voice could optimize damage output.
 >
-> By focusing on these aspects, Player A can strengthen their strategy against Player B's team in future matches.
+> 4. **Adaptation and Switching:**
+>    - Quick evaluations of threats should inspire switching strategies when in danger. For instance, switching Whimsicott into a Kingambit in situations where attack threats loom can preserve it for a later counterattack.
+>
+> 5. **Focus on Status Effects:**
+>    - Consider moves that can disrupt the opponents further. For example, status moves like Trick or status-inflicting moves could tighten the game mechanics against fast threats like Charizard.
+>
+> By honing these decision-making areas and refining teamwork synergy, Player A can shift the dynamic in future matchups, maximizing competitive performance.
 
 ### bo1sim-sim700x32-g3-decisions
 
@@ -1046,32 +967,28 @@ Source: simulated game sim700x32-g3 (random moves). Question: Which decisions by
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 3. Issues: ['Indeedee switch suggestion lacks evidence', 'Sylveon Protect critique lacks context', 'No mention of Psychic Terrain impact']
+Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ['Blaziken Protect critique lacks context', 'No mention of Psychic Terrain impact', 'Recovery strategy suggestion vague']
 
-> ## Result
-> The winner is Player B (p2) with a score of 4-2 against Player A.
+> **Result:** Player B (p2) won with a score of 4 to 2 against Player A.
 >
-> ## Turning point
-> The turning point occurred on **Turn 3**, where multiple significant events shaped the game. On this turn, **p2 Delphox** used **Psychic** to faint **Blaziken**, while **p1 Indeedee** retaliated and fainted **Delphox** with **Hyper Voice**. Simultaneously, **p2 Annihilape** used **Close Combat** to faint **Indeedee**. After this turn, Player B led with 3 Pokémon to 2 from Player A and maintained a substantial HP advantage. At this stage, Player B had **300%** of total HP while Player A had **200%**.
+> **Turning Point:** The turning point of the battle occurred on **Turn 3**, when p2 (Player B) successfully knocked out both p1 (Player A)'s Blaziken and Indeedee while taking down Delphox. The actions for this turn were as follows:  
+> - **p2 Delphox** used **Psychic** (super effective) on Blaziken, resulting in a faint.  
+> - **p1 Indeedee** retaliated with **Hyper Voice** (spread) and eliminated Delphox from play.  
+> - **p2 Annihilape** followed up with **Close Combat**, which knocked out Indeedee.  
+> By the end of this turn, Player B had 3 Pokémon remaining compared to Player A's 2, creating a significant material advantage, which ultimately led to their victory.
 >
-> ## Decisions
-> **Best Decisions:**
-> 1. **Player B's Delphox's Mega Evolution**: Evolving to Mega Delphox allowed it to access higher stats and enhanced damaging moves, which played a critical role in fainting **Blaziken** on Turn 3 with a guaranteed OHKO from Psychic.
-> 2. **Player A's Blaziken**: Using **Protect** on both Turn 1 and Turn 2 was wise, preventing it from being knocked out by two powerful attacks. This allowed it to gain **Speed Boost**, increasing its battle effectiveness.
+> **Decisions:**
+> 1. **Player A (p1) Misplays:**
+>    - **Turn 1 Protect with Blaziken:** The choice to use Protect on both turns 1 and 2 didn't lead to significant progress. While it successfully avoided guaranteed OHKO threats, it prevented Blaziken from doing damage and allowed p2 to establish a favorable position.
+>    - **Turn 2 Decisions:** Protecting again with Blaziken instead of switching to a sturdier option (Excadrill or Dragapult) left the team vulnerable to p2's Delphox, which subsequently eliminated Blaziken in Turn 3.
 >
-> **Worst Decisions:**
-> 1. **Player A's Indeedee**: Failing to switch to **Dragapult** when facing the threat of **Annihilape's** Close Combat was a critical error, as it ended up fainting without acting in a later turn. A switch could have avoided the guaranteed OHKO on Indeedee (which ended up being fainted) and provided a favorable matchup against Annihilape.
-> 2. **Player B's Protect with Sylveon on Turn 4**: Although it blocked a potential hit from Dragapult's Dragon Pulse, it would have been more effective to hit Dragapult with a strong attack instead of wasting a turn on Protect since the next turn would allow Player A to retaliate.
+> 2. **Player B (p2) Strategic Moves:**
+>    - **Turn 2 Mega Evolution of Delphox:** This transition allowed Delphox to utilize stronger Psychic moves, leading to critical damage and ultimately k.o.'s against Player A’s Pokémon.
+>    - **Utilizing Close Combat on Indeedee:** The decision to target Indeedee with Close Combat after weakening the opposing side proved pivotal, securing a two-for-one trade that swung the match heavily in Player B's favor.
 >
-> ## What to change
-> To improve Player A’s strategy:
-> - **Switching Pokémon**: Vulnerable Pokémon such as Indeedee should have been switched out instead of risking fainting. Dragapult had a good chance of surviving those hits without taking damage.
-> - **Utilizing Strong Moves**: Player A needs to more aggressively target threats, particularly when it had opportunities to distribute more damage efficiently with its strong attackers.
->
-> For Player B:
-> - **Utilizing Offensive Options**: On future turns, decisions should focus on putting more immediate pressure on the opponent instead of potentially misallocating moves or focusing on defense when aggression would shift the tide of battle in its favor. 
->
-> These adjustments can help address weaknesses in battling dynamics observed during this match.
+> **What to Change:**
+> - **For Player A (p1):** For future matches, it would be advisable to switch out Blaziken when facing such imminent threats rather than relying solely on Protect. A proactive approach in utilizing Pokémon like Dragapult or Excadrill could salvage positioning while simultaneously dealing damage.
+> - **Recovery Strategies:** Including more robust options for shifting damage away from vital Pokémon such as Indeedee might help in maintaining offensive pressure while fortifying the position. Switch-ins with Excadrill during high-risk turns could provide better coverage against threats, enhancing the team's overall synergy.
 
 ### bo1sim-sim700x38-g1-turning
 
@@ -1079,28 +996,23 @@ Source: simulated game sim700x38-g1 (random moves). Question: What was the turni
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Incorrect turn details', 'Misidentifies turning point', 'Inaccurate move descriptions']
+Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 3. Issues: ["Gengar's Protect on Turn 2 was not mentioned in the log", "No mention of Vivillon's role in the turning point", 'Assumes Gengar could switch without evidence']
 
-> ### Result
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 3.
+> **Result:** Winner: Player B (p2) — Score: Player A lost 4; Player B lost 3.
 >
-> ### Turning Point
-> The turning point of the game occurred on **Turn 2**. During this turn, **p1 Gengar** used **Perish Song**, while **p2 Annihilape** used **Throat Chop**, resulting in **p1 Gengar** fainting. After this turn, Player B led with **4 Pokémon alive** compared to Player A's **4 Pokémon**, but significantly maintained a **HP lead** of around **369% vs. 267% total HP**, which established a persistent advantage that they upheld for the remainder of the match.
+> **Turning point:** The turning point of the game occurred on Turn 2. At this point, Player B had the advantage, leading 4 Pokémon to 4 (with a total HP of 369% against Player A's 267%). This turn involved multiple critical actions: Player A's Gengar transformed into Gengar-Mega, while Player B's Grimmsnarl set up Light Screen. Although Gengar used Sludge Bomb on Incineroar, which left it at 57%, it was countered by Incineroar's Flare Blitz, reducing Gengar to 30% HP and inflicting a burn. This setup enabled Player B to maintain a considerable lead in both numbers and power for the remainder of the match.
 >
-> ### Decisions
-> 1. **Player A:**
->    - On Turn 1, **Rillaboom** used **Protect**, which was justified as it avoided damage from **Grimmsnarl's Spirit Break** (guaranteed OHKO).
->    - However, on Turn 2, **Player A** did not switch out **Gengar** when it was under threat from **Incineroar**, which used **Throat Chop**—leading to its faint. Instead, **Gengar** could have switched out to **Incineroar**, which would have only taken a maximum of **21.8%** HP from **Incineroar's Flare Blitz**.
+> **Decisions:** 
+> 1. On Turn 1, Player A's decision for Rillaboom to use Protect was conservative but suboptimal. Instead, using Grassy Glide against Grimmsnarl would have netted it a guaranteed 4HKO after Grassy Terrain recovery. This would have also enabled immediate offensive pressure without risking damage from Incineroar's Flare Blitz.
+> 2. On Turn 2, Gengar's decision to Protect was a reasonable tactical play, but switching it out instead would have reduced the risk of being KO'd by Incineroar. By switching to Incineroar itself, Gengar could have avoided a guaranteed OHKO from Throat Chop.
+> 3. Throughout the game, protecting against significant threats when certain moves were predicted (like Annihilape's Rage Fist) could have preserved more Pokémon for later battle stages.
 >
-> 2. **Player B:**
->    - On the same turn, **Player B** made a good read by attacking **Gengar** with **Throat Chop**, capitalizing on its low HP and ultimately removing a major threat from the board.
+> **What to change:** Player A should consider the following adjustments:
+> 1. On Turn 1, Rillaboom should have used Grassy Glide instead of Protect, directly targeting Grimmsnarl for chip damage.
+> 2. Gengar should have switched out on Turn 2 instead of using Protect to avoid taking unnecessary damage from Incineroar's Flare Blitz.
+> 3. Particularly during crucial moments when Annihilape and Grimmsnarl were on the field, Player A's Rillaboom and Vivillon could have utilized Protect more aggressively to block strong incoming threats like Drain Punch and Rage Fist.
 >
-> ### What to Change
-> - **For Player A:**
->    - Specifically, when **Gengar** was at **30% HP** after Turn 1, switching to **Incineroar** would have enhanced its chances of survival while allowing the team to maintain offensive pressure.
->    - Additionally, during subsequent turns, whenever faced with potential threats from **Annihilape** (e.g., using its **Rage Fist**), using **Protect** on **Rillaboom** or **Vivillon** could have negated the damage that led to critical KO moments.
->
-> In summary, switching out Pokémon under threat and using Protect strategically could have helped Player A conserve their attackers and maintain an offensive position in the match.
+> Improving the decision-making around these crucial turns could have bolstered Player A's chances of staying competitive in the match.
 
 ### bo1sim-sim700x41-g2-coach_loser
 
@@ -1108,29 +1020,31 @@ Source: simulated game sim700x41-g2 (random moves). Question: Coach the losing p
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Incorrect turning point analysis', 'Misinterpretation of Protect usage', 'Inaccurate description of turn 5 actions']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['incorrect turning point analysis', "misinterpretation of Sneasler's role", 'Protect suggestion lacks evidence']
 
-> ## Result
-> Winner: Player A (p1). Score — Player A lost 2; Player B lost 4.
+> **Result:** Winner: Player A (p1). Score — Player A lost 2; Player B lost 4.
 >
-> ## Turning point
-> The turning point was turn 5, where Player A led with 2 Pokémon to Player B's 1, controlling the board effectively. Incineroar used Flare Blitz against Kingambit (effectively a guaranteed OHKO) before it fainted, while Floette-Eternal secured the win with Draining Kiss against Whimsicott, leaving Floette with 100% HP against 1% for Whimsicott.
+> **Turning Point:** The turning point of the match occurred on turn 5. At that turn, Floette-Eternal (p1) used Draining Kiss with Helping Hand support, resulting in a guaranteed OHKO on Whimsicott (p2), while p2's Kingambit fainted as well, leaving Player B down to one Pokémon (Whimsicott) against two of Player A's (Floette-Eternal and Incineroar) with a significant HP advantage of 151% against 1%. This swing was decisive as Player A maintained a strong lead thereafter.
 >
-> ## Decisions
-> 1. **Player B (loser):**
->    - **Leading Pokémon:** Kingambit and Froslass had a decent matchup against Rillaboom and Sneasler; however, bringing Staraptor as the third 'lead' after Rillaboom's faint was crucial because it activated Intimidate, severely weakening both. A more calculated switch or using Whimsicott from the start could have added more safety.
->    - **Protect Usage:** There were no usages of Protect on Player B's side. Both Sneasler and Floette-Eternal could have used Protect to mitigate incoming threats from Staraptor's Brave Bird and Froslass's Blizzard.
->    - **Speed Control:** Staraptor was a fast choice but didn't capitalize early. Tailwind could have been useful from Whimsicott for further control.
+> **Decisions:** 
 >
-> 2. **Player A (winner):**
->    - The use of Coaching by Sneasler was strategic in improving Rillaboom’s stats before it was taken down. Switching focus between attackers and using Helping Hand in turn 4 established good synergy with Floette-Eternal, allowing it a clean KO.
+> 1. **Misplays by Player B:**
+>    - On turn 1, Player B could have switched Froslass out to Kingambit to avoid the guaranteed OHKO from Rillaboom's Wood Hammer, which ultimately led to a quick KO of Froslass.
+>    - For Sneasler, instead of using Coaching, which offered no immediate impact, switching to Incineroar would have minimized damage taken from the imminent Brave Bird, thus preserving Sneasler for a later turn.
 >
-> ## What to change
-> - **Switch choices:** Player B should consider leading with Whimsicott to prioritize setting up Tailwind. This would allow for faster threats against Player A, especially if they anticipated facing Rillaboom.
-> - **Protect Strategy:** Player B should incorporate Protect moves on key Pokémon, particularly Whimsicott and Froslass, to safely scout for threats and set up advantageous conditions. For example, using Protect with Froslass on turn 1 may have absorbed significant damage from Blizzard.
-> - **Focus on Speed Control:** Implementing Tailwind earlier or a different lead could have given Player B a significant edge in match pace. Staraptor might lead but should focus on damage output rather than switching or mega evolving too quickly.
+> 2. **Successful Reads by Player A:**
+>    - Player A's use of Coaching on Sneasler helped bolster Rillaboom's defenses and allowed the team to maintain pressure following the KO of Froslass.
+>    - The timely use of Parting Shot from Incineroar in conjunction with its Intimidate ability helped reduce offensive threats from Staraptor.
 >
-> Strategically rerouting the initial focus, utilizing Protect adeptly, and implementing more speed control can greatly improve Player B's chance of winning future matchups, based on the advantages observed in this game.
+> **What to Change:**
+>
+> 1. **Leads:** Player B should consider leads that can resist or mitigate the effects of opposing Intimidate Pokémon like Incineroar. Start with a combination that can threaten Rillaboom directly, such as Kingambit paired with Staraptor, to quickly apply pressure.
+>
+> 2. **Moves:** For Sneasler, including Protect in its moveset is vital to shield it from high-damage threats. This could help secure turns without risking a KO while still compiling boosts from Coaching or supporting teammates. Additionally, Kingambit could utilize Protect to avoid damage while maintaining its own offensive capabilities.
+>
+> 3. **Use of Protect and Speed Control:** Player B should incorporate Pokémon like Whimsicott to set up Tailwind or use Protect at critical moments. On turn 5, using Protect with Whimsicott to scout possible attacks could have been beneficial. By ensuring the team had speed control, Whimsicott could consistently outspeed opponents to gain the upper hand.
+>
+> Overall, improving team synergy in leads, optimizing move choices, and effectively utilizing Protect will enhance Player B's chances of success in future matchups.
 
 ### bo1sim-sim700x46-g2-decisions
 
@@ -1138,35 +1052,31 @@ Source: simulated game sim700x46-g2 (random moves). Question: Which decisions by
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 2. Issues: ['incorrect_turning_point_details', 'misinterpretation_of_knock_off_effect', 'lack_of_honesty_about_evidence_limitations']
+Judge: grounded 3, actionable 3, specific 4, consistent 2, honest 2. Issues: ['Inconsistent with engine turning point', 'Assumes intentions not in evidence', 'Misses some Protect analysis']
 
-> ## Result
-> Winner: Player B (p2). Score — Player A lost 4; Player B lost 1.
+> **Result:** Player B (p2) won with a score of 4-1 against Player A.
 >
-> ## Turning point
-> The turning point of the match occurred on **Turn 4**. On this turn, p2 (Player B) sent out Scrafty. Mimikyu used Will-O-Wisp on Hydrapple, inflicting a burn, while p2's Scrafty utilized Drain Punch to KO p1's Scrafty, bringing it down to 0% HP. At the end of this turn, p2 had 4 Pokémon remaining compared to p1's 3, leading to a significant advantage (p2 at 317% total HP vs. p1 at 257%). 
+> **Turning point:** The decisive turning point occurred on **Turn 4**. During this turn, p1's Scrafty fainted after p2's Scrafty used Drain Punch, while p2's Mimikyu was burned by p1's Torkoal's Will-O-Wisp. The effective HP after this turn was 317% for p2 versus 257% for p1, establishing a significant lead for p2.
 >
-> - **Field Conditions:** Weather: Sun, Pokemon on p1: Torkoal, Slowking, Hydrapple; Pokemon on p2: Mimikyu, Scrafty.
+> **Decisions:**
 >
-> ## Decisions
-> ### Best Decisions:
-> 1. **Player B (p2)**: 
->    - **Bulk Up by Scrafty (Turn 1)**: This was a great move as it allowed Scrafty to boost its Attack and Defense, providing an advantage when facing Player A's Pokémon.
->    - **Will-O-Wisp on Hydrapple (Turn 4)**: By inflicting burn on an opposing Pokémon, it effectively reduced Hydrapple's effectiveness in later turns, showing good foresight in managing threats.
+> **Player A (p1):**
+> - **Best decision:** On **Turn 1**, using Helping Hand with Torkoal was strategically solid. It attempted to set up for a strong Eruption in the following turns.
+> - **Worst decision:** On **Turn 2**, p1 Torkoal chose to use Protect, which blocked Mimikyu's Play Rough but missed the opportunity to deal damage with Eruption. Eruption had a guaranteed 2HKO against Scrafty instead of losing momentum with a non-damaging move.
 >
-> 2. **Player A (p1)**: 
->    - **Helping Hand by Torkoal (Turn 1)**: Providing support to Scrafty’s subsequent attacks against p2's aggressive Scrafty can be viewed as a strong tactical move to enhance damage output, despite not being the most effective in delivering damage initially.
+> **Player B (p2):**
+> - **Best decision:** Utilizing Bulk Up with Scrafty on **Turn 1** was impactful, increasing its offensive and defensive capabilities, and allowing it to pressure p1 further. This set the stage for Scrafty to later take down Torkoal.
+> - **Worst decision:** The choice to use Play Rough against Torkoal on **Turn 6**, which was blocked by Torkoal’s Protect, could have been better spent targeting the opposing Scrafty, who was more vulnerable and had significant damage potential. Mimikyu had a guaranteed 2HKO option against p1's Scrafty on Turn 3 with Play Rough but opted for a weaker move against Torkoal.
 >
-> ### Worst Decisions:
-> 1. **Player B (p2)**:
->    - **Using Will-O-Wisp on Hydrapple (Turn 4)**: Although the intention was defensively wise, it ultimately dealt no damage and may have gone better with a more aggressive option like Play Rough on Scrafty or using Mimikyu to apply pressure instead.
+> **Targeting Choices:**
+> - Player A's targeting choices were often focused on attacking Mimikyu, but failed to capitalize on its own opportunities to remove threats like Scrafty early in the game.
+> - Player B effectively targeted p1’s stronger threats and utilized Drain Punch on p1's Scrafty after establishing momentum with Bulk Up, maximizing damage output.
 >
-> 2. **Player A (p1)**:
->    - **Protect by Torkoal (Turn 2)**: While it blocked damage from Mimikyu, the move served to delay action instead of applying pressure. A better alternative would have been to use Eruption, targeting Scrafty, which could have dealt significant damage and potentially changed the game’s momentum.
->    - **Knock Off on Mimikyu (Turn 2)**: As the move had no effect due to Mimikyu's Disguise ability, this was a wasted opportunity that could have utilized a potentially effective attack.
+> **Protect Choices:**
+> - Player A opted for Protect defensively but against non-threatening moves like Play Rough, which ultimately delayed their offensive pressure.
+> - Player B's Protects on Mimikyu were mostly defensive against significant threats, again reflecting a keen awareness to protect their lead.
 >
-> ## Summary
-> Both players made pivotal moves that shaped the match's outcome. Player B's strategic advantage from their early game boosts and timely burns, paired with offensive pressure, secured their win despite a few questionable choices. On the other hand, Player A's team faced hurdles with crucial Protect moves that didn’t pay off, leading to knockouts that altered their fighting chance. Adapting to aggressive options in high-stakes situations could have proved beneficial for Player A’s resilience.
+> The game highlighted the importance of managing threats effectively while maintaining offensive pressure and utilizing Protect strategically to gain advantageous positions.
 
 ### bo1sim-sim700x50-g2-turning
 
@@ -1174,32 +1084,21 @@ Source: simulated game sim700x50-g2 (random moves). Question: What was the turni
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['incorrect_turning_point', 'misinterpretation_of_turn_5', 'missing_honesty_about_evidence_limits']
+Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 3. Issues: ['Incorrect turning point description', 'Misinterpretation of turn 5 events', 'Assumes unlogged actions']
 
-> ### Result 
-> The winner of the match was Player A with a score of 3 to 4 against Player B.
+> **Result:** Player A (p1) won the match with a score of 4-3 against Player B (p2).
 >
-> ### Turning Point 
-> The turning point occurred on **Turn 5**, when Player A's **Torkoal** used **Eruption**, which resulted in the fainting of both **Metagross** and **Pawmot** from Player B's side. At that point, Player A had 2 Pokémon remaining (Torkoal and Tsareena) while Player B only had 1 (Basculegion-F), leading to a significant advantage in terms of Pokémon count and total HP.
+> **Turning point:** The turning point occurred in **Turn 5**. At this juncture, Player A had a significant advantage, leading with two Pokémon (Torkoal and Tsareena) against only one remaining Pokémon from Player B (Talonflame). The summary of that turn shows Torkoal using **Eruption** to knock out both Metagross and Pawmot (who had fainted), while Tsareena remained healthy. After this turn, Player A maintained a lead with 200% total HP against Player B's remaining 100%, and they consistently kept half a Pokémon's worth of HP ahead for the remainder of the match.
 >
-> The specifics of that turn are as follows: 
-> - Torkoal's **Eruption** was executed under Trick Room and Sun weather, taking out **Metagross** (faint) and **Pawmot** (faint), while the field was tilt in favor of Player A, as they led 2 Pokémon to 1.
+> **Decisions:**  
+> - **Player B Misplays:** The most critical misplay was on **Turn 2**, where Pawmot used **Close Combat** to finish off Scrafty instead of targeting Torkoal or using an alternative move that could threaten Torkoal, which remained unscathed. A better move would have been switching Basculegion-F to avoid the KO risk from Mimikyu's **Shadow Sneak** or targeting Torkoal directly.
+>   
+> - **Player A Reads:** Player A effectively utilized Trick Room early on with Mimikyu, allowing them to dictate the speed of the battle in their favor. The use of **Will-O-Wisp** on Pawmot not only burned the threat but reduced its output greatly, showcasing a solid read on the opponent's potential to retaliate.
 >
-> ### Decisions
-> - **Player B's Misplays:** 
->   On **Turn 2**, Player B chose to use **Protect** with **Metagross**, which prevented any offense. They could have used **Meteor Mash** to ace a guaranteed OHKO on **Mimikyu** instead, which allowed Player A to set up Trick Room without opposition.
+> **What to change:**  
+> For Player B to improve, they should have prioritized switching Pokémon earlier when facing significant threats from Mimikyu and Torkoal instead of risking their KOs. Specifically, switching Basculegion-F in Turn 1 to receive the incoming **Shadow Sneak** could have reduced damage to a safer level by not risking a critical early loss. Additionally, employing moves that could pressure Torkoal during Trick Room, such as targeting with Pawmot's **Double Shock** or using protective switches, should have been a consideration to maintain momentum and HP advantage against Player A. 
 >
->   Additionally, on **Turn 1**, the decision to leave **Basculegion-F** in against **Mimikyu** for an **incoming threat** from **Shadow Sneak**, left it vulnerable. A better choice would have been to switch to **Pawmot** or **Talonflame**, maintaining  large HP on both.
->
-> - **Player A's Read:** 
->   Player A correctly predicted that **Mimikyu** should set up **Trick Room** to gain tactical control, which allowed their slower Pokémon to operate freely.
->
-> ### What to Change
-> For **Player B**, focusing on maintaining Pokémon health through well-timed switches could have been more beneficial than sacrificing Pokémon for insufficient attacks. In particular:
-> - On **Turn 1**, switching **Basculegion-F** for **Pawmot** would have taken minimal damage from **Mimikyu** and retained offensive pressure.
-> - On **Turn 2**, using **Meteor Mash** instead of **Protect** could have secured a crucial advantage by removing a key opponent.
->
-> Implementing these strategies would have allowed Player B to maintain a robust position throughout the game.
+> Overall, adjusting decision-making based on the opponent's setup and being more cautious with positioning would enhance performance in subsequent matches.
 
 ### bo1sim-sim700x54-g2-coach_loser
 
@@ -1207,46 +1106,40 @@ Source: simulated game sim700x54-g2 (random moves). Question: Coach the losing p
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 2, actionable 3, specific 3, consistent 1, honest 2. Issues: ['incorrect_turning_point', 'misleading_Protect_analysis', 'unfounded_switching_advice']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['incorrect turning point analysis', 'misinterpretation of Trick Room impact', 'suggestions not fully grounded in evidence']
 
-> ## Result
+> ### Result
 > Winner: Player B (p2). Score — Player A lost 4; Player B lost 2.
 >
-> ## Turning Point
-> The turning point was **turn 14**. On this turn, **Basculegion-F** used **Wave Crash**, which resulted in **Tsareena** fainting, leaving **Player A** with no remaining Pokémon, while **Player B** still had **Talonflame** and **Basculegion-F**. This left **Player B** at a significant material advantage (72% total HP against 0%).
+> ### Turning Point
+> The turning point occurred on **Turn 14**. On this turn, Basculegion-F used **Wave Crash** against Tsareena, resulting in a KO, while Tsareena had lost all HP. This left Player A with no Pokémon remaining, whereas Player B had 2 Pokémon remaining, securing their victory.
 >
-> ## Decisions
-> Player A faced several key decisions, particularly with their use of Protect and attacking options.
+> ### Decisions
+> 1. **Lead Choices:**
+>    - Player A's lead of **Scrafty** and **Mimikyu** faced a strong threat from **Mega Metagross**. Scrafty fainted on Turn 1 due to a critical Meteor Mash, indicating that bringing a more defensive lead or a means of effectively countering threats like Metagross could improve their matchup.
 >
-> 1. **Turn 1**: 
->    - Player A's **Mimikyu** used **Shadow Sneak** on **Metagross**, which was not the optimal choice. It had the potential to KO **Basculegion-F** in a single hit instead (guaranteed 2HKO). This opportunity was missed, as **Shadow Sneak** ended up being a 3HKO against **Metagross**.
->   
-> 2. **Turn 4**:
->    - Player A's **Torkoal** used **Protect** against **Basculegion-F**’s **Wave Crash**, blocking damage. However, it left them unable to apply offensive pressure that turn. Instead, Player A could have utilized a more aggressive move like **Eruption** or **Earth Power**, which were better against opposing Pokémon. 
+> 2. **Move Utilization:**
+>    - **Mimikyu's use of Shadow Sneak early on Turn 1** was not optimally targeted. Instead of attacking Metagross, which was a guaranteed 3HKO, targeting **Basculegion-F** could have led to a guaranteed 2HKO and taking out a significant threat early in the match.
+>    - The first use of **Trick Room** by Mimikyu on **Turn 3** could have been more effectively used earlier. Trick Room worked in their favor but paired with Tsareena's offensive threat instead of potentially keeping more options open with Scrafty's Fake Out or knockoff could have shifted momentum.
 >
-> 3. **Turn 6**:
->    - When **Torkoal** failed its Protect, it was hit by **Wave Crash** on the next turn (turn 12), leading to its KO. Using Protect was questionable since Torkoal remained in KO range afterward from further attacks.
+> 3. **Protect Usage:**
+>    - On several occasions, both sides used **Protect**. However, some instances of Protect were misallocated. For example, on **Turn 4**, Torkoal used Protect while Tsareena could have attacked with a move like **Trop Kick** or **Triple Axel**, potentially securing a KO on Pawmot. This missed opportunity contributed to their downfall.
+>    - Further, Protect was used too often on Torkoal, especially during crucial turns when Eruption or Earth Power would have secured better positioning against either Basculegion-F or Pawmot.
 >
-> 4. **Turn 5 and Continuing**:
->    - **Protect** was used excessively on both the Torkoal and Tsareena. For **Tsareena**, Protect could have been exploited better; using offensive moves like **Triple Axel** or **Trop Kick** against vulnerable targets (like **Basculegion-F**) could have mitigated damage more effectively.
+> ### What to Change
+> 1. **Lead Adjustment:**
+>    - Consider using a Pokémon with better matchups against Metagross, such as **Gengar** or another strong Fairy-type. This would help mitigate the immediate threat posed by Mega Metagross.
 >
-> 5. **Switching Decisions**:
->    - Player A should have considered switching to **Tsareena** to absorb hits against **Pawmot** on turn 3 or a switch to Torkoal for similar reasons. This would keep their key Pokémon available to exert more pressure in future turns.
+> 2. **Optimize Move Targets:**
+>    - Focus on targeting Pokémon with confirmed damaging moves instead of relying on status moves too early. Mimikyu should prioritize attacking Basculegion-F with **Shadow Sneak** instead of Metagross on Turn 1.
 >
-> ## What to Change
-> 1. **Lead Adjustments**:
->    - Consider employing a lead strategy with more immediate threats such as **Torkoal** and **Mimikyu**, prioritizing offensive leads that take advantage of the opposing Pokémon. A Pokémon with a strong support role, like **Scrafty** for fakeout, might also be beneficial in disrupting the opponent’s strategy early on.
+> 3. **Reassess Protect Usage:**
+>    - Reduce reliance on Protect when offensive pressure is critical. For example, Torkoal should capitalize on its high damage output options like Eruption more effectively, especially when the opponent has no redirection or is under pressure to cover a teammate.
 >
-> 2. **Moveset and Targeting**:
->    - The focus should be on using **Shadow Sneak** on more vulnerable targets early on for potential KOs instead of more resistant threats. **Using Trick Room** early was good, but it needed to be capitalized on better with speedy moves afterward.
+> 4. **Speed Control:**
+>    - Early Trick Room usage should ideally coincide with significant threats being removed or slowed down. Explore options on when to activate Trick Room based on team positioning and possibilities of switching out for favorable Pokémon alignments.
 >
-> 3. **Use of Protect**:
->    - Managing Protect more strategically is crucial. It should be reserved for turns of anticipated high-damage threats. For example, using it against guaranteed KOs from **Talonflame** or **Pawmot** would be more advantageous than using it before a non-threatening attack.
->
-> 4. **Speed Control**:
->    - Keep Trick Room usage effective by making aggressive move selections following its deployment. Ensure that Pokémon in play utilize their speed to counter the opponent during its active windows, particularly keeping watch for Tailwind.
->
-> By refining these strategies and utilizing threats more effectively, Player A could navigate future matchups with greater success against similar opponents.
+> By making these adjustments, especially focusing on targeted attacks and strategic threat management from the onset, Player A could improve their chances in future matchups against Team Player B.
 
 ### bo1sim-sim700x59-g1-decisions
 
@@ -1254,29 +1147,27 @@ Source: simulated game sim700x59-g1 (random moves). Question: Which decisions by
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Inaccurate turning point analysis', 'Misinterpretation of Protect impact', 'Lack of acknowledgment of evidence limitations']
+Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ["missed opportunity to mention Raichu's Protect on Turn 8", "did not address Sinistcha's Protect on Turn 5 as a best decision", "did not mention Staraptor's failed Tailwind on Turn 5 as a worst decision"]
 
-> **Result:** Player A won, scoring 4 against 1.
+> ### Result:
+> Player A (p1) won the match with a score of 4-1 against Player B (p2).
 >
-> **Turning point:** The turning point occurred on turn 5. On this turn, both players had all their Pokémon in play, but Player A maintained a health advantage of 287% total HP against Player B’s 193%. Player A used Sinistcha to protect while Staraptor set up Tailwind, allowing Player A's Pokémon to take control of the match. 
+> ### Turning point:
+> The game notably swung during **Turn 5**. On this turn, p1 Sinistcha used **Protect**, while p2 Staraptor utilized **Tailwind** (which failed due to the existing Tailwind), and p2 Arcanine-Hisui used **Head Smash** — blocked by Protect. Meanwhile, p1 Incineroar used **Parting Shot**, lowering Arcanine-Hisui's attack. At the end of this turn, p1 led with 3 Pokémon still standing while p2 retained 3, but with significantly lower HP (287% total p1 HP vs. 193% total p2 HP). 
 >
-> **Decisions:**
-> - **Best Decisions by Player A:**
->   - **Turn 1 (Incineroar's Flare Blitz against Arcanine-Hisui):** Despite being resisted, it was a good attempt to chip damage. However, its best option was actually Throat Chop on Gholdengo which could have guaranteed a 2HKO.
->   - **Turn 3 (Sneasler's Quick Guard):** This was well-timed, successfully blocking Arcanine-Hisui's intended attack, maintaining pressure on the opposing side.
->   - **Turn 5 (Sinistcha's Protect):** Using Protect to avoid damage while setting up strategically for the next turn was instrumental in maintaining momentum.
+> ### Decisions:
+> #### Best and Worst Decisions by Player A (p1):
+> - **Best Decision**: The decision to use **Grassy Glide** with Rillaboom on Turn 7 to take down Arcanine-Hisui was optimal, as it secured a KO.
+> - **Worst Decision**: Sinistcha using **Matcha Gotcha** against Arcanine-Hisui on Turn 7, which missed. This move lacked strong attacking potential in the context, as another move could have targeted Raichu more effectively.
 >
-> - **Worst Decisions by Player A:**
->   - **Turn 4 (Parting Shot on Arcanine-Hisui):** This was a wasted opportunity as going for Throat Chop instead could have knocked out Gholdengo before being hit by Make It Rain.
->   
-> - **Best Decisions by Player B:**
->   - **Turn 2 (Raichu's entry):** Swapping in Raichu provided an immediate threat, although it could have done more damage with Focus Blast rather than Protect on turn 9. 
+> #### Best and Worst Decisions by Player B (p2):
+> - **Best Decision**: The usage of **Protect** on Turn 9 (by Raichu) to block Rillaboom’s **Wood Hammer** was a solid choice given its potential to faint Raichu, which preserved a Pokémon for further rounds.
+> - **Worst Decision**: Targeting Sneasler with **Extreme Speed** on Turn 3, which was blocked by **Quick Guard**. Instead, p2 could have used **Head Smash** on Incineroar for guaranteed damage after eliminating the block.
 >
-> - **Worst Decisions by Player B:**
->   - **Turn 1 (Arcanine-Hisui's Flare Blitz on Incineroar):** Choosing Flare Blitz over Head Smash was a misplay. Head Smash guaranteed a strong hit on Incineroar with a 2HKO potential.
->   - **Turn 4 (Arcanine-Hisui’s Protect):** Blocking with Protect didn’t contribute to any significant advantage and allowed Player A to recover and strategize. 
+> ### Summary of Targeting and Protect Choices:
+> Players made several critical targeting choices. For p1, the switch-ins and defenses built around Protects were well-timed, but the missed offensive actions from Sneasler showcased potential misallocation of efforts when more aggressive plays could have maintained pressure. For p2, Protects were timely but targeting decisions like choosing to hit Sneasler with Extreme Speed instead of capitalizing on the weaker target (Incineroar) were detrimental.
 >
-> Overall, Player A capitalized on timely Protects and effective decision-making, while Player B's misuse of potential opportunities led to their downfall.
+> In summary, this match was dictated by well-executed Protect strategies and timely offensive decisions, illustrating the importance of targeting the right threats effectively in a VGC format.
 
 ### bo1sim-sim700x63-g1-turning
 
@@ -1284,30 +1175,37 @@ Source: simulated game sim700x63-g1 (random moves). Question: What was the turni
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 5, honest 3. Issues: ['Gardevoir Protect critique lacks evidence', 'Indeedee switch suggestion not fully justified', 'Protect suggestion for Sneasler not grounded']
+Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Protect usage on Turn 1 misrepresented', 'Turn 2 actions not accurately described', 'Lack of acknowledgment of evidence limitations']
 
-> ## Result
-> Winner: Player B (p2) – Score: 4 Player A lost; 3 Player B lost.
+> ### Result:
+> Winner: Player B (p2). Score — Player A lost 4; Player B lost 3.
 >
-> ## Turning Point
-> **Turn 7** was the decisive moment in the game. In this turn, **p2 Basculegion** used **Last Respects** and fainted **p1 Sneasler**. This led p2 to have 2 Pokémon remaining while p1 only had 1, with total HP counts of 136% for p2 compared to 80% for p1. This significant lead in both number and health allowed Player B to maintain their advantage for the rest of the match.
+> ### Turning Point:
+> The turning point occurred on **Turn 7**. At this stage, Player B had two Pokémon remaining: **Basculegion** and **Glimmora**. Player A was down to just one Pokémon, **Gardevoir-Mega**. The HP standings were critical; Player B had a total of **136% HP** while Player A was significantly lower at **80% total HP**. This lead, maintained throughout the game, allowed Player B to keep an advantage until the end. 
 >
-> ## Decisions
-> On Player A's side, some critical misplays included:
-> 1. **Gardevoir's Use of Protect in Turn 1**: Instead of using **Expanding Force**, which would have guaranteed a KO against **Glimmora**, Gardevoir opted for Protect. The choice to Protect left Gardevoir vulnerable, leading to a lost opportunity to immediately pressure Player B.
-> 2. **Leaving Indeedee in Against Rillaboom**: In Turn 2, Indeedee was left to face Rillaboom's Wood Hammer, which resulted in its KO. A switch to Incineroar would have been safer, conserving Indeedee for later in the game.
-> 3. **Failure to Protect with Sneasler**: During Turn 7, Sneasler could have used Protect to block Basculegion’s Last Respects, which would have saved it from fainting.
+> The actions on this turn impacted the game significantly:
+> - **Sneasler** from Player A fainted due to **Last Respects** from **Basculegion**, contributing to the material lead for Player B. 
 >
-> For Player B:
-> 1. **Froslass's Effective Protect Reads**: Froslass successfully used Protect in Turn 5 and Turn 10, blocking Gardevoir's high-damage moves and allowing the team to stay safe while gradually wearing down Player A’s Pokémon.
+> ### Decisions:
+> Player A made several critical mistakes leading to their loss:
 >
-> ## What to Change
-> To improve, Player A should consider:
-> - **Maximizing offensive pressure with Gardevoir**: Using guaranteed KO moves instead of Protect when facing vulnerable opponents would have shifted the game dynamic early.
-> - **Switching when facing strong threats**: Incineroar should have come in to take Rillaboom's hits instead of allowing Indeedee to be knocked out.
-> - **Utilizing Protect when necessary**: Particularly with Sneasler, an early Protect against Basculegion could have turned the tide by ensuring its survival and maintaining offensive threats in the later game stages.
+> 1. **Protect Usage**: On Turn 1, **Gardevoir** used **Protect** when faced with a guaranteed OHKO from Rillaboom's **Wood Hammer**. Instead, switching to **Incineroar** could have reduced damage taken significantly (66.3% at most). This misstep allowed Rillaboom to eliminate **Indeedee** later in the turn.
+>    
+> 2. **Opportunity for Offensive Action**: During Turn 2, despite having the chance to attack directly with a super effective move **Expanding Force**, Gardevoir instead continued to protect itself. The best alternative action was rejecting a defensive play for sustained offensive pressure against **Glimmora** which was in a vulnerable position. 
 >
-> Making these adjustments would lead to a better control of momentum and likely improve performance in future matches.
+> 3. **Switching Without a Plan**: Upon losing **Sneasler** and **Incineroar**, Player A still had the potential to change the dynamic of the match by switching out Gardevoir but failed to do so effectively with foes from Player B still posing a considerable threat.
+>
+> 4. **Final Turn Fatal Error**: On Turn 12, **Gardevoir** opted to use **Protect**, which failed, allowing **Froslass** to KO it with **Blizzard**. This critical decision contrasted sharply with the opportunity to eliminate **Glimmora** or apply pressure elsewhere first.
+>
+> ### What to Change:
+> To improve, SImAlpha would benefit from enhancing their strategy:
+> 1. **Vigilant Defensive Play**: Prioritize switching out Pokémon when faced with imminent threats rather than using non-aggressive moves. Using switches would conserve key Pokémon for later phases.
+>    
+> 2. **Maximizing Offensive Potential**: In scenarios where a Pokémon has a significant advantage (such as a guaranteed OHKO), choose to capitalize on that momentum rather than playing defensively.
+>
+> 3. **Adaptiveness During Turns**: Constantly reevaluate options as new Pokémon enter the battle. Keeping an adaptive game plan in light of opponents' moves can yield better results.
+>
+> Effective utilization of these adjustments could enhance their performance in future matches significantly.
 
 ### bo1sim-sim700x68-g1-coach_loser
 
@@ -1315,41 +1213,29 @@ Source: simulated game sim700x68-g1 (random moves). Question: Coach the losing p
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Protect advice inconsistent with log', 'Garchomp lead suggestion not grounded', 'Lacks honesty about evidence limitations']
+Judge: grounded 3, actionable 4, specific 4, consistent 5, honest 3. Issues: ['Protect advice lacks evidence', 'Lead change suggestion lacks evidence', 'Tailwind timing advice lacks evidence']
 
-> ## Result
-> Player B won the match against Player A with a score of 4-0.
+> ### Result:
+> Winner: Player B (p2). Score — Player A lost 4.
 >
-> ## Turning point
-> Turn 2 was the decisive moment in the match. In that turn, the following actions occurred:
-> - p2 Indeedee used Helping Hand.
-> - p1 Charizard attempted Solar Beam.
-> - p2 Gardevoir used Expanding Force, which caused Sneasler and Charizard to faint.
-> At this point, Player B was ahead with 2 Pokémon remaining compared to Player A's 2 (200% vs. 101% total HP), solidifying their advantage.
+> ### Turning Point:
+> The turning point occurred on **turn 2**. On this turn, **p2 Gardevoir** (with Helping Hand support from **Indeedee**) used **Expanding Force**, which knocked out both **p1 Charizard** and **p1 Sneasler**. At this point, Player A was left with 2 Pokémon against p2's 2 (200% HP for Player B compared to 101% total HP for Player A), significantly tilting the game in favor of Player B.
 >
-> ## Decisions
-> Player A made several critical misplays and decisions:
-> 1. **Charizard's Protect on Turn 1**: While Charizard did block a guaranteed OHKO from p2 Gardevoir's Expanding Force, this action failed to apply offensive pressure. Instead, Charizard could have dealt damage with Solar Beam, which had a guaranteed 2HKO on Indeedee. As a result, Charizard's Protect was a good defensive maneuver but at the cost of losing damage potential.
->    
-> 2. **Sneasler's Faint on Turn 2**:  Charizard's move could have been decisive in threatening Indeedee or Gardevoir but instead led to Charizard's and Sneasler's exit, losing momentum significantly.
+> ### Decisions:
+> 1. **Protect Usage**: Charizard used Protect on turn 1 correctly to block an expected OHKO from Gardevoir's **Expanding Force**. However, it would have been more advantageous to use **Solar Beam** on Indeedee instead since it was a guaranteed 2HKO (51.1% - 60.6%) and could have eliminated a key supporter. Protect didn't prevent the second hit, resulting in both of Player A's Pokémon fainting due to the strong spread attack.
+>   
+> 2. **Turn 2 Decision**: After Charizard fainted, Player A sent out Sneasler who also went down before acting. To retain Momentum, it would have been beneficial to open with either Garchomp or Whimsicott to capitalize on their moves before Player B's strong offensive.  
 >
-> 3. **Garchomp's Protect on Turn 3**: This Protect blocked a non-threatening Mystical Fire, which was not likely to KO. Instead, Garchomp could have targeted Indeedee for a guaranteed OHKO with Dragon Claw, which would have kept pressure on Player B.
+> 3. **Final Turns**: On turn 3, Garchomp opted for Protect to block Gardevoir’s **Mystical Fire**. However, it could have instead targeted **Indeedee** with **Dragon Claw**, which was a guaranteed OHKO, immediately putting pressure on Player B’s position.
 >
-> ## What to change
-> To improve in future matchups:
-> 1. **Adjust Lead Strategy**:
->    - Consider leading with Garchomp instead of Whimsicott. Garchomp provides immediate offensive pressure and can threaten both opponents efficiently, especially when backed by faster speed control moves. If using Whimsicott, ensure it carries Focus Sash as a priority.
+> ### What to Change:
+> 1. **Lead Changes**: Consider leading with Garchomp and Whimsicott. Garchomp could have threatened Indeedee early with powerful STAB moves, while Whimsicott could set up **Tailwind** safely to outspeed Player B’s Pokémon later.
 >
-> 2. **Prioritize Offensive Moves**:
->    - Utilize offensive moves whenever possible instead of defensive plays. For instance, on Turn 1, Charizard should have targeted Indeedee with Solar Beam rather than Protecting. This targeted attack could have disrupted Player B's setup significantly.
+> 2. **Tailwind Timing**: Ensure that Tailwind is executed while a more significant threat is on the field. Utilize Whimsicott’s bulk and Prankster ability to offer support more effectively before the opposing Pokémon can retaliate.
 >
-> 3. **Smart Use of Protect**:
->    - Use Protect on Garchomp when expecting high damage threats like Gardevoir's Hyper Voice. Consider the opponent's attack patterns; on Turn 4, Garchomp could have Protect, thereby avoiding the OHKO from Hyper Voice and allowing Garchomp to eliminate Indeedee on the following turn.
+> 3. **Use of Protect**: The use of Protect should be minimized on key offensive turns. If a strong attack threatens a Pokémon, ensure that its Protect is set up when warranted, but utilize offensive options whenever possible to maintain pressure on the opponent.
 >
-> 4. **Utilize Speed Control Effectively**:
->    - Ensure that Whimsicott's Tailwind is paired with powerful follow-up attacks to capitalize on the speed advantage. Additionally, if Tailwind is up, offensive pressure should not be compromised; maximize the turns of speed control with damage output.
->
-> By making these adjustments, Player A can improve the offensive flow of the game and increase their chances of countering teams effectively in the future.
+> In summary, by adjusting their leads for more aggressive early plays, selecting more offensive moves over Protect when able, and managing Tailwind strategically, Player A could create greater advantages in future matchups.
 
 ### bo1sim-sim700x71-g2-decisions
 
@@ -1357,34 +1243,37 @@ Source: simulated game sim700x71-g2 (random moves). Question: Which decisions by
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 3, specific 4, consistent 2, honest 2. Issues: ['Incorrect turning point analysis', 'Misinterpretation of Drill Run target', 'Inaccurate assessment of Protect usage']
+Judge: grounded 3, actionable 3, specific 4, consistent 2, honest 3. Issues: ['Inaccurate turning point analysis', 'Misinterpretation of Protect usage', "Incorrect assessment of Rillaboom's U-turn"]
 
-> ## Result
+> ### Result:
 > Winner: Player A (p1). Score — Player A lost 2; Player B lost 4.
 >
-> ## Turning point
-> The turning point was **turn 9**, when Player A maintained a clear lead with **2 Pokemon alive to Player B's 1**. During this turn, **Gardevoir** used **Protect** (failed) but faced an **Aqua Jet** from **Basculegion** (did not faint). **Golisopod** then used **Leech Life** (resisted), resulting in **Basculegion** dropping to **14% HP**. The overall HP was **77%** for Player A against **14%** for Player B.
+> ### Turning Point:
+> The turning point was Turn 9, when Player A had 2 Pokémon remaining to Player B's 1, with a combined HP of 77% to 14%. Gardevoir's Hyper Voice (immune to Basculegion) dealt 49-58 (23.6 - 28%) to Rillaboom, leaving it at 56% HP. Player A effectively capitalized on their lead, with Golisopod finishing Rillaboom using Iron Head, resulting in a decisive advantage.
 >
-> ## Decisions
->
-> ### Player A (p1)
+> ### Decisions:
 > **Best Decisions:**
-> 1. **Pawmot’s Fake Out (Turn 1)**: Used to block **Blaziken**, effectively neutralizing a potential threat while gaining momentum for the next turns.
-> 2. **Golisopod’s Drill Run (Turn 2)**: After Mega Evolving, it targeted **Blaziken** effectively, taking it out and allowing Player A to maintain control.
+> - **Player A:**
+>   - **Turn 2:** Pawmot’s Double Shock guaranteed the KO on Blaziken, leveraging its low health to turn the battle in Player A's favor.
+>   - **Turn 4:** Golisopod used Protect to block Aqua Jet. This was a smart play, given the potential threat from Basculegion, maintaining Golisopod's presence and HP.
+>   
+> - **Player B:**
+>   - **Turn 3:** Basculegion's Aqua Jet secured the KO of Pawmot, showing a proactive approach to eliminate threats quickly.
+>   - **Turn 2:** Bringing in Sneasler immediately for pressure was a good decision, allowing it to deal damage effectively.
 >
 > **Worst Decisions:**
-> 1. **Multiple Protects (Turns 5 and 6)**: Although they were meant to avoid damage, neither **Gardevoir's** nor **Golisopod’s** Protect succeeded in those turns. This left Gardevoir vulnerable to a potential OHKO from **Rillaboom**.
+> - **Player A:**
+>   - **Turn 6:** Both Gardevoir and Golisopod used Protect when they were not under immediate threat. Gardevoir could have used Hyper Voice which had a good chance to spread damage against Rillaboom. 
+>   - **Turn 3:** Golisopod's Drill Run against Basculegion was a reasonable choice, yet Leech Life against Rillaboom would have been more effective due to the guaranteed OHKO and potential to heal.
 >
-> ### Player B (p2)
-> **Best Decisions:**
-> 1. **Blaziken-Mega's Close Combat (Turn 2)**: Achieved a strong hit on **Pawmot**, leaving it at **1% HP**. Despite subsequently fainting, this attack allowed Player B to eliminate an opposing threat early.
-> 2. **Switching Rillaboom to sustain damage without losing momentum**: The choice to use **U-turn** instead of a more damaging attack against **Pawmot** in turn 1 was also salient—although it wasn’t the optimal choice considering the guaranteed OHKO available through **Wood Hammer**. 
+> - **Player B:**
+>   - **Turn 1:** Blaziken used Protect instead of attacking Pawmot with Close Combat, which would have secured a guaranteed KO, putting pressure back on Player A. Additionally, Rillaboom using U-turn also missed an opportunity as Wood Hammer against Pawmot would guarantee a KO.
+>   - **After Stacking:** Player B failed to capitalize on the advantage gained in terms of numbers after early KOs. 
 >
-> **Worst Decisions:**
-> 1. **Using Protect on Blaziken (Turn 1)**: This preserved Blaziken for a turn but limited the offensive potential. Instead, a **Close Combat** would have secured damage against either enemy for a guaranteed 2HKO on Pawmot.
-> 2. **Targeting Golisopod with weak attacks (Turn 3)**: During crucial turns, attacks like **Grassy Glide** and **Wood Hammer** were weak choices against Golisopod, which should have targeted the more vulnerable Gardevoir.
+> ### Conclusion:
+> Player A's decisions in targeting and managing Protect choices allowed them to maintain a lead in HP and Pokémon count ultimately defining the game. Player B, while making some strong plays, missed crucial opportunities to secure earlier KOs that could have shifted momentum back in their favor. 
 >
-> In summary, Player A made critical decisions to eliminate threats quickly while navigating the battlefield effectively, whereas Player B's decision to use Protect on key Pokemon limited their ability to exert offensive pressure and ultimately compromised their ability to win the match.
+> Enhancements in decision-making regarding timing and targeting could improve performance.
 
 ### bo1sim-sim700x76-g1-turning
 
@@ -1392,20 +1281,25 @@ Source: simulated game sim700x76-g1 (random moves). Question: What was the turni
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 3, specific 4, consistent 4, honest 2. Issues: ['incorrect_turn_5_analysis', 'incorrect_turn_10_analysis', 'missing_honesty_about_evidence_limitations']
+Judge: grounded 5, actionable 4, specific 5, consistent 5, honest 4. Issues: ['Protect suggestion on Turn 8 is speculative', 'Protect suggestion on Turn 10 is speculative', 'No mention of what evidence cannot show']
 
-> **Result:** Player A (p1) won the match with a score of 2 to 4 against Player B (p2).
+> **Result:** Winner: Player A (p1) with a score of 2 to 4 against Player B (p2).
 >
-> **Turning point:** The turning point of the game occurred on **turn 13**, when Player A had 2 Pokémon remaining versus Player B's 1 Pokémon. At that point, Player A had a total of 122% combined health while Player B had only 43%, signifying a significant lead. The damage dealt and moves used during that turn included Archaludon's general strategy of performing a Snarl attack against Raichu, which was ineffective as it resulted in blocking due to Raichu's Protect move. This substantial shift in Pokémon advantage was never reversed, leading to Player A maintaining a favorable position until the game's conclusion.
+> **Turning Point:** The turning point occurred on **Turn 13**. At this stage, Player A maintained a decisive lead with **2 Pokémon left compared to 1 for Player B**. Player A had a total of **122% HP** against Player B's **43% HP**. This significant HP advantage indicated a strong control of the battlefield, allowing Player A to keep a material advantage until the end of the game.
 >
-> **Decisions:**  
-> - **For Player B:** A critical misplay came during turn 5; the Arcanine-Hisui used Protect but blocked an incoming Weather Ball from Pelipper which had a guaranteed OHKO potential. It could have aimed to deal damage instead, putting pressure on Player A.
-> - Another instance of poor decision-making was apparent during turn 10 when Raichu did not utilize Protect, missing out on blocking Archaludon's Dragon Pulse, which could have kept it in the game longer to contest the lead.
-> - Further, on turn 14, Raichu's decision to use Protect again failed to guard against the damaging Dragon Pulse from Archaludon. Instead, using an offensive option like Zap Cannon could have dealt critical damage.
+> **Decisions:** Both players had critical moments throughout the match. 
 >
-> - **For Player A:** The choices made during the game largely stemmed from exploiting favorable matchups and making effective use of Pokémon abilities. Charizard's usage of Heat Wave in turn 11 resulted in a knockout to Gholdengo, thereby crippling Player B's lineup further. 
+> - For **Player B**, on Turn 2, Arcanine-Hisui used **Protect**, which was a missed opportunity as it could have targeted Castform with **Flare Blitz** (guaranteed OHKO). Not attacking meant that Player B failed to capitalize on the immediate threat to Castform, allowing it to stay in play and help Player A maintain pressure.
+> - Player B also failed to protect Gholdengo on Turn 8 when it could have used **Protect** to absorb damage from Archaludon's incoming **Snarl**, risking its viability on the field. 
+> - On the other hand, Player A made solid plays in response; using **Hurricane** to maintain momentum and capitalize on opportunities effectively.
 >
-> **What to change:** Player B should consider strategies to maximize coverage damage earlier in the match. Specifically, prioritizing their attacks over Protects could have maintained more pressure on the opponent. Additionally, ensuring plays are focused on damage output can prevent falling behind significantly. It might have also been beneficial to switch out vulnerable Pokémon, like Castform when threatened by Gholdengo, to mitigate possible knockouts earlier in the game.
+> **What to change:** Player B should focus on better decision-making in crucial moments:
+>
+> 1. **Turn 2 Decision**: Instead of using **Protect**, Arcanine-Hisui should have gone for the guaranteed OHKO on Castform with **Flare Blitz** to decrease the number of opposing threats on the field early.
+>   
+> 2. **Protect Usage**: On Turns 8 and 10, Gholdengo and Raichu both could have utilized **Protect** effectively to block strong incoming attacks. Protecting during high-risk scenarios would have ensured they remained on the field longer and allowed for counterplay opportunities.
+>
+> By adjusting these decisions in critical turns, Player B could have positioned themselves to maintain a more balanced battle state, possibly preventing their eventual loss.
 
 ### bo1sim-sim700x8-g1-coach_loser
 
@@ -1413,39 +1307,29 @@ Source: simulated game sim700x8-g1 (random moves). Question: Coach the losing pl
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['turning point misidentified', 'incorrect Charizard threat assessment', 'misleading Protect analysis']
+Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['Inaccurate turning point analysis', 'Misinterpretation of HP lead', 'Overlooked engine turning point']
 
-> ### Result
-> Winner: Player B (p2) — Score: Player A lost 4; Player B lost 3.
+> **Result:** Player B (p2) won, with a score of 4-3.
 >
-> ### Turning Point
-> The turning point of the match occurred at **turn 18**, where p2 Primarina used Moonblast to defeat p1 Whimsicott, leading to a 1 Pokémon advantage. At this moment, Player B held 89% HP against Player A's 0% HP, solidifying their lead in the game.
+> **Turning Point:** The game swung decisively in turn 18. On this turn, p1 Whimsicott used Tailwind, but p2 Primarina launched an unhindered Moonblast that dealt a guaranteed OHKO, resulting in Whimsicott fainting. Prior to this, p2 led with 1 Pokémon still standing against p1's 0, holding a 53% lead in total HP.
 >
-> ### Decisions
-> Player A made several questionable decisions that contributed to their loss:
+> **Decisions:** 
+> 1. **Use of Protect:** Player A's Charizard and Whimsicott both used Protect on turn 4 to block incoming attacks from Rillaboom and Primarina. While this block was backed by accurate reads, it did limit their offensive output. For example, Charizard could have used Solar Beam against Primarina for a guaranteed 2HKO instead of blocking potential damage. Missing the chance to capitalize on offensive opportunities allowed p2 to maintain control of the tempo and pressure. 
 >
-> 1. **Charizard's Turn 1 Protect**: Instead of attacking Primarina with Solar Beam, which guaranteed a 2HKO, Charizard chose to Protect. Given Primarina could OHKO Charizard with Hyper Voice on the following turn, this was a risky choice. A switch to Kingambit would have mitigated damage better.
+> 2. **Switching Decisions:** There were crucial switch options that were overlooked. On turn 1, Charizard could have switched to Kingambit, taking at most 56.5% from Primarina's Moonblast instead of risking a potential OHKO on Charizard. Furthermore, on turn 5, switching out Whimsicott would have spared it from taking heavy damage from Rillaboom's Superpower.
 >
-> 2. **Whimsicott's Use of Protect**: On turn 4, Whimsicott protected against attacks, despite being threatened by Primarina's Moonblast, which was extremely likely to KO. Using Protect here allowed Primarina to stay on the field and continue dealing damage without consequence.
+> 3. **Speed Control:** Player A successfully set up Tailwind with Whimsicott on turn 3, allowing Charizard to outspeed p2's Pokémon. However, once p2 established their Tailwind, the speed advantage shifted back. Maintaining the speed control advantage for as long as possible would have afforded better offensive positioning.
 >
-> 3. **Failing to Take Advantage of Speed Control**: Whimsicott established Tailwind on turn 3 but had opportunities to capitalize on that lead. Landed Moonblast on Rillaboom was the stronger option, guaranteeing a significant HP removal.
+> **What to Change:**
+> 1. **Focus on Offensive Power:** There were opportunities to strike effectively that Player A did not capitalize on, particularly Charizard's Solar Beam moves. Integrating more aggressive plays, rather than simply protecting, particularly when ahead in speed with Tailwind, will help dictate the pace of the match.
 >
-> 4. **Mismanaged Switching**: During various turns, p1 had multiple opportunities to switch Pokémon (such as turning Whimsicott into Kingambit), which could have alleviated damaging situations from incoming Hyper Voice and provided better chances of responding to threats.
+> 2. **Optimize Switching Strategies:** Switch into stronger resistors rather than risking your key offensive threats to immediate attacks. Prioritize optimizing matchups in which Pokémon can safely take hits relative to the threats on the field.
 >
-> ### What to Change
-> To improve their strategy in future matchups, here are the suggestions for Player A:
+> 3. **Maximize Protect Usage Wisely:** Although Protect is crucial for avoiding damage, it should be used strategically. Consider when to forego it for offensive momentum. For example, after setting Tailwind, Player A should have utilized that speed to maintain aggressive control rather than adopt a defensive stance.
 >
-> - **Leads**: Consider switching Charizard for a Pokémon equipped for tanking hits like Kingambit. Charizard's typing and vulnerabilities should be assessed against opposing threats early in the match.
->   
-> - **Aggressive Plays**: Use Charizard's Solar Beam against Primarina on turn 1 instead of Protect, especially since it can deal guaranteed damage. This would pressure the opponent instead of playing defensively.
+> 4. **Team Composition Synergy:** Reassess team synergy and roles. Each Pokémon should ideally support one another to overcome threats like Primarina and Salamence, considering type matchups when deciding on moves and positioning.
 >
-> - **Protect Usage**: Use Protect wisely. Ensure to put Pokémon in positions where their defenses remain intact, where they are capable of dealing damage rather than merely shielding against attacks. Protect could have been more effective when knowing you can block a certain KO.
->
-> - **Utilize Speed Control**: Give priority to setting up Tailwind but couple it with an aggression to exploit the speed advantage afterward. For instance, transitioning from Tailwind into strong attacks on opponents, especially vulnerable ones like Primarina.
->
-> - **Switch Carefully**: Be mindful of potential physical threats from the opponent. Strategically switch to minimize damage taken from incoming attacks, maintaining team synergy to put pressure on the opponent.
->
-> By refining these strategies, Player A can develop a stronger game plan that can lead to improved outcomes in similar matchups.
+> By adapting these strategies, Player A may find themselves better positioned to secure victories in future matchups, ensuring they capitalize on both offensive threats and maintain appropriate defensive strategies.
 
 ### bo1sim-sim700x83-g3-decisions
 
@@ -1453,34 +1337,27 @@ Source: simulated game sim700x83-g3 (random moves). Question: Which decisions by
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 3, actionable 4, specific 4, consistent 3, honest 2. Issues: ['Invented Draco Meteor OHKO on Camerupt', 'Misrepresented Protect on Turn 4', "Ignored engine's turning point"]
+Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 3. Issues: ["Incineroar's Turn 1 choice not clearly suboptimal", "Camerupt's Turn 4 Protect not clearly wasteful", 'Lacks acknowledgment of evidence limitations']
 
 > ### Result
-> Winner: Player A (p1). Player A lost 3; Player B lost 4.
+> Winner: Player A (p1) — Player A lost 3; Player B lost 4.
 >
 > ### Turning Point
-> The turning point of the battle occurred on **Turn 10**, where Player A seized a significant lead. On this turn, **p1 Tyranitar used Knock Off** on **p2 Farigiraf**, which resulted in the fainting of Farigiraf, leaving Player A with 2 Pokémon to Player B's 1 with a total HP of 80% against 58%. This was pivotal as it marked a clear momentum shift, significantly enhancing Player A's chances of winning the match.
+> The turning point occurred on Turn 10, where Player A gained a significant lead by taking down the opposing Farigiraf while losing Salamence. After this turn, Player A led with 2 Pokémon to 1, with 80% HP against Player B's 58% total HP. This represented the largest swing in the match and solidified Player A's position for victory.
 >
 > ### Decisions
-> **Player 1 (Player A):**
-> - **Good Decisions:**
->   - **Using Salamence’s Draco Meteor** to target Incineroar on Turn 4 after knowing it would faint. This was a high-priority KO, effectively removing a major threat.
->   - **Protect on Tyranitar** in Turn 12 against Raichu's Focus Blast, which was a guaranteed OHKO—blocking this attack secured Tyranitar's presence on the field.
+> #### Best Decisions
+> 1. **Player A - Tactics Against Camerupt**: On Turn 3, Salamence used Flamethrower instead of Draco Meteor against Camerupt. While Flamethrower's effectiveness is reduced due to typing, it allowed Excadrill later to secure a High Horsepower that brought Camerupt down to 17% HP, setting up for a fast KO in following turns. Salamence later secured the KO against Incineroar with Draco Meteor on Turn 4, confirming its potential as a strong lead attacker.
 >
-> - **Poor Decisions:**
->   - On Turn 2, **using Flamethrower against Camerupt instead of Draco Meteor**. Flamethrower only amounted to a guaranteed 3HKO, while Draco Meteor would have ensured an OHKO, possibly mitigating further counterattacks from Camerupt.
+> 2. **Player B - Protect Usage**: On Turn 4, Camerupt protected against a possible Rock Slide from Tyranitar, successfully blocking the hit that would have guaranteed an OHKO. This safeguarding allowed it to stay in the game longer at a crucial point when getting targeted.
 >
-> **Player 2 (Player B):**
-> - **Good Decisions:**
->   - **Using Fake Out** with Incineroar on Salamece in Turn 1 was strategically sound, denying a potential early attack from a key opponent.
->   - **Raichu's Protect on Turn 5** to safeguard against Salamence's Hyper Voice, while it ultimately didn’t prevent damage, it was a timing decision aimed at stall tactics.
+> #### Worst Decisions
+> 1. **Player B - Incineroar's Move Choice on Turn 1**: Incineroar used Fake Out against Salamence instead of allocating Flare Blitz onto the weakened Excadrill, which would have guaranteed a KO instead of putting damage on Salamence. This decision allowed Excadrill to hit back effectively, ultimately knocking the Incineroar off the battlefield a few turns later.
 >
-> - **Poor Decisions:**
->   - **Not using Protect with Camerupt on Turn 4 against Salamence's Draco Meteor**. Given that it had reasonable assurance of survival against Salamence's Draco Meteor (which could KO). Instead, choosing to use Protect here would have prevented a crucial KO on Incineroar.
->   - **Opting for Protect with Raichu on Turn 6** while other options, like Zap Cannon or Focus Blast, would have guaranteed the opportunity for a significant hit on Salamence or the potential to disable both.
+> 2. **Player B - Camerupt’s Turn 4 Move**: On Turn 4, Camerupt chose to use Protect instead of attacking with Ancient Power or Heat Wave, leaving it unable to retaliate against Player A's threats. Not only did this waste a turn, but it also allowed Salamence to drop Incineroar with Draco Meteor without any pressure in return.
 >
-> ### Summary
-> Ultimately, both players made effective decision-making plays while suffering from tactical missteps. Player A's ability to secure pivotal KOs while utilizing Protect effectively contributed significantly to their victory, whereas Player B missed several opportunities to use Protect in critical situations, allowing key opponents to repeatedly threaten their Pokémon.
+> ### Conclusion
+> Overall, Player A's aggressive plays against Camerupt and efficient targeting significantly contributed to securing their lead, while Player B's misplays in targeting and Protect choices ultimately set them back. Adapting the targeting to capitalize on the threats and optimizing the use of Protects could have shifted the tide in Player B's favor.
 
 ### bo1sim-sim700x87-g3-turning
 
@@ -1488,33 +1365,29 @@ Source: simulated game sim700x87-g3 (random moves). Question: What was the turni
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ['Turn 1 advice lacks grounding', 'Turn 9 advice lacks grounding', 'Honesty about evidence limits missing']
+Judge: grounded 2, actionable 3, specific 3, consistent 2, honest 2. Issues: ['incorrect_turn_1_analysis', 'incorrect_turn_2_analysis', 'incorrect_turn_10_analysis']
 
-> ### Result
-> Winner: Player B (p2) with a score of 4-2 against Player A (p1).
+> **Result:** Player B won the match with a score of 4-2 against Player A.
 >
-> ### Turning Point
-> The turning point occurred on **Turn 10**, when the action included:
-> - **Rillaboom** (p1) used **Grassy Glide** (super effective) against **Tyranitar** (p2), which ended at **44% HP** after dealing **44.8 - 54.2%** damage, ensuring a guaranteed 2HKO.
-> - **Tyranitar** (p2) used **Rock Slide** (spread, super effective), hitting both **Rillaboom** (p1) and **Froslass** (p1), which ended at **18% HP** and **14% HP**, respectively.
->   
-> After this turn, **Player B** led with 2 active Pokémon against 2 for **Player A**, but the HP distribution after the turn shifted significantly in Player B's favor (p2: 2 Pokémon at 144% total HP vs. p1: 2 Pokémon at 32% total HP).
+> **Turning point:** The turning point of the game occurred on **turn 10**. At this stage, Player B had 2 Pokémon remaining with a combined health of 144%, while Player A only had 2 Pokémon with a total of 32% health. This marked a significant shift, as the previous turns had not established a clear lead for either side. The figures from turn 10 are:
+> - Player B: 2 Pokémon remaining, 144% health.
+> - Player A: 2 Pokémon remaining, 32% health.
 >
-> ### Decisions
-> **Player A (p1) Misplays:**
-> 1. **Turn 1**: Dragonite used **Superpower** against Excadrill (p2), which was protected. Player A could have switched Delphox out to Rillaboom (p2) to avoid the imminent threat from Tyranitar's **Knock Off**. Instead, Delphox's **Protect** also failed when it could have provided a more strategic option.
-> 2. **Turn 2**: After Excadrill survived with 1%, Player A's Dragonite was knocked out by Tyranitar's **Knock Off**. Switching to Rillaboom earlier might have mitigated the loss.
+> **Decisions:** Several key misplays impacted Player A's strategy:
+> 1. **Turn 1:** Both Excadrill and Delphox used Protect, which was unnecessary as Dragonite could have used Superpower on Excadrill, guaranteed to secure a knockout. Instead, a switch to Gholdengo or Sinistcha could have avoided the imminent threat from Dragonite, preserving Excadrill.
+>    
+> 2. **Turn 2:** After Dragonite was knocked out by Tyranitar’s Knock Off, Delphox should have switched out to Rillaboom to take a Knock Off with significantly less risk (maximum 57% damage) instead of staying in and facing the guaranteed OHKO.
 >
-> **Player B (p2) Good Reads:**
-> 1. **Turn 1**: Both **Tyranitar's** and **Excadrill's** Protect prevented damage and set up for future attacks.
-> 2. **Turn 4**: The choice to keep Excadrill protected helped maintain strong positioning, contributing to later advantageous turns.
+> 3. **Turn 4:** Rillaboom targeted Tyranitar with High Horsepower but could have used other moves against Gholdengo, maximizing offensive pressure without allowing Tyranitar another chance to attack.
 >
-> ### What to Change
-> For **Player A (p1)**:
-> - **Turn 1**: Consider switching Excadrill or delaying the use of Protect on Delphox, allowing for counterplay against Mega Tyranitar and maximizing damage against Excadrill.
-> - **Turn 9**: Instead of attempting **Aurora Veil** with Froslass, opting for **Shadow Ball** against Gholdengo (which would have been a guaranteed OHKO) was the better choice, as it could have avoided losing a Pokémon.
+> 4. **Turn 10:** Rillaboom used Grassy Glide on Tyranitar but missed a clear opportunity with Wood Hammer or High Horsepower for guaranteed OHKOs on other targets, while protecting against a potential Knock Off from Tyranitar would have saved it.
 >
-> To summarize, focusing on stronger positioning and damage optimization earlier in the match could have influenced the outcome positively for Player A.
+> **What to change:** To improve their chances, Player A should consider:
+> - **Avoiding Protects when high-damage threats are present**, particularly when there are guaranteed knockouts available.
+> - **Utilizing switch options** more effectively to maintain Pokémon health and strategies, especially against known threats.
+> - **Maximizing damage output** through optimal move choices rather than risking ineffective hits against Pokémon with advantageous type matchups.
+>
+> By addressing these areas, Player A could have altered the momentum of the game significantly.
 
 ### bo1sim-sim700x91-g2-coach_loser
 
@@ -1522,39 +1395,34 @@ Source: simulated game sim700x91-g2 (random moves). Question: Coach the losing p
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 2, actionable 3, specific 3, consistent 2, honest 2. Issues: ['turning point misidentified', 'incorrect move recommendations', 'protect usage misinterpreted']
+Judge: grounded 2, actionable 3, specific 3, consistent 1, honest 2. Issues: ['Incorrect turning point analysis', 'Misinterpretation of turn 14 actions', 'Inaccurate damage calculations']
 
-> ## Result
-> Winner: Player A (p1). Score — Player A lost 2; Player B lost 4.
+> ### Result
+> Winner: Player A. Score — Player A lost 2; Player B lost 4.
 >
-> ## Turning Point
-> The turning point occurred on **Turn 14** when **p1 Gholdengo** used **Shadow Ball** to knock out **p2 Sinistcha**. After this turn, Player A maintained a strong lead with **2 Pokémon remaining** to Player B's **0**. The HP percentages were heavily in Player A's favor at **106%** to **0%** total HP.
+> ### Turning Point
+> The turning point of the match occurred on **Turn 14**. After this turn, Player A maintained a lead of at least half a Pokémon's worth of HP. In this turn, Staraptor used **Close Combat** on Tyranitar, resulting in a guaranteed OHKO, as it dealt 268-318% damage. Gholdengo then used **Make It Rain**, fainting Staraptor and dealing damage to Milotic. The weather also changed to Sand at that point, which played a role in the future turns.
 >
-> ## Decisions
-> Player B made several critical misplays and could have improved their performance significantly:
+> ### Decisions
+> Several key decisions needed adjustment:
+> 1. **Excadrill's Protect on Turn 1**: While protecting Excadrill from Staraptor’s Brave Bird was a good initial thought, it would have been a better choice to target either Staraptor or Gholdengo with **Iron Head**, given that both were viable targets and could have put pressure on the opposing team. Optionally switching Excadrill out for Gholdengo would have prevented it from getting taken out in the long run.
 >
-> 1. **Turn 1: Staraptor used Brave Bird** against Excadrill, which was protected by its Protect. Instead, **Close Combat** would have guaranteed an OHKO on either Excadrill or Tyranitar, swinging the momentum in Player B's favor.
+> 2. **Repeated Protect Usage**: Throughout the match, Player B's team, especially with Tyranitar, repeatedly opted for Protect when it could have been more beneficial to attack instead. For example, on Turn 3, using a strong move like **Knock Off** against Milotic would have created offensive pressure, potentially putting Player B in a better position.
 >
-> 2. **Turn 2: Tyranitar could have protected** against the incoming threat from Gholdengo's Shadow Ball, which had a **guaranteed 2HKO** potential, allowing it to survive and possibly retaliate against the opposing Gholdengo.
+> 3. **Switching Choices**: Earlier in the game, particularly on Turn 9 when Tyranitar and Gholdengo were both available, either could have better absorbed damage from incoming threats like Milotic or Staraptor. Sinistcha could also have been switched out when faced with substantial threats. The player should have considered switching to Gholdengo on occasion to mitigate damage from incoming attacks.
 >
-> 3. **Turn 3: Milotic used Protect** while facing a significant threat. Here, Milotic could have targeted Excadrill with **Scald**, which was a guaranteed OHKO, potentially shifting the battle narrative significantly.
+> 4. **Utilization of Speed Control**: Fast Pokémon such as Staraptor benefitted from Tailwind, allowing it to outspeed and threaten both Gholdengo and Sinistcha. During this phase, maintaining a focus on speed control or countering it more efficiently would have helped swing the momentum.
 >
-> 4. **Turns 5 and 6: Player B's Staraptor** and **Milotic both used Protect**, which failed to block critical attacks that could have been avoided. Using this to instead target opposing Pokémon would have preserved their advantage.
+> ### What to Change
+> 1. **Lead Adjustment**: Consider leading with a more defensive Pokémon than Tyranitar, as it faced early pressure from Mega Staraptor. Leading with Sinistcha for Trick Room might have offered a better speed advantage against this aggressive lead.
 >
-> 5. **Throughout the match, Protects were often misallocated** or used when attacking moves offered more strategic advantage, particularly when targeting the threatening Gholdengo and the active Staraptor.
+> 2. **Move Selection**: Incorporate more offensive moves and avoid overly relying on Protect unless absolutely necessary. For instance, if nearing a significant damage threshold, opting for high-damage moves based on projected outcomes (like **Knock Off** or **Close Combat**) can often secure key KOs.
 >
-> ## What to Change
-> 1. **Adjust Leads:** Staraptor and Gholdengo can lead effectively against opposing threats. Staraptor should leverage its speed and attacking options early on, while better monitoring threats like Gholdengo to avoid taking unnecessary damage from effectively responding Pokémon.
+> 3. **Protect Usage**: Limit the use of Protect to when the risk of being knocked out is high and avoid it when offensive action can provide significant gains instead. This will increase pressure on the opponent and potentially shift the battle momentum.
 >
-> 2. **Optimize Move Choices:** Staraptor and Gholdengo should utilize powerful moves like Close Combat and Make It Rain more consistently. Avoid using Protect too frequently, especially when making significant offensive plays could have led to advantageous position changes.
+> 4. **Switching Strategy**: Implement a plan for switching that involves preserving Pokémon that have strong matchups against opposing threats while not exposing them unnecessarily to detriment.
 >
-> 3. **Speed Control:** Tailwind from Staraptor should be better utilized to outspeed key threats. This means setting it up at a moment where it can directly lead into a follow-up offensive strategy, rather than securing temporary safety.
->
-> 4. **Utilize Protect Wisely:** Protect should be used primarily to block immediate threats. Misallocation was a common issue. It's important to assess threats properly before opting for a safety move.
->
-> 5. **Adapt EV Spreads:** Considering Pokémon usage statistics, Player B might benefit from revisiting their team builds by enhancing specific EV spreads that bolster their Pokémon against prevalent threats in the current metagame.
->
-> By refining move choices, understanding speed control, and using Protect wisely, Player B can improve their strategies and potentially turn the tides in future encounters.
+> By refining these aspects, Player B can enhance their strategy to effectively counter their opponents in future matchups.
 
 ### bo1sim-sim700x95-g2-decisions
 
@@ -1562,24 +1430,31 @@ Source: simulated game sim700x95-g2 (random moves). Question: Which decisions by
 
 Checks: contradictions none; warnings none; narrative-validation rejections 0; figures outside evidence none; fallback notice False.
 
-Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 3. Issues: ['Protect analysis lacks evidence', 'Missed opportunity analysis lacks evidence', 'Turning point analysis lacks evidence']
+Judge: grounded 4, actionable 5, specific 5, consistent 5, honest 4. Issues: ['Power Gem vs Dragon Pulse claim lacks damage calculation', "Indeedee's Protect critique lacks context", "Turning point analysis matches engine's computation"]
 
-> ## Result:
-> The winner was Player B (p2) with a score of 4-3 against Player A (p1).
+> ### Result:
+> Winner: Player B (p2). Score — Player A lost 4; Player B lost 3.
 >
-> ## Turning point:
-> The turning point occurred on **Turn 2**, where Player B had the advantage leading 4 Pokémon to 3. In this turn, **p2 Excadrill** used **Iron Head**, resulting in **Gengar** fainting. This gave Player B a significant lead, with their remaining Pokémon holders at 307% HP against the 246% HP of Player A. The fainting left them over half a Pokémon down (0.61 lead) with a health swing favoring Player B at 0.54.
+> ### Turning point:
+> The turning point occurred in turn 2 when Player B took a significant lead after knocking out Player A's Gengar. This set the stage for Player B to maintain the momentum, leading with 4 Pokémon to 3 and demonstrating a substantial HP advantage of 307% to 246%. The relevant actions in turn 2 included:
+> - p2 Excadrill used Iron Head, which knocked out Gengar.
+> - p2 Salamence used Hyper Voice, leaving Garchomp at 46% HP.
+> - p1 Garchomp responded with Dragon Pulse, dealing 19.3% to Excadrill.
 >
-> ## Decisions:
-> ### Player B (p2)
-> - **Best Decision:** On Turn 2, using **Iron Head** to knock out **Gengar** was pivotal. This was the best move since it secured a significant lead without risk, shifting the balance of power in their favor.
-> - **Worst Decision:** During Turn 4, **Excadrill** used **Rock Slide**, but it missed Tyranitar, allowing Player A a free move. They could have opted for an **Iron Head**, which would have guaranteed a 2HKO on Tyranitar. Instead, they risked allowing Player A to retaliate.
+> ### Decisions:
+> **Best Decisions:**
+> 1. **Player B's Use of Salamence's Draco Meteor (Turn 3)**: This was a decisive choice as it guaranteed an OHKO on Garchomp, which was critical to maintaining pressure and controlling the battlefield.
+>    
+> 2. **Excadrill’s Iron Head to Knock Out Gengar (Turn 2)**: This was a great choice, effectively reducing Player A's offensive capability and leading to a significant early advantage.
 >
-> ### Player A (p1)
-> - **Best Decision:** On Turn 4, using **Low Kick** with **Tyranitar** successfully knocked out **Salamence**, taking advantage of the type matchup. This was critical in keeping the game competitive.
-> - **Worst Decision:** On Turn 1, **Garchomp** used **Power Gem** against **Salamence** instead of **Dragon Pulse**, which was guaranteed to deal more damage (guaranteed OHKO in later turns). Furthermore, failing to switch to a more advantageous position when threatened by **Salamence's Draco Meteor** also put Garchomp in danger.
+> **Worst Decisions:**
+> 1. **Player A's Use of Power Gem Against Salamence (Turn 1)**: Garchomp should have used Dragon Pulse instead, which was guaranteed to 2HKO Salamence, given that Hyper Voice would have targeted both of Player B's Pokémon.
+>    
+> 2. **Basculegion's Protect on Turn 5**: Although Protect is a valid move, Basculegion had the chance to KO Indeedee with Wave Crash. By opting for Protect, Player A lost the aggressive momentum and allowed opponent Tyranitar to capitalize on their free turn.
 >
-> ## Protect Choices:
-> - On Turn 5, both players chose to use **Protect**; however, **Indeedee** faced a big threat from **Basculegion's** potential **Wave Crash**, which could deal guaranteed OHKO damage. Conversely, **Basculegion’s Protect** could have blocked the incoming **Knock Off** from **Tyranitar**, which was also a significant threat.
+> **Targeting and Protect Choices**:
+> - **Excadrill targeting Gengar (Turn 2)** was spot on as it removed a crucial threat from Player A.
+> - **Indeedee’s Protect in Turns 5 and 6** did not effectively shield it from incoming damage and ultimately resulted in its KO, showcasing a missed opportunity to maintain its presence. Given Basculegion’s wave crash possibility, using Protection at such a critical moment was an error.
 >
-> In conclusion, securing key KOs and making sound decisions regarding attacks and Protects were decisive in this match. Player B leveraged their advantageous position effectively, while Player A missed opportunities to capitalize on battles in their favor.
+> ### What to Change:
+> Player A should reconsider the strategies for Garchomp and Basculegion. Specifically, Garchomp's moveset focusing on higher-damage options like Dragon Pulse over Power Gem could maximize offensive pressure. Moreover, Basculegion should utilize its attacks aggressively, like using Wave Crash on Indeedee instead of opting for Protect, ensuring consistent offensive pressure. Addressing these decision points could improve future performance significantly.

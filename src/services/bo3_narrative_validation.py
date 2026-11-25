@@ -8,34 +8,40 @@ from pydantic import ValidationError
 from src.domain.narrative_claims import NarrativeClaimPlan, NarrativeDraft
 
 
+def _json_object(text: str) -> str:
+    """The JSON object in a reply, tolerating a code fence or a sentence before and after it."""
+    candidate = text.strip()
+    if candidate.startswith("```"):
+        candidate = candidate.removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+    if not candidate.startswith("{") and "{" in candidate and "}" in candidate:
+        candidate = candidate[candidate.index("{"):candidate.rindex("}") + 1]
+    return candidate
+
+
 def validate_draft(text: str, plan: NarrativeClaimPlan) -> tuple[NarrativeDraft | None, tuple[str, ...]]:
     """Accept catalog IDs only; reject known factual substitutions in free prose.
 
     This is a constrained factual boundary, not a general semantic proof of every
     strategic interpretation. Unsupported unique-winning-move claims are disallowed.
     """
-    candidate = text.strip()
-    if candidate.startswith("```json") and candidate.endswith("```"):
-        candidate = candidate[7:-3].strip()
+    candidate = _json_object(text)
     try:
         draft = NarrativeDraft.model_validate(json.loads(candidate, strict=False))  # raw newlines inside strings are harmless
     except (ValueError, ValidationError):
         return None, ("Return one JSON object with claim_ids and analysis; no factual values or extra fields.",)
     issues = []
+    # Values are rendered from the catalog, never from the model, so the ID list is normalized instead of rejected:
+    # unknown, other-checkpoint and repeated IDs are dropped and every required ID is added (copying 20 hashes was the
+    # main reason a valid analysis failed validation).
     known = {claim.id for claim in plan.claims}
-    selected = set(draft.claim_ids)
-    if len(selected) != len(draft.claim_ids):
-        issues.append("Do not duplicate claim IDs.")
-    if selected - known:
-        issues.append("Remove unknown or other-checkpoint claim IDs.")
-    if set(plan.required_claim_ids) - selected:
-        issues.append("Include every required claim ID, including narrowed bounds and unresolved-spread status.")
+    chosen = tuple(dict.fromkeys(claim_id for claim_id in draft.claim_ids if claim_id in known))
+    draft = draft.model_copy(update={"claim_ids": (*chosen, *(i for i in plan.required_claim_ids if i not in chosen))})
     if plan.requires_strategy and not draft.analysis.strip():
         issues.append("Answer the strategic question with a conditional interpretation of the supplied battle evidence.")
     prose = draft.analysis.replace("*", "")
     if re.search(r"\b(?:ability|nature|item|common moves|moveset|holds|holding|equipped|EVs|IVs|maxed|maximized)\b", prose, re.IGNORECASE):
         issues.append("Do not restate trait lists in analysis; select their verified claim IDs.")
-    if re.search(r"\b(?:Adamant|Bashful|Bold|Brave|Calm|Careful|Docile|Gentle|Hardy|Hasty|Impish|Jolly|Lax|Lonely|Mild|Modest|Naive|Naughty|Quiet|Quirky|Rash|Relaxed|Sassy|Serious|Timid)\b", prose):
+    if re.search(r"\b(?:Adamant|Bashful|Bold|Brave|Calm|Careful|Docile|Gentle|Hardy|Hasty|Impish|Jolly|Lax|Lonely|Mild|Modest|Naive|Naughty|Quiet|Quirky|Rash|Relaxed|Sassy|Serious|Timid)\b(?!\s+(?:Mind|Bird|Orb|Crystal|Incense)\b)", prose):
         issues.append("Nature values belong to the verified catalog, not free-form analysis.")
     if re.search(r"\b(?:typically|commonly|usually|standard set|common setup|likely maxed)\b", prose, re.IGNORECASE):
         issues.append("Do not substitute common sets for this series' facts.")

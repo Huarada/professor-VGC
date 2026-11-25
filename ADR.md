@@ -6088,3 +6088,24 @@ correction retry of `narration_issues` (BO3 answers are not checked). The testbe
 check found 36 of 36 presenting the engine's turn, so the judge's remaining "inconsistent with engine turning point"
 remarks do not come from naming another turn; the guard now protects against regressions.
 
+## ADR-081 - Stop BO3 narrative-validation rejections that were format errors, and add a human validation report
+
+Status: accepted. The coaching testbench (ADR-080) showed 33 narrative-validation rejections over 5 BO3 cases with gpt-4o-mini
+(6 to 8 per series, almost every game review rejected once). Measured causes: (1) the BO1 answer structure had been placed in the
+shared explanation prompt, so BO3 reviews answered in prose instead of the JSON contract; it now lives in
+`explanation_bo1_structure.txt`, appended only to BO1 calls; (2) copying up to 20 claim-ID hashes was error prone, so
+`validate_draft` now repairs the ID list (adds every required ID, drops unknown, other-checkpoint and repeated IDs) instead of
+rejecting it, which is safe because every fact is rendered from the verified catalog and never from model text, and the BO3
+prompts say the application adds the required IDs; (3) a reply fenced in a code block or wrapped in a sentence is now read as
+JSON; (4) "Calm Mind", "Brave Bird", "Adamant Orb" and "Lax Incense" were read as natures. The closing line of a BO3 review
+asks for the JSON object, the series summary asks the provider for JSON mode, and the test fake no longer answers every JSON
+request with the selection reply.
+
+Result on the same 41 cases: rejections 33 to 5 (the BO3 coaching question 0 to 1 per series; the spread question still falls back
+once, because its analysis may not restate traits and a question about spreads invites it), BO3 judge means grounded 3.0 to 3.6,
+consistent 3.6 to 4.0. BO3 wall time rose from 57 s to 89 s in that run; the cause was not isolated. The first run is kept as
+`...-sim24-before-bo3-fix.md`. Each run now also writes `<stem>.html` (`scripts/coaching_report_html.py`): one offline file with
+the formatted answer, the checks, the engine's turning point, the replay (engine timeline, raw log, download, Showdown link for
+public games) and a verdict box per answer, saved in the browser and exportable as JSON, for a human to validate. The JSON and
+Markdown reports omit the replays.
+

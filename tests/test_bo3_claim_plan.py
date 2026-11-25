@@ -95,11 +95,12 @@ def test_invalid_facts_are_retried_once_then_replaced_with_verified_findings(ana
     assert "12-24" in text and "Shadow Tag" in text
 
 
-def test_missing_bounds_unknown_ids_duplicate_ids_and_extra_values_are_rejected():
+def test_missing_unknown_and_duplicate_ids_are_repaired_but_extra_values_are_rejected():
     plan = build_claim_plan(checkpoint(), "spread")
     for ids in ((), ("another-player-claim",), (*plan.required_claim_ids, plan.required_claim_ids[0])):
-        _, issues = validate_draft(draft(plan, ids=ids), plan)
-        assert issues
+        repaired, issues = validate_draft(draft(plan, ids=ids), plan)
+        assert not issues and repaired is not None
+        assert sorted(repaired.claim_ids) == sorted(plan.required_claim_ids)  # required added, unknown/repeated dropped
     payload = json.loads(draft(plan))
     payload["fabricated_spread"] = {"hp": 32}
     assert validate_draft(json.dumps(payload), plan)[1]
@@ -112,7 +113,7 @@ def test_correction_can_recover_and_a_winning_question_requires_an_answer():
 
     def explain(correction):
         calls.append(correction)
-        return draft(plan, ids=()) if not correction else draft(plan)
+        return draft(plan, "") if not correction else draft(plan)
 
     text = explain_champions_only(explain, bo3=True, plan=plan)
     assert len(calls) == 2 and "Strategic interpretation" in text and "did not pass" not in text
@@ -146,3 +147,20 @@ def test_fallback_logs_validation_reasons_without_logging_generated_text(caplog)
     assert "attempt 1 rejected" in caplog.text and "attempt 2 rejected" in caplog.text
     assert "Do not restate trait lists" in caplog.text
     assert "Private generated prose sentinel" not in caplog.text
+
+
+def test_a_reply_wrapped_in_a_fence_or_a_sentence_is_still_read_as_json():
+    plan = build_claim_plan(checkpoint(), "spread")
+    body = draft(plan)
+    for wrapped in (f"```{body}```", f"```json\n{body}\n```", f"Here is the JSON:\n{body}\nHope this helps."):
+        parsed, issues = validate_draft(wrapped, plan)
+        assert parsed is not None and not issues
+    assert validate_draft("### Result\nNo JSON at all.", plan)[0] is None
+
+
+def test_a_move_or_item_that_shares_a_nature_word_is_not_a_nature_claim():
+    plan = build_claim_plan(checkpoint(), "winning decision strategy")
+    ok = '{"claim_ids": [], "analysis": "Floette-Eternal gained little from Calm Mind, and Brave Bird or an Adamant Orb changes nothing here."}'
+    assert validate_draft(ok, plan)[1] == ()
+    bad = '{"claim_ids": [], "analysis": "Gholdengo, a Modest attacker, should lead."}'
+    assert any("Nature values" in issue for issue in validate_draft(bad, plan)[1])

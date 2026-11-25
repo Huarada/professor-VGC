@@ -363,7 +363,7 @@ class Bo3AnalysisService:
                 answer = self._llm.complete(
                     system=self._system, messages=[ChatMessage(role="user", content=(
                         checked_bo3_message(encode_context(compact_payload) + "\n" + correction)
-                    ))], temperature=0.2,
+                    ))], temperature=0.2, json_mode=plan is not None,
                 )
             except LLMProviderError as exc:
                 raise LLMProviderError(f"BO3 series summary: {exc}") from exc
