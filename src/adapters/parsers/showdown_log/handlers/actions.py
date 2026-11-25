@@ -32,12 +32,20 @@ class ActionHandlers(HandlerGroup):
             "-singleturn": self.on_singleturn,
             "-supereffective": lambda parts: self.state.timeline.add_effect("super effective"),
             "-resisted": lambda parts: self.state.timeline.add_effect("resisted"),
-            "-immune": lambda parts: self.state.timeline.add_effect("immune"),
+            "-immune": lambda parts: self.on_unaffected("immune", parts, 2),
             "-crit": self.on_critical_hit,
-            "-miss": lambda parts: self.state.timeline.add_effect("missed"),
+            "-miss": lambda parts: self.on_unaffected("missed", parts, 3),
             "-fail": lambda parts: self.state.timeline.add_effect("failed"),
             "-hitcount": self.on_hitcount,
         }
+
+    def on_unaffected(self, effect: str, parts: list[str], target_index: int) -> None:
+        """An immune or missed target: the effect, plus who it was, so a wasted move names its target."""
+        self.state.timeline.add_effect(effect)
+        move = self.state.timeline.current_move
+        key = self.state.roster.resolve(parts[target_index]) if len(parts) > target_index else None
+        if move is not None and key is not None and f"{key[0]}:{key[1]}" not in move.unaffected_targets:
+            move.unaffected_targets.append(f"{key[0]}:{key[1]}")
 
     def on_critical_hit(self, parts: list[str]) -> None:
         self.state.timeline.add_effect("crit")

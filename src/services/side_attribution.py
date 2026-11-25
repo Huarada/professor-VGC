@@ -79,19 +79,22 @@ def canonical(text: str, owners: dict[str, frozenset[str]]) -> str:
 
 
 def narration_issues(answer: str, game_state: GameState, *, turning_point: bool = True) -> list[str]:
-    """Everything in a BO1 answer that contradicts the log: wrong side, a faint on the wrong turn, another turn called decisive."""
-    from src.services.faint_timing import faint_timing_issues  # noqa: PLC0415 - these import this module
+    """Everything in a BO1 answer that contradicts the log: wrong side, a faint or a move on the wrong turn, another turn called decisive."""
+    from src.services.action_claims import action_claim_issues  # noqa: PLC0415 - these import this module
+    from src.services.damage_wording import remaining_hp_as_damage_issues  # noqa: PLC0415
+    from src.services.faint_timing import faint_timing_issues  # noqa: PLC0415
     from src.services.turning_claim import turning_point_issues  # noqa: PLC0415
 
-    issues = side_attribution_issues(answer, game_state) + faint_timing_issues(answer, game_state)
+    issues = (side_attribution_issues(answer, game_state) + faint_timing_issues(answer, game_state)
+              + action_claim_issues(answer, game_state) + remaining_hp_as_damage_issues(answer, game_state))
     return issues + turning_point_issues(answer, game_state) if turning_point else issues
 
 
 def correction_note(issues: list[str]) -> str:
     lines = "\n".join(f"- {issue}" for issue in issues)
     return ("CORRECTION: your previous answer contradicts the battle log:\n" + lines +
-            "\nThe '<p1/p2> roster' lines, the ordered timeline, turning_point (present turning_point.turn as the turning point) and "
-            "turning_point.candidates[].faints are the only "
-            "authority on sides and on which turn each Pokemon fainted. Rewrite the full answer so every Pokemon is "
-            "attributed to its own side, advice names only Pokemon from the advised player's roster, and every faint "
-            "is placed on the turn the log shows.")
+            "\nThe 'Pokemon <player> brought' lines, the ordered timeline (every Pokemon is written with its owner), "
+            "turn_by_turn_checks, wasted_actions and turning_point (present turning_point.turn as the turning point) are the "
+            "only authority on sides, on which move each Pokemon used on which turn and on which turn each Pokemon "
+            "fainted. Rewrite the full answer so every Pokemon is attributed to its own side, advice names only Pokemon "
+            "from the advised player's roster, and every move and faint is placed on the turn the log shows.")

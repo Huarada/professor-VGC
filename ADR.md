@@ -6114,3 +6114,41 @@ simulated ones, whose ids contain "sim"; a best-effort "watch in Showdown viewer
 own replay pages, which needs internet and was not tested in a browser here; the engine timeline). `--rebuild-html JSON` rewrites
 the HTML of a stored run from the same cases, because the JSON reports omit the replays.
 
+
+
+## ADR-082 - Name the owner of every Pokemon in BO1, list wasted actions, check who used what on which turn
+
+Status: accepted. A human reviewer (five of the stored coaching answers, two near-mirror games where both teams bring
+Basculegion, Froslass, Kingambit and Sneasler) found the errors the automatic checks missed: a failed Sucker Punch of one side's
+Kingambit credited to the other side's, Protect "allowing" an opponent to protect, an Aqua Jet aimed at the wrong target, a
+Fake Out into an immune Ghost not noticed, "best" and "worst" decisions swapped, and an opening "Turning Point" section written for
+questions that did not ask for it. The side, faint and turning-point validators of ADR-079 stay silent on mirror species by design
+and the model had to map "p1" onto "Player A" itself.
+
+Changes (BO1 only; BO3 keeps p1/p2 and its claim contract):
+
+- Every side marker is rendered with the player's name: timeline lines ("Ana's Kingambit used Sucker Punch"), every `*_player` field
+  and every p1/p2 token of the explanation context (`services/side_labels.py`), and `OptimalMoveOption` gained `target_player`.
+  `AnalysisEvidence.battle_result` therefore differs between BO1 and a BO3 game review; the backend parity test excludes that field.
+- A hit in the timeline reads "Ana's Dragonite left at 2% HP" (it was `Dragonite->2%`, read as damage) and a damage check carries
+  `actual_damage_percent`. The explanation prompt says only that field is damage dealt. The earlier claim that the log-grounded
+  damage checker was wrong on "47%" was itself wrong: the answers said "dealing 47%" for a hit that left 47% (it dealt 53%).
+- `wasted_actions` (`services/wasted_actions.py`): every move the log marks `-immune`, `-fail`, `-miss` or blocked by Protect, per
+  turn, with the owner and target. The parser records the target of an immune or missed move (`BattleEvent.unaffected_targets`).
+- `action_claim_issues` (`services/action_claims.py`), part of `narration_issues` and its one correction retry: a sentence that
+  names exactly one turn, a Pokemon (with its owner if written) and "used <move>" must match a logged action of that Pokemon on that
+  turn, and the target written right after the move must be one the log ties to it. Counterfactual sentences and "instead of ..."
+  clauses are skipped. It runs on mirror species too: "Bob's Kingambit used Sucker Punch" is flagged when only Ana's did.
+  The faint check also reads "..., which had 2% HP, causing a faint" and "this pivotal turn" continues the previous sentence's turn.
+- The BO1 prompt asks for a Turning point section only when the question asks what decided the game; best and worst decisions must not
+  be swapped and advice must still have been possible at that moment (`explanation_bo1_structure.txt`).
+
+On the five reviewed answers the new check flags the wrong Sucker Punch attribution in all three answers of that game and flags
+nothing in the six other recorded BO1 answers. It does not read vague phrasing, or an action described without its turn.
+
+Addendum (HP left versus damage dealt): `remaining_hp_as_damage_issues` (`services/damage_wording.py`, part of `narration_issues`)
+flags "dealing 47% to Scovillain" when 47% is the HP the target had left after a logged hit that dealt 53%; it is silent when the
+figure matches the real damage or the wording is "left at 47%". On 9 recorded BO1 answers it flags 1, a true error. The log-grounded
+damage checker (`percent_classifier.py`) read "left Player B's Scovillain at 47%" as damage once player names lengthened the
+phrase past its 20-character window, and a second "at 79%" of the same list; both are fixed, so named sides do not turn correct
+remaining-HP wording into false "incorrect" claims.

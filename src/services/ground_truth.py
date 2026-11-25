@@ -71,7 +71,9 @@ from src.services.evidence_prefetch import PrefetchedReviewContext
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
 from src.services.regulation_guard import RegulationGuard
 from src.services.side_attribution import correction_note, narration_issues
+from src.services.side_labels import label_sides, side_names
 from src.services.turning_point import find_turning_point
+from src.services.wasted_actions import find_wasted_actions
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
 
@@ -187,6 +189,7 @@ class GroundTruthAssembler:
         meta_context = (prefetched.meta_context if use_prefetched and prefetched else
                         self._load_meta(context_mons, data_format, game_state.rating, roster))
         turn_checks = self._simulator.simulate(game_state, meta_context)
+        single_game = request.series_context is None  # BO1: sides are named, wasted actions and the turning point added
         evidence = AnalysisEvidence(
             selection=selection.model_copy(update={
                 "rationale": clean_champions_knowledge(selection.rationale),
@@ -201,11 +204,13 @@ class GroundTruthAssembler:
                 self._improvements(request, selection, game_state, data_format), roster
             )),
             recurring_concepts=recurring_concepts(history, request.question),
-            battle_result=outcome_summary(game_state),
+            battle_result=outcome_summary(game_state, named_sides=single_game),
             regulation=self._regulation_info(roster),
             series_context=clean_champions_knowledge(request.series_context),
             bo3_claim_plan=request.bo3_claim_plan,
-            turning_point=find_turning_point(game_state) if request.series_context is None else None,
+            turning_point=find_turning_point(game_state) if single_game else None,
+            wasted_actions=find_wasted_actions(game_state) if single_game else [],
+            side_names=side_names(game_state) if single_game else {},
         )
         evidence_ready(evidence)
         return evidence
@@ -385,6 +390,10 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
     }
     if evidence.turning_point is not None:
         context["turning_point"] = evidence.turning_point.model_dump(mode="json")
+    if evidence.series_context is None:
+        context["wasted_actions"] = [w.model_dump(mode="json") for w in evidence.wasted_actions]
+        if evidence.side_names:
+            context = label_sides(context, evidence.side_names)
     if evidence.regulation is not None:
         context["regulation"] = evidence.regulation.model_dump(mode="json")
     if evidence.bo3_claim_plan is not None:

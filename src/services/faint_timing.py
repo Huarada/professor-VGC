@@ -18,7 +18,7 @@ _VERBS = (r"(?<![A-Za-z])(?:KO(?:'d|’d|s|ing)?|knock(?:s|ed|ing)?\s+out|faint(
 # Counterfactuals ("would have KO'd", "guaranteed OHKO") describe alternatives, not what happened.
 _HYPOTHETICAL = re.compile(
     r"\b(?:would|could|might|may|should|can|if|instead|guaranteed|chance|threat|potential|possible|likely)\b", re.I)
-_THIS_TURN = re.compile(r"\b(?:this|that|the same)\s+turn\b", re.I)
+_THIS_TURN = re.compile(r"\b(?:this|that|the same)\s+(?:\w+\s+)?turn\b", re.I)
 _MASK = "․"  # one-dot leader: keeps "Mr. Rime" from being split as a sentence end
 
 
@@ -67,6 +67,9 @@ def faint_timing_issues(answer: str, game_state: GameState) -> list[str]:
     possessive = rf"(?:\*{{0,2}}(?P<who>{holder})\*{{0,2}}(?:'s|’s)\*{{0,2}}\s+)?"
     after = re.compile(rf"{_VERBS}\s+(?:of\s+)?{MARK}{possessive}{MARK}(?P<mon>{species})(?![\w-])", re.I)
     before = re.compile(rf"(?<![\w-]){possessive}{MARK}(?P<mon>{species}){MARK}\s+(?:\w+\s+)?(?:fainted|was\s+knocked\s+out|was\s+KO(?:'|’)?d)", re.I)
+    # "... on Dragonite, which had 2% left, causing a faint": the relative clause belongs to the victim.
+    clause = re.compile(rf"(?<![\w-]){possessive}{MARK}(?P<mon>{species}){MARK},?\s+(?:which|who|that)\b[^.;!?]{{0,80}}?"
+                        r"(?:caus|result|lead)\w*\s+(?:in\s+|to\s+)?(?:a\s+|its\s+|the\s+)?(?:faint|KO)", re.I)
     base = _forme_bases(game_state)
     faints = _faint_turns(game_state, base)
     issues: list[str] = []
@@ -80,7 +83,7 @@ def faint_timing_issues(answer: str, game_state: GameState) -> list[str]:
         if len(current) != 1 or _HYPOTHETICAL.search(sentence):
             continue
         (turn,) = current
-        for pattern in (after, before):
+        for pattern in (after, before, clause):
             for match in pattern.finditer(sentence):
                 mon = canonical(match.group("mon"), owners)
                 claimed = who.get((match.groupdict().get("who") or "").casefold())

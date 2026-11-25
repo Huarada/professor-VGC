@@ -222,6 +222,8 @@ class BattleEvent(BaseModel):
     hit_count: int = 0
     """Observed landed hit count; zero means not published in the log."""
     critical_targets: list[str] = Field(default_factory=list)
+    unaffected_targets: list[str] = Field(default_factory=list)
+    """``player:species`` of every target the move was immune against or missed."""
     damage_interleaved: bool = False
     """Healing or residual damage interleaved before the multi-hit count was published."""
     effects: list[str] = Field(default_factory=list)  # spread / super effective / ...
@@ -576,6 +578,8 @@ class TurnDamageCheck(BaseModel):
     actual_hp_remaining_percent: float | None = None
     """HP LEFT after the hit (0.0 on a faint) — not damage dealt, so the model
     never has to derive one from the other (ADR-029). None if it protected."""
+    actual_damage_percent: float | None = None
+    """Damage the hit really dealt (HP before minus HP left); the model must quote this, never the HP left, as damage."""
     description: str = ""  # e.g. "0 SpA Raichu Zap Cannon vs. 0 HP/0 SpD Basculegion: ..."
 
 
@@ -587,6 +591,7 @@ class OptimalMoveOption(BaseModel):
 
     move: str
     target: str
+    target_player: str = ""
     min_percent: float = 0.0
     max_percent: float = 0.0
     ko_chance_text: str = ""
@@ -760,6 +765,21 @@ class TurningPoint(BaseModel):
     """The chosen turn first, then the two other turns with the largest swings."""
 
 
+class WastedAction(BaseModel):
+    """A move that achieved nothing, as the log recorded it: the model finds real misplays here instead of guessing them."""
+
+    model_config = ConfigDict(frozen=True)
+
+    turn: int
+    actor: str
+    actor_player: str
+    move: str
+    outcome: Literal["immune", "failed", "missed", "blocked"]
+    target: str = ""
+    target_player: str = ""
+    detail: str = ""
+
+
 class AnalysisEvidence(BaseModel):
     """The ground-truth bundle every backend hands to its explanation stage,
     built once by ``GroundTruthAssembler`` so backends cannot drift apart."""
@@ -780,6 +800,10 @@ class AnalysisEvidence(BaseModel):
     bo3_claim_plan: NarrativeClaimPlan | None = None
     turning_point: TurningPoint | None = None
     """BO1 only: the deterministic decisive turn (the explanation narrates it, never picks it)."""
+    wasted_actions: list[WastedAction] = Field(default_factory=list)
+    """BO1 only: moves that did nothing (immune target, failed, missed, blocked by Protect)."""
+    side_names: dict[str, str] = Field(default_factory=dict)
+    """BO1 only: player id -> display name; every side field in the explanation context is rendered with these."""
 
 
 class AnalysisResult(BaseModel):

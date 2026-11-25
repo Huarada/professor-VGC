@@ -236,11 +236,14 @@ class TurnReplaySimulator:
             actual_text, actual_remaining = actual.get(target) or actual.get(
                 ("", target[1]), ("", None)
             )
+            before = moment.hp(target)
             checks.append(
                 TurnDamageCheck(
                     target=target[1],
                     target_player=target[0],
-                    target_hp_before_percent=moment.hp(target),
+                    target_hp_before_percent=before,
+                    actual_damage_percent=(round(before - actual_remaining, 1)
+                                           if before is not None and actual_remaining is not None else None),
                     projected_min_percent=dmg.min_percent,
                     projected_max_percent=dmg.max_percent,
                     projected_ko_text=dmg.ko_chance_text,
@@ -271,6 +274,7 @@ class TurnReplaySimulator:
                     OptimalMoveOption(
                         move=move,
                         target=target[1],
+                        target_player=target[0],
                         min_percent=dmg.min_percent,
                         max_percent=dmg.max_percent,
                         ko_chance_text=dmg.ko_chance_text,

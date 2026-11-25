@@ -160,5 +160,6 @@ def test_bo3_context_reaches_all_backends_without_changing_bo1_evidence(sample_c
     series_game = analyze(sample_chaos_path, AnalysisRequest(
         session_id="bo3", replay_raw_text=source, series_context=context,
     ))
-    for field in _EVIDENCE_FIELDS:
+    # BO1 writes the player's name beside every Pokemon in its timeline (ADR-082); the BO3 timeline keeps p1/p2.
+    for field in (f for f in _EVIDENCE_FIELDS if f != 'battle_result'):
         assert getattr(series_game, field) == getattr(normal, field)

@@ -140,7 +140,7 @@ You are given, as trusted context:
   half a Pokemon's worth of HP ahead until the end (rule "lead_held_to_the_end"), or, for a close
   finish, the turn that moved the lead the most (rule "largest_swing"). Its summary and the per-turn
   alive counts, total HP percent, lead and swing in "candidates" (chosen turn first) are ground truth.
-  Present THAT turn as the turning point and explain what happened on it from the matching
+  Whenever the answer names a turning point, it is THAT turn; explain what happened on it from the matching
   turn_by_turn_checks and timeline entries; never replace it with a different turn of your own
   choosing (a late KO of a Pokemon that was already almost out is usually just the finish). You may
   mention the other candidates as secondary swings. It measures material on the board, not intent:
