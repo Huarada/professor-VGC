@@ -6152,3 +6152,9 @@ figure matches the real damage or the wording is "left at 47%". On 9 recorded BO
 damage checker (`percent_classifier.py`) read "left Player B's Scovillain at 47%" as damage once player names lengthened the
 phrase past its 20-character window, and a second "at 79%" of the same list; both are fixed, so named sides do not turn correct
 remaining-HP wording into false "incorrect" claims.
+
+Correction (judge comparison): the 2026-11-25 BO1 run was graded by gpt-4o-mini (the grader defaulted to the run model) and the
+2026-11-24 run by gpt-4o, so the rise first reported for ADR-082 compared two judges. Re-graded with gpt-4o, the 2026-11-25
+answers show NO judge improvement: recorded games (12) grounded 3.08 to 2.83, actionable 3.75 to 3.67, specific 4.0 to 3.83,
+consistent 3.08 to 2.83, honest 2.58 to 2.83; simulated (24) 3.21/3.75/4.12/3.0/2.96 to 3.12/3.58/4.0/3.0/3.17. What ADR-082 did
+change is what its deterministic checks and the section count measure. The testbench now defaults the OpenAI grader to gpt-4o.

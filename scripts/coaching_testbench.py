@@ -37,6 +37,7 @@ sys.path.insert(0, str(ROOT))
 SERIES_DIR = ROOT / "tests" / "fixtures" / "series"
 REPLAY_DIR = ROOT / "tests" / "fixtures" / "replays"
 CHAOS_CACHE = ROOT / "data" / "chaos-cache"
+FRESH_DIR = ROOT / "data" / "replays" / "cache"  # git-ignored; filled by replay_corpus
 
 QUESTIONS = {
     "turning": "What was the turning point of this game and what should the loser have done differently?",
@@ -105,6 +106,27 @@ def build_cases(*, quick: bool = False, sim_dir: Path | None = None, sim_games: 
             key = keys[index % len(keys)]
             cases.append(Case(f"bo1sim-{game_id}-{key}", "bo1", key, [game], f"simulated game {game_id} (random moves)"))
     return cases
+
+
+def fresh_cases(count: int, cache_dir: Path = FRESH_DIR) -> list[Case]:
+    """Public replays no recorded case uses, one question each (rotating): few enough for a person to review all of them.
+
+    Forfeits and games under 6 turns are skipped, as they have little to coach. The picks are spread over the cache and
+    depend only on its content.
+    """
+    used = {path.name for path in REPLAY_DIR.glob("*.json")}
+    eligible: list[tuple[str, dict[str, Any]]] = []
+    for path in sorted(cache_dir.glob("*.json")):
+        if path.name in used:
+            continue
+        replay = json.loads(path.read_text(encoding="utf-8"))
+        log = str(replay.get("log", ""))
+        if "|win|" in log and "forfeit" not in log and "|turn|6" in log:
+            eligible.append((path.stem, replay))
+    keys = ("turning", "coach_loser", "decisions")
+    step = max(1, len(eligible) // count) if count else 1
+    return [Case(f"bo1-fresh-{stem.rsplit('-', 1)[-1]}-{keys[i % 3]}", "bo1", keys[i % 3], [replay], f"public replay {stem}")
+            for i, (stem, replay) in enumerate(eligible[::step][:count])]
 
 
 # ---- deterministic checks (pure, unit-tested) ------------------------------------------------------------------
@@ -335,7 +357,8 @@ def rebuild_html(json_path: Path, sim_dir: Path) -> Path:
 
     report = json.loads(json_path.read_text(encoding="utf-8"))
     sim_games = sum(r["id"].startswith("bo1sim-") for r in report["rows"])
-    cases = {c.id: c for c in build_cases(sim_dir=sim_dir, sim_games=sim_games)}
+    fresh = sum(r["id"].startswith("bo1-fresh-") for r in report["rows"])
+    cases = {c.id: c for c in build_cases(sim_dir=sim_dir, sim_games=sim_games) + (fresh_cases(fresh) if fresh else [])}
     rows = []
     for row in report["rows"]:
         case = cases[row["id"]]
@@ -358,8 +381,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--provider", default="openai")
     parser.add_argument("--orchestrator", default=None, help="adk | langchain | native (default: configured)")
-    parser.add_argument("--grader-model", default=None,
-                        help="OpenAI model for the rubric judge and the claim extractor (default: the run model)")
+    parser.add_argument("--grader-model", default="gpt-4o",
+                        help="OpenAI model for the rubric judge and the claim extractor; runs are only comparable with the same one")
     parser.add_argument("--out", type=Path, default=ROOT / "docs" / "validation" / "coaching")
     parser.add_argument("--chaos", default=str(CHAOS_CACHE))
     parser.add_argument("--quick", action="store_true", help="one case per kind, for a smoke run")
@@ -367,6 +390,8 @@ def main() -> None:
                         help="simulated series (tools/bo3_sim) for the extra BO1 cases")
     parser.add_argument("--sim-games", type=int, default=0, help="simulated BO1 games to add (0 = none)")
     parser.add_argument("--only", default="", help="substring filter on case ids")
+    parser.add_argument("--fresh", type=int, default=0,
+                        help="run ONLY this many unused public BO1 replays from data/replays/cache, one question each")
     parser.add_argument("--rebuild-html", type=Path, default=None, help="rewrite the HTML of a stored JSON run and exit")
     args = parser.parse_args()
     if args.rebuild_html:
@@ -385,16 +410,19 @@ def main() -> None:
     settings = container.settings
     model = getattr(settings, f"{args.provider}_model", args.provider)
     claim_llm = container.build_llm(args.provider)
-    if args.grader_model and args.provider == "openai":
+    grader = args.grader_model if args.provider == "openai" else model
+    if args.provider == "openai":
         from src.adapters.llm.openai_provider import OpenAIProvider
-        claim_llm = OpenAIProvider(settings.openai_api_key, args.grader_model)
+        claim_llm = OpenAIProvider(settings.openai_api_key, grader)
     judge_llm = claim_llm
     commit = subprocess.run(["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, cwd=ROOT).stdout.strip()
     report: dict[str, Any] = {"provider": args.provider, "model": model, "orchestrator": args.orchestrator or settings.orchestrator,
-                              "grader": args.grader_model or model,
+                              "grader": grader,
                               "date": date.today().isoformat(), "commit": commit, "rows": []}
-    cases = [c for c in build_cases(quick=args.quick, sim_dir=args.sim_dir, sim_games=args.sim_games) if args.only in c.id]
-    stem = f"{report['date']}-{args.provider}-{model}".replace("/", "_") + ("-quick" if args.quick else "") + (f"-sim{args.sim_games}" if args.sim_games else "")
+    selected = (fresh_cases(args.fresh) if args.fresh
+                else build_cases(quick=args.quick, sim_dir=args.sim_dir, sim_games=args.sim_games))
+    cases = [c for c in selected if args.only in c.id]
+    stem = f"{report['date']}-{args.provider}-{model}".replace("/", "_") + ("-quick" if args.quick else "") + (f"-sim{args.sim_games}" if args.sim_games else "") + (f"-fresh{args.fresh}" if args.fresh else "")
     args.out.mkdir(parents=True, exist_ok=True)
     try:
         for index, case in enumerate(cases, 1):
