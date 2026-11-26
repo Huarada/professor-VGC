@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from scripts import coaching_testbench as bench
@@ -94,3 +95,13 @@ def test_only_public_replays_get_a_showdown_link() -> None:
     assert bench.public_url("gen9championsvgc2026regmcbo3-2698400388") == (
         "https://replay.pokemonshowdown.com/gen9championsvgc2026regmcbo3-2698400388")
     assert bench.public_url("gen9championsvgc2026regmcbo3-sim700x0g1") == "" and bench.public_url("") == ""
+
+
+def test_fresh_cases_skip_recorded_forfeited_and_short_games(tmp_path) -> None:
+    long_log = "|turn|1|turn|6|win|A"
+    logs = {"x-1": long_log, "x-2": long_log + "|-message|B forfeited.", "x-3": "|turn|2|win|A", "x-4": long_log,
+            next(iter(bench.REPLAY_DIR.glob("*.json"))).stem: long_log}
+    for name, log in logs.items():
+        (tmp_path / f"{name}.json").write_text(json.dumps({"log": log}), encoding="utf-8")
+    cases = bench.fresh_cases(5, tmp_path)
+    assert [c.id for c in cases] == ["bo1-fresh-1-turning", "bo1-fresh-4-coach_loser"]
