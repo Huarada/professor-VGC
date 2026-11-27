@@ -188,3 +188,36 @@ def test_status_moves_are_classified_by_the_engine_not_a_hardcoded_list():
     # Protect an attack, so it is treated as one — no local override list.
     assert protect_turn.note == ""
     assert {a.move for a in protect_turn.best_alternatives} >= {"Protect"}
+
+
+class _TableCalc(_ScriptedCalc):
+    """The scripted calc with some damage figures replaced."""
+
+    def __init__(self, overrides: dict[tuple[str, str, str], float]) -> None:
+        self._table = {**_DAMAGE, **overrides}
+
+    def calculate(self, request: CalcRequest) -> DamageResult:
+        key = (request.attacker.species, request.defender.species, request.move)
+        result = super().calculate(request)
+        pct = self._table.get(key, 10.0)
+        return result.model_copy(update={"max_percent": pct, "min_percent": round(pct * 0.85, 1)})
+
+
+def _switches(log: str, overrides: dict[tuple[str, str, str], float]) -> list[str]:
+    state = ShowdownReplayParser().parse(log)
+    checks = TurnReplaySimulator(_TableCalc(overrides)).simulate(state, MetaContext())
+    return [o.switch_to for o in _talonflame_turn(checks, 3).decision_options if o.kind == DecisionKind.SWITCH]
+
+
+def test_a_switch_in_that_would_lose_half_its_hp_is_not_suggested():
+    assert _switches(_LOG_ATTACKED, {}) == ["Amoonguss"]  # takes 20%
+    assert _switches(_LOG_ATTACKED, {("Garchomp", "Amoonguss", "Rock Slide"): 50.0}) == []
+    assert _switches(_LOG_ATTACKED, {("Garchomp", "Amoonguss", "Rock Slide"): 49.0}) == ["Amoonguss"]
+
+
+def test_the_switch_in_is_judged_against_the_other_opponent_too():
+    """Rillaboom never threatened Talonflame, but it hits Amoonguss for 55%: the switch is not safe."""
+    log = _LOG_ATTACKED.replace("|turn|2\n", "|move|p2b: Rillaboom|Wood Hammer|p1b: Incineroar\n"
+                                             "|-damage|p1b: Incineroar|60/100\n|turn|2\n")
+    assert _switches(log, {}) == ["Amoonguss"]
+    assert _switches(log, {("Rillaboom", "Amoonguss", "Wood Hammer"): 55.0}) == []

@@ -87,8 +87,9 @@ You are given, as trusted context:
   unknown). And decision_options: engine-verified NON-attacking plays, present
   ONLY when some threat could KO the actor that turn — kind "protect" (a
   Protect-family move confirmed in its moveset would have blocked the threat),
-  "switch" (a Pokemon actually brought, still able to switch in, and how much
-  it would have taken at most from that threat), "speed_control" (a confirmed
+  "switch" (a Pokemon actually brought, still able to switch in, listed only
+  when the strongest confirmed hit of EITHER opponent leaves it more than half
+  its HP; max_percent_taken is that hit), "speed_control" (a confirmed
   Tailwind/Trick Room/speed-drop/paralysis move that flips the speed order
   against that threat on the FOLLOWING turns). Each option carries a
   ready-made 'summary' sentence and its numbers: quote them, never extend

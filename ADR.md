@@ -6207,3 +6207,19 @@ Status: accepted. After ADR-083, 3 of 16 answers still erred about partners or t
 With gpt-4o-mini, the same four games x four "best and worst decisions" answers, read by hand: partner mistakes 0/16 (ADR-083:
 3/16), and every answer on that game puts the Sludge Wave KO of Manectric on turn 2. Small sample, one reader. The model can still
 make other errors; the faint check now reaches more sentences, so its correction retry may run more often.
+
+
+## ADR-085 - Suggest a switch only when the switch-in keeps more than half its HP against either opponent
+
+Status: accepted. A human review rejected "switch Grimmsnarl to Venusaur, taking at most 91.7% from Pelipper's Hurricane": a
+switch-in left at a sliver is not an answer. `decision_options` offered any bench Pokemon that would survive, and judged it only
+against the threats that could KO the actor, so the other opponent's hit on the switch-in was ignored.
+
+A switch option is now listed only when the strongest confirmed hit of EITHER opponent on the field leaves the switch-in more than
+half the HP it came in with (`_SAFE_SWITCH_SHARE`); `max_percent_taken` and the summary name that hit. Double-targeting the
+switch-in (two hits in one turn) is still not modelled.
+
+On the 50 public Reg M-B replays with the real calculator: switch options 347 to 114; options costing 50% or more 187 to 0
+(maximum taken 97.2% to 49.5%); 46 more were removed because the other opponent hit the switch-in harder; no option was added.
+gpt-4o-mini, two reviewed games x three answers, old and new code: the Venusaur switch advice appeared 6 times in the old answers
+and 0 in the new. The model can still advise a switch that is not listed (seen once); a check for that belongs to the validators.
