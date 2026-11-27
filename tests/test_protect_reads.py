@@ -82,7 +82,7 @@ def test_single_target_block_with_no_other_event_is_not_misallocated(fake_calc):
     state = _direct_state(
         [
             BattleEvent(
-                turn=2, kind="move", actor="Staraptor", actor_player="p2",
+                turn=2, kind="move", actor="Charizard", actor_player="p1",
                 move="Close Combat", targets=[], blocked=["Garchomp"],
                 results=["Garchomp blocked (Protect)"],
             ),

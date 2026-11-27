@@ -54,6 +54,7 @@ def _read(text: str) -> ParseState:
         if parts[1] == "-activate" and len(parts) > 3 and to_id(parts[3]).removeprefix("move") == "skillswap":
             state.mark_swapped(parts)
         state.reveal_ability_from(parts)
+        state.note_ally_effect(parts)
         handler = handlers.get(parts[1])
         if handler is not None:
             handler(parts)

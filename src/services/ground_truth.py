@@ -40,6 +40,7 @@ from src.domain.interfaces import (
 )
 from src.domain.models import (
     AgentToolInvocation,
+    AllySynergy,
     AnalysisEvidence,
     AnalysisRequest,
     AnalysisResult,
@@ -73,7 +74,7 @@ from src.services.regulation_guard import RegulationGuard
 from src.services.side_attribution import correction_note, narration_issues
 from src.services.side_labels import label_sides, side_names
 from src.services.turning_point import find_turning_point
-from src.services.wasted_actions import find_wasted_actions
+from src.services.wasted_actions import find_ally_synergies, find_wasted_actions
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
 
@@ -210,6 +211,7 @@ class GroundTruthAssembler:
             bo3_claim_plan=request.bo3_claim_plan,
             turning_point=find_turning_point(game_state) if single_game else None,
             wasted_actions=find_wasted_actions(game_state) if single_game else [],
+            ally_synergies=find_ally_synergies(game_state) if single_game else [],
             side_names=side_names(game_state) if single_game else {},
         )
         evidence_ready(evidence)
@@ -392,6 +394,8 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
         context["turning_point"] = evidence.turning_point.model_dump(mode="json")
     if evidence.series_context is None:
         context["wasted_actions"] = [w.model_dump(mode="json") for w in evidence.wasted_actions]
+        context["ally_synergies"] = [a.model_dump(mode="json") for a in evidence.ally_synergies]
+        _mark_own_allies(context["turn_by_turn_checks"], evidence.ally_synergies)
         if evidence.side_names:
             context = label_sides(context, evidence.side_names)
     if evidence.regulation is not None:
@@ -403,6 +407,19 @@ def build_explanation_context(evidence: AnalysisEvidence) -> dict[str, Any]:
     if evidence.series_context is not None:
         return compact_bo3_context(dict(coaching_context(context)))
     return context
+
+
+def _mark_own_allies(checks: list[dict[str, Any]], synergies: list[AllySynergy]) -> None:
+    """Say on each move entry which of its targets was the user's own partner, so it is never read as an opponent."""
+    for check in checks:
+        for damage in check["damage_checks"]:
+            if damage["target_player"] == check["actor_player"]:
+                damage["own_partner"] = True
+        partner = [f"{s.ally}: {s.result}" for s in synergies
+                   if (s.turn, s.actor_player, s.actor, s.move) ==
+                   (check["turn"], check["actor_player"], check["actor"], check["move"])]
+        if partner:
+            check["own_partner_synergy"] = partner
 
 
 def explanation_system_prompt(prompts: PromptRepository, *, series: bool) -> str:

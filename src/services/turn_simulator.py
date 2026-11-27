@@ -172,7 +172,8 @@ class TurnReplaySimulator:
         damaging = evaluator.is_damaging(event.move)
         targets = moment.targets()
         threats = reviewer.threats(moment)
-        first_target = targets[0] if targets else None
+        # The speed line compares against an opponent: a spread move may list the partner first (ADR-083).
+        first_target = next((t for t in targets if t[0] != moment.actor[0]), None)
         return TurnCheck(
             turn=event.turn,
             actor=event.actor,
@@ -346,11 +347,13 @@ class TurnReplaySimulator:
         reads: list[ProtectRead] = []
         for check in checks:
             for dmg in check.damage_checks:
-                if not dmg.actual_result.startswith("blocked ("):
+                # A Protect against the partner's own spread move is team coordination, not a read (ADR-083).
+                if not dmg.actual_result.startswith("blocked (") or dmg.target_player == check.actor_player:
                     continue
                 other_targets_hit = [
                     d for d in check.damage_checks
                     if d is not dmg and not d.actual_result.startswith("blocked (")
+                    and (not d.target_player or d.target_player != check.actor_player)
                 ]
                 is_spread_move = "spread" in check.effects
                 was_immediate_ko_threat = "OHKO" in dmg.projected_ko_text

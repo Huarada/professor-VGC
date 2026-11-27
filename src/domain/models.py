@@ -191,6 +191,16 @@ BattleEventKind = Literal[
 ]
 
 
+class AllyEffect(BaseModel):
+    """What one move did for or to the user's own partner, as the log recorded it."""
+
+    model_config = ConfigDict(frozen=True)
+
+    species: str
+    effect: Literal["immune", "protected", "ability", "boosted", "healed"]
+    detail: str = ""
+
+
 class BattleEvent(BaseModel):
     """One ordered event from the battle log.
 
@@ -224,6 +234,7 @@ class BattleEvent(BaseModel):
     critical_targets: list[str] = Field(default_factory=list)
     unaffected_targets: list[str] = Field(default_factory=list)
     """``player:species`` of every target the move was immune against or missed."""
+    ally_effects: list[AllyEffect] = Field(default_factory=list)
     damage_interleaved: bool = False
     """Healing or residual damage interleaved before the multi-hit count was published."""
     effects: list[str] = Field(default_factory=list)  # spread / super effective / ...
@@ -780,6 +791,19 @@ class WastedAction(BaseModel):
     detail: str = ""
 
 
+class AllySynergy(BaseModel):
+    """What a move did for, or safely past, the user's own partner: team coordination, never a lost action."""
+
+    model_config = ConfigDict(frozen=True)
+
+    turn: int
+    actor: str
+    actor_player: str
+    move: str
+    ally: str
+    result: str
+
+
 class AnalysisEvidence(BaseModel):
     """The ground-truth bundle every backend hands to its explanation stage,
     built once by ``GroundTruthAssembler`` so backends cannot drift apart."""
@@ -801,7 +825,9 @@ class AnalysisEvidence(BaseModel):
     turning_point: TurningPoint | None = None
     """BO1 only: the deterministic decisive turn (the explanation narrates it, never picks it)."""
     wasted_actions: list[WastedAction] = Field(default_factory=list)
-    """BO1 only: moves that did nothing (immune target, failed, missed, blocked by Protect)."""
+    """BO1 only: moves that did nothing against the opponent (immune, failed, missed, blocked by Protect)."""
+    ally_synergies: list[AllySynergy] = Field(default_factory=list)
+    """BO1 only: what moves did for the user's own partner (ADR-083)."""
     side_names: dict[str, str] = Field(default_factory=dict)
     """BO1 only: player id -> display name; every side field in the explanation context is rendered with these."""
 

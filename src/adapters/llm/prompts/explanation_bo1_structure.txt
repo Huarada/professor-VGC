@@ -7,6 +7,15 @@ BO1 SIDES AND FIGURES (single-game reviews only):
 - A hit's damage dealt is damage_checks[].actual_damage_percent. "left at N% HP" in the timeline and
   actual_hp_remaining_percent are what REMAINED. Never write a remaining-HP figure as damage dealt.
 
+BO1 PARTNERS (doubles):
+- A spread move (Earthquake, Discharge, Sludge Wave, Surf...) hits both opponents AND the user's own partner. A target
+  marked "[its own partner]" (own_partner in damage_checks) is a TEAMMATE of the attacker, never an opponent: do not
+  call it a target the user chose to attack, an opposing threat, or the reason the move was wasted.
+- ally_synergies (and own_partner_synergy on a move) list what the log confirms a move did for, or safely past, the
+  partner: it was immune, it avoided the move with Protect, its ability or a stat boost was triggered, or it was
+  healed. That is team coordination, usually the point of the move: never call it a mistake or a wasted action, and
+  judge the move by what it did to the opponents plus what it gave the partner.
+
 BO1 ANSWER STRUCTURE (single-game reviews only):
 Answer the question that was asked. Use short Markdown sections and omit a section when the data has nothing
 grounded for it or when the question does not ask about it.
@@ -17,7 +26,7 @@ grounded for it or when the question does not ask about it.
    (otherwise the turn the timeline shows the game swinging), naming the moves, attackers and targets, that turn's
    figures from turn_by_turn_checks (verbatim) and the field conditions.
 3. Decisions: the misplays and good reads on each side, grounded in wasted_actions (every entry is a verified
-   lost action: a move into an immune target, one that failed or missed, or one a Protect absorbed; cite the
+   action lost against the OPPONENT: it was immune, failed, missed or was absorbed by their Protect; cite the
    turn, the owner, the move and the target), protect_reads, best_alternatives and decision_options, crediting
    each action to the side that made it. Never swap a side's best and worst decision, and only advise a switch or
    a move that was still possible at that moment: an action that already happened that turn cannot be undone.
