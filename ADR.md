@@ -6267,3 +6267,21 @@ stored as `docs/validation/coaching/2026-11-27-*-fresh38.*` for human validation
 Addendum (names): the first version of the testbench anonymizer ran on JSON text, where a name after a line break follows the "n"
 of "\n" and was skipped; it now rewrites decoded strings. Every stored coaching report was re-checked against the players of its
 cases; remaining real names (in spellings the model changed, including in the 2026-11-24 reports) were replaced.
+
+## ADR-087 - Tell the model in code when a BO1 question does not ask for a turning point
+
+Status: accepted (2026-11-27)
+
+After ADR-086, answers to coaching and decision questions carried a "Turning point" section in 4 of 25 cases (1 of 25 before),
+although the BO1 structure prompt asks for it only when the question asks what decided the game. A probe on the same 25 questions,
+two answers each, recorded the first answer and the correction retry separately: 0 of 50 first answers had the section, 3 of the 10
+retried answers did. The cause was the side-attribution correction note, which told the model to "present turning_point.turn as the
+turning point" on every retry; ADR-086 added more checks, so more answers were retried.
+
+Decision: `asks_turning_point(question)` (services/turning_point.py) decides the intent in code (what decided or turned the game,
+why it was won or lost, a general review, in English and Portuguese; an empty question is a general review). When a BO1 question
+does not ask, the explanation input says so explicitly. The correction note now says only that any turning point named is
+turning_point.turn. The evidence is unchanged: turning_point stays in the context for a one-sentence mention.
+
+Result (gpt-4o-mini, same probe): unasked questions 0 of 50 answers with the section (7 retried), against 3 of 50 before; the 13
+turning-point questions kept the section in 13 of 13 (2 retried). The samples are small; the probe is a targeted check, not a rate.

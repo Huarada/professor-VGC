@@ -13,7 +13,7 @@ from src.domain.models import AnalysisRequest, GameState
 from src.services.analysis_service import AnalysisService
 from src.services.ground_truth import parse_replay
 from src.services.selection_service import LLMSelectionService
-from src.services.turning_point import find_turning_point
+from src.services.turning_point import asks_turning_point, find_turning_point
 from tests.conftest import PROMPTS, FakeLLM, build_evidence
 
 _REPLAYS = Path(__file__).parent / "fixtures" / "replays"
@@ -82,3 +82,19 @@ def test_context_omits_the_field_without_a_log(sample_chaos_path: Path, sample_r
     replay = json.loads(sample_replay_path.read_text(encoding="utf-8"))
     result = _service(sample_chaos_path, llm).analyze(AnalysisRequest(session_id="s", replay_json=replay, question="q"))
     assert result.turning_point is None and "turning_point" not in llm.calls[-1]["messages"][-1].content
+
+
+def test_a_question_that_does_not_ask_what_decided_the_game_is_told_to_skip_the_section(sample_chaos_path: Path) -> None:
+    llm = FakeLLM(json.dumps({"focus_species": [], "matchups": []}), "ok")
+    service = _service(sample_chaos_path, llm)
+    service.analyze(AnalysisRequest(session_id="s", replay_json=_replay("2691414894"), question="Coach the losing player."))
+    assert "write no Turning point section" in llm.calls[-1]["messages"][-1].content
+    service.analyze(AnalysisRequest(session_id="t", replay_json=_replay("2691414894"), question="Why did I lose?"))
+    assert "write no Turning point section" not in llm.calls[-1]["messages"][-1].content
+
+
+def test_turning_point_intent() -> None:
+    asked = ["", "What was the turning point?", "Why did I lose this game?", "Qual foi o ponto de virada?", "Por que eu perdi?"]
+    assert all(asks_turning_point(q) for q in asked)
+    unasked = ["Which decisions by each player were the best and the worst?", "Coach the losing player: what should they change?"]
+    assert not any(asks_turning_point(q) for q in unasked)

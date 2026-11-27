@@ -74,7 +74,7 @@ from src.services.regulation_guard import RegulationGuard
 from src.services.advice_claims import advice_issues
 from src.services.side_attribution import correction_note, narration_issues
 from src.services.side_labels import label_sides, side_names
-from src.services.turning_point import find_turning_point
+from src.services.turning_point import asks_turning_point, find_turning_point
 from src.services.wasted_actions import find_ally_synergies, find_wasted_actions
 from src.services.suggestion_service import build_improvement_context, wants_suggestions
 from src.services.turn_simulator import TurnReplaySimulator
@@ -436,6 +436,10 @@ def build_explanation_input(question: str, evidence: AnalysisEvidence, correctio
     # A BO3 review that carries a claim plan must answer with the JSON contract, not prose.
     closing = ("Return the JSON object of the BO3 VERIFIED CLAIM CONTRACT (claim_ids and analysis), nothing else."
                if evidence.bo3_claim_plan is not None else "Write the final ProfessorVGC explanation.")
+    if evidence.turning_point is not None and not asks_turning_point(question):
+        # The numbered structure in the prompt pulled the section into coaching answers (ADR-087).
+        closing = ("This question does not ask what decided the game: write no Turning point section or heading "
+                   "(at most one sentence about it inside another section). " + closing)
     text = (
         f"User question: {question or '(general analysis)'}\n\n"
         "Trusted context (JSON):\n"
