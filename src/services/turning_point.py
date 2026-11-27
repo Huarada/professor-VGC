@@ -7,11 +7,21 @@ chooses the turn itself (it once picked a KO on a 2%-HP Pokemon).
 
 from __future__ import annotations
 
+import re
 from typing import Literal
 
 from src.domain.models import BattleEvent, GameState, TurningPoint, TurnMaterial
 
 _MARGIN = 0.5  # half a Pokemon's worth of HP: smaller leads flip with one roll or a chip tick
+_ASKS_DECIDER = re.compile(
+    r"turning|decided|decisive|deciding|swung|swing|won or lost|lost or won|\bwhy\b.*\b(?:won|lost|win|lose)\b"
+    r"|general|overall|full review|whole game|virada|virou|decidiu|decisiv|por\s*que\b.*\b(?:perd|ganh|venc)"
+    r"|an[aá]lise geral", re.I)
+
+
+def asks_turning_point(question: str) -> bool:
+    """True when the question asks what decided the game, why it was won or lost, or for a general review (ADR-087)."""
+    return not question.strip() or bool(_ASKS_DECIDER.search(question))
 
 
 def _bases(game_state: GameState) -> dict[tuple[str, str], str]:
