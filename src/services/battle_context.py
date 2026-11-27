@@ -75,6 +75,9 @@ def outcome_summary(game_state: GameState, *, named_sides: bool = False) -> str:
         )
     if outcome.winner_name:
         lines.append(f"Winner: {outcome.winner_name}" + ("." if named_sides else f" ({outcome.winner_player or '?'})."))
+        losers = [name for player, name in names.items() if player != outcome.winner_player]
+        if named_sides and len(losers) == 1:
+            lines.append(f"Loser: {losers[0]}. Coaching 'the losing player' means coaching {losers[0]}.")
     if score:
         lines.append("Score — " + score + ".")
     lines.append(f"Total turns: {outcome.turns}.")

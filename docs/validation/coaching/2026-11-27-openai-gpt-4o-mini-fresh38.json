@@ -1,0 +1,3112 @@
+{
+ "provider": "openai",
+ "model": "gpt-4o-mini",
+ "orchestrator": "adk",
+ "grader": "gpt-4o",
+ "date": "2026-11-27",
+ "commit": "2165c86",
+ "rows": [
+  {
+   "id": "bo1-fresh-2691395464-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691395464",
+   "seconds": 47.1,
+   "chars": 2693,
+   "answer": "**Result:** Player A won the match with a score of 2-4 against Player B.\n\n**Turning Point:** The turning point of the game occurred on **Turn 4**. At this stage, Player A had managed to lead with 3 Pokémon to Player B's 2 Pokémon, resulting in significant damage output and control over the game state. The specific details from Turn 4 are as follows:\n- Player A's **Pelipper** used **Protect**.\n- Player B's **Swampert** also used **Protect**.\n- Player B's **Grimmsnarl** set up **Reflect**.\n- Player A's **Samurott-Hisui** then used **Aqua Cutter** to **KO** Player B's **Grimmsnarl**.\n- After this turn, Player A had a total of **213% HP** across their remaining Pokémon, while Player B only had **151% HP** left. This significant HP advantage allowed Player A to maintain their lead throughout the remainder of the match, ultimately leading to Player B's defeat.\n\n**Decisions:** Throughout the match, several critical decisions impacted Player B's chances:\n- On **Turn 1**, Player B's **Charizard** used **Protect**, which successfully blocked Pelipper's **Soak**. However, the immediate threat from **Swampert** using **Wave Crash** resulted in the fainting of **Eelektross**, a severe blow to Player A's strategy.\n  \n- **Turn 2** demonstrated decision-making weaknesses, where Player B opted for **Ice Punch** against Pelipper rather than using **Wave Crash** or **Earthquake** to target **Samurott-Hisui**. This decision allowed Player A to maintain momentum in the match.\n  \n- On **Turn 5**, Player B's **Venusaur** utilized **Protect** against Pelipper's **Hurricane**, ultimately resulting in missed opportunities as Pelipper would have caused significant damage.\n  \n- A critical decision was missed on **Turn 5**, where Player B's **Swampert** had an opportunity to use **Protect** against **Samurott-Hisui's** **Aqua Cutter**, which was guaranteed to **KO** Swampert given its low HP.\n\n**What to Change:** To improve, Player B should consider the following adjustments:\n- Adopting a more aggressive approach when facing Samurott-Hisui after ensuring Swampert stays protected whenever it has limited health, especially during its active turns.\n- Utilizing **Protect** more strategically to predict high-impact moves, notably when they are aware that **Aqua Cutter** from Samurott-Hisui poses a threat to Swampert on Turn 5, as failing to protect led to its faint.\n- Considering alternatives to **Ice Punch** that could leverage more effective damage output against Samurott-Hisui, especially when its HP is low and it can dominate the battlefield.\n  \nThese adjustments could provide Player B with more control over the game and mitigate openings that Player A exploited effectively.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 4,
+   "presents_turning_point": true,
+   "advice_sentences": 1,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Incorrectly claims Eelektross fainting was a blow to Player A",
+     "Misses that Swampert fainted on Turn 7, not Turn 5",
+     "Does not state what evidence cannot show"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 4,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 4 Player A led 3 Pokemon to 2 (213% against 151% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 4,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 213.0,
+      "loser_hp": 151.0,
+      "lead": 0.62,
+      "swing": 0.14,
+      "faints": [
+       "p2 Grimmsnarl fainted"
+      ]
+     },
+     {
+      "turn": 7,
+      "winner_alive": 2,
+      "loser_alive": 0,
+      "winner_hp": 157.0,
+      "loser_hp": 0.0,
+      "lead": 1.57,
+      "swing": 0.95,
+      "faints": [
+       "p2 Swampert fainted",
+       "p2 Venusaur fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 371.0,
+      "lead": -0.71,
+      "swing": -0.71,
+      "faints": [
+       "p1 Eelektross fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691398217-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691398217",
+   "seconds": 16.3,
+   "chars": 3074,
+   "answer": "To help Player A improve their performance, let's analyze their team composition, leads, moves, and use of Protect and speed control based on the provided battle context.\n\n### Lead Strategy\n**Current Leads:**\n- Player A brought Grimmsnarl and Archaludon. \n\n**Recommendation:**\n- While Grimmsnarl has utility with Prankster moves, Archaludon's effectiveness is hampered at times due to the immediate Threats posed by opposing Pokémon like Samurott-Hisui with its Sacred Sword. It may be beneficial to reconsider the lead order or combine with a Pokémon that can capitalize on the opponent's weaknesses or provide additional support.\n\n### Move Choices\n1. **Turn 1:**\n   - Player A's Archaludon used Protect when it could have used Electro Shot to guarantee the OHKO against Samurott-Hisui (150.9 - 178.4%) instead.\n   - This was a significant opportunity missed as Archaludon had an excellent chance to take out its main threat.\n\n2. **Turn 4:**\n   - When the opponent's Pelipper was sent out, Archaludon had the chance to use Electro Shot against it and guarantee a KO (301.2 - 356.6%). Following this, Player A could have also targeted Tsareena with Hurricane from Pelipper.\n   - Overall, maximizing offensive potential in these matchups would have significantly shifted momentum.\n\n3. **Turn 7:**\n   - Failing to use Reflect when three Pokémon were still on the field also weakened Player A, especially since their Swampert would soon faint; they needed better defensive positioning.\n\n### Protect Usage\n1. **Turns 1 and 5:**\n   - Player A's use of Protect to block direct attacks did prevent immediate damage but allowed Player B's Pokémon to retain their resources and take a more offensive approach.\n   - For example, while Archaludon utilized Protect to avoid damage, this preserved it for a later turn when it could apply pressure, especially as it could have scored a key KO by following through.\n\n2. **Turn 6:**\n   - Had Player A anticipated the type of attacks from Eelektross and utilized Protect with Swampert to avoid damage, they could have preserved their Mega Pokémon, yielding better positioning for subsequent turns.\n\n### Speed Control\n- Both players activated Tailwind, making speed control crucial. Player A's Pokémon were consistently outpaced, particularly by Tsareena and Eelektross.\n  \n**Recommendation:**\n- Consider using Tailwind more strategically, potentially earlier in the battle to establish a faster offensive against slower opponents before they can set up Tailwind, or alternatively use it in conjunction with Pokémon that can hit hard without current penalties from the opponent's speed advantage.\n\n### Conclusion\nOverall, Player A should focus on:\n- Reassessing their leads to better matchups.\n- Prioritizing aggressive moves like Electro Shot when threats can be dealt with outright.\n- Using Protect judiciously to limit damage while finding effective timing for Reflect.\n- Strategizing Tailwind activations to seize the speed advantage promptly.\n\nBy improving in these areas, Player A can enhance their chances of success in future battles.",
+   "game_answers": [],
+   "sections": [],
+   "turning_point_turn": 7,
+   "presents_turning_point": null,
+   "advice_sentences": 6,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 2,
+    "actionable": 3,
+    "specific": 3,
+    "consistent": 2,
+    "honest": 2,
+    "issues": [
+     "Invented damage calculations",
+     "Misleading Protect analysis",
+     "Inconsistent with engine turning point"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 7,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 7 Player B led 2 Pokemon to 1 (122% against 51% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 7,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 122.0,
+      "loser_hp": 51.0,
+      "lead": 0.71,
+      "swing": 1.49,
+      "faints": [
+       "p1 Swampert fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 2,
+      "loser_alive": 4,
+      "winner_hp": 122.0,
+      "loser_hp": 332.0,
+      "lead": -2.1,
+      "swing": -1.72,
+      "faints": [
+       "p2 Pelipper fainted"
+      ]
+     },
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 3,
+      "winner_hp": 122.0,
+      "loser_hp": 239.0,
+      "lead": -1.17,
+      "swing": 0.93,
+      "faints": [
+       "p1 Pelipper fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691407397-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691407397",
+   "seconds": 9.3,
+   "chars": 2056,
+   "answer": "### Result\nPlayer B won the battle with a score of 4-1 against Player A.\n\n### Decisions\n#### Player A\n**Best Decision:** \n- **Turn 1:** Player A's decision to have Froslass use Shadow Ball against Player B's Basculegion was excellent. It resulted in a guaranteed OHKO, taking out a key threat early in the game. The move's actual result was that Basculegion fainted, confirming the efficacy of this decision.\n\n**Worst Decision:**\n- **Turn 2:** The choice to have Sneasler use Close Combat against Player B's Kingambit was suboptimal because it was blocked by Kingambit's Protect. This wasted a significant attacking opportunity since Sneasler had a guaranteed OHKO on Kingambit, as noted in the protect_reads where the projected damage was between 170-202.9%, meaning this action significantly hurt Player A’s momentum.\n\n#### Player B\n**Best Decision:**\n- **Turn 2:** Player B's use of Protect with Kingambit was well-justified. It successfully blocked Sneasler’s Close Combat, which would have resulted in a faint, allowing Player B to maintain board presence and keep their Kingambit alive for future turns.\n\n**Worst Decision:**\n- **Turn 4:** While Player B’s Froslass used Blizzard, which resulted in Garchomp fainting, the actual targeting could have been improved. A move like Blizzard was effective, but there were better alternatives (e.g., targeting Kingambit with Close Combat could have increased efficiency). Despite the damage done, this could have placed Player A in a better position.\n\n### Protect Choices\n- Player B's Protect on Turn 2 was particularly effective as it avoided a certain faint, denying Player A a crucial advantage. The decision to protect was a genuine read on Player A's Sneasler as it prevented an immediate KO threat.\n\n### Summary\nUltimately, the key decisions made in targeting and usage of Protect shaped the outcome of the match significantly. Player A made a critical mistake in wasting an attack with Sneasler, while Player B capitalized on key moments with timely Protects and strategic targeting, securing the win.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 4,
+   "presents_turning_point": null,
+   "advice_sentences": 3,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "Inconsistent with engine turning point",
+     "Invented damage calculations",
+     "Misinterpretation of Blizzard effectiveness"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 4,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 4 Player B led 3 Pokemon to 2 (232% against 97% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 4,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 232.0,
+      "loser_hp": 97.0,
+      "lead": 1.35,
+      "swing": 1.2,
+      "faints": [
+       "p1 Garchomp fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 3,
+      "loser_alive": 0,
+      "winner_hp": 216.0,
+      "loser_hp": 0.0,
+      "lead": 2.16,
+      "swing": 0.97,
+      "faints": [
+       "p1 Sneasler fainted",
+       "p1 Kingambit fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 300.0,
+      "loser_hp": 217.0,
+      "lead": 0.83,
+      "swing": 0.86,
+      "faints": [
+       "p1 Froslass fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691408930-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691408930",
+   "seconds": 10.8,
+   "chars": 2254,
+   "answer": "**Result:** Player B won the match with a score of 4-3 against Player A.\n\n**Turning Point:** The turning point of the game occurred on **Turn 12** when Player B's Basculegion used **Wave Crash**, causing Player A's Basculegion to faint. After this turn, Player B led with 1 Pokémon still standing, compared to Player A with none, maintaining a significant advantage with 50% HP against 0% HP total. Player A was unable to recover, leading to their defeat.\n\n**Decisions:**\n1. **Player A's Misplays:**\n   - **Turn 1:** Player B's Sneasler used **Close Combat**, but it was ineffective against Player A's Basculegion (immune), wasting an attacking opportunity. Instead, Player B could have used **Dire Claw**, targeting Basculegion.\n   - **Turn 6:** Player A's Basculegion was afflicted with paralysis after attacking Player B's Sneasler. Given Basculegion's status, it could have taken a proactive approach using **Protect** to block potentially lethal hits instead of risking paralysis and a subsequent hit.\n   - **Turn 9:** Player A opted for **Protect** instead of attacking Player B's Kingambit with **Wave Crash**, which was a suboptimal choice as attacking would have had a guaranteed chance to knock it out, given the projected damage against it.\n\n2. **Player B's Good Reads:**\n   - **Turn 2:** Player B wisely used **Protect** on Sneasler, successfully blocking Player A's Kingambit's **Kowtow Cleave**, which would have guaranteed an OHKO due to the damage it could inflict.\n   - **Turn 12:** Player B's decisive play with **Wave Crash** resulted in a KO against Player A's Basculegion, securing their victory.\n\n**What to Change:**\nPlayer A should have considered using **Protect** more actively, especially during significant turns where they were likely to be targeted. For instance, they could have used Protect on **Turn 6** after fainting Sneasler and on **Turn 9** to avoid the strong hits from Kingambit. Additionally, they missed opportunities to apply more offensive pressure with Basculegion's **Wave Crash** against Kingambit, which could have shifted the momentum in their favor. Prioritizing careful management of their health and using defensive plays more effectively could have led to a different outcome for Player A in the match.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 12,
+   "presents_turning_point": true,
+   "advice_sentences": 7,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 2,
+    "actionable": 3,
+    "specific": 3,
+    "consistent": 1,
+    "honest": 2,
+    "issues": [
+     "misinterpretation of Player A's actions",
+     "incorrect turning point analysis",
+     "incorrect suggestions for Player A's actions"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 12,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 12 Player B led 1 Pokemon to 0 (50% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 12,
+      "winner_alive": 1,
+      "loser_alive": 0,
+      "winner_hp": 50.0,
+      "loser_hp": 0.0,
+      "lead": 0.5,
+      "swing": 0.37,
+      "faints": [
+       "p1 Basculegion fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 400.0,
+      "lead": -1.0,
+      "swing": -1.0,
+      "faints": [
+       "p2 Froslass fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 317.0,
+      "lead": -0.17,
+      "swing": 0.83,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691411925-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691411925",
+   "seconds": 13.2,
+   "chars": 2957,
+   "answer": "**Result:** Player A won the match with a score of 4-2 against Player B.\n\n**Decisions:**\nPlayer B's decision-making can be improved significantly based on their performance during the match, particularly involving their leads, moves, and the use of Protect.\n\n1. **Leading Pokémon:**\n   Player B led with Sneasler and Froslass, which was ultimately a less effective choice against Player A's lineup. Instead, leading with Kingambit or Basculegion would have provided immediate offensive pressure with moves like Kowtow Cleave or Last Respects, allowing Player B to break through Player A's defenses early on.\n\n2. **Use of Protect:**\n   Throughout turns 3 and 7, Player B’s Kingambit attempted to use Protect but could have secured a more advantageous situation had it targeted Basculegion instead of protecting itself from minimal threats. For example, on turn 3, Kingambit faced an incoming guaranteed OHKO from Basculegion's Wave Crash (66.7% - 79.2%). Using Protect would have been critical to survive and potentially counterattack with Kowtow Cleave, which had a guaranteed OHKO against Basculegion.\n\n3. **Attack Choices:**\n   On turn 1, Sneasler used Close Combat against Basculegion, which was immune. Instead, targeting Froslass with Close Combat would have added pressure on Player A and potentially disrupted the setup. Additionally, on turn 5, Player B's Froslass used Blizzard against Kingambit and Sneasler. Instead, it could have targeted Basculegion with Shadow Ball, which had a guaranteed 2HKO and could have been more impactful in terms of overall damage output.\n\n4. **Speed Control:**\n   Speed control options are limited, but Player B can consider utilizing moves like Fake Out from Sneasler in future matchups to disrupt the opponent’s setup. Additionally, asserting more aggressive leads can also help in managing speed tapes, especially if they aim to outspeed Player A's threats.\n\n**What to Change:**\nTo enhance performance in future matches, Player B should focus on adjusting their team compositions to maximize offensive presence from the beginning. Here are specific recommendations:\n- **New Leads:** Consider leading with Kingambit and Basculegion, which can deal significant damage right away and create pressure that may force the opponent into unfavorable positions.\n- **Attack Priorities:** Always look for attacking moves that target the biggest threats the opponent has on their side. Ensure to avoid using attacks against immune Pokémon.\n- **Protect Usage:** Be more strategic with Protect, using it primarily to block imminent threats that guarantee a loss of a Pokémon or to scout for the opponent's move.\n- **Speed Control Options:** Explore ways to implement strategies that can allow Sneasler to potentially set up with Fake Out tactics and manage opposing threats while securing key target coordination among teammates.\n\nBy implementing these changes, Player B can aim for a more favorable outcome in future matchups.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 6,
+   "presents_turning_point": null,
+   "advice_sentences": 8,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 2,
+    "actionable": 3,
+    "specific": 3,
+    "consistent": 2,
+    "honest": 2,
+    "issues": [
+     "incorrect Protect analysis",
+     "misleading lead advice",
+     "unfounded speed control suggestion"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 6,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 6 Player A led 2 Pokemon to 1 (75% against 6% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 6,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 75.0,
+      "loser_hp": 6.0,
+      "lead": 0.69,
+      "swing": 1.83,
+      "faints": [
+       "p2 Sneasler fainted",
+       "p2 Froslass fainted"
+      ]
+     },
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 3,
+      "winner_hp": 75.0,
+      "loser_hp": 189.0,
+      "lead": -1.14,
+      "swing": -1.05,
+      "faints": [
+       "p1 Kingambit fainted"
+      ]
+     },
+     {
+      "turn": 7,
+      "winner_alive": 2,
+      "loser_alive": 0,
+      "winner_hp": 16.0,
+      "loser_hp": 0.0,
+      "lead": 0.16,
+      "swing": -0.53,
+      "faints": [
+       "p2 Kingambit fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691413893-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691413893",
+   "seconds": 8.2,
+   "chars": 1918,
+   "answer": "### Result:\nWinner: Player A. Score — Player B lost 4.\n\n### Decisions:\n**Player A: Best and Worst Decisions**\n- **Best Decision (Turn 2):** Player A’s Froslass used Shadow Ball against Player B's Froslass, resulting in a faint. This was crucial as Player A took out a primary threat while simultaneously maintaining offensive momentum. The attack was highly effective, with a guaranteed 2HKO potential that Player B could not counter.\n  \n- **Worst Decision (Turn 1):** Player A's Kingambit used Low Kick against Player B's Froslass, yielding no damage due to its immunity. This move provided no advantage and wasted an action that could have been better spent attacking Basculegion, which was within range to be KO'd by Froslass' Shadow Ball.\n\n**Player B: Best and Worst Decisions**\n- **Best Decision (Turn 1):** Player B's Basculegion used Wave Crash against Player A’s Kingambit, dealing significant damage (leaving it at 25% HP). It was a valid choice, prioritizing a strong attack against an opposing Pokemon, threatening to shift momentum early.\n\n- **Worst Decision (Turn 4):** Player B's Sneasler used Protect instead of attacking during Player A's use of Fake Out. This action led to a non-interaction that did not allow Player B to capitalize on any threats, especially given the potential knockout from Close Combat on the next turn. Player B could have either attacked or used Protect to defend against a stronger threat during this turn.\n\n### Summary\nPlayer A's strategic targeting of Player B's vulnerable Pokemon in critical moments (especially with Froslass) gave them a decisive advantage. In contrast, Player B's decisions to use Protect and a move that was ineffective due to immunity ultimately hindered their ability to recover. These choices highlight the importance of effectively utilizing offensive moves against exposed targets while being cautious about wasted actions that provide no benefit.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 2,
+   "presents_turning_point": null,
+   "advice_sentences": 3,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Player B's worst decision misidentified",
+     "Player A's worst decision misidentified"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 2,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 2 Player A led 3 Pokemon to 1 (225% against 100% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 225.0,
+      "loser_hp": 100.0,
+      "lead": 1.25,
+      "swing": 2.0,
+      "faints": [
+       "p2 Froslass fainted",
+       "p2 Kingambit fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 225.0,
+      "loser_hp": 300.0,
+      "lead": -0.75,
+      "swing": -0.75,
+      "faints": [
+       "p2 Basculegion fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 3,
+      "loser_alive": 0,
+      "winner_hp": 138.0,
+      "loser_hp": 0.0,
+      "lead": 1.38,
+      "swing": 0.45,
+      "faints": [
+       "p2 Sneasler fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691416022-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691416022",
+   "seconds": 10.0,
+   "chars": 2289,
+   "answer": "**Result:** Player A won the match with a score of 3 (Player A) to 4 (Player B).\n\n**Turning Point:** The turning point occurred on **Turn 2**. After this turn, Player A held a clear advantage with 3 Pokémon remaining against Player B's 2. The total HP for Player A was 294%, while Player B had 200% total HP. This significant shift in the battle momentum was characterized by the fainting of both Player B's Scovillain and Kingambit during this turn, drastically reducing Player B's presence in the match.\n\n**Decisions:** \n- **Player A's Good Reads:**\n  - Player A's Sneasler chose **Dire Claw** against Scovillain, resulting in its fainting. This was a solid move as it capitalized on the super effective hit, further bolstering Player A's lead.\n  - Player A's Kingambit effectively took out Player B's Kingambit with **Low Kick**, further solidifying the advantage.\n\n- **Player B's Misplays:**\n  - On **Turn 1**, Player B's Scovillain used **Overheat** to knock out Player A’s Froslass, which was strong, but burning Sneasler beforehand may have resulted in lesser damage against Sneasler.\n  - The decision to use **Rage Powder** on Turn 2 limited Scovillain's capacity to inflict damage against Kingambit or Sneasler when it could have used **Overheat** for substantial damage against either opponent.\n  - **Turn 5** saw Player B’s Kingambit attempt to use **Sucker Punch** against Player A's Pokémon but failed, indicating a miscalculated risk as it did not account for priority.\n\n**What to Change:** \n- **Player B should have switched out their Froslass** on Turn 1 when facing Scovillain, which could have minimized damage from **Overheat**. Switching to a Pokémon like Basculegion would have allowed for a safer position, maintaining more HP for future turns.\n- On the subsequent turns when Player B’s Scovillain faced difficult odds, being more aggressive with Overheat instead of relying solely on Rage Powder would have likely produced better outcomes.\n- Additionally, using **Protect** for Froslass on Turn 6 would have been crucial to block Basculegion's **Last Respects**, preventing an unexpected knockout while allowing for a counterattack afterward.\n\nImplementing these adjustments could have altered Player B's positioning and setup, allowing for a more competitive match.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 2,
+   "presents_turning_point": true,
+   "advice_sentences": 4,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "misinterpretation of Sucker Punch",
+     "incorrect suggestion for Turn 1 switch",
+     "Protect suggestion on Turn 6 not viable"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 2,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 2 Player A led 3 Pokemon to 2 (294% against 200% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 294.0,
+      "loser_hp": 200.0,
+      "lead": 0.94,
+      "swing": 1.01,
+      "faints": [
+       "p2 Scovillain fainted",
+       "p2 Kingambit fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 200.0,
+      "loser_hp": 172.0,
+      "lead": 0.28,
+      "swing": -0.69,
+      "faints": [
+       "p1 Sneasler fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 1,
+      "loser_alive": 0,
+      "winner_hp": 47.0,
+      "loser_hp": 0.0,
+      "lead": 0.47,
+      "swing": 0.38,
+      "faints": [
+       "p2 Froslass fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691421022-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691421022",
+   "seconds": 20.3,
+   "chars": 2426,
+   "answer": "**Result:** Player A won with a score of 1 to 4.\n\n**What to Change:**\nTo improve Player B's performance in the matchup, several adjustments can be recommended based on the events of the battle.\n\n1. **Adjust Leads:** \n   Player B led with **Rotom-Fan** and **Manectric**, but **Manectric** was immediately susceptible to **Tinkaton's** Fake Out on Turn 1. This allowed Player A to gain momentum by using **Dragon Dance** with **Aerodactyl** while inflicting significant damage to **Manectric** with **Fake Out** and **Discharge**. Instead, leading with **Garchomp** alongside **Rotom-Fan** could create a better synergy and apply more pressure early on. **Garchomp** could help deal with **Aerodactyl** and apply offensive pressure from the start.\n\n2. **Use of Protect:**\n   On Turn 3, **Delphox** used **Protect**, which indicated to Player B that they were likely expecting a strong attack. However, **Garchomp** had the opportunity to use **Protect** on Turn 5 against **Swampert's** **Ice Punch**, which was a guaranteed OHKO threat. **Protecting** would have preserved **Garchomp**, allowing it to potentially remain in play longer and avoid being KO'd. Always check if a Protect could secure a Pokémon's survival against high-threat moves.\n\n3. **Improve Speed Control:**\n   Player B had no inherent speed control mechanism utilized, such as Trick Room, which left them vulnerable as they couldn't outspeed **Aerodactyl** and capitalize on the momentum. Introducing a Pokémon that could establish speed control, like **Trick Room** on **Delphox**, might help turn the battle in Player B's favor, particularly against fast threats such as **Aerodactyl**. However, timing this effectively also requires awareness of when to switch and apply offensive pressure. \n\n**Decisions:**\n- Player B should have considered switching **Manectric** on Turn 1 to avoid **Fake Out**, and instead prioritize **Rotom-Fan's** spread move **Discharge** to potentially target both **Tinkaton** and **Aerodactyl** without worrying about **Fake Out** stalling its offensive capability.\n- On Turn 6, when **Swampert** knocked out **Garchomp**, the use of **Ice Punch** could have been avoided by **Garchomp** using **Protect** earlier. Blocking this attack would have allowed **Garchomp** to remain as a significant threat later in the match.\n\nThese changes would create stronger leads in matchups and improve Player B's chances in future battles.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 6,
+   "presents_turning_point": null,
+   "advice_sentences": 4,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 3,
+    "honest": 4,
+    "issues": [
+     "Garchomp was already out on Turn 5, can't lead with it",
+     "Delphox can't learn Trick Room",
+     "Protect suggestion for Garchomp on Turn 5 is correct but not on Turn 6"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 6,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 6 Player A led 3 Pokemon to 1 (165% against 100% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 6,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 165.0,
+      "loser_hp": 100.0,
+      "lead": 0.65,
+      "swing": 0.45,
+      "faints": [
+       "p2 Garchomp fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 4,
+      "loser_alive": 3,
+      "winner_hp": 294.0,
+      "loser_hp": 270.0,
+      "lead": 0.24,
+      "swing": 1.21,
+      "faints": [
+       "p2 Manectric fainted"
+      ]
+     },
+     {
+      "turn": 3,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 281.0,
+      "loser_hp": 149.0,
+      "lead": 1.32,
+      "swing": 1.08,
+      "faints": [
+       "p2 Delphox fainted",
+       "p1 Aerodactyl fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691423168-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691423168",
+   "seconds": 17.7,
+   "chars": 2226,
+   "answer": "### Result\nPlayer B won the match, with a score of 4 Pokémon lost for Player A and 3 for Player B.\n\n### Decisions\n1. **Player A (Wyrdeer, Dragalge, Tinkaton, Kingambit)**:\n   - **Best Decision**: \n     - **Move**: Dragalge used **Sludge Wave** on Turn 2, which targeted both Manectric and Rotom-Fan (Manectric fainted and Rotom-Fan remained at 42%). This move capitalized on a spread attack, eliminating a key opponent and putting pressure on Player B.\n   - **Worst Decision**:\n     - **Move**: Tinkaton's **Fake Out** on Turn 3 failed to affect Garchomp due to its Protect. This was a misallocated move because it targeted an opponent protected from it while another pressing offensive option, like hitting Rotom-Fan or recovering the situation, was available. Furthermore, Player A wasted resources as Manectric had Lightning Rod, ensuring it could have absorbed the attack without risk.\n\n2. **Player B (Rotom-Fan, Manectric, Garchomp, Incineroar)**:\n   - **Best Decision**:\n     - **Move**: Garchomp used **Protect** on Turn 3. This prevented damage from both Tinkaton's Fake Out and Dragalge's Sludge Wave, allowing Player B to maintain tempo and not take damage while also ensuring their spread attacker continued to apply pressure. This was a good read as it protected from immediate threats while denying Player A damage mitigation options.\n   - **Worst Decision**:\n     - **Move**: Manectric did not switch out despite being in danger of Dragalge's guaranteed OHKO from Dragon Pulse. Instead, it risked getting KO'd when it could have switched to Incineroar, which only would have taken about 39.3% damage from Dragon Pulse. This oversight placed Player B one Pokémon down before Player A started leveraging their limited opportunity.\n\n### Summary\nPlayer A's best decision leveraged their offensive capabilities effectively by eliminating threats, while their misplays highlighted inefficiency in countering protected opponents. For Player B, their effective use of Protect showcased a mastery of defensive play, whereas the decision not to switch with Manectric signaled an oversight that could have stabilized their lead sooner. Balancing offensive and defensive plays effectively is crucial, as shown in this match.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 5,
+   "presents_turning_point": null,
+   "advice_sentences": 3,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "Inconsistent with engine turning point",
+     "Misinterpretation of Lightning Rod effect",
+     "Incorrect analysis of Manectric's situation"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 5,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 5 Player B led 2 Pokemon to 3 (200% against 121% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 3,
+      "winner_hp": 200.0,
+      "loser_hp": 121.0,
+      "lead": 0.79,
+      "swing": 0.34,
+      "faints": [
+       "p1 Dragalge fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 2,
+      "loser_alive": 4,
+      "winner_hp": 200.0,
+      "loser_hp": 155.0,
+      "lead": 0.45,
+      "swing": 0.54,
+      "faints": []
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 242.0,
+      "loser_hp": 232.0,
+      "lead": 0.1,
+      "swing": 0.25,
+      "faints": [
+       "p2 Manectric fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691424832-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691424832",
+   "seconds": 16.2,
+   "chars": 2543,
+   "answer": "### Result\nWinner: Player A.  \nScore: Player A lost 1; Player B lost 4.\n\n### Turning Point\nThe turning point occurred on **Turn 7**. After this turn, Player A maintained a significant lead of 3 Pokémon against 3, with a total HP of 211% compared to Player B's 138%. Player A was able to keep this lead until the end of the match.\n\nOn **Turn 7**, Player A's Aerodactyl used **Rock Slide**, which successfully damaged Player B's Manectric and Incineroar. This turn's figures were pivotal as it showcased Player A's ability to overcome the threats posed by Player B while remaining in a strong position.\n\n### Decisions\n- **Player B's Misplays**:\n  1. **Turn 1**: Player B opted to use **Grass Knot** against Swampert, which did a decent amount of damage (leaving it at 38% HP) but could have aimed for *Wyrdeer*, which had a lower HP threshold causing potential future issues. Player B could also have used a more effective attacking strategy against Wyrdeer during this early stage.\n  \n  2. **Turn 5**: Player B's **Manectric** used **Thunderbolt** against Swampert, which was an ineffective move as Swampert was immune to the attack. Instead, Player B could have targeted Dragalge or aimed to switch to minimize the risk of losing a more crucial Pokémon.\n  \n  3. **Turn 6**: By failing to utilize **Protect** on Garchomp to block the imminent attack from Dragalge's Draco Meteor, Player B left Garchomp vulnerable to an OHKO, effectively losing a strong Pokémon without countering.\n\n- **Player A's Strong Decisions**:\n  1. Player A effectively used **Trick Room** to manipulate the speed dynamics in their favor.\n  2. Player A’s strategic usage of **Reflect** and **Light Screen** set up layered defenses against Player B's physical and special attackers, allowing them to absorb more hits effectively.\n\n### What to Change\nPlayer B should consider changing their strategy to be more aggressive in targeting stationary threats like Dragalge early on, as well as utilizing Garchomp's **Protect** more effectively to preserve its viability. Additionally, switching Pokémon instead of risking a faint against incoming attacks, particularly from high-damage outputs like Wyrdeer's Uproar or Dragalge’s Draco Meteor, would have kept their team in contention longer. Looking for opportunities to make effective switches or utilizing Fake Out to disrupt opponent's strategies at crucial times could have shifted the game's momentum. \n\nOverall, the focus should be on enhancing positional play and leveraging existing threats on the field strategically.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 7,
+   "presents_turning_point": true,
+   "advice_sentences": 6,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "Inaccurate description of Turn 7 actions",
+     "Misinterpretation of Turn 1 strategy",
+     "Incorrect analysis of Garchomp's Protect usage"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 7,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 7 Player A led 3 Pokemon to 3 (211% against 138% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 7,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 211.0,
+      "loser_hp": 138.0,
+      "lead": 0.73,
+      "swing": 0.96,
+      "faints": []
+     },
+     {
+      "turn": 9,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 188.0,
+      "loser_hp": 18.0,
+      "lead": 1.7,
+      "swing": 0.56,
+      "faints": []
+     },
+     {
+      "turn": 3,
+      "winner_alive": 4,
+      "loser_alive": 3,
+      "winner_hp": 252.0,
+      "loser_hp": 259.0,
+      "lead": -0.07,
+      "swing": 0.41,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691456663-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691456663",
+   "seconds": 11.2,
+   "chars": 2586,
+   "answer": "**Result**: Player A won the match with a score of 4 to 1 against Player B.\n\n**Decisions**:\n1. **Golurk's Lead**: Player B sent out Golurk alongside Milotic. However, Golurk's choice to use Drain Punch on Grimmsnarl (which is immune to the attack) was a wasted action. A better choice would have been to switch to Mimikyu instead, as this would have avoided a guaranteed KO from Torterra's Wood Hammer on Golurk.\n   \n2. **Grimmsnarl's Attack**: While Grimmsnarl's Fake Out did reduce Milotic's HP, using Crunch on Golurk instead was a guaranteed 2HKO (52% to 61.2% damage) and could have significantly shifted the momentum in favor of Player B.\n   \n3. **Turn Management**: After Player A's Torterra got its Shell Smash off, it drastically increased its offensive capabilities. In turn 2, Golurk could have opted for Earthquake, inflicting damage on both Grimmsnarl and Torterra. However, Grimmsnarl fainted shortly after, limiting Player B's options as they lost a vital support Pokemon.\n\n4. **Inconsistent Offensive Pressure**: Throughout the game, Player B missed opportunities to deal critical damage to key opponents. For example, after Player A's Torterra fainted their last two Pokemon, Mimikyu missed an opportunity to use Phantom Force when it should have been targeting Torterra instead.\n\n**What to Change**:\n1. **Leads**: Player B should consider leading with Milotic and Mimikyu instead of Milotic and Golurk. This would strengthen their offensive pressure and create a setup for Mimikyu to apply pressure through its Disguise ability.\n   \n2. **Moves and Targets**: Moving forward, Player B should ensure to consider attacking options more carefully. For example, using Golurk's Drain Punch on Grimmsnarl was a poor choice; Crunch would have been the better option. Focus on using moves that target vulnerable opponents instead of wasting attacks on immune ones.\n\n3. **Use of Protect**: Protect is an underutilized option in Player B's strategy. Implementing Protect on Milotic or Golurk could provide essential turns to regroup and maintain their status, especially when facing overwhelming offensive pressure from opponents.\n\n4. **Speed Control**: Finally, Player B should plan for better speed control in future matches. A move such as Tailwind from a suitable teammate (like Vivillon) can ensure a faster momentum shift against Player A's Pokemon, enabling them to outspeed and potentially KO crucial threats before they act.\n\nBy reorganizing leads, optimizing move choices, and utilizing protective maneuvers, Player B can gain significant advantages in future matchups.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 3,
+   "presents_turning_point": null,
+   "advice_sentences": 8,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 2,
+    "actionable": 3,
+    "specific": 3,
+    "consistent": 1,
+    "honest": 2,
+    "issues": [
+     "Golurk's Drain Punch was not immune",
+     "Mimikyu's Phantom Force timing incorrect",
+     "Inconsistent with engine turning point"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 3,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 3 Player A led 3 Pokemon to 1 (250% against 100% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 3,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 250.0,
+      "loser_hp": 100.0,
+      "lead": 1.5,
+      "swing": 1.2,
+      "faints": [
+       "p2 Vivillon-Fancy fainted",
+       "p2 Golurk fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 250.0,
+      "loser_hp": 220.0,
+      "lead": 0.3,
+      "swing": 0.69,
+      "faints": [
+       "p2 Milotic fainted",
+       "p1 Grimmsnarl fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 230.0,
+      "loser_hp": 29.0,
+      "lead": 2.01,
+      "swing": 0.51,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691462161-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691462161",
+   "seconds": 11.9,
+   "chars": 2632,
+   "answer": "### Result\nWinner: Player B. Score — Player A lost 4; Player B lost 2.\n\n### Decisions\n**Player A: Best and Worst Decisions**  \n- **Best Decision**: \n  - Player A's use of **Earthquake** with Diggersby on Turn 1 was highly effective. It dealt an actual 100% damage to **Klefki**, resulting in a guaranteed KO with a 56.3% chance to OHKO, which secured a significant early advantage by eliminating a crucial opponent. This decision capitalized on Diggersby's Huge Power ability to maximize damage output, particularly since Noivern was immune, allowing for minimal risk.\n  \n- **Worst Decision**: \n  - Player A's **Switcheroo** on Turn 1 with Noivern was suboptimal. While it is a strategic move, it left Noivern open to a guaranteed OHKO from Mr. Rime's Freeze-Dry that turn. A switch to Mawile or Empoleon could have preserved Noivern's HP, maintaining pressure. This decision ultimately led to Noivern fainting shortly thereafter, impacting Player A’s early momentum.\n\n**Player B: Best and Worst Decisions**  \n- **Best Decision**: \n  - Player B's choice to use **Thunder Wave** with Klefki on Turn 1 effectively paralyzed Noivern, significantly reducing its potential to control the game, especially since Noivern relies on speed and special moves. This move denied Player A valuable turns and contributed to Noivern's eventual faint.\n  \n- **Worst Decision**: \n  - Player B's use of **Protect** on Altaria in Turn 3 was questionable. Although it protected Altaria from Mawile's Iron Head, it did not actually serve a tactical advantage that turn since Player A's Mawile could have dealt significant damage. Instead, Player B could have considered attacking given Mawile's threat level, potentially changing the momentum.\n\n### Targeting and Protect Choices\n- Player A's **Protect** with Diggersby on Turn 2 successfully blocked Altaria's **Hyper Voice**, which had a 93.8% chance to OHKO. This was a crucial defensive move, preventing immediate damage and maintaining HP.\n- Player B's **Protect** on Altaria similarly blocked Mawile's Iron Head, which would have resulted in a guaranteed KO. However, this protective strategy may have been overly cautious, as it contributed to not capitalizing on available offensive pressures.\n\nIn summary, both players made significant decisions that influenced the match's outcome, with Player A's aggressive plays delivering early impact but ultimately hampered by some risky strategies. In contrast, Player B capitalized on defensive maneuvers leading to Player A's eventual loss. Adjusting these strategic targeting decisions and Protect usage would enhance player performance in future games.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 5,
+   "presents_turning_point": null,
+   "advice_sentences": 3,
+   "contradictions": [],
+   "damage_claims": [
+    {
+     "claim": "Diggersby Earthquake -> Klefki 100.0-100.0%",
+     "verdict": "correct",
+     "reason": ""
+    }
+   ],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 2,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "Invented OHKO chance for Earthquake",
+     "Incorrect analysis of Switcheroo impact",
+     "Misinterpretation of Protect on Altaria"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 5,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 5 Player B led 2 Pokemon to 1 (129% against 40% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 129.0,
+      "loser_hp": 40.0,
+      "lead": 0.89,
+      "swing": 1.23,
+      "faints": [
+       "p1 Mawile fainted",
+       "p1 Empoleon fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 254.0,
+      "loser_hp": 240.0,
+      "lead": 0.14,
+      "swing": 1.0,
+      "faints": [
+       "p1 Noivern fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 254.0,
+      "loser_hp": 340.0,
+      "lead": -0.86,
+      "swing": -0.86,
+      "faints": [
+       "p2 Klefki fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691464509-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691464509",
+   "seconds": 12.3,
+   "chars": 2346,
+   "answer": "**Result:** Player A won with a score of 3-4.\n\n**Turning Point:** The turning point occurred on **Turn 4**. After this turn, Player A led with 2 Pokémon against Player B's 1 Pokémon, with total HP being 179% for Player A compared to Player B's 100%. This shift was significant, as it represented a clear lead for Player A, with no earlier turn holding a distinctly favorable position.\n\nOn Turn 4:\n- Player A’s Mawile transformed into Mawile-Mega, while Player B’s Gengar fainted after taking a hit from Mawile's Iron Head.\n- Player A's Empoleon used Flash Cannon, guaranteeing a KO against Player B's Mr. Rime, which also fainted that turn.\n  \nThis left Player B with only Ditto and significantly decreased their options to mount a comeback.\n\n**Decisions:**\n1. **Misplays by Player B:**\n   - On **Turn 1**, Player B's Gengar used Protect to block a guaranteed OHKO from Diggersby, while Noivern failed to hit Mr. Rime with its Draco Meteor, missing completely. Instead of protecting Gengar, it would have been better to switch another Pokémon in, as Player A had a strong offensive position.\n   - Player B should have focused on damaging Diggersby with Mr. Rime instead of committing to a Protect.\n\n2. **Wasted Actions:**\n   - Player A's Noivern missed its Draco Meteor on Turn 1, and Diggersby's High Horsepower was blocked by Gengar’s Protect, resulting in fewer offensive moves that turn.\n\n3. **Potential Better Plays:**\n   - During **Turn 1**, Player B could have switched either Gengar or Rime instead of using Protect, maintaining offensive pressure. Moreover, they could have used Freeze-Dry directly against Noivern earlier, which had a guarantee to OHKO.\n   - On **Turn 5**, Player B used the critical hit Brick Break from Ditto against Mawile, which was a primary threat that could have been blocked with a Protect. Mawile should have had Protect used to avoid taking damage which would have preserved its HP.\n\n**What to Change:** \n- Player B needs to improve their switching strategies, especially on critical turns like Turn 1 where Protect hindered their offensive potential. Utilizing protect efficiently while also adjusting damage allocation would have helped maintain offensive pressure and mitigate damage. They should consider the current status and potential threats more keenly, especially with higher priority moves in play.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 4,
+   "presents_turning_point": true,
+   "advice_sentences": 9,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 4,
+    "honest": 3,
+    "issues": [
+     "Protect critique lacks evidence",
+     "Turn 5 Protect suggestion not grounded",
+     "Missed opportunity to discuss Ditto's role"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 4,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 4 Player A led 2 Pokemon to 1 (179% against 100% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 4,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 179.0,
+      "loser_hp": 100.0,
+      "lead": 0.79,
+      "swing": 1.4,
+      "faints": [
+       "p2 Gengar fainted",
+       "p2 Mr. Rime fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 400.0,
+      "lead": -1.0,
+      "swing": -1.0,
+      "faints": [
+       "p1 Noivern fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 234.0,
+      "loser_hp": 264.0,
+      "lead": -0.3,
+      "swing": 0.7,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691547644-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691547644",
+   "seconds": 13.0,
+   "chars": 2399,
+   "answer": "### Result\nWinner: Player A, score 4-2.\n\n### What to Change\nTo improve Player B's performance in future matchups, they should focus on strategic adjustments concerning leads, move selections, the use of Protect, and speed control:\n\n1. **Leads**: \n   - Player B led with Falinks and Gengar. Given the opposing side's Incineroar (which can use Intimidate), a better lead might involve a bulkier option that can withstand Intimidate and support the team. Consider using Armarouge as a lead alongside Gengar; Armarouge's bulk and resistance can provide a stronger presence on the field as it can take hits while also setting up Trick Room or applying pressure with Armor Cannon.\n\n2. **Move Selections**:\n   - On turn 1, Falinks used First Impression, but this was blocked by Reuniclus's Protect. Instead, Falinks could have used Close Combat, which would have guaranteed an OHKO on Incineroar, posing a greater threat. Prioritize moves that target the opposing weaknesses instead of ones that merely ensure speed advantage.\n   - Due to Gengar's high threat level, consider using it more aggressively. On turn 2, Gengar could have opted for Dazzling Gleam instead of Shadow Ball against the Tyranitar, as it would have been more effective in a spread context and could contribute to breaking through its defenses.\n\n3. **Use of Protect**:\n   - Protect was used effectively by Reuniclus on turn 1; however, Player B had opportunities to utilize Protect more effectively in subsequent turns, specifically on turns 4 and 6 with Reuniclus against threats that had the capability to KO it. Instead of risking a faint, Protect could have negated incoming damage from Falinks or Gengar on crucial turns, allowing for more offensive pressure in later turns.\n\n4. **Speed Control**:\n   - The Trick Room was set up on turn 3, but it is crucial that speed control be complemented with damage output. If Player B had made more use of Gengar's Dazzling Gleam earlier, they could have reduced the opposing team's options sooner. Also, reassess the Trick Room execution; Gengar could potentially benefit from adding Tailwind to synergize with Falinks to maintain offensive pressure when Trick Room isn't advantageous.\n\nBy adapting leads, optimizing move choices, and utilizing Protect effectively in crucial moments, Player B can enhance their chances of securing victory against Player A's composition in future battles.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "what to change"
+   ],
+   "turning_point_turn": 5,
+   "presents_turning_point": null,
+   "advice_sentences": 8,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 2,
+    "actionable": 3,
+    "specific": 3,
+    "consistent": 2,
+    "honest": 2,
+    "issues": [
+     "incorrect move suggestion for Falinks",
+     "misinterpretation of Trick Room usage",
+     "inaccurate Protect recommendations"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 5,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 5 Player A led 3 Pokemon to 2 (206% against 115% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 5,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 206.0,
+      "loser_hp": 115.0,
+      "lead": 0.91,
+      "swing": 0.55,
+      "faints": [
+       "p2 Armarouge fainted",
+       "p1 Tyranitar fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 4,
+      "loser_alive": 3,
+      "winner_hp": 262.0,
+      "loser_hp": 226.0,
+      "lead": 0.36,
+      "swing": 1.16,
+      "faints": [
+       "p2 Gengar fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 176.0,
+      "loser_hp": 20.0,
+      "lead": 1.56,
+      "swing": 0.65,
+      "faints": [
+       "p2 Falinks fainted",
+       "p1 Reuniclus fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691549515-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691549515",
+   "seconds": 11.8,
+   "chars": 2641,
+   "answer": "### Result\nPlayer B won the match, with a score of Player A losing 4 Pokémon while Player B lost 3.\n\n### Best and Worst Decisions\n\n**Player A's Decisions:**\n\n1. **Best Decision: Starmie's Self-Destruct (Turn 3)**\n   - Starmie used Self-Destruct targeting Player B's Pelipper, leaving it at 29% HP and Goodra-Hisui at 69%. Although it fainted, this move created a strong momentum by delivering significant damage to both opposing Pokémon. It was a strategic choice given the circumstances, prioritizing damage output.\n\n2. **Worst Decision: Sinistcha's Imprison (Turn 1)**\n   - Instead of using Matcha Gotcha against Hatterene, Player A opted for Imprison. This move didn't capitalize on the immediate threat — Hatterene was left at 15% HP, and Imprison effectively had no impact on the game's progress. The best alternative would have been to deal damage, particularly since Matcha Gotcha could have guaranteed an OHKO against Hatterene if chosen.\n\n3. **Starmie's Protect (Turn 2)**\n   - While Protect seemed like a defensive option, Player A should have anticipated Goodra-Hisui's Breaking Swipe could have knocked out Starmie given its low HP (7%). Instead, switching Starmie out to Hydreigon would have been a safer play, absorbing potential damage and preserving Starmie's presence on the field longer.\n\n**Player B's Decisions:**\n\n1. **Best Decision: Pelipper's Hurricane (Turn 3)**\n   - Pelipper effectively took advantage of the Rain, delivering a super-effective Hurricane to Player A's Sinistcha. This attack contributed crucially to maintaining Player B’s momentum and diminishing Player A's board presence. It capitalized on the type advantage and weather conditions.\n\n2. **Worst Decision: Goodra-Hisui's Breaking Swipe (Turn 3)**\n   - On Turn 3, Player B attempted to use Breaking Swipe, but it failed. This represented a wasted action, as it did not apply pressure on Player A. Given this turn's significance and its available options, Player B could have used a more effective move to capitalize on forcing damage or securing a knockout.\n\n3. **Goodra-Hisui's Move Choices Consistency:**\n   - Although Breaking Swipe was used as a spread move, Player B might have been better served choosing another action or move for that moment.\n\n### Conclusion\nIn a high-stakes match like this, every decision carried significant weight. Player A had opportunities to optimize damage output with Starmie and appropriate switches. Player B's decision-making around maximizing the effectiveness of moves was ultimately key in their victory. A combination of missed opportunities and effective strategies ultimately dictated control of the match.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 7,
+   "presents_turning_point": null,
+   "advice_sentences": 5,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 5,
+    "honest": 3,
+    "issues": [
+     "Imprison impact not clear",
+     "Switch suggestion lacks evidence",
+     "Missed opportunity not fully grounded"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 7,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 7 Player B led 1 Pokemon to 0 (52% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 7,
+      "winner_alive": 1,
+      "loser_alive": 0,
+      "winner_hp": 52.0,
+      "loser_hp": 0.0,
+      "lead": 0.52,
+      "swing": 0.31,
+      "faints": [
+       "p2 Pelipper fainted",
+       "p1 Dragapult fainted"
+      ]
+     },
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 129.0,
+      "loser_hp": 126.0,
+      "lead": 0.03,
+      "swing": -0.4,
+      "faints": [
+       "p2 Goodra-Hisui fainted",
+       "p2 Hatterene fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 4,
+      "loser_alive": 2,
+      "winner_hp": 169.0,
+      "loser_hp": 126.0,
+      "lead": 0.43,
+      "swing": 0.34,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691550421-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691550421",
+   "seconds": 9.1,
+   "chars": 1998,
+   "answer": "**Result:** Player A won the match, with a score of 4-1 against Player B.\n\n**Turning Point:** The game swung decisively during **Turn 2**. Player A led with 4 Pokémon remaining compared to Player B's 3, with a total HP count of 391% against Player B's 294%. Player B's Toxicroak fainted after being hit by Player A's Excadrill's High Horsepower.\n\n**Decisions:** Player B made several critical errors that contributed to their loss:\n1. **Turn 1 Decisions:** \n   - Player B's Gengar used Destiny Bond. While it can create a strategic scenario, using it without immediate threats proves ineffective when that attack was blocked in subsequent turns.\n   - Player B's Toxicroak targeting Excadrill with Fake Out only reduced Excadrill's HP to 91%. This move was less effective due to Sand's resistance.\n   \n2. **Turn 3 Misplay:** On this turn, Player B decided to use Wide Guard with Armarouge, which didn't align with their actual threats. Instead of a defensive move, attacking with Armarouge (e.g., using Aura Sphere against Raichu or hitting Excadrill) could have applied more pressure. \n\n3. **Turn 6 Threat Management:** By allowing Player A's Mega Tyranitar to use Protect on this turn when Player B's Metagross dealt significant damage to Primarina, it dampened Player B's counteroffensive opportunities. Protect was also an option for Player B's Gengar to avoid potential KOs.\n\nOverall, Player B's heavy reliance on status moves like Destiny Bond and misapplications of Wide Guard allowed Player A to maintain the upper hand.\n\n**What to Change:** To improve in future matches, Player B should:\n- Rethink aggressive options early in the game, ensuring that the Pokémon can utilize offensive pressure effectively.\n- Avoid over-reliance on non-damaging moves that can lead to wasted turns, particularly in crucial moments where damage output could shift momentum.\n- Ensure synergy between Pokémon; pairing attacks that can finish threats when they are weak would likely yield more favorable results.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 2,
+   "presents_turning_point": true,
+   "advice_sentences": 4,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Destiny Bond critique lacks context",
+     "Wide Guard critique lacks context",
+     "Protect suggestion lacks context"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 2,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 2 Player A led 4 Pokemon to 3 (391% against 294% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 2,
+      "winner_alive": 4,
+      "loser_alive": 3,
+      "winner_hp": 391.0,
+      "loser_hp": 294.0,
+      "lead": 0.97,
+      "swing": 1.06,
+      "faints": [
+       "p2 Toxicroak fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 165.0,
+      "loser_hp": 10.0,
+      "lead": 1.55,
+      "swing": 0.58,
+      "faints": [
+       "p2 Metagross fainted"
+      ]
+     },
+     {
+      "turn": 7,
+      "winner_alive": 3,
+      "loser_alive": 0,
+      "winner_hp": 165.0,
+      "loser_hp": 0.0,
+      "lead": 1.65,
+      "swing": 0.1,
+      "faints": [
+       "p2 Gengar fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691551534-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691551534",
+   "seconds": 13.3,
+   "chars": 2978,
+   "answer": "### Result\nPlayer B won the battle with a score of 4 to 3 against Player A.\n\n### Decisions\nPlayer A made several choices during the match that impacted their performance:\n\n1. **Lead Selection**:\n   - Player A led with Dragapult and Hydreigon, which are both strong threats. However, they faced a challenging matchup against Player B’s team, especially with Pelipper setting up rain and Hatterene posing a threat with its Dazzling Gleam.\n   \n2. **Early Game Moves**:\n   - On turn 1, Player A's Dragapult used Dragon Cheer instead of attacking, which allowed Player B's Hatterene to remain on the field. The best move for Dragapult would have been **Shadow Ball** against Hatterene, which could have guaranteed a 2HKO.\n\n3. **Use of Protect**:\n   - On turn 2, playing Protect with Hydreigon was a good defensive decision that blocked Pelipper's Hurricane. This helped preserve its health, but hydreigon could have chosen a more aggressive approach with Draco Meteor against Pelipper, which had a guaranteed 2HKO chance.\n\n4. **Missed Opportunities**:\n   - During turn 3, Hydreigon missed its Draco Meteor, which was critical since it would have intended to target Pelipper. This gave Player B's Meganium a chance to retaliate with Dazzling Gleam, which took out both Dragapult and Hydreigon and swung the momentum heavily in Player B's favor.\n\n5. **Final Turns**:\n   - The use of Self-Destruct on Starmie took down both Player B’s Pelipper and Meganium but resulted in Starmie’s faint. While this had a significant impact on Player B's numbers, Player A was already facing tough odds after losing key Pokemon.\n\n### What to Change\nTo improve their chances in a rematch, Player A can consider the following adjustments:\n\n1. **Lead Changes**:\n   - Consider leading with Starmie and Sinistcha, capitalizing on Trick Room and potentially denying quick threats. This could also point to a setup for quick offensive pressure against Player B's slower Pokémon.\n\n2. **Aggressive Movement**:\n   - Player A should be aware of when to strike offensively rather than using non-damaging moves. For instance, using Dragapult's **Shadow Ball** on turn 1 against Hatterene could shift the game earlier, preventing its looming Dazzling Gleam threat.\n\n3. **Utilization of Protect**:\n   - While using Protect effectively stopped some damage, Player A should ensure it is used in key moments when facing immediate threats that could secure KOs, such as in turn 3 against Meganium, where Protect could have denied a crucial OHKO.\n\n4. **Revisiting Strategy**:\n   - Incorporating a mix of spread moves and coverage can help against Pokémon that take advantage of extreme weather conditions. For example, Starmie's moveset could include more STAB options like Scald or Ice Beam, allowing it to threaten opponents out of the gate.\n\nBy refining their lead strategies, making more aggressive early moves, and improving the timing and use of Protect, Player A can tilt the match in their favor next time around.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 6,
+   "presents_turning_point": null,
+   "advice_sentences": 7,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 3,
+    "honest": 3,
+    "issues": [
+     "inconsistent with engine turning point",
+     "some claims not grounded in evidence",
+     "does not acknowledge evidence limitations"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 6,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 6 Player B led 1 Pokemon to 0 (100% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 6,
+      "winner_alive": 1,
+      "loser_alive": 0,
+      "winner_hp": 100.0,
+      "loser_hp": 0.0,
+      "lead": 1.0,
+      "swing": 1.0,
+      "faints": [
+       "p1 Sinistcha fainted"
+      ]
+     },
+     {
+      "turn": 3,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 254.0,
+      "loser_hp": 200.0,
+      "lead": 0.54,
+      "swing": 0.84,
+      "faints": [
+       "p1 Hydreigon fainted",
+       "p1 Dragapult fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 330.0,
+      "lead": -0.3,
+      "swing": -0.55,
+      "faints": [
+       "p2 Hatterene fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691557933-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691557933",
+   "seconds": 11.8,
+   "chars": 2661,
+   "answer": "### Result:\nWinner: Player A. Score — Player A lost 1; Player B lost 4.\n\n### Decisions:\n**Player A's Best Decisions:**\n1. **Usage of Nasty Plot (Turn 1)**: Player A's Sableye used Nasty Plot to boost its Special Attack by 2 stages. This setup allowed Sableye to become a significant offensive threat later in the match, particularly against Meowstic and Corviknight.\n   \n2. **Helping Hand (Turn 2)**: This move was critical as it enhanced Sableye's Dark Pulse, allowing it to deal substantial damage to Corviknight and bring it down to 13% HP. This increased offensive synergy showcased the effectiveness of Player A's team setup.\n\n3. **Sequence of Attacks (Turn 4)**: Player A's Aromatisse used Moonblast against Corviknight and Sableye followed up with Dark Pulse, resulting in KOs on both Corviknight and Farigiraf. This turn clearly shifted the momentum in favor of Player A, as they were able to not only deal damage but also eliminate two opponent Pokémon.\n\n**Player A's Worst Decisions:**\n- No significant misplays were observed, but using Dazzling Gleam instead of Dark Pulse against Farigiraf on Turn 3 could have potentially dealt more damage. However, it was a less critical decision since Farigiraf was later eliminated.\n\n**Player B's Best Decisions:**\n1. **Setting up Reflect (Turn 2)**: Player B's Meowstic used Reflect, improving its team's defenses and preparing Corviknight to take incoming attacks while boosting its own bulk.\n\n2. **Bulk Up (Turns 2 and 3)**: Player B's Corviknight used Bulk Up to improve both its Attack and Defense. Although this setup was ultimately futile as it did not survive very long, it showcased an attempt to turn the tide of battle.\n\n**Player B's Worst Decisions:**\n1. **Using Tickle (Turn 5)**: While intended to weaken Aromatisse, this move was ineffective in matching the current battlefield momentum and could have been replaced with more offensive moves against Player A’s threats.\n\n2. **Using Charm repeatedly (Turns 6 and 7)**: Player B's Meowstic used Charm despite already being in a weak position, failing to adequately apply pressure or prevent the threats from Aromatisse and Sableye. This decision left them vulnerable to counters from Player A, particularly as Player B lost momentum by sacrificing time with a non-damaging move.\n\n### Conclusion:\nPlayer A executed a focused strategy showcasing their Pokémon's strengths while Player B struggled to capitalize on their setup moves and failed to effectively target threats, ultimately leading to their defeat. Player A's ability to maintain offensive pressure and take opportunities presented by Player B's defensive setup was a key to their victory.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 4,
+   "presents_turning_point": null,
+   "advice_sentences": 2,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Player B's best decisions lack impact",
+     "Player A's worst decision not clearly a misplay",
+     "No mention of engine turning point"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 4,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 4 Player A led 3 Pokemon to 2 (300% against 200% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 4,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 300.0,
+      "loser_hp": 200.0,
+      "lead": 1.0,
+      "swing": 0.77,
+      "faints": [
+       "p2 Corviknight fainted",
+       "p2 Farigiraf fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 400.0,
+      "lead": -1.0,
+      "swing": -1.0,
+      "faints": []
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 313.0,
+      "lead": -0.13,
+      "swing": 0.87,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691560240-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691560240",
+   "seconds": 10.2,
+   "chars": 2022,
+   "answer": "### Result\nWinner: Player A. Score — Player A lost 2; Player B lost 4.\n\n### Turning Point\nThe turning point occurred on **Turn 6**. After this turn, Player A maintained a significant lead in terms of Pokémon and health. Player A had 2 Pokémon remaining with a total HP of 179%, while Player B only had 1 Pokémon left with just 45% HP. This clear advantage allowed Player A to keep at least half a Pokémon’s worth of HP ahead until the end of the game.\n\nIn this turn, Player A's Sableye-Mega used **Dazzling Gleam**, knocking out Player B's **Farigiraf**, which had only 3% HP left. The attacks from Player A left Player B in a critical position, effectively sealing Player A's victory.\n\n### Decisions\nFor Player B:\n1. **Turn 2**: Player B's **Staraptor** chose to use **Brave Bird** instead of attacking with its guaranteed OHKO option. Opting for **Tailwind** was risky since it set up for the next turn without applying immediate pressure on Player A. **Brave Bird** would have guaranteed a KO on Player A's **Sableye**, who was left at 29% HP.\n   \n2. **Turn 4**: Player B's **Farigiraf** used **Helping Hand** instead of protecting itself or attacking. At this stage, Player B should have used **Protect**, as Player A's Sableye posed an immediate threat with a guaranteed OHKO from **Dazzling Gleam**. Instead, Player B allowed Player A to take out both Lycanroc-Dusk and Gliscor this turn with a powerful spread move.\n\n3. **Turn 5**: Player B's **Farigiraf** used **Protect** after already taking heavy damage. This action came too late to be effective, as it could have protected itself previously to avoid the double threat from Player A's Pokémon. \n\nOverall, Player B's decisions to focus on setup rather than offensive pressure allowed Player A to dictate the pace of the game, ultimately leading to a disadvantageous position from which Player B could not recover. Avoiding unnecessary setups and capitalizing on the opportunities for damage would have been critical in shifting the momentum in Player B's favor.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions"
+   ],
+   "turning_point_turn": 6,
+   "presents_turning_point": true,
+   "advice_sentences": 5,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Turn 2 critique lacks grounding",
+     "Turn 4 critique lacks grounding",
+     "Honesty about evidence limits could improve"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 6,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 6 Player A led 2 Pokemon to 1 (179% against 45% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 6,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 179.0,
+      "loser_hp": 45.0,
+      "lead": 1.34,
+      "swing": 1.08,
+      "faints": [
+       "p2 Farigiraf fainted"
+      ]
+     },
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 129.0,
+      "loser_hp": 103.0,
+      "lead": 0.26,
+      "swing": 1.0,
+      "faints": [
+       "p2 Typhlosion-Hisui fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 2,
+      "loser_alive": 3,
+      "winner_hp": 129.0,
+      "loser_hp": 203.0,
+      "lead": -0.74,
+      "swing": -0.8,
+      "faints": [
+       "p1 Lycanroc-Dusk fainted",
+       "p1 Gliscor fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691564110-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691564110",
+   "seconds": 11.9,
+   "chars": 2562,
+   "answer": "### Result\nWinner: Player B. Score — Player A lost 4; Player B lost 1.\n\n### Decisions\nTo improve Player A's chances in future matchups, several adjustments can be made based on the battles and decisions observed in this game.\n\n1. **Leads:** \n   - **Sableye and Gliscor as Leads:** While Sableye is a strong lead with potential utility, it was hindered by the opposing Staraptor’s Intimidate, which reduced its Attack power. A different lead, such as Meowscarada, could threaten Staraptor and apply pressure right from the start. \n   - **Recommendation:** Consider leading with Meowscarada and Lycanroc-Dusk, as both can apply offensive pressure, with Meowscarada being particularly effective against Staraptor.\n\n2. **Moves:**\n   - **Use of Toxic:** Player A used Toxic on Turn 1 against Staraptor. Given the situation, instead of Toxic, using Ice Fang against Staraptor would have dealt a guaranteed 3HKO, putting more immediate pressure. \n   - **Lycanroc-Dusk's Moves:** When sending out Lycanroc-Dusk, Rock Slide was a worthy move, but players should focus on also checking the alternatives available, as prioritizing coverage using Fire Fang against Corviknight could have been more beneficial given its persistent threat in later turns.\n\n3. **Use of Protect and Speed Control:**\n   - **Missed Opportunities with Protect:** There were no Protect moves used despite likely scenarios where they could have prevented the loss of HP or mitigated damage from critical hits. In particular, using Protect on Sableye or Gliscor during crucial turns could have allowed them to avoid unnecessary damage.\n   - **Speed Control:** Player A does not utilize Tailwind or Trick Room to counter the opposing speed advantage effectively when it was present. Sableye could incorporate moves like Tailwind next time to match the opposition's speed.\n\n### What to Change\n- **Rethink Lead Compositions:** Prioritize leads that counter the opponent's threats effectively. Leading with Meowscarada and Lycanroc-Dusk for better synergy against Player B's initial pair.\n- **Optimize Move Choices:** Focus on utilizing moves that apply pressure and consider their effectiveness against opponents (i.e., Ice Fang or Rock Slide could be more beneficial in specific turns). \n- **Incorporate Protect Strategically:** Utilize Protect on necessary turns to conserve key Pokémon and allow them to maintain their utility.\n  \nThese adjustments could help Player A to position themselves better in future matches, taking advantage of offensive opportunities and mitigating damage more effectively.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 9,
+   "presents_turning_point": null,
+   "advice_sentences": 6,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 5,
+    "honest": 3,
+    "issues": [
+     "Protect recommendation lacks evidence",
+     "Speed control suggestion lacks evidence",
+     "Lead change suggestion lacks evidence"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 9,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 9 Player B led 3 Pokemon to 1 (152% against 100% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 9,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 152.0,
+      "loser_hp": 100.0,
+      "lead": 0.52,
+      "swing": 0.48,
+      "faints": [
+       "p1 Sableye fainted",
+       "p1 Gliscor fainted"
+      ]
+     },
+     {
+      "turn": 10,
+      "winner_alive": 3,
+      "loser_alive": 0,
+      "winner_hp": 158.0,
+      "loser_hp": 0.0,
+      "lead": 1.58,
+      "swing": 1.06,
+      "faints": [
+       "p1 Meowscarada fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 318.0,
+      "loser_hp": 195.0,
+      "lead": 1.23,
+      "swing": 1.01,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691566133-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691566133",
+   "seconds": 22.8,
+   "chars": 2516,
+   "answer": "**Result:** Player B won the game with a score of 4-1.\n\n**Decisions:**\n\n- **Best Decisions by Player A:**\n  1. **Use of Nasty Plot (Turn 1):** Player A's Sableye used Nasty Plot, effectively boosting its Special Attack by 2 stages, which set the stage for stronger attacks with Dark Pulse and Dazzling Gleam later in the match. This was crucial for increasing its potential damage output.\n  \n- **Worst Decisions by Player A:**\n  1. **Repeated Helping Hand (Turns 2, 3, 4, and 5):** Player A's Aromatisse repeatedly used Helping Hand to boost Sableye's attacks but did not capitalize on either of Sableye's offensive moves effectively. Given the threats from Player B's Corviknight and Mega Staraptor, focusing on utilizing offensive pressure would have been more beneficial.\n  \n  2. **Use of Dazzling Gleam (Turn 5):** Player A's Sableye used Dazzling Gleam while Player B’s Corviknight was already low on HP. Though it dealt damage, it was not sufficient to prevent the inevitable KO from Corviknight's Iron Head. A different target with Dark Pulse could have been more advantageous.\n\n- **Best Decisions by Player B:**\n  1. **Bulk Up (Turn 1):** Player B's Corviknight used Bulk Up, increasing both its Attack and Defense, which allowed it to become a significant threat for Player A's team.\n  \n  2. **Using Light Screen (Turn 2):** Player B's Meowstic set up Light Screen to reduce the incoming damage from special attacks. This facilitated a safer position for Corviknight to attack and take hits, further solidifying their lead.\n  \n  3. **Use of Brave Bird against Meowscarada (Turn 7):** After Sableye fainted, Player B's Staraptor used Brave Bird effectively to take out Meowscarada, keeping pressure on Player A and maintaining their team advantage.\n\n- **Worst Decisions by Player B:**\n  1. **Use of Roost (Turn 4 and Turn 8):** While restoring health is generally beneficial, Player B's Corviknight Roosted in situations where attacking would have put more pressure on Player A's remaining Pokémon. A move like Iron Head against Sableye could have secured an earlier advantage and potentially led to a quicker victory.\n\n**Conclusion:** While Player A had opportunities to set up and deal significant damage, the decision-making around utilizing Helping Hand and offensive pressure proved limiting. Player B's strategic plays, particularly with Bulk Up and the timely use of screens, solidified their path to victory. Improvements for Player A would focus on offensive pressure and effective target selection.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 9,
+   "presents_turning_point": null,
+   "advice_sentences": 2,
+   "contradictions": [
+    "\"take out Meowscarada\" (turn 7): Meowscarada fainted on turn 9.",
+    "\"Sableye fainted\" (turn 7): Sableye fainted on turn 11.",
+    "\"Player B's Staraptor used Brave Bird\" (turn 7): the log shows Player B's Staraptor did not use Brave Bird on turn 7; Player B's Staraptor used Brave Bird on turn 5, 11."
+   ],
+   "damage_claims": [],
+   "warnings": [
+    "The answer may contradict the log: \"take out Meowscarada\" (turn 7): Meowscarada fainted on turn 9.",
+    "The answer may contradict the log: \"Sableye fainted\" (turn 7): Sableye fainted on turn 11.",
+    "The answer may contradict the log: \"Player B's Staraptor used Brave Bird\" (turn 7): the log shows Player B's Staraptor did not use Brave Bird on turn 7; Player B's Staraptor used Brave Bird on turn 5, 11."
+   ],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Roost critique lacks context",
+     "Helping Hand critique lacks alternative",
+     "Dazzling Gleam critique lacks alternative"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 9,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 9 Player B led 3 Pokemon to 1 (211% against 50% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 9,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 211.0,
+      "loser_hp": 50.0,
+      "lead": 1.61,
+      "swing": 1.29,
+      "faints": [
+       "p1 Meowscarada fainted"
+      ]
+     },
+     {
+      "turn": 11,
+      "winner_alive": 3,
+      "loser_alive": 0,
+      "winner_hp": 240.0,
+      "loser_hp": 0.0,
+      "lead": 2.4,
+      "swing": 0.86,
+      "faints": [
+       "p1 Sableye fainted"
+      ]
+     },
+     {
+      "turn": 7,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 161.0,
+      "loser_hp": 159.0,
+      "lead": 0.02,
+      "swing": -0.65,
+      "faints": [
+       "p2 Corviknight fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691579291-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691579291",
+   "seconds": 10.0,
+   "chars": 2187,
+   "answer": "### Result\nPlayer B won the match with a score of 4-1 against Player A.\n\n### Turning Point\nThe turning point occurred on **turn 5**. At this stage, Player B was leading with 3 Pokémon remaining against Player A's 1 Pokémon, with a health difference of 151% for Player B versus 100% for Player A. The momentum shifted significantly here, as Player A's Scrafty fainted to Player B's Staraptor's Brave Bird, severely reducing Player A's chance of recovery.\n\n### Decisions\n1. **Player A's Misplays:**\n   - **Turn 1:** Whimsicott's decision to use Tailwind instead of using Moonblast on Hydreigon was a critical misplay. Using Moonblast would have guaranteed an OHKO on Hydreigon, but instead, it stayed on the field and retaliated later.\n   - **Turn 2:** Eelektross chose to Protect instead of attacking, which was valid to block a Dark Pulse but left Eelektross vulnerable later, while Scrafty was also attacked by Tsareena. A more aggressive approach with a hit on Tsareena might have been preferable.\n   - **Turn 4:** Garchomp used Dragon Claw, which was blocked by Blastoise's Protect. Instead, targeting Hydreigon with Dragon Claw would have been effective, as it had only 7% HP left.\n\n2. **Player B's Strong Reads:**\n   - Player B capitalized effectively by using Protect with Mega Blastoise to block Garchomp’s Dragon Claw, maintaining their strong position.\n   - Additionally, the use of Brave Bird on Scrafty was a decisive move that ensured Player A lost another key Pokémon, further cementing Player B's lead.\n\n### What to Change\nPlayer A should have taken a more aggressive stance by:\n- Utilizing Whimsicott's Moonblast on Hydreigon during **Turn 1** to secure an early lead and remove a significant threat immediately.\n- Evaluating Eelektross's Protect and opting for a damaging move while the Tailwind was up could potentially allow it to confirm a Knock Out, particularly on Tsareena, which could have altered the momentum.\n- Targeting Hydreigon with Garchomp in **Turn 4** would have eliminated a critical opponent before it could attack again.\n\nBy making these adjustments, Player A could have turned the tide in their favor and potentially changed the outcome of the match.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 5,
+   "presents_turning_point": true,
+   "advice_sentences": 7,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 5,
+    "honest": 3,
+    "issues": [
+     "Moonblast on Hydreigon not guaranteed OHKO",
+     "Eelektross Protect was valid but not misplay",
+     "Hydreigon already fainted by turn 4"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 5,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 5 Player B led 3 Pokemon to 1 (151% against 100% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 5,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 151.0,
+      "loser_hp": 100.0,
+      "lead": 0.51,
+      "swing": 0.07,
+      "faints": [
+       "p1 Scrafty fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 3,
+      "loser_alive": 0,
+      "winner_hp": 151.0,
+      "loser_hp": 0.0,
+      "lead": 1.51,
+      "swing": 1.0,
+      "faints": [
+       "p1 Garchomp fainted"
+      ]
+     },
+     {
+      "turn": 3,
+      "winner_alive": 4,
+      "loser_alive": 2,
+      "winner_hp": 251.0,
+      "loser_hp": 200.0,
+      "lead": 0.51,
+      "swing": -0.76,
+      "faints": [
+       "p1 Eelektross fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691581493-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691581493",
+   "seconds": 21.9,
+   "chars": 3523,
+   "answer": "### Result\nWinner: Player B. Score — Player A lost 4; Player B lost 1.\n\n### Turning Point\nThe turning point occurred on turn 5. At this point, Player B led with 2 Pokémon to Player A's 1 Pokémon, Garchomp, which was at 10% HP, against Player B's Blastoise at 12% and Lycanroc-Dusk at full health. Player B's strategy effectively leveraged their lead, controlling the game until the end.\n\n### Decisions\n1. **Turn 1:**\n   - Player A's **Whimsicott** used **Protect** to block Sneasler's **Fake Out**. This was a justified read as Whimsicott would have likely faced damage otherwise.\n   - Instead of using Protect, **Player A's Whimsicott** could have used **Moonblast** on either Sneasler (which was left at 1% HP) or Blastoise. The best alternative move would have been to target Sneasler, guaranteeing an OHKO and potentially changing the outcome of the match, but the Protect choice still played a defensive role (actual statistics confirm Protect block was valuable).\n\n2. **Turn 2:**\n   - Player A set up **Tailwind**, which provided speed control for subsequent turns, allowing Garchomp to effectively KO Sneasler with **Stomping Tantrum**. This was a solid play, but more aggressive firepower could have been achieved by prioritizing damage on Blastoise during the previous turn.\n\n3. **Turn 3:**\n   - Player B's **Lycanroc-Dusk** used **Accelerock** on **Scrafty**, causing minimal damage. Player A's **Scrafty** used a Fake Out that was blocked by Lycanroc's Protect, which indicates a wasted action here for Player A.\n   - Player A's Whimsicott used **Moonblast** to hit Blastoise, leaving it very low on HP (12%). This was a good play, but losing Whimsicott on the next turn made Player A lose valuable pressure.\n\n4. **Turn 4:**\n   - Player A's **Eelektross** used **Discharge**, which was blocked by both of Player B's Pokémon using Protect. Player A lost Scrafty due to its own Discharge hitting it (wasted action).\n   - More advantageous might have been using **Thunderbolt** or **Flamethrower** instead of the spread move Discharge, as this could have directly targeted Blastoise and potentially scored a KO.\n\n5. **Turn 5:**\n   - Player A's **Garchomp** opted for **Protect**, well ahead of Lycanroc's potential attack but ultimately resulted in a wasted turn as it did faint from Blastoise's **Muddy Water**. This indicates a lack of offensive aggression; Garchomp could have used **Stomping Tantrum** to ensure a KO instead.\n\n### What to Change\n1. **Focus on Aggression:**\n   - During turn 1, consider using **Moonblast** on Sneasler instead of Protect. Securing that early KO on Sneasler would allow for better momentum.\n   \n2. **Adjust Lead Pokémon Strategy:**\n   - While Whimsicott with a Focus Sash is typically reliable, consider using a different moveset tailored towards aggressive play for future matchups if similar Pokémon continue to pose threats.\n\n3. **Loss of Control:**\n   - In turn 4, evaluate the necessity of using Discharge, as it induced more harm to Player A than benefit. Utilizing targeted moves instead could give a decisive edge.\n\n4. **Protect Usage:**\n   - Re-evaluate when to use Protect, especially for Garchomp. Aggressive play would be more beneficial rather than preserving it for later turns.\n   \nBy focusing on these adjustments, Player A can enhance their leads, execute more offensive strategies, and appropriately utilize speed control and Protect in their matchups in the future. Consider team synergy and how to effectively manage each Pokémon's strengths more proactively.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 5,
+   "presents_turning_point": true,
+   "advice_sentences": 8,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 5,
+    "honest": 3,
+    "issues": [
+     "Protect on Whimsicott was justified",
+     "Discharge self-KO not addressed",
+     "Turning point details not fully accurate"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 5,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 5 Player B led 2 Pokemon to 1 (102% against 10% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 102.0,
+      "loser_hp": 10.0,
+      "lead": 0.92,
+      "swing": 1.0,
+      "faints": [
+       "p1 Eelektross fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 164.0,
+      "loser_hp": 400.0,
+      "lead": -2.36,
+      "swing": -2.36,
+      "faints": []
+     },
+     {
+      "turn": 2,
+      "winner_alive": 2,
+      "loser_alive": 4,
+      "winner_hp": 163.0,
+      "loser_hp": 238.0,
+      "lead": -0.75,
+      "swing": 1.61,
+      "faints": [
+       "p2 Sneasler fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691594600-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691594600",
+   "seconds": 26.0,
+   "chars": 3113,
+   "answer": "1. **Result:** Player A won the match, with a score of Player A losing 3 Pokémon and Player B losing 4 Pokémon.\n\n2. **Turning point:** The game swung on **turn 6**, where Player A led with 2 Pokémon to Player B's 2 Pokémon, with Player A having 57% total HP compared to Player B's 29% total HP. This was the most significant shift in the battle dynamics.\n\n3. **Decisions:**\n   - **Player A's Best Decisions:**\n     - On **turn 1**, *Delphox* utilized **Protect**, successfully blocking *Kangaskhan's* **Fake Out**. While it could have used **Heat Wave** to attack instead, this Protect was justified as it saved *Delphox* from potential damage. However, the decision was somewhat misallocated, since it defended against an attack that wasn't a guaranteed OHKO and thus delayed the inevitable *Decidueye-Hisui* faint from *Froslass's* **Blizzard** later that turn.\n     - On **turn 5**, *Delphox* used **Heat Wave**, which resulted in guaranteed KOs for both *Kangaskhan* and *Froslass* despite being at low HP, allowing Player A to regain momentum.\n   \n   - **Player B's Best Decisions:**\n     - On **turn 2**, *Kangaskhan's* use of **Rock Slide** was a reasonable choice given that *Delphox* was relatively strong against *Politoed*, and it dealt fair damage to *Klefki* despite being resisted.\n     - The use of *Froslass* to bring up **Snow** and setting weather conditions favored *Kangaskhan* temporarily, but it did not fully capitalize on those conditions.\n\n   - **Player A's Worst Decisions:**\n     - On **turn 3**, *Delphox's* **Protect** was unnecessary, as there were potential threats that it could have dealt with (e.g., a guaranteed KO with **Heat Wave** against *Kangaskhan*). The decision effectively wasted an action and delayed potential damage output.\n     - On the same turn, *Sylveon's* failure to act after *Delphox* confirmed Protect also rendered it unable to contribute during that critical phase of the fight.\n\n   - **Player B's Worst Decisions:**\n     - On **turn 1**, *Kangaskhan's* use of **Fake Out** was effectively wasted by being blocked by *Delphox's* Protect. Instead of targeting *Froslass* or attempting an *Sucker Punch* on a potential threat, this led to missed potential damage.\n     - On **turn 4**, the repeated use of **Sucker Punch** failed to capitalize against *Delphox*, who was preparing strong moves (Nasty Plot), resulting in two wasted actions.\n\n4. **What to change:**  \n   - Player B should reconsider moves like **Fake Out** and **Sucker Punch**, especially when facing opponents capable of blocking them or using high-damage moves.  \n   - Incorporating a more diverse attacking strategy when backed into a corner could work favorably — for instance, targeting from both available Pokémon against the perceived threats may yield better chances than repetitive fails from one attacker.\n\nIn conclusion, both players made key decisions that influenced their fates in the match, often shaped by their understanding of opposing threats and weather conditions. The turning point at turn 6 demonstrated a crucial shift that Player A leveraged to secure their victory.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 6,
+   "presents_turning_point": true,
+   "advice_sentences": 4,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 3,
+    "honest": 3,
+    "issues": [
+     "misinterpretation of Delphox Protect on turn 1",
+     "incorrect assessment of Sylveon's action on turn 3",
+     "incomplete analysis of weather impact"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 6,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 6 Player A led 2 Pokemon to 2 (57% against 29% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 6,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 57.0,
+      "loser_hp": 29.0,
+      "lead": 0.28,
+      "swing": 1.05,
+      "faints": []
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 239.0,
+      "loser_hp": 301.0,
+      "lead": -0.62,
+      "swing": -0.61,
+      "faints": []
+     },
+     {
+      "turn": 3,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 162.0,
+      "loser_hp": 264.0,
+      "lead": -1.02,
+      "swing": -0.4,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691598129-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691598129",
+   "seconds": 10.1,
+   "chars": 2003,
+   "answer": "### Result\nPlayer A won the match with a score of 2-4 over Player B.\n\n### Turning Point\nThe turning point of the game occurred on **Turn 7**. During this critical turn, Player A's threats significantly swung the game in their favor:\n\n- **Player A's Delphox** used **Heat Wave** (spread, super effective), which caused **Player B's Kangaskhan** to faint. \n- **Player A's Sylveon** then used **Mystical Fire** (super effective), reducing **Player B's Aegislash** to 23% HP. \n- This resulted in Player A holding a lead of 2 Pokémon remaining (Delphox and Decidueye-Hisui) against Player B's 2 Pokémon (Aegislash and Froslass) with a total HP of 178% vs. 123%. \n\nFrom this point, Player A kept at least half a Pokémon's worth of HP ahead until the end, confirming it as a decisive moment.\n\n### Decisions\n**Player B's Misplays:**\n1. **Turn 4:** Player B's Aegislash used **King's Shield**, which failed. Instead, it could have applied offensive pressure with a damaging move that would have put Player A on the back foot.\n2. **Turn 2:** Player B's Kangaskhan used **Fake Out** on Ariados; the better option would have been to use **Rock Slide** to potentially secure an early KO on Ariados, as it was at risk with only 3% HP left.\n\n**Player A's Good Reads:**\n1. Player A rightly used **Protect** with both Delphox and Sylveon on Turn 5, successfully avoiding damage from Kangaskhan's **Rock Slide**, which helped maintain their lead.\n\n### What to Change\nFor **Player B** to improve:\n- On **Turn 4**, instead of using **King's Shield**, Player B should have deployed an aggressive attacking move, like **Poltergeist**. This choice would have put more pressure on Player A's Pokémon and potentially swung the momentum.\n- On **Turn 2**, Player B could have utilized **Rock Slide** instead of **Fake Out** to threaten significant damage against Ariados, which was already low on HP.\n\nBy optimizing these decisions, Player B could have built a more favorable position and potentially turned the tide of the match.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 7,
+   "presents_turning_point": true,
+   "advice_sentences": 4,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 5,
+    "actionable": 5,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 5,
+    "issues": []
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 7,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 7 Player A led 2 Pokemon to 2 (178% against 123% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 7,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 178.0,
+      "loser_hp": 123.0,
+      "lead": 0.55,
+      "swing": 0.64,
+      "faints": [
+       "p2 Kangaskhan fainted",
+       "p1 Sylveon fainted"
+      ]
+     },
+     {
+      "turn": 8,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 178.0,
+      "loser_hp": 23.0,
+      "lead": 1.55,
+      "swing": 1.0,
+      "faints": [
+       "p2 Froslass fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 4,
+      "loser_alive": 3,
+      "winner_hp": 291.0,
+      "loser_hp": 300.0,
+      "lead": -0.09,
+      "swing": -0.87,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691630272-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691630272",
+   "seconds": 14.9,
+   "chars": 2780,
+   "answer": "**Result:** Player A won by a score of 4 to 2.\n\n**Decisions:**\n\n1. **Missed Opportunities with Moves:**\n   - On turn 1, Player B's Vileplume utilized **After You** instead of a damaging move. Using **Pollen Puff** against Player A's Hydrapple could have guaranteed a 3HKO and dealt substantial damage, potentially pressuring Player A at the beginning instead of wasting that turn.\n  \n2. **Protect Utilization:**\n   - Player B's Torkoal used **Protect** on turn 3 to shield itself, but it was unnecessary as Player A's Alakazam-Mega was asleep and couldn't threaten the Torkoal. Instead, Torkoal could have opted to attack or provide support with **Eruption** against the active threats, specifically Alakazam or Hydrapple.\n\n3. **Switches:**\n   - Throughout the game, Player B missed opportunities to switch Pokémon more effectively. For example, after exposing Vileplume to Player A's Alakazam's Dazzling Gleam on turn 7, a switch to Farigiraf or Heliolisk could have preserved Vileplume, mitigating its risk of getting knocked out.\n\n4. **Speed Control:**\n   - When Vileplume attempted to use **Sleep Powder** on multiple occasions without success, Player B failed to apply consistent speed control against Player A's faster threats like Alakazam and later Zoroark-Hisui. While Vileplume's After You could enable a slower ally to move first, it requires predicting accurately that the opposing Pokémon will use a non-damaging move.\n\n**What to Change:**\n\n1. **Reevaluation of Lead:**\n   - Player B's lead of Torkoal and Vileplume can be reconsidered in future matches. They need to think about how to deal with threatening leads like Alakazam that can quickly change the momentum of the match.\n\n2. **Direct Damage Threats:**\n   - Prioritize moves that can threaten the opponent rather than support moves. For instance, switching to a more aggressive lead or using moves like **Pollen Puff** for guaranteed damage can put Player A on the back foot.\n\n3. **Protect Usage:**\n   - When Player B has a chance to use **Protect**, they should analyze whether blocking an incoming hit is beneficial in the context of the battle or if damage would yield better strategic value. \n\n4. **Switches:**\n   - Consider switching out against priority threats earlier to maintain pressure while conserving their Pokémon’s HP. Effective switches could create opportunities for future favorable matchups against Player A's Pokémon.\n\n5. **Better Coordination:**\n   - Enhance synergy between Torkoal and Vileplume so they can support each other better. Utilizing Vileplume to heal Torkoal or providing speed control with After You at the right times would make for stronger offensive pushes. \n\nBy implementing these changes in strategy and execution, Player B can improve their chances in future matchups.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 11,
+   "presents_turning_point": null,
+   "advice_sentences": 7,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 3,
+    "honest": 3,
+    "issues": [
+     "incorrect Protect analysis",
+     "missed engine turning point",
+     "unfounded switch suggestion"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 11,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 11 Player A led 2 Pokemon to 1 (113% against 16% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 11,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 113.0,
+      "loser_hp": 16.0,
+      "lead": 0.97,
+      "swing": 0.84,
+      "faints": []
+     },
+     {
+      "turn": 5,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 282.0,
+      "loser_hp": 268.0,
+      "lead": 0.14,
+      "swing": 0.99,
+      "faints": []
+     },
+     {
+      "turn": 8,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 200.0,
+      "loser_hp": 190.0,
+      "lead": 0.1,
+      "swing": -0.72,
+      "faints": [
+       "p1 Skeledirge fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691633690-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691633690",
+   "seconds": 12.5,
+   "chars": 1872,
+   "answer": "### Result\nPlayer B won with a score of 4-2 against Player A.\n\n### Decisions\n**Player A (Alakazam, Hydrapple, Zoroark-Hisui, Skeledirge):**\n- **Best Decision:** Player A's choice to use Alakazam's **Psychic** on Turn 2 to knock out Player B's Vileplume was crucial. This ensured that Vileplume, which had a significant role due to its ability to buff Torkoal’s Eruption with **After You**, was eliminated immediately, preventing further threats to Alakazam.\n\n- **Worst Decision:** The use of **Recover** by Hydrapple on Turn 5, given its precarious HP situation (7% HP), was suboptimal. Instead, a **Protect** would have been a better function here. If used, it could have blocked Torkoal's **Heat Wave**, which would have guaranteed the safety of Hydrapple and avoided a potential KO, as indicated by the protect reads.\n\n**Player B (Vileplume, Torkoal, Heliolisk, Basculegion-F):**\n- **Best Decision:** Player B made an excellent decision by using **After You** with Vileplume in Turn 1 to enable Torkoal’s subsequent **Eruption** to hit both targets. This proved effective as it significantly weakened both of Player A's lead Pokémon.\n\n- **Worst Decision:** Torkoal's **Heat Wave** missed on Turn 7 when attempting to hit Hydrapple, which was a wasted action that allowed Player A to retaliate effectively. Although accidents happen, aiming to damage while knowing Hydrapple was still present would typically have been a safer bet if the opponent had not blocked.\n\n### Summary\nThe decisive actions by Player A involved targeting Player B's Vileplume swiftly, undermining their typical strategy with Torkoal. Player B capitalized on their **After You** strategy but faced issues with a critical miss on Turn 7, letting Player A maintain a chance to retaliate. Overall, both players demonstrated moments of strategic prowess and errors that influenced the match's outcome.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 8,
+   "presents_turning_point": null,
+   "advice_sentences": 2,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 2,
+    "issues": [
+     "incorrect_turning_point",
+     "misinterpretation_of_recover",
+     "misinterpretation_of_miss"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 8,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 8 Player B led 2 Pokemon to 0 (109% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 8,
+      "winner_alive": 2,
+      "loser_alive": 0,
+      "winner_hp": 109.0,
+      "loser_hp": 0.0,
+      "lead": 1.09,
+      "swing": 0.61,
+      "faints": [
+       "p1 Hydrapple fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 288.0,
+      "loser_hp": 232.0,
+      "lead": 0.56,
+      "swing": 0.87,
+      "faints": [
+       "p2 Vileplume fainted",
+       "p1 Alakazam fainted"
+      ]
+     },
+     {
+      "turn": 5,
+      "winner_alive": 3,
+      "loser_alive": 1,
+      "winner_hp": 156.0,
+      "loser_hp": 57.0,
+      "lead": 0.99,
+      "swing": -0.82,
+      "faints": [
+       "p1 Skeledirge fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691635975-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691635975",
+   "seconds": 12.3,
+   "chars": 2257,
+   "answer": "**Result:** Player A won the game with a score of 2 to 4, eliminating all of Player B's Pokémon.\n\n**Turning Point:** The decisive moment of the match occurred on **Turn 8**. In this turn, Player A's Zoroark-Hisui used Shadow Ball, dealing severe damage to Player B's Basculegion-F, which was left at 14% HP. Meanwhile, Player A's Skeledirge removed Player B's Torkoal with Scorching Sands, concluding the turn with Player A leading with 2 Pokémon against Player B's 1 Pokémon (125% HP against 14% total HP). From this point forward, Player A maintained a significant advantage, thereby securing the game's outcome.\n\n**Decisions:** \n- **Player A:** Player A made several effective plays, especially the use of Zoroark-Hisui's Shadow Ball and Skeledirge's Scorching Sands to secure key knockouts. Player A also utilized Protect effectively when under threat, minimizing damage taken from Player B's powerful attacks.\n  \n- **Player B:** Player B made critical mistakes, particularly in Turn 3. In that turn, Vileplume used Weather Ball to knock out Conkeldurr, but it could have better utilized a more protective strategy by switching out Vileplume to mitigate damage from Skeledirge and conserve its presence in the match. Additionally, on Turn 1, using Sleep Powder against Player A's Skeledirge could have been more beneficial if it were aimed at a different target. Vileplume had a significant chance of getting knocked out, which ultimately contributed to Player B's downfall. The failed Protect move by Torkoal in Turn 3 also wasted a valuable opportunity to maintain momentum.\n\n**What to Change:** \n1. **Switch Vileplume:** In turn 1, Player B could have switched Vileplume out for Basculegion-F to preserve Vileplume while still threatening Player A's Pokémon effectively. The risk of a guaranteed knock-out on Vileplume made this a crucial decision.\n2. **Improve Target Selection:** In subsequent turns, Player B should assess which Pokémon could benefit from Protect or switches to better absorb damage while maintaining offensive pressure.\n3. **Make strategic use of Protect:** The Protect decision on Torkoal in Turn 3 did not divert immediate threats effectively; protecting a different turn or Pokémon could have provided a more defensive stance.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 8,
+   "presents_turning_point": true,
+   "advice_sentences": 5,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Sleep Powder target critique lacks evidence",
+     "Protect critique lacks evidence",
+     "Switch suggestion lacks evidence"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 8,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 8 Player A led 2 Pokemon to 1 (125% against 14% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 8,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 125.0,
+      "loser_hp": 14.0,
+      "lead": 1.11,
+      "swing": 1.09,
+      "faints": [
+       "p2 Torkoal fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 320.0,
+      "loser_hp": 400.0,
+      "lead": -0.8,
+      "swing": -0.8,
+      "faints": []
+     },
+     {
+      "turn": 3,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 301.0,
+      "lead": -0.01,
+      "swing": 0.79,
+      "faints": [
+       "p1 Conkeldurr fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691728675-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691728675",
+   "seconds": 27.1,
+   "chars": 2749,
+   "answer": "### Result\nWinner: Player B, Score — Player A lost 4; Player B lost 3.\n\n### Recommendations for Improvement\n\n1. **Leads Adjustment**:\n   - **Current Lead**: Player A led with Sableye and Gliscor. This was not optimal against Player B’s Mega Staraptor, which can significantly threaten both with its powerful physical moves after an Intimidate drop.\n   - **Suggested Change**: Consider leading with Aromatisse and Gliscor instead. Aromatisse can use Trick Room immediately to ensure that Gliscor can outspeed threats, while also providing a solid special defense against Staraptor's attacks.\n\n2. **Moving Forward**:\n   - In the first turn, Player A’s Sableye used Will-O-Wisp instead of applying pressure. Using Foul Play against Meowstic (which has a guaranteed 3HKO) would have effectively removed a key support Pokemon with no significant threat using the damage check data that guarantees damage.\n   - **Suggested Move**: Focus on offensive support upfront, applying damage rather than attempting status moves like Will-O-Wisp, especially when it may not contribute meaningfully against Player B's lead.\n\n3. **Utilization of Trick Room**:\n   - Aromatisse’s Trick Room set-up was crucial as it flipped the speed advantage. However, Player A should have capitalized on this by coordinating offensive output during these turns more effectively. After setting Trick Room, the combination of Foul Play from Sableye and Moonblast from Aromatisse can potentially mitigate threats like Staraptor and Meowstic.\n   - Consider using more aggressive moves during Trick Room turns to capitalize on the slower opponents. \n\n4. **Protect Usage**:\n   - Protect should be used strategically. There were multiple instances where Player A could have used Protect on Gliscor to scout for potential threats before attacking. This could have allowed for sustained presence while enabling a controlled tempo.\n   - **Example Position**: Protect could be particularly useful when anticipating attacks from Corviknight, especially when Tailwind is active, as seen on Turn 12. \n\n### Speed Control Integration\nTailwind was set up later in the match but was used late, making it less impactful. Utilizing Gliscor's speed control earlier in the match could help counter threats proactively rather than reactively.\n\n- **Critical Turn**: On Turn 10, if Gliscor had used Tailwind earlier, it could help stake a faster outspeeding position against threats like Mega-Staraptor.\n- Moving forward, focus on integrating speed control before losing key Pokemon to ensure faster moves after setups.\n\nBy modifying leads, prioritizing damage over awkward status and timing speed control more effectively, Player A could significantly increase its chances of winning in subsequent matchups.",
+   "game_answers": [],
+   "sections": [
+    "result"
+   ],
+   "turning_point_turn": 18,
+   "presents_turning_point": null,
+   "advice_sentences": 7,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 3,
+    "honest": 3,
+    "issues": [
+     "incorrect_lead_recommendation",
+     "misinterpretation_of_foul_play",
+     "protect_usage_not_evident"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 18,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 18 Player B led 1 Pokemon to 0 (86% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 18,
+      "winner_alive": 1,
+      "loser_alive": 0,
+      "winner_hp": 86.0,
+      "loser_hp": 0.0,
+      "lead": 0.86,
+      "swing": 1.33,
+      "faints": [
+       "p1 Meowscarada fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 229.0,
+      "loser_hp": 293.0,
+      "lead": -0.64,
+      "swing": -0.91,
+      "faints": []
+     },
+     {
+      "turn": 12,
+      "winner_alive": 1,
+      "loser_alive": 3,
+      "winner_hp": 92.0,
+      "loser_hp": 139.0,
+      "lead": -0.47,
+      "swing": 0.74,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691734819-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691734819",
+   "seconds": 20.3,
+   "chars": 2892,
+   "answer": "**Result:** Player B won the match with a score of 4-1 over Player A.\n\n**Decisions Highlights:**\n\n1. **Best Decisions by Player B:**\n   - **Turn 1 - Eruption:** Player B's decision to use Eruption with Typhlosion-Hisui was critical as it dealt significant damage to both of Player A's Pokémon, leaving Sableye at 47% and Aromatisse at 50%. This move set the tone for an aggressive start and forced Player A to react defensively.\n   - **Turn 4 - Brave Bird on Araquanid:** Player B effectively eliminated Araquanid with Brave Bird after it was already weakened, capitalizing on the preceding bulk-up from Corviknight. This KO was essential in maintaining the momentum of the fight.\n   - **Turn 5 - Protect:** Using Protect with Staraptor allowed Player B to avoid taking damage from both Starmie's Thunderbolt and Aromatisse's Moonblast. This choice preserved Staraptor at a crucial moment and ensured the game continued in favor of Player B.\n\n2. **Worst Decisions by Player B:**\n   - **Turn 1 - Imprison with Farigiraf:** While this setup move can be strategic, it did not apply immediate pressure or damage. Using Imprison allowed Player A to retaliate effectively with Knock Off, which ended up damaging Typhlosion deeply. A more aggressive move, such as Psychic, could have helped to maintain pressure.\n\n3. **Best Decisions by Player A:**\n   - **Turn 1 - Knock Off:** Player A's Sableye using Knock Off on Typhlosion was an excellent choice, dealing significant damage (leaving it at 18% HP) and removing Typhlosion's Choice Scarf, which would hinder Player B’s speed advantage. This action showcased an opportunity to convert pressure into advantage.\n   - **Turn 4 - Moonblast on Corviknight:** Player A’s decision to use Moonblast to finish off Corviknight after it had bulked up was well-executed, reflecting the awareness of the threat Corviknight posed.\n\n4. **Worst Decisions by Player A:**\n   - **Turns 5-7 - Targeting Staraptor with Moonblast:** On both turns where Player A targeted Staraptor with Moonblast while it was protected, this resulted in wasted turns. Player A could have shifted focus to Farigiraf, who was at lower HP, and could have potentially secured better results. Additionally, using Thunderbolt instead of Hydro Pump on Farigiraf in Turn 6 was not optimal as Hydro Pump provided a better chance to score a KO.\n   - **Turn 1 - No Switch:** Not switching Sableye when it was about to take a strong Eruption left it at a disadvantage. A switch to Araquanid or Starmie should have been considered to preserve Sableye’s utility in the match.\n\nIn conclusion, while both players made impactful decisions, Player B's strategic use of Protect and their ability to capitalize on Player A’s misplays were pivotal in securing their victory. Player A strategically eliminated key threats but suffered from crucial wasted actions that turned the momentum in Player B’s favor.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 8,
+   "presents_turning_point": null,
+   "advice_sentences": 5,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Imprison impact not fully explained",
+     "Switch suggestion lacks context",
+     "Hydro Pump vs Thunderbolt not clearly justified"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 8,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 8 Player B led 3 Pokemon to 0 (117% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 8,
+      "winner_alive": 3,
+      "loser_alive": 0,
+      "winner_hp": 117.0,
+      "loser_hp": 0.0,
+      "lead": 1.17,
+      "swing": 1.25,
+      "faints": [
+       "p1 Starmie fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 3,
+      "loser_alive": 3,
+      "winner_hp": 193.0,
+      "loser_hp": 177.0,
+      "lead": 0.16,
+      "swing": 0.54,
+      "faints": [
+       "p1 Araquanid fainted",
+       "p2 Corviknight fainted"
+      ]
+     },
+     {
+      "turn": 3,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 229.0,
+      "loser_hp": 267.0,
+      "lead": -0.38,
+      "swing": -0.36,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691736497-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691736497",
+   "seconds": 21.9,
+   "chars": 2578,
+   "answer": "### Result\nWinner: Player A.  \nScore — Player A lost 3; Player B lost 4.  \n\n### Turning Point\nThe turning point of the game occurred on **Turn 5**. During this turn, Player A managed to secure a significant advantage, leading with 2 Pokémon against Player B's 2 Pokémon, while having a total HP of 200% against Player B's 48% total HP. This shift was decisive as it represented the largest swing in momentum throughout the match. The key actions that defined this turning point include:\n- Player A's Aromatisse used Moonblast (super effective) on Player B's Garchomp, leaving it at 21% HP.\n- Player A's Starmie used Psychic (super effective) on Player B's Staraptor, leaving it at 27% HP.\n- In retaliation, Player B's Staraptor used Close Combat on Player A's Aromatisse, causing it to faint. \n- Subsequently, Player B's Garchomp used Earthquake, which fainted Player A's Starmie. \n\n### Decisions\n**Player A**\n- **Good Reads:** Player A's use of Will-O-Wisp on Player B's Corviknight (Turn 1) was crucial, as inflicting burn mitigated Corviknight's physical threat.\n- **Misplays:** Player A's Meowscarada missed its attack (Triple Axel) against Player B's Typhlosion-Hisui in turn 1, missing a guaranteed 3HKO.\n\n**Player B**\n- **Good Reads:** Player B correctly used Bulk Up with Corviknight to boost its attack and defense (Turn 1).\n- **Misplays:** Player B could have aimed to switch Meowscarada out to Starmie in Turn 1 to avoid a potential OHKO from Typhlosion-Hisui’s Eruption, rather than risking its life unnecessarily and allowing Sableye to suffer from a missed attack from Meowscarada.\n\n### What to Change\nTo improve, **Player B** should consider the following adjustments:\n1. **Switching Options**: After Meowscarada's missed attack in Turn 1, Player B should have switched it out to Starmie, which would have only taken a maximum of 48.9% from Typhlosion-Hisui’s Eruption, keeping Meowscarada for later where it could effectively deal damage.\n2. **Attack Choices**: In future similar situations, focus on consistently targeting threats instead of boosting unnecessary defenses when there are more pressing offensive actions available. For example, Player B’s Staraptor could have used Brave Bird targeting Starmie instead of using Close Combat against Sableye (Turn 7), which had immunity.\n3. **Targeting Setup**: Prioritize use of Eruption against weakened targets when the opportunity arises, ensuring maximum damage output.\n\nBy implementing these strategies, Player B could enhance its offensive presence while managing threats more effectively in future matches.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 5,
+   "presents_turning_point": true,
+   "advice_sentences": 5,
+   "contradictions": [
+    "\"Starmie\" (turn 7): it was not on the field on turn 7, so advice for that turn cannot involve it."
+   ],
+   "damage_claims": [],
+   "warnings": [
+    "The answer may contradict the log: \"Starmie\" (turn 7): it was not on the field on turn 7, so advice for that turn cannot involve it."
+   ],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 2,
+    "issues": [
+     "incorrect_switch_suggestion",
+     "misinterpretation_of_turn_1",
+     "inaccurate_targeting_advice"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 5,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 5 Player A led 2 Pokemon to 2 (200% against 48% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 200.0,
+      "loser_hp": 48.0,
+      "lead": 1.52,
+      "swing": 1.33,
+      "faints": [
+       "p1 Aromatisse fainted",
+       "p1 Starmie fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 4,
+      "loser_alive": 2,
+      "winner_hp": 219.0,
+      "loser_hp": 200.0,
+      "lead": 0.19,
+      "swing": 1.29,
+      "faints": [
+       "p2 Corviknight fainted",
+       "p2 Typhlosion-Hisui fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 1,
+      "loser_alive": 2,
+      "winner_hp": 66.0,
+      "loser_hp": 38.0,
+      "lead": 0.28,
+      "swing": -1.24,
+      "faints": [
+       "p1 Meowscarada fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691738874-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691738874",
+   "seconds": 27.1,
+   "chars": 2903,
+   "answer": "**Result:** Player A won the battle with a score of 3 to 4.\n\n**Turning Point:** The turning point of the match occurred on turn 4, where Player A led with 4 Pokémon remaining compared to Player B's 3. This shift in numbers provided Player A with a significant advantage, leading to a notable victory. Player B's Meowstic fainted during this turn, which contributed heavily to the disadvantage.\n\n**Decisions:** \n1. **Misplays from Player B:**\n   - On turn 1, Player B's Meowstic used *Fake Tears*, which effectively only boosted the speed of *Staraptor* but didn't apply enough immediate pressure, allowing Player A's *Starmie* to retaliate effectively with *Psychic*, bringing *Staraptor* to 64% HP instead of securing a more offensive move. A *Liquidation* from *Araquanid* or a damaging move on *Starmie* could have been better choices.\n   - At the start of turn 4, Player B went for another *Charm* with Meowstic instead of switching out to a healthier Pokémon, risking its longevity for limited short-term gains. A switch to *Corviknight* or *Farigiraf* could have allowed Player B to maintain pressure while avoiding unnecessary damage.\n   - The use of *Protect* on turn 6 with *Araquanid* prevented some damage from *Farigiraf*'s *Psychic*, but this was after the critical loss of *Sableye* had already occurred. A correct read on the potential threat could have saved *Sableye*.\n\n2. **Reads from Player A:**\n   - Player A's move to *Will-O-Wisp* on Player B's *Staraptor* to inflict a burn was a significant strategic decision that diminished the power of Player B's offensive threats. This allowed Player A to keep up pressure throughout the match.\n   - Player A’s choice to prioritize hitting threatening Pokémon (like significantly damaging Meowstic and later *Staraptor*) helped maintain the advantage, especially when *Starmie* and *Aromatisse* were able to contribute with strong super effective moves.\n\n**What to Change:** \n- **Leads:** Player B should consider leading with *Farigiraf* or another Pokémon that can set up or apply early damage to deter Player A's *Araquanid*. Starting with *Meowstic* might not be effective as it focuses more on support.\n- **Moves:** Reassess the moveset of the Pokémon. For *Staraptor*, ensure that powerful moves like *Brave Bird* are utilized more effectively; it could have fainted *Starmie* on turn 1 instead of using *Close Combat*, which also risks giving *Araquanid* valuable turns. \n\n- **Use of Protect:** Ensure to evaluate when to use *Protect* for both survivability and tactical advantages, especially when more threatening attacks are incoming. Utilizing *Protect* effectively could allow more room for counter plays such as switching to another Pokémon to absorb damage. \n\nBy adjusting leads, ensuring stronger offensive moves, and making better use of Protect and switches, Player B can reposition themselves favorably in future matchups.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 4,
+   "presents_turning_point": true,
+   "advice_sentences": 7,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 3,
+    "honest": 4,
+    "issues": [
+     "Incorrect analysis of turn 1 actions",
+     "Misinterpretation of Protect usage",
+     "Inconsistent with engine turning point"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 4,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 4 Player A led 4 Pokemon to 3 (345% against 300% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 4,
+      "winner_alive": 4,
+      "loser_alive": 3,
+      "winner_hp": 345.0,
+      "loser_hp": 300.0,
+      "lead": 0.45,
+      "swing": 0.41,
+      "faints": [
+       "p2 Meowstic fainted"
+      ]
+     },
+     {
+      "turn": 9,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 77.0,
+      "loser_hp": 101.0,
+      "lead": -0.24,
+      "swing": -0.61,
+      "faints": [
+       "p1 Aromatisse fainted"
+      ]
+     },
+     {
+      "turn": 5,
+      "winner_alive": 4,
+      "loser_alive": 3,
+      "winner_hp": 288.0,
+      "loser_hp": 293.0,
+      "lead": -0.05,
+      "swing": -0.5,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691741315-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691741315",
+   "seconds": 12.5,
+   "chars": 2445,
+   "answer": "### Result\nPlayer A won the match with a final score of 3-4 against Player B.\n\n### Decisions\n\n#### Player A (Winner)\n1. **Best Decision - Turn 6: Protect with Clawitzer**  \n   Clawitzer used Protect to block Raichu's Zap Cannon, which had a guaranteed OHKO chance against it (projected damage: 128.8-152.5% HP). This decision preserved Clawitzer and maintained offensive pressure on Player B's team, allowing Player A to counteract Raichu effectively. This was a critical moment, as Raichu remained a significant threat.\n\n2. **Best Decision - Turn 4: Rock Slide with Garchomp**  \n   Garchomp used Rock Slide, which not only dealt significant damage (ended Talonflame at 51% HP) but also knocked out Talonflame on the next turn. This allowed Player A to shift momentum and secure a more favorable position.\n\n3. **Worst Decision - Turn 3: Protect with Sneasler**  \n   Although Protect allowed Sneasler to survive one more turn, it missed an opportunity to target Raichu with Rock Tomb while it was weakened. A switch to Garchomp to absorb potential attacks would have kept Sneasler safe for later turns. \n\n#### Player B (Loser)\n1. **Best Decision - Turn 2: Knock Off with Scrafty**  \n   Using Knock Off on Slowking resulted in a significant reduction of Slowking's health (ended at 25% HP), and effectively utilized its Life Orb. This set up a favorable exchange as Player A's Slowking was limited moving forward.\n\n2. **Worst Decision - Turn 6: Zap Cannon with Raichu**  \n   When Player B's Raichu used Zap Cannon, it was blocked by Clawitzer's Protect. Given that Zap Cannon could have knocked out Clawitzer and was a guaranteed OHKO, this choice wasted a powerful move that could have turned the tide and instead left Raichu vulnerable for the subsequent turn.\n\n3. **Worst Decision - Turn 3: Fake Out on Slowking**  \n   Player B could have opted to use Zap Cannon against Slowking instead of committing to Fake Out. This could have secured a KO on Slowking, leveraging its damage output more effectively when it was already in a weakened state.\n\n### Conclusion\nEffective use of Protect and timely offensive decisions significantly influenced the outcome in favor of Player A. Meanwhile, Player B's miscalculations surrounding priority moves and failing to capitalize on guaranteed KOs hindered their overall strategy. Each player's choices in targeting and Protect moves were critical in defining opportunities and pressure throughout the match.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions"
+   ],
+   "turning_point_turn": 9,
+   "presents_turning_point": null,
+   "advice_sentences": 3,
+   "contradictions": [],
+   "damage_claims": [
+    {
+     "claim": "Raichu Zap Cannon -> Clawitzer 128.8-152.5%",
+     "verdict": "not_in_log",
+     "reason": "no such hit happened in this game"
+    }
+   ],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "Inconsistent with log: Raichu didn't use Fake Out on Turn 3",
+     "Inconsistent with log: Raichu fainted on Turn 6, not vulnerable next turn",
+     "Inconsistent with log: Protect on Turn 3 was not worst decision"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 9,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 9 Player A led 1 Pokemon to 0 (65% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 9,
+      "winner_alive": 1,
+      "loser_alive": 0,
+      "winner_hp": 65.0,
+      "loser_hp": 0.0,
+      "lead": 0.65,
+      "swing": 0.35,
+      "faints": [
+       "p2 Drampa fainted"
+      ]
+     },
+     {
+      "turn": 2,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 239.0,
+      "loser_hp": 374.0,
+      "lead": -1.35,
+      "swing": -1.05,
+      "faints": []
+     },
+     {
+      "turn": 5,
+      "winner_alive": 2,
+      "loser_alive": 3,
+      "winner_hp": 200.0,
+      "loser_hp": 235.0,
+      "lead": -0.35,
+      "swing": 0.79,
+      "faints": [
+       "p2 Talonflame fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691745399-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691745399",
+   "seconds": 14.0,
+   "chars": 2698,
+   "answer": "### Result\nPlayer B won the game with a score of 4-3 against Player A.\n\n### Turning Point\nThe turning point of the game was **Turn 2**. At this moment, Player B established a significant lead after knocking out both of Player A's Sneasler and Skarmory. The timeline for this turn is as follows:\n- Player B's Raichu used **Zap Cannon** (super effective) — Player A's Skarmory fainted.\n- Player A's Sneasler used **Rock Tomb** — Player B's Raichu left at 72% HP.\n- Player B's Scrafty used **Zen Headbutt** (super effective) — Player A's Sneasler fainted.\n\nAfter this turn, Player B led with 4 Pokémon to Player A's 2, with an HP total of 372% for Player B compared to 200% for Player A. This created a strong advantage that Player B maintained throughout the game.\n\n### Decisions\nPlayer A struggled with important decision points, particularly regarding moves and switching. Here are some key moments:\n\n1. **Turn 2 - Sneasler's Attack:**\n   - Sneasler's **Rock Tomb** was not an optimal move against Raichu, which had a significant weakness to Zap Cannon. A better option would have been to aim for a direct KO with a stronger attack if available.\n\n2. **Turn 3 - Raichu's Protect:**\n   - Player B's Raichu used **Protect** to avoid damage from Garchomp's **Rock Slide**, successfully blocking a chance to damage Raichu while allowing Scrafty to remain on the field.\n\n3. **Potential Missed Switch Opportunities:**\n   - On **Turn 3**, Raichu could have switched out to Sylveon to avoid an impending KO from Garchomp's Dragon Claw (with a guaranteed KO range at 68.5% to 80.8%). Switching would have kept Raichu in play for a longer period, maintaining pressure against Player A.\n   - Throughout the game, several opportunities arose where switching to Sylveon or using Protect could have minimized damage taken on crucial turns.\n\n### What to Change\nPlayer A should consider the following adjustments based on the performance during this match:\n\n- **More Aggressive Moves**: Sneasler needs a more aggressive set to capitalize on its speed and power. Opting for stronger moves against key targets like Raichu might have changed the course of key early turns.\n- **Better Use of Protect and Switch**: Recognizing when to use Protect or switch to avoid critical hits is essential. Especially when facing powerful moves from opponents, using Protect with weaker Pokémon could save them for later turns.\n- **Adjust Team Composition**: Exploring teammates that could weather threats from Raichu and Scrafty, such as adding Pokémon that counter Electric and Fighting types directly.\n\nBy implementing these changes, Player A could create opportunities to swing the momentum back in their favor in future matches.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 2,
+   "presents_turning_point": true,
+   "advice_sentences": 5,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Invented switch opportunity for Raichu",
+     "Misleading about Sneasler's move options",
+     "Protect advice not grounded in evidence"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 2,
+    "winner_player": "p2",
+    "winner_name": "Player B",
+    "summary": "After turn 2 Player B led 4 Pokemon to 2 (372% against 200% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 2,
+      "winner_alive": 4,
+      "loser_alive": 2,
+      "winner_hp": 372.0,
+      "loser_hp": 200.0,
+      "lead": 1.72,
+      "swing": 1.54,
+      "faints": [
+       "p1 Skarmory fainted",
+       "p1 Sneasler fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 272.0,
+      "loser_hp": 172.0,
+      "lead": 1.0,
+      "swing": -0.63,
+      "faints": [
+       "p2 Scrafty fainted"
+      ]
+     },
+     {
+      "turn": 6,
+      "winner_alive": 1,
+      "loser_alive": 1,
+      "winner_hp": 100.0,
+      "loser_hp": 19.0,
+      "lead": 0.81,
+      "swing": -0.35,
+      "faints": [
+       "p2 Raichu fainted",
+       "p2 Talonflame fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691810081-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691810081",
+   "seconds": 25.5,
+   "chars": 2982,
+   "answer": "**Result:** Player A won the game with a score of 3 to 4.\n\n**Recommendations for Player B:**\n\n1. **Leads:**\n   - **Sneasler and Glalie** were a reasonable lead choice to pressure Player A early on since both have fast attacking capabilities. However, you might consider leading with **Sneasler** in combination with **Eelektross** instead of Glalie to provide a more versatile attacking front. Eelektross has coverage and bulk, which can help absorb damage that Sneasler might struggle against, particularly from moves like Drain Punch and Hydro Pump from Kangaskhan and Rotom-Wash, respectively.\n\n2. **Moves:**\n   - On **Turn 1**, Sneasler used **Fake Out**, which effectively disrupted Kangaskhan's turn but allowed Staraptor to set Tailwind. In hindsight, targeting **Staraptor** with **Dire Claw** may have been more effective since it had a high chance to 3HKO (94.9% chance). Targeting Staraptor could have prevented it from establishing its speed advantage for the rest of the game.\n   - Consider using **Protect** for Sneasler in situations where you anticipate a strong counter attack. For example, you could have used Protect to avoid damage from Rotom-Wash on Turn 6 rather than committing to Dire Claw. This would have enabled more longevity for Sneasler.\n   - Make sure to capitalize on strong attack turns; for instance, instead of **using Fake Out** on Turn 5 on Rotom-Wash, consider using **Dire Claw** or **Close Combat** to pressure Kangaskhan instead.\n\n3. **Use of Protect and Speed Control:**\n   - Protect is a crucial move, especially given that you were up against opponents using setup moves like Tailwind. You successfully used Protect on several turns; however, it would have been better to use Protect on **Krookodile** when facing Hydro Pump, especially given that Rotom-Wash had a guaranteed OHKO against it (350%-412.8% damage) as seen on Turn 7.\n   - Speed control is important in a doubles format, especially against threats. **Eelektross** can set up with **Coil** to boost its attack and defense simultaneously, but if you feel like you’re losing speed, prioritize moves and actions to retain momentum, especially by preparing for Tailwind weaknesses.\n\n4. **General Strategy Adjustments:**\n   - **Team Synergy:** Explore better synergy among your Pokémon. Consider how each can protect or enhance others, especially when facing threats from Player A. Pairing Sneasler's hard-hitting attacks with Eelektross could have opened up more offensive threats.\n   - **Loss Mitigation:** Reflect on the situations where you effectively traded Pokémon; using moves like Fakes Out or Protect strategically could prolong the life of your key pieces, such as Krookodile, allowing it to play its role longer and potentially change the game’s outcome.\n\nBy adjusting your leads, optimizing move choices, and refining your use of Protect and speed control, you can enhance your effectiveness in similar matchups and improve your chances for victory in future battles.",
+   "game_answers": [],
+   "sections": [
+    "result"
+   ],
+   "turning_point_turn": 2,
+   "presents_turning_point": null,
+   "advice_sentences": 7,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 3,
+    "specific": 4,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "Protect suggestion inconsistent with log",
+     "Misinterpretation of Dire Claw effectiveness",
+     "Inaccurate lead change suggestion"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 2,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 2 Player A led 4 Pokemon to 4 (277% against 268% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 2,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 277.0,
+      "loser_hp": 268.0,
+      "lead": 0.09,
+      "swing": 1.13,
+      "faints": []
+     },
+     {
+      "turn": 1,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 296.0,
+      "loser_hp": 400.0,
+      "lead": -1.04,
+      "swing": -1.04,
+      "faints": []
+     },
+     {
+      "turn": 7,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 112.0,
+      "loser_hp": 100.0,
+      "lead": 0.12,
+      "swing": 0.93,
+      "faints": [
+       "p2 Krookodile fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691813433-decisions",
+   "mode": "bo1",
+   "question_key": "decisions",
+   "question": "Which decisions by each player were the best and the worst, and why? Include targeting and Protect choices.",
+   "source": "public replay gen9championsvgc2026regmb-2691813433",
+   "seconds": 22.7,
+   "chars": 2631,
+   "answer": "1. **Result**: Winner: Player A. Score — Player A lost 3; Player B lost 4.\n\n2. **Turning point**: The turning point occurred on **turn 10** when Player A led with **Floette-Eternal** (53% HP) against Player B's **Glalie** (0% HP). Player A's Floette-Eternal used **Light of Ruin**, which fainted Glalie, solidifying their lead to 1 Pokemon remaining for Player A and 0 for Player B, while keeping at least half a Pokémon's worth of HP ahead until the end of the game.\n\n3. **Decisions**:\n   - **Player A's Best Decisions**:\n     - On **turn 1**, Player A's choice to use **Tailwind** with **Staraptor** was effective in boosting their speed for the remainder of the match, allowing a faster response to threats.\n     - On **turn 4**, using **Light of Ruin** with Floette-Eternal to knock out **Lycanroc-Dusk** was a strong move, ensuring Player A maintained momentum.\n\n   - **Player A's Worst Decisions**:\n     - On **turn 2**, Player A's **Kangaskhan** used **Drain Punch** on **Sneasler** instead of **Sucker Punch** or targeting **Lycanroc-Dusk** with **Drain Punch**, where it would have secured a guaranteed OHKO.\n\n   - **Player B's Best Decisions**:\n     - On **turn 2**, Player B successfully targeted **Staraptor** with **Accelerock**, resulting in a faint. This was an excellent choice that capitalized on Player A's already low HP and secured an early advantage.\n\n   - **Player B's Worst Decisions**:\n     - On **turn 3**, Player B had the option to use **Close Combat** against **Kangaskhan** but instead opted for **Close Combat** against **Rotom-Wash**. This could have resulted in a guaranteed knockout if aimed at Kangaskhan.\n     - On **turn 6**, while Player B did follow through by targeting Floette-Eternal with both **Eelektross** and **Glalie**, they failed to adjust to protect from the upcoming **Light of Ruin** from Floette-Eternal or make a better predictive switch.\n\n4. **What to change**: \n   - For **Player B**, it is essential to focus on accurately identifying threats and effectively utilizing their Pokémon's moves. Specifically:\n     - On **turn 2**, Player B should focus on maximizing damage by targeting **Kangaskhan** when it's in the best position rather than selecting alternative targets which may yield less immediate benefit.\n     - Adjusting future targeting patterns and anticipating moves will further enhance their potential to secure key KOs and maintain momentum throughout the battle.\n\nOverall, both players displayed strategic elements at various points, but capitalizing on openings and switching safely were crucial areas for improvement, especially for Player B in this context.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 10,
+   "presents_turning_point": true,
+   "advice_sentences": 4,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 4,
+    "actionable": 4,
+    "specific": 5,
+    "consistent": 5,
+    "honest": 4,
+    "issues": [
+     "Invented OHKO on turn 2",
+     "Missed Player B's Protect on turn 6",
+     "Assumed Player B could predict Light of Ruin"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 10,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 10 Player A led 1 Pokemon to 0 (53% against 0% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 10,
+      "winner_alive": 1,
+      "loser_alive": 0,
+      "winner_hp": 53.0,
+      "loser_hp": 0.0,
+      "lead": 0.53,
+      "swing": 0.31,
+      "faints": [
+       "p2 Glalie fainted"
+      ]
+     },
+     {
+      "turn": 3,
+      "winner_alive": 2,
+      "loser_alive": 4,
+      "winner_hp": 151.0,
+      "loser_hp": 296.0,
+      "lead": -1.45,
+      "swing": -0.96,
+      "faints": [
+       "p1 Kangaskhan fainted"
+      ]
+     },
+     {
+      "turn": 9,
+      "winner_alive": 1,
+      "loser_alive": 1,
+      "winner_hp": 74.0,
+      "loser_hp": 52.0,
+      "lead": 0.22,
+      "swing": 0.81,
+      "faints": []
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691852455-turning",
+   "mode": "bo1",
+   "question_key": "turning",
+   "question": "What was the turning point of this game and what should the loser have done differently?",
+   "source": "public replay gen9championsvgc2026regmb-2691852455",
+   "seconds": 22.3,
+   "chars": 2251,
+   "answer": "**Result:** Player A won the game by a score of 3-4.\n\n**Turning point:** The turning point occurred on **turn 3**, where Player A moved ahead significantly. After turn 3, Player A had 2 Pokémon remaining against Player B's 4 Pokémon, leading in HP with 200% vs. 269% total HP. This was the largest swing of the game, indicating a decisive shift in the balance of power.\n\n**Decisions:**\n1. **Player B Decisions:**\n   - On **turn 1**, Player B's Liepard was targeted by Heliolisk's **Hyper Voice**, dealing significant damage and leaving it with only 10% HP. A better choice for Liepard would have been to use **Fake Out** against Heliolisk instead, as this would have guaranteed a ***3HKO*** afterward.\n   - On **turn 3**, Charizard used **Protect** instead of attacking, missing an opportunity to apply damage while Drampa and Garchomp were both threatening. An attack with **Heat Wave** could have hit both opponents and applied useful pressure.\n   \n2. **Player A Decisions:**\n   - On **turn 3**, Player A's Garchomp could have targeted Venusaur instead of Charizard, which would have been a better allocation of damage as Venusaur had lost 53% HP by that time, making it an easier target to knock out.\n   - On **turn 5**, Drampa and Garchomp both attempted to use **Hyper Voice** and **Rock Slide** against the protected opponents, resulting in wasted attacks. Instead, investing in alternative moves or filling the decision to attack a different target could have been more effective.\n\n**What to change for Player B:** \n- On **turn 3**, Player B should have opted not to use **Protect** with Charizard. Instead, attacking with **Heat Wave** may have pressured Player A more effectively. \n- On **turn 6**, both Sharpedo and Heliolisk should have considered applying offensive pressure rather than using **Protect**, as Player A's Drampa could potentially have been knocked out. Instead, using either Heliolisk's **Dragon Pulse** targeting Garchomp or Sharpedo’s **Close Combat** against Drampa while not knowing the outcome of using **Protect** isn't a good investment in decision-making.\n\nOverall, while Player B had some opportunities to pressure Player A further, a cumulative lack of offensive moves early in the match contributed to their loss.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "turning point",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 3,
+   "presents_turning_point": true,
+   "advice_sentences": 9,
+   "contradictions": [
+    "\"Player B's Liepard\": Liepard belongs to Player A (p1), not Player B."
+   ],
+   "damage_claims": [],
+   "warnings": [
+    "The answer may contradict the log: \"Player B's Liepard\": Liepard belongs to Player A (p1), not Player B."
+   ],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 2,
+    "actionable": 3,
+    "specific": 3,
+    "consistent": 2,
+    "honest": 3,
+    "issues": [
+     "Incorrect Pokemon actions",
+     "Misinterpretation of Liepard's role",
+     "Inaccurate turning point analysis"
+    ]
+   },
+   "turning_point": {
+    "rule": "largest_swing",
+    "turn": 3,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 3 Player A led 2 Pokemon to 4 (200% against 269% total HP); no earlier turn held a clear lead, so this moved it the most.",
+    "candidates": [
+     {
+      "turn": 3,
+      "winner_alive": 2,
+      "loser_alive": 4,
+      "winner_hp": 200.0,
+      "loser_hp": 269.0,
+      "lead": -0.69,
+      "swing": 0.72,
+      "faints": []
+     },
+     {
+      "turn": 1,
+      "winner_alive": 4,
+      "loser_alive": 4,
+      "winner_hp": 257.0,
+      "loser_hp": 381.0,
+      "lead": -1.24,
+      "swing": -1.24,
+      "faints": []
+     },
+     {
+      "turn": 4,
+      "winner_alive": 2,
+      "loser_alive": 2,
+      "winner_hp": 143.0,
+      "loser_hp": 169.0,
+      "lead": -0.26,
+      "swing": 0.43,
+      "faints": [
+       "p2 Venusaur fainted",
+       "p2 Charizard fainted"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "id": "bo1-fresh-2691853937-coach_loser",
+   "mode": "bo1",
+   "question_key": "coach_loser",
+   "question": "Coach the losing player: what should they change in their leads, their moves and their use of Protect and speed control to win this matchup next time? Ground every recommendation in this game.",
+   "source": "public replay gen9championsvgc2026regmb-2691853937",
+   "seconds": 36.7,
+   "chars": 3424,
+   "answer": "### Result\nWinner: Player A. Score — Player A lost 1; Player B lost 4.\n\n### Decisions\n1. **Leads**:\n   - Player B led with Charizard and Heliolisk against Player A's Houndoom and Liepard. While the choice of Charizard is solid due to its ability to set up Sun, the pair could be strengthened. Heliolisk's Protect on turn 1 wasted a turn, while Charizard could have used an offensive move, such as Hyper Voice, that would have pressured Player A. Instead, Heliolisk could have targeted either Liepard or Houndoom, securing a guaranteed 2HKO on either target with Hyper Voice, especially since it was boosted by Helping Hand on turn 2.\n\n2. **Use of Protect**:\n   - Player B used Protect on both Charizard and Heliolisk on the first turn. This was a misallocation, as Charizard or Heliolisk could have attacked instead. By sacrificing the first turn to protect both Pokémon, Player B did not capitalize on potential damage or disrupt Player A's strategy effectively. Instead, Player B could have positioned Liepard better with Fake Out to potentially stop a threat like Houndoom from setting up its Nasty Plot.\n\n3. **Speed Control**:\n   - Speed control could have been more effectively utilized. While Sharpedo gained a Speed Boost, it was introduced later in the battle, limiting its early game potential. The use of Heliolisk's movements after a Protect use could have been altered to prioritize a spread move or a single-target that pressures Houndoom and Liepard instead.\n\n4. **Move Choices**:\n   - On turn 2, instead of using Helping Hand with Charizard, an offensive move would have been more effective. Helping Hand did not help Charizard establish a solid advantage since Player B's Heliolisk followed up with another Protect. A direct attack, especially targeting Houndoom, would have applied more immediate pressure, likely yielding a better outcome.\n\n5. **Turn 4 Protects**:\n   - On turn 4, while Player B’s Sharpedo used Protect, this protected against a potential Dark Pulse, but resulted in blocking a Knock Off that would have applied continuous pressure on Player A’s side. Furthermore, should a Protect be utilized, it should have been paired strategically to protect a Pokémon that was more in danger of being directly targeted next turn, while allowing others to take offensive actions.\n\n### What to Change\nTo improve their performance in future matches, Player B could focus on the following strategies:\n- **Optimize Leads**: Consider leading Pokémon that can apply immediate pressure instead of solely focusing on setting up. While Charizard is a strong choice, pairing it with a Pokémon that can help control the field even better than Heliolisk would be beneficial.\n- **Focus on Offensive Plays**: Prioritize attacking moves over Protect unless necessary to prevent a KO. This would maximize damage output while building pressure.\n- **Effective Use of Speed Control**: Make sure to actively manage the positioning and speed of the team to avoid falling behind in future turns. Implement moves that would control speed better, like Electroweb or moves that can alter the scenery.\n- **Adjust Protect Usage**: Use Protect more strategically and only on Pokémon that are at risk of being knocked out while ensuring that teammates can still attack. \n\nBy focusing on these tactical adjustments, Player B can create stronger leads and more effective plays that could shift the momentum in their favor next time.",
+   "game_answers": [],
+   "sections": [
+    "result",
+    "decisions",
+    "what to change"
+   ],
+   "turning_point_turn": 7,
+   "presents_turning_point": null,
+   "advice_sentences": 10,
+   "contradictions": [],
+   "damage_claims": [],
+   "warnings": [],
+   "figures_outside_evidence": [],
+   "validation_rejections": [],
+   "fallback_notice": false,
+   "judge": {
+    "grounded": 3,
+    "actionable": 4,
+    "specific": 4,
+    "consistent": 3,
+    "honest": 3,
+    "issues": [
+     "incorrect Protect analysis",
+     "misinterpretation of Helping Hand",
+     "incomplete speed control advice"
+    ]
+   },
+   "turning_point": {
+    "rule": "lead_held_to_the_end",
+    "turn": 7,
+    "winner_player": "p1",
+    "winner_name": "Player A",
+    "summary": "After turn 7 Player A led 2 Pokemon to 1 (90% against 15% total HP) and kept at least half a Pokemon's worth of HP ahead until the end of the game.",
+    "candidates": [
+     {
+      "turn": 7,
+      "winner_alive": 2,
+      "loser_alive": 1,
+      "winner_hp": 90.0,
+      "loser_hp": 15.0,
+      "lead": 0.75,
+      "swing": 0.71,
+      "faints": [
+       "p2 Sharpedo fainted"
+      ]
+     },
+     {
+      "turn": 4,
+      "winner_alive": 3,
+      "loser_alive": 2,
+      "winner_hp": 109.0,
+      "loser_hp": 158.0,
+      "lead": -0.49,
+      "swing": -1.04,
+      "faints": [
+       "p2 Heliolisk fainted"
+      ]
+     },
+     {
+      "turn": 1,
+      "winner_alive": 3,
+      "loser_alive": 4,
+      "winner_hp": 300.0,
+      "loser_hp": 400.0,
+      "lead": -1.0,
+      "swing": -1.0,
+      "faints": []
+     }
+    ]
+   }
+  }
+ ]
+}

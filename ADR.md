@@ -6223,3 +6223,47 @@ On the 50 public Reg M-B replays with the real calculator: switch options 347 to
 (maximum taken 97.2% to 49.5%); 46 more were removed because the other opponent hit the switch-in harder; no option was added.
 gpt-4o-mini, two reviewed games x three answers, old and new code: the Venusaur switch advice appeared 6 times in the old answers
 and 0 in the new. The model can still advise a switch that is not listed (seen once); a check for that belongs to the validators.
+
+
+## ADR-086 - Check BO1 advice against the engine: KO claims, switches, presence, Protect targets and the loser
+
+Status: accepted. The user asked to apply their manual review (8 answers) to games they did not review and fix the causes in bulk.
+Their findings became checkable error classes; each was confirmed on 38 unreviewed public replays (one question each) before it
+was fixed, and every validator flag on those answers was read against the log.
+
+Evidence fixes:
+- A Pokemon behind its own Protect that turn is never a `best_alternatives` target and never an `incoming_threats` attacker (it
+  could not be hit and did not attack); `_protected_by_turn` reads the log (Wide Guard and the like are excluded).
+- The named BO1 timeline states the loser ("Loser: <name>. Coaching 'the losing player' means coaching <name>.") and the answer
+  structure keeps loser coaching on that player's own choices.
+- The shared prompt no longer calls projected damage "damage dealt" (it contradicted the BO1 rule to quote actual_damage_percent).
+
+New checks (`services/advice_claims.py`, joined to the BO1 correction retry, and to the testbench contradictions):
+- `ko_claim_issues`: a categorical KO claim ("guaranteed OHKO", "2HKO") about the move named last before it and the Pokemon named
+  closest before it must match a KO text the engine computed for that pair ON THAT TURN (the same move is a 2HKO into a full-HP
+  target and an OHKO later), or a one-hit KO the log shows. Hedged wording ("potential", "risk") and probabilities are not judged.
+- `switch_advice_issues`: an advised switch must be one of the engine's `decision_options` (ADR-085), on the named turn if any;
+  narrated switches are skipped. The model still advised unlisted switches after ADR-085 (2 of 4 answers on one game).
+- `presence_issues`: advice about turn N must not name a Pokemon that was not on the field that turn, tell a Pokemon to Protect when
+  it did, or suggest attacking a target that was behind Protect. Switch-ins, suggested leads and attackers ("from X", "X's move")
+  are not subjects; only a sentence naming its own turn is read.
+- `action_claim_issues` checks both Pokemon of "X and Y used M".
+
+Precision, read by hand: on the 38 baseline answers the checks flag 10 sentences, all real errors (wrong side, wrong turn, move not
+used, a Pokemon not on the field, Protect already used, two unlisted switches, an invented guaranteed OHKO). Earlier drafts flagged
+switch-ins, narration and a Pokemon's own Protect; those rules were tightened and pinned by tests. An LLM auditor (gpt-4o, the
+user's categories, the engine evidence) was used only to find candidate classes: on the user's three reviewed answers it found the
+main errors but also flagged sentences the user accepted, so its counts are not reported as error rates.
+
+The testbench now replaces player names in the replay before analysis, so the model never sees them; the two names that leaked in
+the 2026-11-26 report files (written by the model in other spellings) were removed.
+
+Result on the same 38 replays, rerun with these changes (gpt-4o-mini, one answer each): errors the checks can see that remain in the
+final answers fell from 10 to 5 (each remaining one is now shown to the user as a warning after the one correction retry). Judge
+means (gpt-4o) did not move beyond noise (grounded 3.34 to 3.16, consistent 3.16 to 3.37, honest 3.39 to 3.18), and the auditor's
+broad counts stayed flat (114 to 112 flags): most of what it flags are strategic judgments these checks do not reach. The run is
+stored as `docs/validation/coaching/2026-11-27-*-fresh38.*` for human validation.
+
+Addendum (names): the first version of the testbench anonymizer ran on JSON text, where a name after a line break follows the "n"
+of "\n" and was skipped; it now rewrites decoded strings. Every stored coaching report was re-checked against the players of its
+cases; remaining real names (in spellings the model changed, including in the 2026-11-24 reports) were replaced.

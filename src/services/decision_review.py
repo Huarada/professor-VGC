@@ -9,6 +9,8 @@ Pokemon still able to come in. Options appear only when a KO was possible.
 
 from __future__ import annotations
 
+from collections.abc import Collection
+
 from src.domain.exceptions import CalcEngineError
 from src.domain.interfaces import CalcEngineAdapter
 from src.domain.models import (
@@ -101,12 +103,15 @@ class DecisionReviewer:
 
     # -- public API ---------------------------------------------------------- #
 
-    def threats(self, moment: MoveMoment) -> list[ThreatCheck]:
-        """The strongest confirmed attack each opposing active had into the actor."""
+    def threats(self, moment: MoveMoment, exclude: Collection[Combatant] = ()) -> list[ThreatCheck]:
+        """The strongest confirmed attack each opposing active had into the actor; an opponent behind its own Protect
+        that turn (``exclude``) attacked no one."""
         actor = moment.actor
         actor_hp = moment.hp(actor)
         found: list[ThreatCheck] = []
         for opponent in moment.opponents():
+            if opponent in exclude:
+                continue
             best = self._best_hit(moment, opponent, actor)
             if best is None:
                 continue

@@ -30,6 +30,7 @@ grounded for it or when the question does not ask about it.
    turn, the owner, the move and the target), protect_reads, best_alternatives and decision_options, crediting
    each action to the side that made it. Never swap a side's best and worst decision, and only advise a switch or
    a move that was still possible at that moment: an action that already happened that turn cannot be undone.
-4. What to change: concrete adjustments for the loser (or for the user's own side), grounded in the same entries;
+4. What to change: concrete adjustments for the loser named in the "Loser:" line (or for the user's own side), about
+   that player's own Pokemon and choices, never the winner's; grounded in the same entries;
    improvement_suggestions only when the user asked for team changes.
 Keep it to roughly 350 words unless the user asks for depth, and cite the figures you use.

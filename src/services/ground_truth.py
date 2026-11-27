@@ -71,6 +71,7 @@ from src.services.concept_tracking import recurring_concepts
 from src.services.evidence_prefetch import PrefetchedReviewContext
 from src.services.matchup_evaluator import MatchupEvaluator, collect_strategies
 from src.services.regulation_guard import RegulationGuard
+from src.services.advice_claims import advice_issues
 from src.services.side_attribution import correction_note, narration_issues
 from src.services.side_labels import label_sides, side_names
 from src.services.turning_point import find_turning_point
@@ -244,12 +245,12 @@ class GroundTruthAssembler:
         answer, warnings = self._regulation_pass(checked_explain, checked_explain(""), evidence, game_state)
         if evidence.series_context is not None:
             return answer, warnings
-        issues = narration_issues(answer, game_state)
+        issues = narration_issues(answer, game_state) + advice_issues(answer, game_state, evidence.turn_checks)
         if not issues:
             return answer, warnings
         answer, warnings = self._regulation_pass(
             checked_explain, checked_explain(correction_note(issues)), evidence, game_state)
-        remaining = narration_issues(answer, game_state)
+        remaining = narration_issues(answer, game_state) + advice_issues(answer, game_state, evidence.turn_checks)
         return answer, warnings + [f"The answer may contradict the log: {issue}" for issue in remaining]
 
     def _regulation_pass(

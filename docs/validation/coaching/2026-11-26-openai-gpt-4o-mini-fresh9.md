@@ -43,7 +43,7 @@ Judge: grounded 5, actionable 4, specific 5, consistent 5, honest 4. Issues: ['P
 > 2. **Turning point:** The turning point occurred on **turn 4**. At this point, Player A led with 3 Pokémon to Player B's 2 Pokémon, holding a significant HP advantage with 213% total HP against Player B's 151% total HP. Player A's Samurott-Hisui used Aqua Cutter to faint Player B's Grimmsnarl, further solidifying the lead.
 >
 > 3. **Decisions:** 
->    - **juicer006's Misplays:**
+>    - **Player B's Misplays:**
 >      - On **turn 3**, Player B's Grimmsnarl used Parting Shot to lower Pelipper's Attack and Special Attack. However, given that Pelipper's Hurricane was a threat to both Charizard and Swampert, switching to Venusaur would have been a better play, taking at most 91.7% from Pelipper's Hurricane, while maintaining Grimmsnarl's presence for future turns.
 >      - On **turn 5**, both Player B's Venusaur and Swampert used Protect, blocking Hurricane and Earthquake. This prevented any return damage while allowing Samurott-Hisui to faint Swampert with Aqua Cutter. Protect on both ends was not advantageous here as it led to the inevitable loss of Swampert.
 >
@@ -104,7 +104,7 @@ Judge: grounded 3, actionable 4, specific 4, consistent 2, honest 3. Issues: ['I
 > **Player A:**
 > - **Best Decision:** Switching in Tinkaton on Turn 3 to use Fake Out. This move pressured Garchomp, successfully preventing it from attacking and allowing Dragalge to deal damage with Sludge Wave on the following turn. However, while this was an attempts to stall for time, it was ultimately less effective because the success was limited by Garchomp’s Protect, blocking the attack.
 >   
-> - **Worst Decision:** Using Sludge Wave with Dragalge on Turn 2, targeting Tinkaton while it could have effectively targeted Samworldwide’s Manectric or Rotom-Fan. This resulted in wasted potential damage, as Tinkaton was immune to the move. The better alternative would have been targeting Manectric with Dragon Pulse, guaranteed to leave it at 1% HP and severely limiting Samworldwide's options.
+> - **Worst Decision:** Using Sludge Wave with Dragalge on Turn 2, targeting Tinkaton while it could have effectively targeted Player B’s Manectric or Rotom-Fan. This resulted in wasted potential damage, as Tinkaton was immune to the move. The better alternative would have been targeting Manectric with Dragon Pulse, guaranteed to leave it at 1% HP and severely limiting Player B's options.
 >
 > **Player B:**
 > - **Best Decision:** The decision to use Protect with Garchomp on Turn 3 was excellent. This preserved Garchomp from the potential attack while Rotom-Fan and Tinkaton both targeted Garchomp, achieving maximal safety and maintaining the offensive pressure. This action, paired with the subsequent use of Thunderbolt to weaken Player A's Wyrdeer, ensured the board was set up for future attacks.
@@ -201,12 +201,12 @@ Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ['H
 > #### Player B's Decisions:
 >
 > **Best Decision: Early Setup and Targeting**  
-> Biss2330 made a strong strategic move by using Bulk Up with Corviknight in the first turn. This not only increased its Attack and Defense but also positioned it as a significant threat later in the match. Additionally, switching in Staraptor to utilize Intimidate on turn 3 further pressured Player A's Pokemon, lowering their Attack.
+> Player B made a strong strategic move by using Bulk Up with Corviknight in the first turn. This not only increased its Attack and Defense but also positioned it as a significant threat later in the match. Additionally, switching in Staraptor to utilize Intimidate on turn 3 further pressured Player A's Pokemon, lowering their Attack.
 >
 > **Worst Decision: Attacking Aromatisse with Close Combat**  
 > On turn 4, Staraptor used Close Combat against Aromatisse, which was a resisted attack. Instead, Brave Bird would have guaranteed a more effective hit, potentially knocking Aromatisse out and removing Player A's Helping Hand support. Targeting Sableye would have also been a better option, given the threat it posed.
 >
-> In conclusion, Player A's initial setup and the momentum gained through Trick Room were significant. However, there were critical misplays in targeting. Biss2330, while starting strong, could have better optimized its attacking choices in later turns for a more decisive advantage.
+> In conclusion, Player A's initial setup and the momentum gained through Trick Room were significant. However, there were critical misplays in targeting. Player B, while starting strong, could have better optimized its attacking choices in later turns for a more decisive advantage.
 
 ### bo1-fresh-2691598129-turning
 
@@ -220,7 +220,7 @@ Judge: grounded 4, actionable 4, specific 5, consistent 5, honest 4. Issues: ['M
 >
 > **Turning point:** The decisive moment in this game occurred on **Turn 7**. At this point, Player A had just taken down Player B's Kangaskhan while also having a favorable position on the board. The relevant actions during this turn were:
 > - Player A's Delphox used **Heat Wave** (spread, super effective), causing Player B's Kangaskhan to faint.
-> - Meanwhile, Player B's Aegislash's HP was reduced to 23% after a **Mystical Fire** from Puffii_'s Sylveon, and Aegislash later retaliated with a critical **Iron Head** that knocked out Sylveon, but the overall HP count remained heavily in Player A's favor at the end of Turn 7: Player A had 178% total HP left, while Player B had only 123%.
+> - Meanwhile, Player B's Aegislash's HP was reduced to 23% after a **Mystical Fire** from Player A's Sylveon, and Aegislash later retaliated with a critical **Iron Head** that knocked out Sylveon, but the overall HP count remained heavily in Player A's favor at the end of Turn 7: Player A had 178% total HP left, while Player B had only 123%.
 >
 > After Turn 7, Player A maintained at least half a Pokémon's worth of HP advantage until the end of the game. 
 >
