@@ -6188,3 +6188,22 @@ With gpt-4o-mini, "best and worst decisions" on four real games with partner int
 read by hand: answers that called a partner synergy a mistake or confused partner with opponent fell from 8/16 to 3/16 (small
 sample, one reader). A gpt-4o checker was tried and rejected as unreliable here: it flagged correct sentences about opponents.
 Not covered: damage the partner really took stays visible and may fairly be criticised; BO3 gets no synergy list.
+
+
+## ADR-084 - Effectiveness lines belong to their target; counterfactual words are read per clause
+
+Status: accepted. After ADR-083, 3 of 16 answers still erred about partners or turns. Two causes were traced to our code:
+
+- A Showdown effectiveness line (`-immune`, `-miss`, `-resisted`, `-supereffective`) names ONE target, but the parser turned it into
+  a flag of the whole move. Garchomp's Earthquake that damaged both opponents while its Levitate partner was immune reached the
+  model as `effects: ["spread", "immune"]`, and the answer called the Earthquake wasted. A line about the user's own partner now
+  goes to `BattleEvent.partner_effects`, not `effects`; the timeline says "<partner> [its own partner] immune". Stomping Tantrum's
+  failed-move rule reads both lists, so `after_failed_move` is unchanged in all 378 stored games (49 partner flags left `effects`).
+- The faint and action checks skipped a whole sentence when any counterfactual word appeared in it. "(Turn 2): ... it fainted
+  Rotom-Fan, significantly decreasing ... offensive potential" (Rotom-Fan fainted on turn 3) was skipped for "potential". The
+  guard now reads only the clause holding the claim (`clause_around`, split at , ; : ( ) and dashes). On 68 stored BO1 answers
+  this adds exactly that one flag and removes none.
+
+With gpt-4o-mini, the same four games x four "best and worst decisions" answers, read by hand: partner mistakes 0/16 (ADR-083:
+3/16), and every answer on that game puts the Sludge Wave KO of Manectric on turn 2. Small sample, one reader. The model can still
+make other errors; the faint check now reaches more sentences, so its correction retry may run more often.

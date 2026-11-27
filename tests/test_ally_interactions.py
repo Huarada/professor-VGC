@@ -79,3 +79,25 @@ def test_healing_the_partner_is_a_synergy_even_if_it_does_nothing_to_the_opponen
     state = _game("|move|p1a: Garchomp|Life Dew|p1a: Garchomp", "|-heal|p1b: Rotom|80/100", "|-fail|p1a: Garchomp|heal")
     assert _synergies(state) == {("p1", "Life Dew", "Rotom-Wash", "was healed")}
     assert find_wasted_actions(state) == []
+
+
+def test_effectiveness_lines_about_the_partner_are_not_the_moves_effects() -> None:
+    """Earthquake into two opponents with a Levitate partner: the move was not "immune" (it was read as wasted)."""
+    state = _game("|move|p1a: Garchomp|Earthquake|p2a: Tinkaton|[spread] p1b,p2a,p2b", "|-immune|p1b: Rotom",
+                  "|-supereffective|p2a: Tinkaton", "|-damage|p2a: Tinkaton|40/100", "|-damage|p2b: Manectric|50/100")
+    move = next(e for e in state.outcome.events if e.kind == "move")
+    assert "immune" not in move.effects and move.partner_effects == ["immune"]
+    assert "super effective" in move.effects and move.after_failed_move is False
+    line = next(text for text in outcome_summary(state, named_sides=True).splitlines() if "used Earthquake" in text)
+    assert "Earthquake (spread, super effective, Ana's Rotom-Wash [its own partner] immune)" in line
+    from tests.conftest import FakeCalcEngine
+
+    checks = TurnReplaySimulator(FakeCalcEngine()).simulate(state, MetaContext())
+    assert "immune" not in next(c for c in checks if c.move == "Earthquake").effects
+
+
+def test_a_move_only_its_partner_was_immune_to_still_counts_as_failed_for_stomping_tantrum() -> None:
+    state = _game("|move|p1a: Garchomp|Earthquake|p1b: Rotom|[spread] p1b", "|-immune|p1b: Rotom",
+                  "|move|p1a: Garchomp|Stomping Tantrum|p2a: Tinkaton", "|-damage|p2a: Tinkaton|60/100")
+    tantrum = [e for e in state.outcome.events if e.kind == "move"][1]
+    assert tantrum.after_failed_move is True

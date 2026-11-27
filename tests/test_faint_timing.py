@@ -115,3 +115,14 @@ def test_recognises_the_common_ways_of_saying_a_pokemon_was_knocked_out() -> Non
                    "Kingambit took out Player A's Dragonite", "Kingambit KO'd Dragonite", "Kingambit defeated Dragonite"):
         assert faint_timing_issues(f"On turn 11, {phrase}.", state), phrase
         assert faint_timing_issues(f"On turn 12, {phrase}.", state) == [], phrase
+
+
+def test_a_counterfactual_word_in_another_clause_does_not_hide_a_wrong_faint() -> None:
+    """gpt-4o-mini: "(Turn 2): ... it fainted Rotom-Fan, significantly decreasing ... offensive potential" (it fainted on 3)."""
+    from src.services.faint_timing import clause_around
+
+    sentence = "since it fainted Rotom-Fan, significantly decreasing Player B's offensive potential"
+    start = sentence.index("fainted")
+    assert clause_around(sentence, start, start + len("fainted Rotom-Fan")) == "since it fainted Rotom-Fan"
+    other = "If it had protected, X would have fainted"
+    assert clause_around(other, other.index("X"), len(other)) == " X would have fainted"

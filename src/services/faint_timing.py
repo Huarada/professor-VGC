@@ -18,6 +18,7 @@ _VERBS = (r"(?<![A-Za-z])(?:KO(?:'d|’d|s|ing)?|knock(?:s|ed|ing)?\s+out|faint(
 # Counterfactuals ("would have KO'd", "guaranteed OHKO") describe alternatives, not what happened.
 _HYPOTHETICAL = re.compile(
     r"\b(?:would|could|might|may|should|can|if|instead|guaranteed|chance|threat|potential|possible|likely)\b", re.I)
+_CLAUSE_END = re.compile(r"[,;:()—–]|\s-\s")
 _THIS_TURN = re.compile(r"\b(?:this|that|the same)\s+(?:\w+\s+)?turn\b", re.I)
 _MASK = "․"  # one-dot leader: keeps "Mr. Rime" from being split as a sentence end
 
@@ -36,6 +37,14 @@ def _faint_turns(game_state: GameState, base: dict[tuple[str, str], str]) -> dic
     for ko in game_state.outcome.kos:
         turns.setdefault((ko.player, base.get((ko.player, ko.fainted), ko.fainted)), set()).add(ko.turn)
     return turns
+
+
+def clause_around(sentence: str, start: int, end: int) -> str:
+    """The clause holding sentence[start:end]: a counterfactual word elsewhere in the sentence ("...decreasing their
+    offensive potential") must not hide a factual claim from the checks (ADR-084)."""
+    left = max((m.end() for m in _CLAUSE_END.finditer(sentence, 0, start)), default=0)
+    right = next((m.start() for m in _CLAUSE_END.finditer(sentence, end)), len(sentence))
+    return sentence[left:right]
 
 
 def turn_groups(sentence: str) -> list[tuple[int, int, set[int]]]:
@@ -80,11 +89,13 @@ def faint_timing_issues(answer: str, game_state: GameState) -> list[str]:
         inherited = not numbers and bool(_THIS_TURN.search(sentence))
         current = previous if inherited else numbers
         previous = numbers
-        if len(current) != 1 or _HYPOTHETICAL.search(sentence):
+        if len(current) != 1:
             continue
         (turn,) = current
         for pattern in (after, before, clause):
             for match in pattern.finditer(sentence):
+                if _HYPOTHETICAL.search(clause_around(sentence, match.start(), match.end())):
+                    continue
                 mon = canonical(match.group("mon"), owners)
                 claimed = who.get((match.groupdict().get("who") or "").casefold())
                 players = [claimed] if claimed else sorted(owners.get(mon, frozenset()))
