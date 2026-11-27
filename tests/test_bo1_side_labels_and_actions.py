@@ -126,3 +126,12 @@ def test_percent_classifier_reads_remaining_hp_after_a_long_player_name() -> Non
     text = "Blizzard left Player B's Scovillain at 47% and Player B's Kingambit at 79%."
     assert classify_percent_mention(text, 47.0) == "hp_remaining"
     assert classify_percent_mention(text, 79.0) == "hp_remaining"
+
+
+def test_wrong_faint_turn_is_flagged_despite_a_counterfactual_word_later_in_the_sentence() -> None:
+    state = ShowdownReplayParser().parse(json.loads(
+        (Path(__file__).parent / "fixtures" / "replays" / "gen9championsvgc2026regmb-2691404852.json").read_text(encoding="utf-8")))
+    one, two = (side.player_name for side in state.sides)
+    wrong = (f"- **{one}'s Basculegion (Turn 2):** it used Wave Crash and fainted {two}'s Kingambit, "
+             "lowering the opponent's offensive potential.")
+    assert faint_timing_issues(wrong, state)

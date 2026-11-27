@@ -235,6 +235,8 @@ class BattleEvent(BaseModel):
     unaffected_targets: list[str] = Field(default_factory=list)
     """``player:species`` of every target the move was immune against or missed."""
     ally_effects: list[AllyEffect] = Field(default_factory=list)
+    partner_effects: list[str] = Field(default_factory=list)
+    """Effectiveness lines ("immune", "resisted", ...) that named the user's own partner; ``effects`` covers the rest."""
     damage_interleaved: bool = False
     """Healing or residual damage interleaved before the multi-hit count was published."""
     effects: list[str] = Field(default_factory=list)  # spread / super effective / ...

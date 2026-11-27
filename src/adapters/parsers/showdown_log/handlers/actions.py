@@ -17,7 +17,7 @@ def _failed(event: BattleEvent) -> bool:
     """A move that missed, was blocked or had no effect on every target (one hit
     that landed anywhere makes it a success)."""
     landed = any(hit.hp_after is not None for hit in event.hits)
-    signals = {"missed", "immune", "failed"} & set(event.effects)
+    signals = {"missed", "immune", "failed"} & (set(event.effects) | set(event.partner_effects))
     return not landed and bool(signals or any(hit.blocked_by for hit in event.hits))
 
 
@@ -30,8 +30,8 @@ class ActionHandlers(HandlerGroup):
             "-sethp": self.on_sethp,
             "-activate": self.on_activate,
             "-singleturn": self.on_singleturn,
-            "-supereffective": lambda parts: self.state.timeline.add_effect("super effective"),
-            "-resisted": lambda parts: self.state.timeline.add_effect("resisted"),
+            "-supereffective": lambda parts: self.on_target_effect("super effective", parts, 2),
+            "-resisted": lambda parts: self.on_target_effect("resisted", parts, 2),
             "-immune": lambda parts: self.on_unaffected("immune", parts, 2),
             "-crit": self.on_critical_hit,
             "-miss": lambda parts: self.on_unaffected("missed", parts, 3),
@@ -39,9 +39,20 @@ class ActionHandlers(HandlerGroup):
             "-hitcount": self.on_hitcount,
         }
 
+    def on_target_effect(self, effect: str, parts: list[str], target_index: int) -> None:
+        """An effectiveness line names one target. On the user's own partner (a spread move) it says nothing about the
+        move against the opponents, so it is kept apart from the move's effects (ADR-084)."""
+        move = self.state.timeline.current_move
+        key = self.state.roster.resolve(parts[target_index]) if len(parts) > target_index else None
+        if move is not None and key is not None and key[0] == move.actor_player and key[1] != move.actor:
+            if effect not in move.partner_effects:
+                move.partner_effects.append(effect)
+            return
+        self.state.timeline.add_effect(effect)
+
     def on_unaffected(self, effect: str, parts: list[str], target_index: int) -> None:
         """An immune or missed target: the effect, plus who it was, so a wasted move names its target."""
-        self.state.timeline.add_effect(effect)
+        self.on_target_effect(effect, parts, target_index)
         move = self.state.timeline.current_move
         key = self.state.roster.resolve(parts[target_index]) if len(parts) > target_index else None
         if move is not None and key is not None and f"{key[0]}:{key[1]}" not in move.unaffected_targets:

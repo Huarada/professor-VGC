@@ -57,10 +57,14 @@ def event_line(event: BattleEvent, names: dict[str, str]) -> str:
 
     effects = list(event.effects)
     unaffected = [entry.partition(":") for entry in event.unaffected_targets]
+    opposing = [(player, species) for player, _, species in unaffected if player != event.actor_player]
     reasons = [effect for effect in effects if effect in ("immune", "missed")]
-    if unaffected and len(reasons) == 1:
-        named = ", ".join(who(player, species) for player, _, species in unaffected)
-        effects[effects.index(reasons[0])] = f"{reasons[0]}: {named}"
+    if opposing and len(reasons) == 1:
+        effects[effects.index(reasons[0])] = f"{reasons[0]}: {', '.join(who(*target) for target in opposing)}"
+    partner = [(player, species) for player, _, species in unaffected if player == event.actor_player]
+    partner_reasons = [effect for effect in event.partner_effects if effect in ("immune", "missed")]
+    if partner and len(partner_reasons) == 1:
+        effects.append(f"{', '.join(who(*target) for target in partner)} {partner_reasons[0]}")
     line = label_text(f"{event.actor_player} {event.actor} used {event.move}", names)
     if effects:
         line += f" ({', '.join(effects)})"

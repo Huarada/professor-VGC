@@ -11,7 +11,7 @@ from __future__ import annotations
 import re
 
 from src.domain.models import BattleEvent, GameState
-from src.services.faint_timing import _forme_bases, sentences, turn_groups
+from src.services.faint_timing import _forme_bases, clause_around, sentences, turn_groups
 from src.services.side_attribution import MARK, alternation, canonical, owners_by_species
 
 _HYPOTHETICAL = re.compile(r"\b(?:would|could|might|may|should|can|if|chance|potential|possible|likely|rather)\b", re.I)
@@ -59,10 +59,12 @@ def action_claim_issues(answer: str, game_state: GameState) -> list[str]:
         current = previous if not numbers and _THIS_TURN.search(sentence) else numbers
         previous = numbers
         text = _INSTEAD.sub("", sentence)
-        if len(current) != 1 or _HYPOTHETICAL.search(text):
+        if len(current) != 1:
             continue
         (turn,) = current
         for match in claim.finditer(text):
+            if _HYPOTHETICAL.search(clause_around(text, match.start(), match.end())):
+                continue
             mon = canonical(match.group("mon"), owners)
             players = [who[match.group("who").casefold()]] if match.group("who") else sorted(owners.get(mon, frozenset()))
             move = match.group("move").casefold()
