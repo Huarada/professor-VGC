@@ -50,7 +50,7 @@ def test_label_text_and_fields_use_the_player_name() -> None:
 def test_named_timeline_has_owners_and_remaining_hp_wording(state: GameState, names: tuple[str, str]) -> None:
     text = outcome_summary(state, named_sides=True)
     one, two = names
-    assert f"{one}'s Sneasler used Fake Out (immune)" in text
+    assert f"{one}'s Sneasler used Fake Out (immune: {two}'s Froslass)" in text
     assert f"{two}'s Basculegion used Aqua Jet (resisted) — {one}'s Dragonite left at 2% HP" in text
     assert " p1 " not in text and " p2 " not in text and "->" not in text
     assert "p1 roster" in outcome_summary(state)  # the BO3 and legacy rendering is unchanged

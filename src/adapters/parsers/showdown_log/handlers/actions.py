@@ -70,6 +70,7 @@ class ActionHandlers(HandlerGroup):
         split = split_ref(parts[2])
         if split is None:
             timeline.current_move = None
+            timeline.move_open = False
             return
         player, slot, nick = split
         move = parts[3].strip()
@@ -98,6 +99,7 @@ class ActionHandlers(HandlerGroup):
             after_failed_move=previous is not None and _failed(previous),
         )
         timeline.events.append(timeline.current_move)
+        timeline.move_open = True
 
     def on_damage(self, parts: list[str]) -> None:
         if len(parts) <= 3:

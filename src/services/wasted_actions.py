@@ -1,53 +1,73 @@
-"""Moves that did nothing, read from the log: an immune target, a failed move, a miss, a Protect that absorbed it.
+"""What each move achieved, read from the log: actions lost against the opponent, and partner synergies.
 
 The best misplays of a game are often not damage rolls (Fake Out into a Ghost, Sucker Punch against a Pokemon that
-did not attack). The log marks them with `-immune`, `-fail`, `-miss` and a blocked hit; this lists them, per turn, so
-the explanation cites them instead of guessing (ADR-082).
+did not attack); the log marks them with `-immune`, `-fail`, `-miss` and a blocked hit (ADR-082). A spread move also
+hits the user's own partner, usually on purpose (the partner is immune, protects, or has an ability that wants the
+hit), so what happens to a partner is never a lost action; it is listed as a synergy (ADR-083).
 """
 
 from __future__ import annotations
 
 from typing import Literal
 
-from src.domain.models import BattleEvent, GameState, WastedAction
+from src.domain.models import AllySynergy, BattleEvent, GameState, WastedAction
 
-_OUTCOMES: dict[str, Literal["immune", "failed", "missed"]] = {"immune": "immune", "failed": "failed", "missed": "missed"}
-
-
-def _opponent_of(player: str, game_state: GameState) -> str:
-    return next((side.player for side in game_state.sides if side.player != player), "")
+_UNAFFECTED: dict[str, Literal["immune", "missed"]] = {"immune": "immune", "missed": "missed"}
+_GAINS = {"ability", "boosted", "healed"}  # the move did something useful even if it did nothing to the opponent
 
 
-def _target_of(event: BattleEvent, game_state: GameState) -> tuple[str, str]:
-    """The (species, player) a single-target move was aimed at, empty when it had several or none."""
-    if len(event.unaffected_targets) == 1:
-        player, _, species = event.unaffected_targets[0].partition(":")
-        return species, player
-    targets = list(dict.fromkeys(event.targets))
-    if len(targets) != 1:
-        return "", ""
-    owners = {side.player for side in game_state.sides if targets[0] in (side.brought() or [m.species for m in side.team])}
-    opposing = _opponent_of(event.actor_player, game_state)
-    return targets[0], (opposing if opposing in owners else next(iter(owners)) if len(owners) == 1 else "")
+def _moves(game_state: GameState) -> list[BattleEvent]:
+    outcome = game_state.outcome
+    return [event for event in outcome.events if event.kind == "move" and event.move] if outcome else []
+
+
+def _damaged_an_opponent(event: BattleEvent) -> bool:
+    return any(hit.player != event.actor_player and not hit.blocked_by for hit in event.hits)
 
 
 def find_wasted_actions(game_state: GameState) -> list[WastedAction]:
-    outcome = game_state.outcome
-    if outcome is None:
-        return []
+    """Moves that achieved nothing against the opponent. A spread move that damaged any opponent is not one."""
     found: list[WastedAction] = []
-    for event in outcome.events:
-        if event.kind != "move" or not event.move:
+    for event in _moves(game_state):
+        if _damaged_an_opponent(event) or any(effect.effect in _GAINS for effect in event.ally_effects):
             continue
-        target, target_player = _target_of(event, game_state)
+
+        def lost(outcome: Literal["immune", "failed", "missed", "blocked"], target: str = "", player: str = "",
+                 detail: str = "", event: BattleEvent = event) -> None:
+            found.append(WastedAction(turn=event.turn, actor=event.actor, actor_player=event.actor_player,
+                                      move=event.move, outcome=outcome, target=target, target_player=player, detail=detail))
+
+        unaffected = [entry.partition(":") for entry in event.unaffected_targets]
         for effect in event.effects:
-            kind = _OUTCOMES.get(effect)
+            kind = _UNAFFECTED.get(effect)
             if kind:
-                found.append(WastedAction(turn=event.turn, actor=event.actor, actor_player=event.actor_player,
-                                          move=event.move, outcome=kind, target=target, target_player=target_player))
+                for player, _, species in unaffected:
+                    if player != event.actor_player:
+                        lost(kind, species, player)
+                if not unaffected:
+                    lost(kind)
+            elif effect == "failed":
+                lost("failed")
         for hit in event.hits:
-            if hit.blocked_by:
-                found.append(WastedAction(turn=event.turn, actor=event.actor, actor_player=event.actor_player,
-                                          move=event.move, outcome="blocked", target=hit.species, target_player=hit.player,
-                                          detail=f"blocked by {hit.blocked_by}"))
+            if hit.blocked_by and hit.player != event.actor_player:
+                lost("blocked", hit.species, hit.player, f"blocked by {hit.blocked_by}")
+    return found
+
+
+def find_ally_synergies(game_state: GameState) -> list[AllySynergy]:
+    """What each move did for, or safely past, the user's own partner (one entry per move and partner)."""
+    found: list[AllySynergy] = []
+    for event in _moves(game_state):
+        results: dict[str, list[str]] = {}
+        for effect in event.ally_effects:
+            text = {
+                "immune": f"took no damage, immune{f' by {effect.detail}' if effect.detail else ''}",
+                "protected": f"avoided it with {effect.detail}",
+                "ability": f"its ability {effect.detail} activated",
+                "boosted": f"its {effect.detail}",
+                "healed": f"was healed{f' by {effect.detail}' if effect.detail else ''}",
+            }[effect.effect]
+            results.setdefault(effect.species, []).append(text)
+        found += [AllySynergy(turn=event.turn, actor=event.actor, actor_player=event.actor_player, move=event.move,
+                              ally=ally, result="; ".join(texts)) for ally, texts in results.items()]
     return found

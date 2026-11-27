@@ -46,10 +46,27 @@ def label_sides(value: Any, names: dict[str, str]) -> Any:
 
 
 def event_line(event: BattleEvent, names: dict[str, str]) -> str:
-    """One timeline line with the owner of every actor and target, and remaining HP spelled out."""
-    head, separator, tail = event.text.partition(" — ")
-    if event.kind != "move" or not separator:
+    """One timeline line with the owner of every actor and target, remaining HP spelled out, the user's own partner
+    marked, and an immune or missed target named (a spread move's "(immune)" alone reads as an opponent's)."""
+    if event.kind != "move":
         return label_text(event.text, names)
+
+    def who(player: str, species: str) -> str:
+        partner = " [its own partner]" if player == event.actor_player and species != event.actor else ""
+        return f"{names.get(player, player)}'s {species}{partner}"
+
+    effects = list(event.effects)
+    unaffected = [entry.partition(":") for entry in event.unaffected_targets]
+    reasons = [effect for effect in effects if effect in ("immune", "missed")]
+    if unaffected and len(reasons) == 1:
+        named = ", ".join(who(player, species) for player, _, species in unaffected)
+        effects[effects.index(reasons[0])] = f"{reasons[0]}: {named}"
+    line = label_text(f"{event.actor_player} {event.actor} used {event.move}", names)
+    if effects:
+        line += f" ({', '.join(effects)})"
+    _head, separator, tail = event.text.partition(" — ")
+    if not separator:
+        return line
     owners: dict[str, set[str]] = {}
     for hit in event.hits:
         owners.setdefault(hit.species, set()).add(hit.player)
@@ -61,6 +78,6 @@ def event_line(event: BattleEvent, names: dict[str, str]) -> str:
             continue
         mon, remaining = found.group("mon"), found.group("pct")
         players = owners.get(mon, set())
-        prefix = f"{names.get(next(iter(players)), '')}'s " if len(players) == 1 and next(iter(players)) in names else ""
-        parts.append(f"{prefix}{mon} left at {remaining}% HP" if remaining else prefix + part)
-    return label_text(head, names) + " — " + "; ".join(parts)
+        subject = who(next(iter(players)), mon) if len(players) == 1 and next(iter(players)) in names else mon
+        parts.append(f"{subject} left at {remaining}% HP" if remaining else subject + part[len(mon):])
+    return f"{line} — " + "; ".join(parts)

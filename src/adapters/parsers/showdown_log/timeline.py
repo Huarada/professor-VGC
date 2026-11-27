@@ -25,6 +25,7 @@ class Timeline:
         self.kos: list[KOEvent] = []
         self.fainted_in_move: set[tuple[int, str, str]] = set()
         self.current_move: BattleEvent | None = None
+        self.move_open = False  # lines being read still belong to current_move (it outlives switches and upkeep)
         self.helped: set[tuple[int, str, str]] = set()  # (turn, player, key) under Helping Hand
         self.winner_name: str | None = None
         self.forfeited_name: str | None = None

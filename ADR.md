@@ -6158,3 +6158,33 @@ Correction (judge comparison): the 2026-11-25 BO1 run was graded by gpt-4o-mini 
 answers show NO judge improvement: recorded games (12) grounded 3.08 to 2.83, actionable 3.75 to 3.67, specific 4.0 to 3.83,
 consistent 3.08 to 2.83, honest 2.58 to 2.83; simulated (24) 3.21/3.75/4.12/3.0/2.96 to 3.12/3.58/4.0/3.0/3.17. What ADR-082 did
 change is what its deterministic checks and the section count measure. The testbench now defaults the OpenAI grader to gpt-4o.
+
+
+## ADR-083 - A partner is never an opponent: ally synergies, opponent-only wasted actions and Protect reads
+
+Status: accepted. A human review found the worst answer of a set came from our own evidence (ADR-082): `wasted_actions` listed a
+Sludge Wave whose immune "target" was the user's own Tinkaton, and the prompt called every entry a verified lost action, so the
+model named a good spread-move synergy as the worst decision. `protect_reads` counted a Protect against the partner's own
+Discharge as a read, and nothing said that Discharge was feeding the partner's Lightning Rod.
+
+Changes:
+
+- The parser records on each move what happened to the user's partner (`BattleEvent.ally_effects`: immune, protected, ability,
+  boosted, healed). The move's lines end at the next move, switch, turn, upkeep or blank line, so a switch-in's Intimidate or an
+  end-of-turn heal is not credited to it.
+- `wasted_actions` lists only what was lost against the opponent: partner targets are never listed, and a move that damaged an
+  opponent (or triggered something useful in the partner) is not a lost action.
+- `ally_synergies` (BO1) lists the partner effects; each move entry carries `own_partner_synergy` and its partner damage checks
+  `own_partner`. The timeline marks "[its own partner]" and names who was immune or missed.
+- `protect_reads` omits blocks of the partner's move, and partner damage is not counted in `other_targets_hit` (BO1 and BO3).
+- The speed line of a move compares against an opponent; a spread move could list the partner first.
+
+Checked on 378 stored games (50 public replays, 268 simulated, 60 public series games): the recorded partner effects agree turn by
+turn with a separate reading of the raw protocol lines in all of them (201 effects), no wasted action or Protect read involves a
+partner, wasted actions fell from 2680 to 2209 (43 had a partner as target; the rest were moves that did damage an opponent) and 13
+partner blocks left the reads.
+
+With gpt-4o-mini, "best and worst decisions" on four real games with partner interactions, four answers each before and after,
+read by hand: answers that called a partner synergy a mistake or confused partner with opponent fell from 8/16 to 3/16 (small
+sample, one reader). A gpt-4o checker was tried and rejected as unreliable here: it flagged correct sentences about opponents.
+Not covered: damage the partner really took stays visible and may fairly be criticised; BO3 gets no synergy list.

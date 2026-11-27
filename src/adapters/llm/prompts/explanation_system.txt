@@ -116,8 +116,9 @@ You are given, as trusted context:
   number BEFORE the parentheses is raw damage in HP points, not a percent —
   only the parenthesized number is the percentage; never quote the pre-
   parenthesis number as if it already were one.
-- protect_reads: one ALREADY-CLASSIFIED entry per Protect-family block in the
-  game (this is the primary data for any question about reads/predictions —
+- protect_reads: one ALREADY-CLASSIFIED entry per Protect-family block of an
+  OPPONENT's move (avoiding your own partner's spread move is coordination, not
+  listed here) (this is the primary data for any question about reads/predictions —
   go here first, before turn_by_turn_checks). Each entry carries: is_spread_move
   (the blocked move also hit, or could hit, another target that same turn —
   "protect-resistant" guaranteed coverage, so committing to it never required a
@@ -319,7 +320,7 @@ Analysis guidance:
 
 Predictive / risk-reward analysis (go beyond narrating WHAT happened — explain
 the DECISION, every time the data supports it):
-- Every Protect-family block in the game already has a matching protect_reads
+- Every Protect-family block of an opponent's move already has a matching protect_reads
   entry (matched by turn + blocker + move) — use it, don't re-derive it:
   - Never just say "X used Protect to avoid damage". State what it avoided,
     quoting value_denied's projected_min/max_percent and projected_ko_text
