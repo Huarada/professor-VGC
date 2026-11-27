@@ -46,7 +46,10 @@ def action_claim_issues(answer: str, game_state: GameState) -> list[str]:
     holder, species = alternation(list(who)), alternation(list(owners))
     possessive = rf"(?:{MARK}(?P<who>{holder}){MARK}(?:'s|’s){MARK}\s+)?"
     claim = re.compile(
-        rf"(?<![\w-]){possessive}{MARK}(?P<mon>{species}){MARK}\s+(?:\w+\s+){{0,2}}?{_USED}\s+{MARK}(?P<move>{moves}){MARK}"
+        rf"(?<![\w-]){possessive}{MARK}(?P<mon>{species}){MARK}"
+        # "Ana's Venusaur and Swampert used Protect" claims it for both (the second inherits the owner if unnamed)
+        rf"(?:\s+(?:and|&)\s+(?:{MARK}(?P<who2>{holder}){MARK}(?:'s|’s){MARK}\s+)?{MARK}(?P<mon2>{species}){MARK})?"
+        rf"\s+(?:\w+\s+){{0,2}}?{_USED}\s+{MARK}(?P<move>{moves}){MARK}"
         rf"(?:\s+(?:on|against|into|at|targeting)\s+(?:{MARK}(?P<tgt_who>{holder}){MARK}(?:'s|’s){MARK}\s+)?"
         rf"{MARK}(?P<target>{species}))?(?![\w-])", re.I)
     by_turn: dict[int, list[BattleEvent]] = {}
@@ -65,25 +68,36 @@ def action_claim_issues(answer: str, game_state: GameState) -> list[str]:
         for match in claim.finditer(text):
             if _HYPOTHETICAL.search(clause_around(text, match.start(), match.end())):
                 continue
-            mon = canonical(match.group("mon"), owners)
-            players = [who[match.group("who").casefold()]] if match.group("who") else sorted(owners.get(mon, frozenset()))
-            move = match.group("move").casefold()
-            same_turn = [e for e in by_turn.get(turn, []) if e.actor_player in players
-                         and base.get((e.actor_player, e.actor), e.actor) == base.get(
-                             (e.actor_player, mon), mon) and e.move.casefold() == move]
-            if not same_turn:
-                issues.append(_missing(match.group(0).strip(), turn, mon, move, players, labels, events, base))
-                continue
-            if match.group("target"):
-                target = canonical(match.group("target"), owners)
-                aimed = {(player, base.get((player, name), name)) for event in same_turn for player, name in _hit_species(event)}
-                owners_of = ([who[match.group("tgt_who").casefold()]] if match.group("tgt_who")
-                             else sorted(owners.get(target, frozenset())))
-                if aimed and not any((player, base.get((player, target), target)) in aimed for player in owners_of):
-                    seen = ", ".join(f"{labels[p]}'s {name}" for p, name in sorted(aimed))
-                    issues.append(f'"{match.group(0).strip()}" (turn {turn}): the log shows {move.title()} aimed at {seen}, '
-                                  f"not {target}.")
+            subjects = [(match.group("who"), match.group("mon"))]
+            if match.group("mon2"):
+                subjects.append((match.group("who2") or match.group("who"), match.group("mon2")))
+            for owner_text, mon_text in subjects:
+                issues += _check_subject(match, owner_text, mon_text, turn, owners, who, labels, events, by_turn, base)
     return list(dict.fromkeys(issues))
+
+
+def _check_subject(match: re.Match[str], owner_text: str | None, mon_text: str, turn: int,
+                   owners: dict[str, frozenset[str]], who: dict[str, str], labels: dict[str, str],
+                   events: list[BattleEvent], by_turn: dict[int, list[BattleEvent]],
+                   base: dict[tuple[str, str], str]) -> list[str]:
+    mon = canonical(mon_text, owners)
+    players = [who[owner_text.casefold()]] if owner_text else sorted(owners.get(mon, frozenset()))
+    move = match.group("move").casefold()
+    same_turn = [e for e in by_turn.get(turn, []) if e.actor_player in players
+                 and base.get((e.actor_player, e.actor), e.actor) == base.get((e.actor_player, mon), mon)
+                 and e.move.casefold() == move]
+    if not same_turn:
+        return [_missing(match.group(0).strip(), turn, mon, move, players, labels, events, base)]
+    if not match.group("target"):
+        return []
+    target = canonical(match.group("target"), owners)
+    aimed = {(player, base.get((player, name), name)) for event in same_turn for player, name in _hit_species(event)}
+    owners_of = ([who[match.group("tgt_who").casefold()]] if match.group("tgt_who")
+                 else sorted(owners.get(target, frozenset())))
+    if aimed and not any((player, base.get((player, target), target)) in aimed for player in owners_of):
+        seen = ", ".join(f"{labels[p]}'s {name}" for p, name in sorted(aimed))
+        return [f'"{match.group(0).strip()}" (turn {turn}): the log shows {move.title()} aimed at {seen}, not {target}.']
+    return []
 
 
 def _missing(quote: str, turn: int, mon: str, move: str, players: list[str], labels: dict[str, str],

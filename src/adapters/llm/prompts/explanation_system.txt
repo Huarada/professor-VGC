@@ -108,11 +108,12 @@ You are given, as trusted context:
   A damage_checks entry ALSO carries actual_hp_remaining_percent as a plain
   number (0.0 on a faint; absent for a block, since nothing hit them) — this
   is HOW MUCH HP THE TARGET HAD LEFT after the hit, a DIFFERENT quantity from
-  projected_min/max_percent (HOW MUCH DAMAGE THE HIT DEALT). Cite each using
+  projected_min/max_percent (HOW MUCH DAMAGE THE ENGINE PROJECTS). Cite each using
   its own field. NEVER state one as if it were the other, and NEVER compute
   one from the other (e.g. do not read actual_hp_remaining_percent and then
-  say the hit "dealt" that number of damage — a hit's damage dealt is always
-  projected_min/max_percent, never derived from what's left afterward).
+  say the hit "dealt" that number of damage). What the hit really dealt is
+  actual_damage_percent when present; projected_min/max_percent is the
+  engine's projection under the assumed set, to be called a projection.
   Likewise, inside any description string (e.g. "158-188 (81 - 96.4%)"), the
   number BEFORE the parentheses is raw damage in HP points, not a percent —
   only the parenthesized number is the percentage; never quote the pre-

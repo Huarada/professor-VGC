@@ -105,3 +105,17 @@ def test_fresh_cases_skip_recorded_forfeited_and_short_games(tmp_path) -> None:
         (tmp_path / f"{name}.json").write_text(json.dumps({"log": log}), encoding="utf-8")
     cases = bench.fresh_cases(5, tmp_path)
     assert [c.id for c in cases] == ["bo1-fresh-1-turning", "bo1-fresh-4-coach_loser"]
+
+
+def test_games_are_anonymized_before_analysis_without_touching_move_names() -> None:
+    game = {"players": ["Ash", "x.y"], "log": "|player|p1|Ash|1|\n|move|p1a: Rotom|Flash Cannon|\n|c|☆x.y|gg\n|win|Ash"}
+    (out,) = bench.anonymous_games([game])
+    assert out["players"] == ["Player A", "Player B"]
+    assert "Flash Cannon" in out["log"] and "Ash" not in out["log"].replace("Flash", "")
+    assert "|c|☆Player B|gg" in out["log"] and out["log"].endswith("|win|Player A")
+
+
+def test_a_name_right_after_a_line_break_is_anonymized() -> None:
+    game = {"players": ["chaunce307", "Bo"], "log": "|raw|x\nchaunce307 has agreed to open team sheets.\nBo joined"}
+    (out,) = bench.anonymous_games([game])
+    assert "chaunce307" not in out["log"] and out["log"].endswith("Player B joined")

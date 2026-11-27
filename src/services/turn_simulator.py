@@ -122,6 +122,25 @@ def _berry_contradicted(
     )
 
 
+# Moves that shield only their user; Wide Guard / Quick Guard and the like do not stop every move.
+_SELF_PROTECT = frozenset({"protect", "detect", "spikyshield", "banefulbunker", "kingsshield", "silktrap",
+                           "burningbulwark", "obstruct"})
+
+
+def _protected_by_turn(events: list[BattleEvent]) -> dict[int, set[Combatant]]:
+    """turn -> Pokemon behind their own Protect that turn: they could neither be hit nor attack (ADR-086)."""
+    found: dict[int, set[Combatant]] = {}
+    for event in events:
+        if event.kind != "move":
+            continue
+        if to_id(event.move) in _SELF_PROTECT and "failed" not in event.effects:
+            found.setdefault(event.turn, set()).add((event.actor_player, event.actor))
+        for hit in event.hits:
+            if to_id(hit.blocked_by) in _SELF_PROTECT:
+                found.setdefault(event.turn, set()).add((hit.player, hit.species))
+    return found
+
+
 class TurnReplaySimulator:
     """Re-runs the deterministic engine for each action in the battle timeline."""
 
@@ -145,6 +164,7 @@ class TurnReplaySimulator:
         boosts: BoostLedger = {}
 
         eaten = _items_eaten_per_move(game_state.outcome.events)
+        protected = _protected_by_turn(game_state.outcome.events)
         for index, event in enumerate(game_state.outcome.events):
             if event.kind == "switch":
                 boosts[(event.actor_player, event.actor)] = {}
@@ -155,9 +175,8 @@ class TurnReplaySimulator:
                     game_state=game_state, event=event, meta=meta, sets=sets,
                     evaluator=evaluator, boosts=boosts, gen=gen,
                 )
-                checks.append(
-                    self._check(moment, calc, evaluator, reviewer, eaten.get(index, {}))
-                )
+                checks.append(self._check(moment, calc, evaluator, reviewer, eaten.get(index, {}),
+                                          protected.get(event.turn, set())))
         return checks
 
     def _check(
@@ -167,11 +186,12 @@ class TurnReplaySimulator:
         evaluator: MatchupEvaluator,
         reviewer: DecisionReviewer,
         eaten: dict[Combatant, set[str]],
+        protected: set[Combatant],
     ) -> TurnCheck:
         event = moment.event
         damaging = evaluator.is_damaging(event.move)
         targets = moment.targets()
-        threats = reviewer.threats(moment)
+        threats = reviewer.threats(moment, exclude=protected)
         # The speed line compares against an opponent: a spread move may list the partner first (ADR-083).
         first_target = next((t for t in targets if t[0] != moment.actor[0]), None)
         return TurnCheck(
@@ -183,7 +203,7 @@ class TurnReplaySimulator:
             effects=list(event.effects),
             conditions=moment.conditions(),
             damage_checks=self._damage_checks(moment, calc, targets, eaten) if damaging else [],
-            best_alternatives=self._best_alternatives(moment, calc, evaluator),
+            best_alternatives=self._best_alternatives(moment, calc, evaluator, protected),
             incoming_threats=threats,
             decision_options=reviewer.options(moment, threats),
             speed=self._speed_for(moment, calc, first_target),
@@ -256,13 +276,13 @@ class TurnReplaySimulator:
         return checks
 
     def _best_alternatives(
-        self, moment: MoveMoment, calc: _MemoizedCalc, evaluator: MatchupEvaluator
+        self, moment: MoveMoment, calc: _MemoizedCalc, evaluator: MatchupEvaluator, protected: set[Combatant],
     ) -> list[OptimalMoveOption]:
-        """Every confirmed damaging move into every opposing active Pokemon, so a
-        better move and a better target both surface.
+        """Every confirmed damaging move into every opposing active Pokemon that was not behind Protect that turn, so a
+        better move and a better target both surface (a move into a Protect would have done nothing).
         """
         candidates: list[OptimalMoveOption] = []
-        opponents = moment.opponents()
+        opponents = [target for target in moment.opponents() if target not in protected]
         for move in dict.fromkeys(moment.attacker.moves):
             if not evaluator.is_damaging(move):
                 continue

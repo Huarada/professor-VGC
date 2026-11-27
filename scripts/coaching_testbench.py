@@ -218,6 +218,29 @@ class _Rejections(logging.Handler):
             self.reasons.append(text.split("rejected: ", 1)[-1][:160])
 
 
+def anonymous_games(games: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """The games with the players' names replaced by "Player A"/"Player B" BEFORE analysis, so neither the model nor the
+    report ever sees them (the model once rewrote a name in a spelling the later replacement missed). Strings are
+    rewritten decoded: in JSON text a name after a line break follows the letter of "\n" and would be missed."""
+    names = [str(p) for p in games[0].get("players", []) if str(p)]
+    patterns = [(re.compile(rf"(?<![A-Za-z0-9]){re.escape(name)}(?![A-Za-z0-9])"),
+                 f"Player {'AB'[index] if index < 2 else index + 1}")
+                for index, name in sorted(enumerate(names), key=lambda pair: -len(pair[1]))]  # longest first
+
+    def scrub(value: Any) -> Any:
+        if isinstance(value, str):
+            for pattern, label in patterns:
+                value = pattern.sub(label, value)
+            return value
+        if isinstance(value, list):
+            return [scrub(item) for item in value]
+        if isinstance(value, dict):
+            return {key: scrub(item) for key, item in value.items()}
+        return value
+
+    return [scrub(game) for game in games]
+
+
 def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: argparse.Namespace) -> dict[str, Any]:
     from scripts.bo3_depth_benchmark import score_game
     from scripts.faithfulness_benchmark.observed_damage import extract_observed_hits
@@ -225,9 +248,11 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
     from src.adapters.parsers.showdown_parser import ShowdownReplayParser
     from src.domain.models import AnalysisRequest
     from src.domain.series import Bo3AnalysisRequest
+    from src.services.advice_claims import advice_issues
     from src.services.side_attribution import narration_issues, owners_by_species
 
     question = QUESTIONS[case.question]
+    case = Case(case.id, case.mode, case.question, anonymous_games(case.games), case.source)
     rejections = _Rejections()
     logging.getLogger().addHandler(rejections)
     start = time.monotonic()
@@ -258,7 +283,9 @@ def run_case(case: Case, container: Any, judge_llm: Any, claim_llm: Any, args: a
     contradictions: list[str] = []
     claims: list[dict[str, Any]] = []
     for game, analysis in zip(case.games, per_game):
-        contradictions += narration_issues(analysis.answer, parser.parse(game), turning_point=False)
+        state = parser.parse(game)
+        contradictions += narration_issues(analysis.answer, state, turning_point=False)
+        contradictions += advice_issues(analysis.answer, state, analysis.turn_checks)
         claims += score_game(claim_llm, game, analysis, extract_observed_hits(str(game["log"])), band)
     evidence_text = result.model_dump_json()
     texts = [answer] + [g.answer for g in per_game]
@@ -362,6 +389,7 @@ def rebuild_html(json_path: Path, sim_dir: Path) -> Path:
     rows = []
     for row in report["rows"]:
         case = cases[row["id"]]
+        case = Case(case.id, case.mode, case.question, anonymous_games(case.games), case.source)
         parser = ShowdownReplayParser()
         replays = [replay_entry(case, i, game, outcome_summary(parser.parse(game))) for i, game in enumerate(case.games)]
         rows.append(anonymized({**row, "replays": replays, "players": [str(p) for p in case.games[0].get("players", [])]}, anonymize))

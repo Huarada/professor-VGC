@@ -94,7 +94,9 @@ def correction_note(issues: list[str]) -> str:
     lines = "\n".join(f"- {issue}" for issue in issues)
     return ("CORRECTION: your previous answer contradicts the battle log:\n" + lines +
             "\nThe 'Pokemon <player> brought' lines, the ordered timeline (every Pokemon is written with its owner), "
-            "turn_by_turn_checks, wasted_actions and turning_point (present turning_point.turn as the turning point) are the "
+            "turn_by_turn_checks (their KO texts and decision_options), wasted_actions and turning_point (present "
+            "turning_point.turn as the turning point) are the "
             "only authority on sides, on which move each Pokemon used on which turn and on which turn each Pokemon "
             "fainted. Rewrite the full answer so every Pokemon is attributed to its own side, advice names only Pokemon "
-            "from the advised player's roster, and every move and faint is placed on the turn the log shows.")
+            "from the advised player's roster, every move and faint is placed on the turn the log shows, KO claims match "
+            "the engine's KO text for that move, target and turn, and every switch you advise is a listed switch option.")
