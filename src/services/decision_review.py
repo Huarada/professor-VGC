@@ -22,6 +22,7 @@ from src.domain.models import (
 from src.services.battle_moment import Combatant, MoveMoment
 
 _MAX_SWITCH_OPTIONS = 2
+_SAFE_SWITCH_SHARE = 0.5  # a switch-in must keep more than half the HP it came in with (ADR-085)
 
 
 def _pct(value: float) -> str:
@@ -136,7 +137,7 @@ class DecisionReviewer:
         infos = {move: self._info(move) for move in actor_moves}
         options: list[DecisionOption] = []
         options.extend(self._protect_options(moment, lethal[0], infos))
-        options.extend(self._switch_options(moment, lethal))
+        options.extend(self._switch_options(moment, threats))
         options.extend(self._speed_control_options(moment, lethal, infos))
         return options
 
@@ -166,14 +167,16 @@ class DecisionReviewer:
         ][:1]
 
     def _switch_options(
-        self, moment: MoveMoment, lethal: list[ThreatCheck]
+        self, moment: MoveMoment, threats: list[ThreatCheck]
     ) -> list[DecisionOption]:
+        """Bench Pokemon that would keep more than half their HP against the strongest confirmed hit of EITHER
+        opponent on the field (the switch-in faces both, not only the one that threatened the actor)."""
         player = moment.actor[0]
         candidates: list[tuple[float, str, ThreatCheck, str]] = []
         for name in moment.bench(player):
             switch_in: Combatant = (player, name)
             worst: tuple[float, ThreatCheck, str] | None = None
-            for threat in lethal:
+            for threat in threats:
                 best = self._best_hit(moment, (threat.attacker_player, threat.attacker), switch_in)
                 if best is None:
                     continue
@@ -182,7 +185,7 @@ class DecisionReviewer:
             if worst is None:
                 continue
             hp = moment.hp(switch_in)
-            if worst[0] < (hp if hp is not None else 100.0):
+            if worst[0] < (hp if hp is not None else 100.0) * _SAFE_SWITCH_SHARE:
                 candidates.append((worst[0], name, worst[1], worst[2]))
         candidates.sort(key=lambda c: c[0])
         return [
@@ -193,8 +196,8 @@ class DecisionReviewer:
                 max_percent_taken=taken,
                 summary=(
                     f"Switching {moment.actor[1]} out to {name} would have taken at most "
-                    f"{_pct(taken)} from {threat.attacker}'s {move} instead of risking a KO "
-                    f"on {moment.actor[1]}."
+                    f"{_pct(taken)} (the strongest confirmed hit of either opponent: {threat.attacker}'s {move}), "
+                    f"keeping more than half of its HP, instead of risking a KO on {moment.actor[1]}."
                 ),
             )
             for taken, name, threat, move in candidates[:_MAX_SWITCH_OPTIONS]
