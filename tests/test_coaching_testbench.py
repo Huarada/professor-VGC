@@ -112,10 +112,19 @@ def test_games_are_anonymized_before_analysis_without_touching_move_names() -> N
     (out,) = bench.anonymous_games([game])
     assert out["players"] == ["Player A", "Player B"]
     assert "Flash Cannon" in out["log"] and "Ash" not in out["log"].replace("Flash", "")
-    assert "|c|☆Player B|gg" in out["log"] and out["log"].endswith("|win|Player A")
+    assert "|c|" not in out["log"] and out["log"].endswith("|win|Player A")
 
 
 def test_a_name_right_after_a_line_break_is_anonymized() -> None:
     game = {"players": ["chaunce307", "Bo"], "log": "|raw|x\nchaunce307 has agreed to open team sheets.\nBo joined"}
     (out,) = bench.anonymous_games([game])
     assert "chaunce307" not in out["log"] and out["log"].endswith("Player B joined")
+
+
+
+def test_player_ids_and_spectators_never_reach_the_model() -> None:
+    log = "\n".join(["|j|☆spectator99", "|player|p1|Mega Phox|1|", "|turn|1", "|c|☆spectator99|hi", "|win|Mega Phox",
+                       "|n|☆Player A|megaphox", "|l|☆spectator99", "|raw|megaphox's rating: 1500"])
+    (out,) = bench.anonymous_games([{"players": ["Mega Phox", "Bo"], "log": log}])
+    assert "spectator99" not in out["log"] and "megaphox" not in out["log"].casefold()
+    assert "|player|p1|Player A|1|" in out["log"] and "|raw|Player A's rating: 1500" in out["log"]

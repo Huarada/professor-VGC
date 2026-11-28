@@ -102,6 +102,6 @@ def faint_timing_issues(answer: str, game_state: GameState) -> list[str]:
                 seen = sorted({t for p in players for t in faints.get((p, base.get((p, mon), mon)), set())})
                 if turn in seen:
                     continue
-                where = f"on turn {', '.join(map(str, seen))}" if seen else "at all in the log"
-                issues.append(f'"{match.group(0)}" (turn {turn}): {mon} fainted {where}.')
+                fact = f"fainted on turn {', '.join(map(str, seen))}" if seen else "never fainted in this game"
+                issues.append(f'"{match.group(0)}" (turn {turn}): {mon} {fact}.')
     return list(dict.fromkeys(issues))

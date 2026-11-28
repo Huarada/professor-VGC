@@ -6285,3 +6285,38 @@ turning_point.turn. The evidence is unchanged: turning_point stays in the contex
 
 Result (gpt-4o-mini, same probe): unasked questions 0 of 50 answers with the section (7 retried), against 3 of 50 before; the 13
 turning-point questions kept the section in 13 of 13 (2 retried). The samples are small; the probe is a targeted check, not a rate.
+
+## ADR-088 - A pass/fail checkup of the six BO1 coaching fixes over every downloaded game
+
+Status: accepted (2026-11-28)
+
+The user cannot read every answer, so `scripts/coaching_checkup.py` checks each fix (ADR-083 to ADR-087) on its own, on
+every game in a replay folder, in two layers. The evidence layer needs no model: no lost action or Protect read against the
+actor's own partner, every switch option keeps more than half the switch-in's HP, no alternative or threat aimed at a Pokemon
+the raw log shows behind Protect that turn (read from `-singleturn`, not from the simulator under test), the timeline names
+the loser, and no real player name reaches the model. The answer layer checks the final OpenAI answer with the production
+validators (side, switch, presence, KO, action, faint and damage-wording checks), two text heuristics (a partner synergy
+called a waste; a loser-coaching answer coaching the winner) and the turning-point rule. Every check has a test that
+makes it fail.
+
+Real public Reg M-C games are downloaded with `replay_corpus --format gen9championsvgc2026regmc` into
+`data/replays/cache/regmc` (git-ignored; the Python client uses the system trust store through `configure_trust`, TLS is
+never disabled).
+
+What the first run found, and fixed here:
+- Names: a Showdown rename line (`|n|`) carried a player's id (lowercase, no spaces) past the testbench anonymizer, and
+  join, leave and chat lines named spectators. The anonymizer now also replaces each player's id and drops those social
+  lines (the parser reads none of them). The four stored HTML reports embedded such lines; they were rebuilt, and only the
+  social lines changed (turn, faint and answer counts are identical).
+- Validator false positives, found by reading every flagged sentence against the raw log: a narrated Protect ("used
+  Protect while it could have used Moonblast") read as advice; another Pokemon's Protect ("should have seen Sneasler use
+  Protect against Excadrill") credited to the target; a lead pair ("lead with Sneasler and Whimsicott"); a switch the log
+  shows on that turn read as advice; and a KO claim about an uncomputed move attributed to an earlier computed move (only
+  computed moves were recognized). The faint check also told the model "X fainted at all in the log" when X never fainted.
+
+Result (gpt-4o-mini answers, one per game; 107 Reg M-C and 38 Reg M-B games; answers re-scored with the final checks,
+generated before the last three validator fixes): the evidence layer passed in 145 of 145 games for every item after the
+anonymizer fix (one name leak in 107 games before it). Final answers failing a check: allies 1, switches 3, alternatives 2,
+validators 6, coaching 1, names 0, turning point 0; 10 of 145 answers (6.9%, 95% CI 3.8-12.2%) fail at least one. Every
+remaining failure was read against the log and is a real error that reached the user (as a warning after the one correction
+retry). These checks see only claims the log or the engine can settle: strategic quality is not measured.
