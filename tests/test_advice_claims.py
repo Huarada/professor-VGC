@@ -106,6 +106,26 @@ def test_presence_advice_names_only_pokemon_that_could_follow_it() -> None:
         "On turn 1, instead of using Protect with Samurott-Hisui, Bob could have attacked.",  # narration of what it did
         "On turn 1, consider replacing **Protect** on Samurott-Hisui with an attack.",  # its own Protect, not a target
         "Lead with Venusaur on turn 1 next time.",
+        "On turn 1, Bob's Samurott-Hisui used Protect while it could have used Ceaseless Edge.",  # narrated, not advised
+        "On turn 1, Ana should have seen Swampert use Protect against Samurott-Hisui.",  # Swampert's Protect, no attack
     ]
     for text in fine:
         assert presence_issues(text, state) == [], text
+
+
+def test_a_claim_about_an_uncomputed_move_does_not_fall_back_to_an_earlier_move() -> None:
+    state = _game("|move|p1a: Swampert|Ice Punch|p2b: Pelipper", "|-damage|p2b: Pelipper|70/100", "|turn|2")
+    state.sides[0].team[0].moves.append("Earthquake")
+    text = "On turn 1, Wave Crash into Samurott-Hisui was fine, but Earthquake would have been a guaranteed OHKO."
+    assert ko_claim_issues(text, state, _CHECKS) == []
+    assert ko_claim_issues("On turn 1, Wave Crash into Samurott-Hisui was a guaranteed OHKO.", state, _CHECKS)
+
+
+def test_a_switch_the_log_shows_on_that_turn_is_narration() -> None:
+    state = _game("|switch|p1a: Venusaur|Venusaur, L50|100/100", "|turn|2")
+    assert switch_advice_issues("**Turn 1: Switching to Venusaur** was fine, instead of attacking.", state, _CHECKS) == []
+    assert switch_advice_issues("On turn 1, switching to Venusaur would have been strategic.", _STATE, _CHECKS)
+
+
+def test_a_lead_pair_is_not_a_presence_claim() -> None:
+    assert presence_issues("On turn 1 you should lead with Swampert and Venusaur.", _STATE) == []

@@ -218,17 +218,27 @@ class _Rejections(logging.Handler):
             self.reasons.append(text.split("rejected: ", 1)[-1][:160])
 
 
+_SOCIAL_LINE = re.compile(r"\|(?:j|J|l|L|n|N|c|c:|chat)\|")
+
+
 def anonymous_games(games: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """The games with the players' names replaced by "Player A"/"Player B" BEFORE analysis, so neither the model nor the
     report ever sees them (the model once rewrote a name in a spelling the later replacement missed). Strings are
-    rewritten decoded: in JSON text a name after a line break follows the letter of "\n" and would be missed."""
+    rewritten decoded: in JSON text a name after a line break follows the letter of "\n" and would be missed. Each
+    player's id (lowercase, no spaces) is replaced too, and social lines are dropped: a rename line carries the old id
+    and join/leave/chat lines name spectators; the parser reads none of them."""
+    from src.domain.names import to_id
+
     names = [str(p) for p in games[0].get("players", []) if str(p)]
-    patterns = [(re.compile(rf"(?<![A-Za-z0-9]){re.escape(name)}(?![A-Za-z0-9])"),
-                 f"Player {'AB'[index] if index < 2 else index + 1}")
-                for index, name in sorted(enumerate(names), key=lambda pair: -len(pair[1]))]  # longest first
+    labelled = [(name, f"Player {'AB'[index] if index < 2 else index + 1}") for index, name in enumerate(names)]
+    labelled += [(to_id(name), label) for name, label in list(labelled) if len(to_id(name)) >= 3]
+    patterns = [(re.compile(rf"(?<![A-Za-z0-9]){re.escape(name)}(?![A-Za-z0-9])", re.I), label)
+                for name, label in sorted(labelled, key=lambda pair: -len(pair[0]))]  # longest first
 
     def scrub(value: Any) -> Any:
         if isinstance(value, str):
+            if "\n" in value:
+                value = "\n".join(line for line in value.split("\n") if not _SOCIAL_LINE.match(line))
             for pattern, label in patterns:
                 value = pattern.sub(label, value)
             return value

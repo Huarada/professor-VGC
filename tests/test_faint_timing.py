@@ -43,6 +43,14 @@ def test_flags_the_victim_before_the_verb_and_a_pokemon_that_never_fainted() -> 
     assert any("Kingambit fainted on turn 11" in issue for issue in issues)
 
 
+def test_a_pokemon_that_never_fainted_is_said_to_have_never_fainted() -> None:
+    state = _state()
+    state.sides[0].team.append(PokemonSet(species="Archaludon"))
+    state.sides[0].active.append("Archaludon")  # brought
+    (issue,) = faint_timing_issues("On turn 8, Player A's Archaludon fainted.", state)
+    assert "Archaludon never fainted in this game" in issue
+
+
 def test_accepts_correct_turns_and_names_with_a_period() -> None:
     assert faint_timing_issues("On turn 12 Player A's Dragonite fainted to Sucker Punch.", _state()) == []
     assert faint_timing_issues("Mr. Rime fainted on turn 5.", _state()) == []

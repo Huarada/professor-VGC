@@ -75,7 +75,11 @@ def ko_claim_issues(answer: str, game_state: GameState, checks: list[TurnCheck])
     if not owners or not computed:
         return []
     base = {forme: species for (_, forme), species in _forme_bases(game_state).items()}
-    move_name = re.compile(rf"(?<![\w-])(?:{alternation(sorted({move for move, _ in computed}))})(?![\w-])", re.I)
+    # Every move of the game, not only computed ones: a claim about an uncomputed move must not fall back to an earlier one.
+    events = game_state.outcome.events if game_state.outcome else []
+    known = ({move for move, _ in computed} | {event.move.casefold() for event in events if event.move}
+             | {move.casefold() for side in game_state.sides for mon in side.team for move in mon.moves})
+    move_name = re.compile(rf"(?<![\w-])(?:{alternation(sorted(known))})(?![\w-])", re.I)
     pokemon = re.compile(rf"(?<![\w-])(?:{alternation(list(owners))})(?![\w-])", re.I)
     issues: list[str] = []
     for sentence, turn in _sentences_with_turns(answer, list(owners)):
@@ -122,6 +126,8 @@ def switch_advice_issues(answer: str, game_state: GameState, checks: list[TurnCh
         return []
     listed = [(check.turn, check.actor, option.switch_to) for check in checks for option in check.decision_options
               if option.kind == DecisionKind.SWITCH]
+    events = game_state.outcome.events if game_state.outcome else []
+    happened = {(event.turn, event.actor) for event in events if event.kind == "switch"}
     species = alternation(list(owners))
     labels = alternation([side.player_name or side.player for side in game_state.sides])
     owner = rf"(?:{MARK}(?:{labels}){MARK}(?:'s|’s){MARK}\s+)?"
@@ -141,7 +147,8 @@ def switch_advice_issues(answer: str, game_state: GameState, checks: list[TurnCh
             out = canonical(match.group("out"), owners) if match.group("out") else None
             fits = [entry for entry in listed if entry[2] == into and (out is None or entry[1] == out)
                     and (len(turns) != 1 or entry[0] in turns)]
-            if fits:
+            # "Turn 6: switching to Incineroar ..." reviews a switch the log shows on that turn: narration, not advice
+            if fits or (len(turns) == 1 and (next(iter(turns)), into) in happened):
                 continue
             where = f" on turn {next(iter(turns))}" if len(turns) == 1 else ""
             source = f" from {out}" if out else ""
@@ -154,9 +161,10 @@ _SELF_PROTECT = frozenset({"protect", "detect", "spikyshield", "banefulbunker", 
                            "burningbulwark", "obstruct"})
 # Who the advice is NOT about: an attacker ("from Dragalge"), a switch-in, a suggested lead.
 _NOT_THE_SUBJECT = re.compile(r"(?:\b(?:from|by|of)\s+(?:\S+\s+)?|\b(?:switch\w*|swap\w*|bring\w*|go(?:ing)?)\s+(?:\S+\s+){0,3}?"
-                              r"(?:to|into|for|in|with)\s+(?:\S+\s+)?|\blead\w*\s+(?:with\s+)?(?:\S+\s+)?|\bwith\s+)$", re.I)
+                              r"(?:to|into|for|in|with)\s+(?:\S+\s+)?|\blead\w*\s+(?:with\s+)?(?:\S+\s+(?:and|&)\s+)?(?:\S+\s+)?|\bwith\s+)$", re.I)
 _ADVISED_PROTECT = re.compile(r"\b(?:could|should|would|might|ought\s+to)\s+(?:have\s+)?(?:\w+\s+){0,2}?(?:used\s+|use\s+)?"
                               r"(?:protect|detect)\b|\b(?:protect|detect)\s+(?:\w+\s+){0,3}?(?:should|could|would)\b", re.I)
+_NARRATED_PROTECT = re.compile(r"(?<!have\s)\b(?:used|uses|using|chose|clicked)\s+[*_`]*(?:protect|detect)\b", re.I)
 _ADVISED_TARGET = re.compile(r"\b(?:could|should|would|might|consider\w*|better)\b[^.;]{0,30}\b(?:target\w*|attack\w*|"
                              r"against|into|at|on)\s+(?:\S+\s+)?$", re.I)
 
@@ -214,9 +222,13 @@ def presence_issues(answer: str, game_state: GameState) -> list[str]:
                 continue
             if mon not in behind and base.get(mon, mon) not in behind:
                 continue
-            if _ADVISED_PROTECT.search(clause) and not re.search(r"\binstead\s+of\b", clause, re.I):
+            # Only advice after the Pokemon is its own ("X could have used Protect"), and a narrated Protect is not advice.
+            own = clause[max(0, clause.find(match.group(0))):]
+            if (_ADVISED_PROTECT.search(own) and not _NARRATED_PROTECT.search(clause)
+                    and not re.search(r"\binstead\s+of\b", clause, re.I)):
                 issues.append(f'"{clause.strip()}" (turn {turn}): {mon} did use Protect on turn {turn}.')
-            elif _ADVISED_TARGET.search(before) and not re.search(r"\b(?:protect|detect)[*_`]*\s+on\s+(?:\S+\s+)?$", before):
+            elif _ADVISED_TARGET.search(before) and not re.search(
+                    r"\b(?:protect|detect)[*_`]*\s+(?:on|against|from)\s+(?:\S+\s+)?$", before):
                 issues.append(f'"{clause.strip()}" (turn {turn}): {mon} was behind Protect on turn {turn}, so an attack '
                               "into it would have done nothing.")
     return list(dict.fromkeys(issues))
