@@ -375,7 +375,7 @@ def replay_entry(case: Case, index: int, game: dict[str, Any], timeline: str) ->
             "url": public_url(ident)}
 
 
-def rebuild_html(json_path: Path, sim_dir: Path) -> Path:
+def rebuild_html(json_path: Path, sim_dir: Path, fresh_dir: Path = FRESH_DIR) -> Path:
     """Rebuild the HTML of a stored run (its JSON has no replays) from the same cases the run used."""
     from scripts.coaching_report_html import render_html
     from scripts.faithfulness_benchmark.run_log_grounded import anonymize
@@ -385,7 +385,7 @@ def rebuild_html(json_path: Path, sim_dir: Path) -> Path:
     report = json.loads(json_path.read_text(encoding="utf-8"))
     sim_games = sum(r["id"].startswith("bo1sim-") for r in report["rows"])
     fresh = sum(r["id"].startswith("bo1-fresh-") for r in report["rows"])
-    cases = {c.id: c for c in build_cases(sim_dir=sim_dir, sim_games=sim_games) + (fresh_cases(fresh) if fresh else [])}
+    cases = {c.id: c for c in build_cases(sim_dir=sim_dir, sim_games=sim_games) + (fresh_cases(fresh, fresh_dir) if fresh else [])}
     rows = []
     for row in report["rows"]:
         case = cases[row["id"]]
@@ -419,11 +419,13 @@ def main() -> None:
     parser.add_argument("--sim-games", type=int, default=0, help="simulated BO1 games to add (0 = none)")
     parser.add_argument("--only", default="", help="substring filter on case ids")
     parser.add_argument("--fresh", type=int, default=0,
-                        help="run ONLY this many unused public BO1 replays from data/replays/cache, one question each")
+                        help="run ONLY this many unused public BO1 replays from --fresh-dir, one question each")
+    parser.add_argument("--fresh-dir", type=Path, default=FRESH_DIR,
+                        help="folder of public replays for --fresh (e.g. data/replays/cache/regmc for Reg M-C)")
     parser.add_argument("--rebuild-html", type=Path, default=None, help="rewrite the HTML of a stored JSON run and exit")
     args = parser.parse_args()
     if args.rebuild_html:
-        print(f"wrote {rebuild_html(args.rebuild_html, args.sim_dir)}")
+        print(f"wrote {rebuild_html(args.rebuild_html, args.sim_dir, args.fresh_dir)}")
         return
 
     from scripts.run_local import local_environment
@@ -447,10 +449,10 @@ def main() -> None:
     report: dict[str, Any] = {"provider": args.provider, "model": model, "orchestrator": args.orchestrator or settings.orchestrator,
                               "grader": grader,
                               "date": date.today().isoformat(), "commit": commit, "rows": []}
-    selected = (fresh_cases(args.fresh) if args.fresh
+    selected = (fresh_cases(args.fresh, args.fresh_dir) if args.fresh
                 else build_cases(quick=args.quick, sim_dir=args.sim_dir, sim_games=args.sim_games))
     cases = [c for c in selected if args.only in c.id]
-    stem = f"{report['date']}-{args.provider}-{model}".replace("/", "_") + ("-quick" if args.quick else "") + (f"-sim{args.sim_games}" if args.sim_games else "") + (f"-fresh{args.fresh}" if args.fresh else "")
+    stem = f"{report['date']}-{args.provider}-{model}".replace("/", "_") + ("-quick" if args.quick else "") + (f"-sim{args.sim_games}" if args.sim_games else "") + (f"-fresh{args.fresh}" if args.fresh else "") + (f"-{args.fresh_dir.name}" if args.fresh and args.fresh_dir != FRESH_DIR else "")
     args.out.mkdir(parents=True, exist_ok=True)
     try:
         for index, case in enumerate(cases, 1):
